@@ -1,0 +1,156 @@
+:root {
+  --bg: #0f141b;
+  --card: #18202b;
+  --border: #2a3646;
+  --text: #e6ebf1;
+  --muted: #8b98a8;
+  --accent: #ffcf5a;
+  --danger: #e5534b;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+
+body {
+  margin: 0;
+  padding: 16px;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0 0 8px;
+}
+
+h3 {
+  margin-top: 16px;
+  font-size: 14px;
+  color: var(--accent);
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.narrow {
+  max-width: 360px;
+  margin: 10vh auto;
+  display: grid;
+  gap: 10px;
+}
+
+.narrow form {
+  display: grid;
+  gap: 8px;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 340px) 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 760px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+input,
+select,
+button {
+  font: inherit;
+  color: inherit;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 10px;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+button.active {
+  border-color: var(--accent);
+}
+
+button.danger {
+  border-color: var(--danger);
+  color: #ffb4ab;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.row input {
+  min-width: 80px;
+}
+
+.list,
+.audit {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0;
+  display: grid;
+  gap: 4px;
+}
+
+.list button {
+  width: 100%;
+  text-align: left;
+}
+
+.audit {
+  font-size: 12px;
+  max-height: 40vh;
+  overflow: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+td {
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.error {
+  color: #ffb4ab;
+}
+
+.pos {
+  color: #6dd17a;
+}
+
+.neg {
+  color: #ff8a80;
+}
+
+.secret {
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  word-break: break-all;
+  background: var(--bg);
+  padding: 8px;
+  border-radius: 6px;
+}

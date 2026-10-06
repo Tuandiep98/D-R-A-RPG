@@ -58,3 +58,39 @@ Mỗi quyết định: ngày, bối cảnh, quyết định, hệ quả. Khi mâ
 ## D-010 — Asset M1: Quaternius CC0
 - **Ngày:** 2026-10-06
 - **Quyết định:** M1 dùng model Quaternius (CC0) do user tự tải về `art/third_party/<pack>/originals/`, kèm `SOURCE.json` + `LICENSE.txt`. Trạng thái `candidate` cho tới khi license được xác minh. Khi thiếu asset, renderer dùng placeholder primitive.
+
+## D-012 — Texture WebP thay cho KTX2 (tạm thời)
+- **Ngày:** 2026-10-06
+- **Bối cảnh:** KTX2 cần `toktx`/KTX-Software, máy build chưa có. Texture gốc Nature MegaKit ~8 MB/cây.
+- **Quyết định:** `pnpm assets:build` resize theo `TEXTURE_BUDGET` (character/monster 1024, env/prop 512) và encode WebP (sharp). Cây 8.5 MB → 230 KB.
+- **Hệ quả:** WebP vẫn giải nén thành RGBA trên GPU (tốn VRAM hơn KTX2). Chuyển sang KTX2/Basis khi cài KTX-Software — chỉ đổi bước `textureCompress`.
+
+## D-013 — Environment: một batch thin-instance cho mỗi appearance
+- **Ngày:** 2026-10-06
+- **Bối cảnh:** Batch theo (chunk × appearance) bằng `clone()` dùng chung geometry → buffer thin instance ghi đè lẫn nhau (lỗi WebGPU).
+- **Quyết định:** Một mesh + một mesh mờ (geometry riêng) cho mỗi appearance; buffer cấp đủ dung lượng một lần, khi đổi chunk/vật chắn chỉ ghi lại matrix và `thinInstanceCount`.
+- **Hệ quả:** Ít draw call, ít VRAM; mất frustum culling theo từng chunk (bù bằng chunk streaming radius). Map rất lớn có thể cần lại batch theo vùng với `makeGeometryUnique()`.
+
+## D-014 — Simulation local chạy trong Web Worker
+- **Ngày:** 2026-10-06
+- **Quyết định:** Chế độ offline mặc định dùng `WorkerSimHost` + `serveSimHost`; `?noworker` để debug trên main thread.
+
+## D-015 — Snapshot mạng: delta theo entity, gửi mỗi tick
+- **Ngày:** 2026-10-06
+- **Quyết định:** Server serialize mỗi entity một lần/tick, mỗi client nhận entity đổi so với lần gửi trước + id bị xoá (`DeltaEncoder`). Delta rỗng vẫn gửi để client giữ nhịp tick. Không dùng Colyseus Schema.
+- **Hệ quả:** Băng thông tỉ lệ với số entity thay đổi; diff theo field là tối ưu sau nếu cần.
+
+## D-016 — PGlite cho dev/test, Postgres cho staging/prod
+- **Ngày:** 2026-10-06
+- **Bối cảnh:** Máy dev không có Docker.
+- **Quyết định:** `@rpg/persistence` mở PGlite (in-process) khi không có `DATABASE_URL`; cùng migration drizzle-kit với Postgres.
+
+## D-017 — Đăng nhập mới chiếm phiên cũ
+- **Ngày:** 2026-10-06
+- **Quyết định:** Khi một nhân vật đang online đăng nhập lại, server kick phiên cũ (4003), chờ lưu xong rồi mới cho phiên mới vào. Không bao giờ có hai bản sao cùng lúc (chống nhân bản đồ).
+- **Hệ quả:** Trạng thái `online` hiện nằm trong RAM của process; khi chạy nhiều process cần chuyển sang Redis presence.
+
+## D-018 — Bảo mật tài khoản
+- **Ngày:** 2026-10-06
+- **Quyết định:** argon2id; access JWT HS256 15 phút; refresh token ngẫu nhiên lưu hash, xoay vòng mỗi lần dùng, dùng lại token cũ → thu hồi cả chuỗi; GM/admin bắt buộc TOTP (RFC 6238) và mọi thao tác ghi `audit_log`.
+- **Hệ quả:** Admin "tặng vật phẩm" hiện chỉ an toàn khi nhân vật offline (game server ghi đè khi lưu). Lệnh GM trực tiếp trong game là việc sau.

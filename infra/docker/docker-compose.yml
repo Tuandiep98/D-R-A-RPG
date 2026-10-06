@@ -1,0 +1,70 @@
+# Local/staging stack (tech plan §34): API + game server + Postgres + Redis + Caddy.
+#   cp .env.example .env   (set AUTH_SECRET, POSTGRES_PASSWORD, DOMAIN)
+#   docker compose -f infra/docker/docker-compose.yml --env-file .env up --build
+name: d-r-a-rpg
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: rpg
+      POSTGRES_USER: rpg
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rpg -d rpg"]
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
+
+  api-server:
+    build:
+      context: ../..
+      dockerfile: infra/docker/node.Dockerfile
+      args: { APP: api-server }
+    environment:
+      AUTH_SECRET: ${AUTH_SECRET:?set AUTH_SECRET}
+      DATABASE_URL: postgres://rpg:${POSTGRES_PASSWORD}@postgres:5432/rpg
+      GAME_SERVER_URL: wss://${DOMAIN:-localhost}/game
+      CORS_ORIGINS: https://${DOMAIN:-localhost}
+    depends_on:
+      postgres: { condition: service_healthy }
+
+  game-server:
+    build:
+      context: ../..
+      dockerfile: infra/docker/node.Dockerfile
+      args: { APP: game-server }
+    environment:
+      AUTH_SECRET: ${AUTH_SECRET:?set AUTH_SECRET}
+      DATABASE_URL: postgres://rpg:${POSTGRES_PASSWORD}@postgres:5432/rpg
+      REDIS_URL: redis://redis:6379
+      ALLOW_DEV_LOGIN: "false"
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+
+  web:
+    build:
+      context: ../..
+      dockerfile: infra/docker/web.Dockerfile
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data
+    depends_on: [api-server, game-server]
+
+volumes:
+  pgdata:
+  caddy_data:

@@ -12,6 +12,8 @@ export const ConfigSchema = z.object({
   HOST: z.string().default('0.0.0.0'),
   AUTH_SECRET: z.string().min(32),
   DATABASE_URL: z.string().url().optional(),
+  /** Enables Colyseus RedisPresence + RedisDriver so several game-server processes share matchmaking. */
+  REDIS_URL: z.string().url().optional(),
   /** PGlite directory when DATABASE_URL is not set (local dev without Docker). */
   PGLITE_DIR: z.string().default(`${repoRoot}.data/pglite`),
   CONTENT_DIR: z.string().default(`${repoRoot}game-data`),

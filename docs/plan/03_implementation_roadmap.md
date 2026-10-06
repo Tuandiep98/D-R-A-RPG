@@ -1,75 +1,69 @@
 # Implementation Roadmap
 
 Tài liệu nguồn: `01_tech_stack_plan.md`, `02_assets_models_maps_plan.md`, `../decision_log.md`.
+Cập nhật: 2026-10-06.
 
-Milestone được sắp để mỗi bước chạy được end-to-end, rồi mới mở rộng.
+Ký hiệu: ✅ xong · 🟡 có nền tảng/placeholder, cần hoàn thiện · ✋ cần người làm (art, thiết bị, quyết định) · ⬜ chưa làm.
 
 ---
 
-## M1 — Sandbox Slice (offline) — ĐÃ DỰNG KHUNG (06/10/2026)
+## Tổng quan milestone
 
-Trạng thái: khung chạy được với placeholder; `pnpm smoke` pass trên cả WebGPU và WebGL2 (boot, click-to-move, click-to-attack, quái chết, không lỗi console). Pipeline asset đã test bằng GLB tự sinh (meshopt + thin instance).
+| Milestone | Trạng thái | Kiểm chứng |
+|---|---|---|
+| M1 Sandbox slice (offline) | ✅ | Smoke test, model Quaternius |
+| M2 Navigation & feel, vertical slice gameplay | ✅ (art 🟡) | 46+ unit test, smoke offline + bản production |
+| M3 Online (Colyseus) | ✅ | Integration test 2 client qua WebSocket thật, smoke online |
+| M4 Persistence & backend | ✅ (deploy ✋) | Test repository (PGlite), test API (auth, admin, 2FA) |
 
-Còn lại của M1:
-- [ ] Tải Quaternius theo `art/third_party/README.md`, chạy `pnpm assets:build`, chỉnh tên clip trong `game-data/appearances/*.yaml`.
-- [ ] Kiểm tra animation thật (idle/run/attack/death) và hướng/scale model.
-- [ ] Chạy thử trên điện thoại thật (touch: tap/drag/pinch).
+## Tech plan — Phase 0–9 (mục 48)
 
-Ghi chú kỹ thuật phát hiện khi dựng:
-- Babylon tải meshopt decoder từ CDN của Babylon; cần copy decoder về local trước khi làm PWA offline (M2).
-- Cây ở foreground có thể che player → cần fade/dither foreground (assets plan §8.3) ở M2.
-- Di chuyển thẳng + đẩy khỏi collider có thể kẹt sau vật cản lớn → NavMesh ở M2.
-- Đang import `@babylonjs/core` từ index (bundle lớn); tối ưu import theo module khi làm performance.
+| Phase | Hạng mục | Trạng thái | Ở đâu |
+|---|---|---|---|
+| 0 Foundation | Monorepo, shared types, Babylon bootstrap, React HUD, Colyseus server, DB, auth, config | ✅ | pnpm/turbo, `packages/*`, `apps/*` |
+| 1 Core movement | Spawn, camera xoay, click/tap move, NavMesh, player sync, other players, reconnect | ✅ | `game-core`, `navigation`, `net-client` (reconnect 15 s + takeover) |
+| 2 Combat | Chọn mục tiêu, tự tiếp cận, auto attack, HP, damage, chết/hồi sinh, skill | ✅ | 5 skill player, cooldown/MP/range server-side |
+| 3 Monster/AI | Spawn, patrol (wander), aggro, chase, attack, leash, elite, boss | ✅ | Boss 3 phase + telegraph né được; elite có phase |
+| 4 RPG systems | Inventory, equipment, item stats, loot, XP, level, skill, quest | 🟡 | Tất cả trừ **quest** ⬜ |
+| 5 World | Zone, chunk, streaming, AOI, chuyển map, dungeon instance | 🟡 | Dungeon instance riêng ⬜ (channel tự động đã có) |
+| 6 Optimization | Pool, LOD, simulation LOD, thin instances, quality runtime, nén asset, profile mobile | 🟡 | LOD mesh ⬜, simulation LOD server ⬜, profile thiết bị ✋ |
+| 7 Economy | Craft, upgrade, currency ledger, shop, chuẩn bị marketplace | 🟡 | Ledger ✅; craft/upgrade/shop ⬜ |
+| 8 Social | Chat, friend, guild, party, leaderboard | ⬜ | |
+| 9 PWA/mobile | PWA install, runtime cache, offline shell, Capacitor | 🟡 | PWA ✅; Capacitor ⬜ |
 
-**Mục tiêu:** khung chạy được với 1 nhân vật, ít quái, ít entity môi trường để test.
+## Assets plan — backlog P0 (mục 16)
 
-**Definition of Done:**
-- `pnpm dev` mở được map nhỏ (1 chunk ~40×40m) có 15–30 cây/đá dùng thin instances.
-- 1 player có animation idle/run/attack/death (Quaternius, có placeholder khi thiếu).
-- 3–5 quái thuộc 2 loại, AI idle → aggro → chase → attack → leash/return.
-- Click đất để di chuyển; click quái để tự tiếp cận + auto-attack.
-- Quái chết → respawn sau N giây; player chết → respawn ở spawn point.
-- Camera xoay (right-drag / drag), zoom (wheel / pinch).
-- HUD React: HP player, target frame, debug overlay (FPS, tick, entity count, draw calls).
-- Unit test `game-core` pass; dependency-cruiser chặn Babylon/React trong core.
+| Hạng mục | Trạng thái | Ghi chú |
+|---|---|---|
+| Kiểm tra repo, chọn renderer | ✅ | D-001 |
+| Thiết bị đo + scene benchmark | 🟡 ✋ | iPhone 13 Pro Max (D-011); **chưa đo trên máy**; thiếu Android tầm trung |
+| Audit license, chọn base/animation/env | 🟡 ✋ | 4 pack CC0 có SOURCE/LICENSE; `licenseVerified` chờ người xác nhận; `docs/asset_catalog.md` tự sinh |
+| Camera, tỉ lệ, lineup, palette | 🟡 ✋ | Camera + tỉ lệ + palette trong `art_bible.md`; lineup ảnh ✋ |
+| Chuẩn rig humanoid, sockets, export | 🟡 ✋ | `rig_contract.md`, sockets chạy cho Warrior; rig modular chưa chọn |
+| 1 player + 3 outfit swap | 🟡 ✋ | Dữ liệu 3 bộ + chỉ số ✅; outfit skinned cần base modular ✋ |
+| Kiếm, đại đao, gauntlet, pháp khí | 🟡 | Item + stat + gắn socket (placeholder mesh); model thật ✋ |
+| 3 quái thường (≥1 robot), 1 tinh anh, 1 boss | ✅ | Sói, hồ ly, robot; Linh Lộc tinh anh; Cơ Quan Thần Tướng |
+| Map có nav/collision/spawn/portal | ✅ | "Rừng Cơ Quan" sinh từ layout + navmesh bake |
+| Animation/events combat | 🟡 | Clip theo role ✅; event hit-window/trail/footstep ⬜ |
+| VFX/telegraph/loot/icon | 🟡 | Telegraph, impact, kiếm khí, cột sáng loot ✅; icon là emoji ✋ |
+| Asset manager, manifest, cache, fallback | ✅ | Dedupe, retry, progress theo byte, decoder local, PWA cache |
+| Profile, nghiệm thu thiết bị thật | ✋ | `pnpm dev:mobile` + `docs/performance_budget.md` |
 
-**Task:**
-1. Monorepo foundation: pnpm, Turborepo, TS strict, Biome, Vitest, dependency-cruiser.
-2. `packages/game-core`: math, rng, tick, entity store, systems (intent, movement, combat, AI, death/respawn), `World`.
-3. `packages/game-protocol`: Zod intent/snapshot/event, `PROTOCOL_VERSION`.
-4. `packages/game-data` + `game-data/`: schema + YAML (`wolf_001`, `robot_scout_001`, `player_default`, `sandbox_01`), `pnpm validate:data`.
-5. `packages/sim-host`: `SimHost` + `LocalSimHost`.
-6. `packages/input`: `InputManager` + mouse/keyboard + touch adapters.
-7. Asset pipeline: `art/third_party` provenance, `tools/asset-processor` (gltf-transform + meshopt + hash + manifest).
-8. `packages/asset-runtime`: manifest, load/dedupe container, fallback placeholder.
-9. `packages/babylon-renderer`: engine bootstrap, camera rig, entity views + pool + interpolation, animation controller, picking, selection ring, damage text, thin instance env.
-10. `apps/game-web`: Vite + React + Zustand HUD, debug overlay, Inspector (dev).
+## Việc tiếp theo (tự động được)
 
-## M2 — Navigation & Feel
+1. Quest cơ bản (data-driven: kill/collect/talk) + NPC.
+2. Chat (kênh map, rate limit, mute từ API) — nền móng social.
+3. Shop NPC + craft/upgrade dùng ledger.
+4. LOD cho skinned/static mesh trong pipeline (`simplify` theo ratio).
+5. Simulation LOD phía server (tick thưa cho quái xa người chơi).
+6. Animation events (hit window) để số damage khớp nhát chém.
+7. Presence `online` qua Redis khi chạy nhiều game-server process.
+8. Import Babylon theo module để giảm bundle (~7.5 MB → mục tiêu < 3 MB).
 
-- NavMesh: `tools/navmesh-builder` (recast-navigation-js), `NavQuery` trong core, path following.
-- Chạy sim trong Web Worker.
-- KTX2 textures, LOD đơn giản.
-- 1–2 skill chủ động (cast time, cooldown, AoE nhỏ), VFX cơ bản.
-- `QualityManager` cơ bản (resolution scale, shadow on/off).
-- Playwright smoke test, GitHub Actions CI (lint → typecheck → test → validate data → build).
+## Việc cần người làm
 
-## M3 — Online
-
-- `apps/game-server`: Colyseus room dùng chung `World`.
-- `ColyseusSimHost` ở client; interpolation qua mạng; nhiều player nhìn thấy nhau.
-- Dev token auth trong `onAuth`, Zod validate message, rate limit theo connection, movement validation.
-- AOI zone + spatial grid (cell 30m).
-- Load test với `@colyseus/loadtest`.
-
-## M4 — Persistence & Backend
-
-- `apps/api-server`: Fastify + Zod + pino.
-- Postgres + Drizzle + drizzle-kit migration; Redis; Docker Compose.
-- Auth thật: argon2id, JWT access + refresh rotation.
-- Character save/load, inventory, loot, wallet + currency ledger (transaction + idempotency).
-- Deploy staging (VPS/Fly + Caddy, Cloudflare Pages cho web).
-
-## Sau M4
-
-Tiếp tục theo Phase 3–9 của tech plan (mục 48) và roadmap asset (mục 15 assets plan): elite/boss, equipment modular 3 outfit, map "Rừng Cơ Quan", chunk streaming, optimization, economy, social, PWA/Capacitor.
+- Xác minh license trên trang tác giả → `licenseVerified: true`.
+- Chơi thử và đo trên iPhone 13 Pro Max (`pnpm dev:mobile`), bổ sung một máy Android tầm trung.
+- Chọn base character modular (Universal Base Characters + Animation Library hoặc tự làm) và làm 3 outfit.
+- Lineup/palette board, model boss riêng, kit kiến trúc di tích, icon.
+- Hạ tầng thật: domain, VPS/Fly, Postgres managed, secret thật (`.env.example`).

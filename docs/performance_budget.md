@@ -68,9 +68,20 @@ Theo assets plan §10.1:
 | Ngày | Thiết bị | Engine | Scene | FPS | Ghi chú |
 |---|---|---|---|---|---|
 | 2026-10-06 | Desktop Chrome headless | WebGPU / WebGL2 | sandbox, 6 entity, model Quaternius | 60 | Chỉ là smoke test, chưa phải nghiệm thu |
+| 2026-10-06 | Desktop Chrome headless | WebGPU | Rừng Cơ Quan, 21 entity, 102 env instance, preset High | 56–57 | 83 draw calls, 9/15 chunk active |
 | — | iPhone 13 Pro Max | — | — | — | **Chưa đo** |
 
+Kích thước tải (bản build 2026-10-06):
+
+| Phần | Kích thước | gzip |
+|---|---|---|
+| Babylon chunk | 7.5 MB | 1.6 MB |
+| Recast (wasm compat) | 0.76 MB | 0.23 MB |
+| React + Zustand | 0.22 MB | 0.07 MB |
+| App code | 0.33 MB | 0.10 MB |
+| Toàn bộ model + texture (12 asset) | ~3.0 MB | (đã nén meshopt + WebP) |
+
 Vấn đề đã biết trước khi đo trên iPhone:
-- Texture cây Nature MegaKit khoảng 8 MB mỗi cây (PNG lớn). Cần resize + KTX2 trước khi đo bộ nhớ thật.
-- Bundle đang import toàn bộ `@babylonjs/core`.
-- Meshopt decoder tải từ CDN của Babylon.
+- ~~Texture cây 8 MB~~ → đã resize + WebP (230 KB/cây). KTX2 vẫn là bước tiếp theo để giảm VRAM.
+- Bundle đang import toàn bộ `@babylonjs/core` (7.5 MB).
+- ~~Meshopt decoder từ CDN~~ → đã đóng gói cùng asset.

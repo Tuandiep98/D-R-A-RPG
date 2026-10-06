@@ -23,7 +23,11 @@
     "nav:build": "tsx tools/navmesh-builder/build.ts",
     "content:build": "pnpm maps:build && pnpm nav:build && pnpm validate:data",
     "pwa:icons": "tsx tools/asset-processor/icons.ts",
-    "preview": "pnpm --filter @rpg/game-web preview"
+    "preview": "pnpm --filter @rpg/game-web preview",
+    "dev:game-server": "pnpm --filter @rpg/game-server dev",
+    "dev:api": "pnpm --filter @rpg/api-server dev",
+    "dev:admin": "pnpm --filter @rpg/admin dev",
+    "db:generate": "pnpm --filter @rpg/persistence db:generate"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

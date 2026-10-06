@@ -17,7 +17,9 @@ const env = z
     PGLITE_DIR: z.string().default(`${repoRoot}.data/pglite`),
     CONTENT_DIR: z.string().default(`${repoRoot}game-data`),
     GAME_SERVER_URL: z.string().default('ws://localhost:2567'),
-    CORS_ORIGINS: z.string().default('http://localhost:5173,https://localhost:5173'),
+    CORS_ORIGINS: z
+      .string()
+      .default('http://localhost:5173,https://localhost:5173,http://localhost:5190'),
     LOG_LEVEL: z.string().default('info'),
   })
   .parse(process.env);
