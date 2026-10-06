@@ -1,0 +1,236 @@
+# Tân Nguyên Trấn — starter hub dressed exclusively with assets available in
+# the approved Medieval Village and Fantasy Props packs.
+id: map_sandbox_01
+name: Tân Nguyên Trấn
+seed: 1001
+bounds: { min: { x: -20, z: -20 }, max: { x: 20, z: 20 } }
+chunkSize: 32
+ground: { color: "#5f8a4a" }
+playerSpawn: { x: 0, z: -12 }
+arrivals:
+  - { id: from_forest, position: { x: 0, z: 13 } }
+paths:
+  - { width: 5, points: [{ x: 0, z: -18 }, { x: 0, z: 18 }] }
+  - { width: 4, points: [{ x: -17, z: 0 }, { x: 17, z: 0 }] }
+clearings:
+  - { center: { x: 0, z: -11 }, radius: 5 }
+  - { center: { x: 0, z: 12 }, radius: 4 }
+groundCovers:
+  - appearanceIds: [env_village_floor_01]
+    min: { x: -6, z: -16 }
+    max: { x: 6, z: 8 }
+    tileSize: 2
+    y: 0.01
+  - appearanceIds: [env_village_floor_redbrick_01]
+    min: { x: -2, z: -16 }
+    max: { x: 2, z: 16 }
+    tileSize: 2
+    y: 0.03
+zones:
+  - {
+      id: village,
+      name: Tân Nguyên Trấn,
+      kind: safe,
+      center: { x: 0, z: -7 },
+      radius: 12,
+    }
+npcs:
+  - { npcId: npc_elder, position: { x: -3, z: -10 }, rotationY: 0.5 }
+  - { npcId: npc_merchant, position: { x: 4, z: -7 }, rotationY: -1.2 }
+  - { npcId: npc_smith, position: { x: -8, z: -3 }, rotationY: 1.2 }
+portals:
+  - {
+      id: town_to_forest,
+      name: Phế Tích Vô Danh,
+      position: { x: 0, z: 17 },
+      targetMapId: map_forest_mechanism_01,
+      targetArrival: from_town,
+    }
+spawns:
+  - {
+      id: stone_guard_post,
+      monsterId: stone_guardian_001,
+      position: { x: 11, z: 12 },
+      count: 3,
+      radius: 2,
+      respawnSeconds: 45,
+    }
+  - {
+      id: robot_camp,
+      monsterId: robot_scout_001,
+      position: { x: -11, z: 12 },
+      count: 2,
+      radius: 2.5,
+      respawnSeconds: 10,
+    }
+
+prefabs:
+  - id: village_house
+    members:
+      - {
+          appearanceId: env_village_floor_wood_01,
+          offset: { x: 0, y: 0.03, z: 0 },
+          scale: 2,
+        }
+      - {
+          appearanceId: env_village_door_01,
+          offset: { x: 0, z: -2 },
+          colliderRadius: 0.8,
+        }
+      - {
+          appearanceId: env_village_wall_01,
+          offset: { x: -2, z: 0 },
+          rotationY: 1.5708,
+          colliderRadius: 0.8,
+        }
+      - {
+          appearanceId: env_village_wall_01,
+          offset: { x: 2, z: 0 },
+          rotationY: 1.5708,
+          colliderRadius: 0.8,
+        }
+      - {
+          appearanceId: env_village_wall_01,
+          offset: { x: 0, z: 2 },
+          colliderRadius: 0.8,
+        }
+      - {
+          appearanceId: env_village_corner_01,
+          offset: { x: -2, z: -2 },
+          colliderRadius: 0.25,
+        }
+      - {
+          appearanceId: env_village_corner_01,
+          offset: { x: 2, z: -2 },
+          rotationY: 1.5708,
+          colliderRadius: 0.25,
+        }
+      - {
+          appearanceId: env_village_corner_01,
+          offset: { x: 2, z: 2 },
+          rotationY: 3.14159,
+          colliderRadius: 0.25,
+        }
+      - {
+          appearanceId: env_village_corner_01,
+          offset: { x: -2, z: 2 },
+          rotationY: -1.5708,
+          colliderRadius: 0.25,
+        }
+      - { appearanceId: env_village_roof_01, offset: { x: 0, z: 0 } }
+      - { appearanceId: prop_lantern_wall_01, offset: { x: 0.9, z: -2.1 } }
+  - id: market
+    members:
+      - {
+          appearanceId: prop_market_stall_01,
+          offset: { x: 0, z: 0 },
+          colliderRadius: 1.3,
+        }
+      - {
+          appearanceId: prop_barrel_01,
+          offset: { x: -1.8, z: 0.8 },
+          colliderRadius: 0.4,
+        }
+      - {
+          appearanceId: prop_crate_01,
+          offset: { x: 1.7, z: 0.7 },
+          rotationY: 0.4,
+          colliderRadius: 0.5,
+        }
+      - {
+          appearanceId: prop_cauldron_01,
+          offset: { x: 2, z: -1 },
+          colliderRadius: 0.5,
+        }
+      - {
+          appearanceId: prop_banner_01,
+          offset: { x: -2, z: -1 },
+          colliderRadius: 0.3,
+        }
+  - id: smithy
+    members:
+      - {
+          appearanceId: prop_workbench_01,
+          offset: { x: 0, z: 0 },
+          colliderRadius: 0.8,
+        }
+      - {
+          appearanceId: prop_anvil_01,
+          offset: { x: 1.5, z: 0 },
+          colliderRadius: 0.45,
+        }
+      - {
+          appearanceId: prop_weapon_rack_01,
+          offset: { x: -1.5, z: 0 },
+          colliderRadius: 0.7,
+        }
+      - {
+          appearanceId: prop_barrel_01,
+          offset: { x: 0.7, z: 1.4 },
+          colliderRadius: 0.4,
+        }
+
+prefabPlacements:
+  - { prefabId: village_house, position: { x: -13, z: -11 }, rotationY: 1.5708 }
+  - { prefabId: village_house, position: { x: 13, z: -11 }, rotationY: -1.5708 }
+  - { prefabId: village_house, position: { x: 12, z: 3 }, rotationY: -1.5708 }
+  - { prefabId: market, position: { x: 10, z: -6 }, rotationY: -1.5708 }
+  - { prefabId: smithy, position: { x: -9, z: -5 }, rotationY: 1.5708 }
+
+landmarks:
+  - {
+      appearanceId: env_village_floor_01,
+      position: { x: 0, z: -11 },
+      scale: 1.5,
+    }
+  # Preserve the navigation invariant with a real in-pack prop.
+  - {
+      appearanceId: prop_crate_01,
+      position: { x: 6, z: -5 },
+      scale: 1.4,
+      colliderRadius: 1.2,
+    }
+  - {
+      appearanceId: env_village_vine_01,
+      position: { x: -10.9, y: 2.1, z: -11 },
+      rotationY: 1.5708,
+    }
+  - {
+      appearanceId: env_village_vine_01,
+      position: { x: 10.9, y: 2.1, z: -11 },
+      rotationY: -1.5708,
+    }
+  - {
+      appearanceId: prop_banner_01,
+      position: { x: -2.5, z: 14 },
+      colliderRadius: 0.3,
+    }
+  - {
+      appearanceId: prop_banner_01,
+      position: { x: 2.5, z: 14 },
+      colliderRadius: 0.3,
+    }
+  - {
+      appearanceId: env_village_fence_01,
+      position: { x: -15, z: 7 },
+      rotationY: 1.5708,
+      colliderRadius: 0.8,
+    }
+  - {
+      appearanceId: env_village_fence_01,
+      position: { x: -15, z: 10 },
+      rotationY: 1.5708,
+      colliderRadius: 0.8,
+    }
+  - {
+      appearanceId: env_village_fence_01,
+      position: { x: 15, z: 7 },
+      rotationY: 1.5708,
+      colliderRadius: 0.8,
+    }
+  - {
+      appearanceId: env_village_fence_01,
+      position: { x: 15, z: 10 },
+      rotationY: 1.5708,
+      colliderRadius: 0.8,
+    }

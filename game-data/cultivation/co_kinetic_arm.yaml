@@ -1,0 +1,13 @@
+id: co_kinetic_arm
+name: Kinetic Arm
+description: Tay cơ giới tích động năng. Mở kỹ năng Chấn Địa.
+icon: "🦾"
+axis: than
+path: co
+realm: luyen_khi
+requires: [co_micro_reactor]
+quests: [q_robot_scrap]
+cost: { gold: 120, materials: [{ itemId: item_robot_scrap, count: 8 }] }
+body: 20
+bonus: { attack: 8 }
+skillId: skill_ground_slam

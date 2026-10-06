@@ -1,0 +1,16 @@
+id: hn_linh_co_mach
+name: Linh Cơ Mạch
+description: Nối kinh mạch với reactor — đường Hỗn Nguyên đầu tiên. Chiếm cả kinh mạch lẫn body load.
+icon: "♾"
+axis: nang_luong
+path: hon_nguyen
+realm: luyen_khi
+requires: [tien_khai_mach, co_micro_reactor]
+cost:
+  gold: 150
+  materials:
+    - { itemId: item_elite_antler, count: 1 }
+    - { itemId: item_robot_scrap, count: 4 }
+meridian: 10
+body: 10
+bonus: { attack: 8, mp: 30, speed: 0.3 }

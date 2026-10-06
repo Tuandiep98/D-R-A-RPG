@@ -25,7 +25,10 @@ export async function createEngine(
   let created: CreatedEngine | null = null;
   if (!opts.forceWebGL && (await WebGPUEngine.IsSupportedAsync)) {
     try {
-      const engine = new WebGPUEngine(canvas, { antialias: true, adaptToDeviceRatio: false });
+      const engine = new WebGPUEngine(canvas, {
+        antialias: true,
+        adaptToDeviceRatio: false,
+      });
       await engine.initAsync();
       created = { engine, kind: 'WebGPU' };
     } catch (err) {

@@ -1,0 +1,13 @@
+id: mob_guardian_stone_01
+kind: monster
+modelAssetId: mob_guardian_stone_01
+scale: 0.75
+animations:
+  idle: Flying_Idle
+  run: Fast_Flying
+  attack: Punch
+  cast: Headbutt
+  hit: HitReact
+  death: Death
+hitDelay: 0.3
+placeholder: { shape: sphere, color: "#77746e", height: 1.8, radius: 0.85 }

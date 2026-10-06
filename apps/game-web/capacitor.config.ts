@@ -8,7 +8,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
  */
 const config: CapacitorConfig = {
   appId: 'vn.dra.rpg',
-  appName: 'D-R-A RPG',
+  appName: 'Thiên Cơ Kỷ',
   webDir: 'dist',
   server: {
     // The online client talks to these hosts over TLS only.

@@ -21,7 +21,26 @@ const sourceDir = join(repo, 'maps/source');
 const outDir = join(repo, 'game-data/maps');
 
 const P = z.strictObject({ x: z.number(), z: z.number() });
+const P3 = z.strictObject({
+  x: z.number(),
+  y: z.number().default(0),
+  z: z.number(),
+});
 const Circle = z.strictObject({ center: P, radius: z.number().positive() });
+const PlacedAsset = z.strictObject({
+  appearanceId: z.string(),
+  position: P3,
+  rotationY: z.number().default(0),
+  scale: z.number().positive().default(1),
+  colliderRadius: z.number().positive().optional(),
+});
+const PrefabMember = z.strictObject({
+  appearanceId: z.string(),
+  offset: P3,
+  rotationY: z.number().default(0),
+  scale: z.number().positive().default(1),
+  colliderRadius: z.number().positive().optional(),
+});
 
 const LayoutSchema = z.strictObject({
   id: z.string(),
@@ -34,7 +53,12 @@ const LayoutSchema = z.strictObject({
   arrivals: z.array(z.strictObject({ id: z.string(), position: P })).default([]),
   /** Polylines kept clear of blocking decoration. */
   paths: z
-    .array(z.strictObject({ points: z.array(P).min(2), width: z.number().positive() }))
+    .array(
+      z.strictObject({
+        points: z.array(P).min(2),
+        width: z.number().positive(),
+      }),
+    )
     .default([]),
   /** Circles kept clear of all decoration (camps, arenas, town). */
   clearings: z.array(Circle).default([]),
@@ -44,14 +68,32 @@ const LayoutSchema = z.strictObject({
   npcs: z.array(z.unknown()).default([]),
   instance: z.enum(['shared', 'solo']).default('shared'),
   /** Explicit hand-placed instances. */
-  landmarks: z
+  landmarks: z.array(PlacedAsset).default([]),
+  /** Repeating visual floor tiles. They never affect navigation. */
+  groundCovers: z
     .array(
       z.strictObject({
-        appearanceId: z.string(),
+        appearanceIds: z.array(z.string()).min(1),
+        min: P,
+        max: P,
+        tileSize: z.number().positive(),
+        y: z.number().default(0.01),
+        rotationY: z.number().default(0),
+        scale: z.number().positive().default(1),
+      }),
+    )
+    .default([]),
+  /** Reusable groups of modular pieces, expanded before chunk assignment. */
+  prefabs: z
+    .array(z.strictObject({ id: z.string(), members: z.array(PrefabMember).min(1) }))
+    .default([]),
+  prefabPlacements: z
+    .array(
+      z.strictObject({
+        prefabId: z.string(),
         position: P,
         rotationY: z.number().default(0),
         scale: z.number().positive().default(1),
-        colliderRadius: z.number().positive().optional(),
       }),
     )
     .default([]),
@@ -89,6 +131,7 @@ type Layout = z.infer<typeof LayoutSchema>;
 interface Placed {
   appearanceId: string;
   x: number;
+  y: number;
   z: number;
   rotationY: number;
   scale: number;
@@ -128,11 +171,32 @@ function build(layout: Layout) {
     placed.push({
       appearanceId: l.appearanceId,
       x: l.position.x,
+      y: l.position.y,
       z: l.position.z,
       rotationY: l.rotationY,
       scale: l.scale,
       colliderRadius: l.colliderRadius,
     });
+  }
+  const prefabs = new Map(layout.prefabs.map((prefab) => [prefab.id, prefab]));
+  for (const placement of layout.prefabPlacements) {
+    const prefab = prefabs.get(placement.prefabId);
+    if (!prefab) throw new Error(`${layout.id}: unknown prefab ${placement.prefabId}`);
+    const cos = Math.cos(placement.rotationY);
+    const sin = Math.sin(placement.rotationY);
+    for (const member of prefab.members) {
+      const ox = member.offset.x * placement.scale;
+      const oz = member.offset.z * placement.scale;
+      placed.push({
+        appearanceId: member.appearanceId,
+        x: placement.position.x + ox * cos + oz * sin,
+        y: member.offset.y * placement.scale,
+        z: placement.position.z - ox * sin + oz * cos,
+        rotationY: placement.rotationY + member.rotationY,
+        scale: placement.scale * member.scale,
+        colliderRadius: member.colliderRadius,
+      });
+    }
   }
   for (const ring of layout.rings) {
     for (let i = 0; i < ring.count; i++) {
@@ -144,6 +208,7 @@ function build(layout: Layout) {
       placed.push({
         appearanceId: ring.appearanceId,
         x: ring.center.x + Math.cos(angle) * ring.radius,
+        y: 0,
         z: ring.center.z + Math.sin(angle) * ring.radius,
         rotationY: rng.range(0, Math.PI * 2),
         scale: ring.scale * rng.range(0.9, 1.1),
@@ -156,7 +221,10 @@ function build(layout: Layout) {
   for (const s of layout.scatter) {
     let made = 0;
     for (let attempt = 0; attempt < s.count * 60 && made < s.count; attempt++) {
-      const p = { x: rng.range(min.x + 1.5, max.x - 1.5), z: rng.range(min.z + 1.5, max.z - 1.5) };
+      const p = {
+        x: rng.range(min.x + 1.5, max.x - 1.5),
+        z: rng.range(min.z + 1.5, max.z - 1.5),
+      };
       const margin = (s.colliderRadius ?? 0.3) + 0.6;
       if (inClearing(layout, p, margin)) continue;
       if (!s.allowOnPath && onPath(layout, p, margin)) continue;
@@ -165,6 +233,7 @@ function build(layout: Layout) {
       placed.push({
         appearanceId: s.appearanceId,
         x: p.x,
+        y: 0.01,
         z: p.z,
         rotationY: rng.range(0, Math.PI * 2),
         scale,
@@ -176,6 +245,25 @@ function build(layout: Layout) {
       console.warn(`  ${layout.id}: only placed ${made}/${s.count} ${s.appearanceId}`);
   }
 
+  // Add visual floor last so it does not consume scatter spacing.
+  for (const cover of layout.groundCovers) {
+    let tile = 0;
+    for (let z = cover.min.z + cover.tileSize / 2; z < cover.max.z; z += cover.tileSize) {
+      for (let x = cover.min.x + cover.tileSize / 2; x < cover.max.x; x += cover.tileSize) {
+        placed.push({
+          appearanceId:
+            cover.appearanceIds[tile % cover.appearanceIds.length] ?? cover.appearanceIds[0]!,
+          x,
+          y: cover.y,
+          z,
+          rotationY: cover.rotationY,
+          scale: cover.scale,
+        });
+        tile++;
+      }
+    }
+  }
+
   const chunks = new Map<string, unknown[]>();
   const cx = Math.ceil((max.x - min.x) / layout.chunkSize);
   const cz = Math.ceil((max.z - min.z) / layout.chunkSize);
@@ -185,7 +273,7 @@ function build(layout: Layout) {
     const j = Math.min(cz - 1, Math.floor((p.z - min.z) / layout.chunkSize));
     chunks.get(`chunk_${i}_${j}`)?.push({
       appearanceId: p.appearanceId,
-      position: [r2(p.x), 0, r2(p.z)],
+      position: [r2(p.x), r2(p.y), r2(p.z)],
       rotationY: r2(p.rotationY),
       scale: r2(p.scale),
       ...(p.colliderRadius !== undefined ? { colliderRadius: p.colliderRadius } : {}),

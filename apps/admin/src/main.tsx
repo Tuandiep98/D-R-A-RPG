@@ -28,21 +28,28 @@ interface CharacterSummary {
   id: string;
   accountId: string;
   name: string;
-  level: number;
+  /** Realm id — characters have no level (master plan §31). */
+  realm: string;
   mapId: string;
 }
 interface CharacterDetail {
   character: CharacterSummary & {
     save: {
       gold: number;
-      xp: number;
+      nodes: string[];
       inventory: { instanceId: string; itemId: string; count: number }[];
       equipment: Record<string, string>;
     };
     x: number | null;
     z: number | null;
   };
-  ledger: { id: string; amount: number; balanceAfter: number; reason: string; createdAt: string }[];
+  ledger: {
+    id: string;
+    amount: number;
+    balanceAfter: number;
+    reason: string;
+    createdAt: string;
+  }[];
 }
 interface AuditEntry {
   id: string;
@@ -99,7 +106,7 @@ function Login({ onDone }: { onDone: () => void }) {
 
   return (
     <div className="card narrow">
-      <h1>Quản trị D-R-A RPG</h1>
+      <h1>Quản trị Thiên Cơ Kỷ</h1>
       {setup ? (
         <>
           <p>
@@ -179,11 +186,11 @@ function Character({ id, items }: { id: string; items: { id: string; name: strin
   return (
     <div className="card">
       <h2>
-        {c.name} · Lv {c.level}
+        {c.name} · {c.realm}
       </h2>
       <p className="muted">
-        {c.mapId} ({c.x?.toFixed(1)}, {c.z?.toFixed(1)}) · vàng {c.save.gold} · XP {c.save.xp} · tài
-        khoản {c.accountId}
+        {c.mapId} ({c.x?.toFixed(1)}, {c.z?.toFixed(1)}) · vàng {c.save.gold} ·{' '}
+        {c.save.nodes.length} node · tài khoản {c.accountId}
       </p>
       <h3>Túi đồ</h3>
       <table>
@@ -229,7 +236,12 @@ function Character({ id, items }: { id: string; items: { id: string; name: strin
           disabled={!itemId || reason.length < 3}
           onClick={() =>
             void act(
-              () => api(`/admin/characters/${id}/give-item`, { itemId, count, reason }),
+              () =>
+                api(`/admin/characters/${id}/give-item`, {
+                  itemId,
+                  count,
+                  reason,
+                }),
               'Đã tặng',
             )
           }
@@ -251,7 +263,12 @@ function Character({ id, items }: { id: string; items: { id: string; name: strin
           disabled={reason.length < 3}
           onClick={() =>
             void act(
-              () => api(`/admin/accounts/${c.accountId}/sanction`, { kind: 'mute', hours, reason }),
+              () =>
+                api(`/admin/accounts/${c.accountId}/sanction`, {
+                  kind: 'mute',
+                  hours,
+                  reason,
+                }),
               'Đã cấm chat',
             )
           }
@@ -264,7 +281,12 @@ function Character({ id, items }: { id: string; items: { id: string; name: strin
           disabled={reason.length < 3}
           onClick={() =>
             void act(
-              () => api(`/admin/accounts/${c.accountId}/sanction`, { kind: 'ban', hours, reason }),
+              () =>
+                api(`/admin/accounts/${c.accountId}/sanction`, {
+                  kind: 'ban',
+                  hours,
+                  reason,
+                }),
               'Đã khoá',
             )
           }
@@ -327,7 +349,7 @@ function Tool() {
                 className={selected === c.id ? 'active' : ''}
                 onClick={() => setSelected(c.id)}
               >
-                {c.name} · Lv {c.level} · {c.mapId}
+                {c.name} · {c.realm} · {c.mapId}
               </button>
             </li>
           ))}

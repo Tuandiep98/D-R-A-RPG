@@ -1,0 +1,9 @@
+# Content for this realm is not in the build yet: no breakthrough defined.
+id: kim_dan
+order: 2
+name: Kim Đan
+mechName: Reactor Core
+description: Nguồn năng lượng cô đặc độc lập — bước nhảy sức mạnh cực lớn đầu tiên.
+bonus: { hp: 1800, mp: 300, attack: 110, defense: 35 }
+meridianCapacity: 140
+bodyLoad: 140

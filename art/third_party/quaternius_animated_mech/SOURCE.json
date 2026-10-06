@@ -1,0 +1,25 @@
+{
+  "packId": "quaternius_animated_mech",
+  "author": "Quaternius",
+  "pack": "Animated Mech Pack (March 2021)",
+  "sourceUrl": "https://quaternius.com/packs/animatedmech.html",
+  "license": "CC0-1.0",
+  "licenseVerified": true,
+  "downloadedAt": "2026-10-06",
+  "status": "approved",
+  "notes": "Textured glTF edition. Leela is the scout chassis; George is the current Guardian X-04 mechanical shell.",
+  "assets": [
+    {
+      "assetId": "mob_robot_scout_01",
+      "file": "originals/Leela.gltf",
+      "type": "monster",
+      "modified": false
+    },
+    {
+      "assetId": "mob_mech_boss_01",
+      "file": "originals/George.gltf",
+      "type": "monster",
+      "modified": false
+    }
+  ]
+}

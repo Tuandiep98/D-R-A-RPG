@@ -1,0 +1,10 @@
+id: co_micro_reactor
+name: Micro Reactor
+description: Core đầu tiên — lò phản ứng Nguyên Khí cỡ nhỏ cấy cạnh tim.
+icon: "🔋"
+axis: nang_luong
+path: co
+realm: luyen_khi
+cost: { gold: 60, materials: [{ itemId: item_robot_scrap, count: 4 }] }
+body: 15
+bonus: { mp: 30, attack: 5 }

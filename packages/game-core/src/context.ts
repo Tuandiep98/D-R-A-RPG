@@ -1,4 +1,4 @@
-import type { ContentBundle, MapDef } from '@rpg/game-data';
+import type { ContentBundle, MapDef, RealmDef } from '@rpg/game-data';
 import type { EntityId, NoticeCode, SimEvent } from '@rpg/game-protocol';
 import type { CircleObstacle, Entity, LedgerEntry } from './entity';
 import type { Bounds, Vec2 } from './math';
@@ -32,6 +32,8 @@ export interface SimContext {
   readonly bounds: Bounds;
   readonly map: MapDef;
   readonly content: ContentBundle;
+  /** Realms by rank (content.realms sorted by order). */
+  readonly realms: readonly RealmDef[];
   readonly nav: NavQuery | null;
   readonly obstacles: readonly CircleObstacle[];
   readonly entities: ReadonlyMap<EntityId, Entity>;

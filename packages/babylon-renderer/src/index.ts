@@ -1,6 +1,7 @@
 export { CameraRig } from './camera-rig';
 export { createEngine, type EngineKind } from './engine';
 export {
+  type CultivationView,
   type DebugStats,
   GameView,
   type GameViewOptions,
@@ -11,5 +12,9 @@ export {
   type UiState,
   type UnitFrame,
 } from './game-view';
-export { QUALITY_PRESETS, type QualityLevel, type QualityMode } from './quality';
+export {
+  QUALITY_PRESETS,
+  type QualityLevel,
+  type QualityMode,
+} from './quality';
 export { RARITY_COLORS } from './vfx';

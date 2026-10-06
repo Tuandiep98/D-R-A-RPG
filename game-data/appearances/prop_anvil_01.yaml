@@ -1,0 +1,4 @@
+id: prop_anvil_01
+kind: environment
+modelAssetId: prop_anvil_01
+placeholder: { shape: box, color: "#59616b", height: 0.8, radius: 0.5 }

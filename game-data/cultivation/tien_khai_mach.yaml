@@ -1,0 +1,10 @@
+id: tien_khai_mach
+name: Khai Mạch · Thủ Thái Âm
+description: Mở kinh mạch đầu tiên, dẫn Nguyên Khí vào khí hải.
+icon: "☯"
+axis: nang_luong
+path: tien
+realm: luyen_khi
+cost: { gold: 30, materials: [{ itemId: item_wolf_fang, count: 3 }] }
+meridian: 10
+bonus: { mp: 40 }

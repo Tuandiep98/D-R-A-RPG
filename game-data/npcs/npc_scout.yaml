@@ -1,6 +1,6 @@
 id: npc_scout
-name: Trinh Sát Mộc Phong
-title: Trạm gác Thanh Vân
+name: Lục Viễn
+title: Kiếm khách · Doanh trại tiền tiêu
 appearanceId: npc_scout_01
-greeting: Phế tích phía đông đầy máy móc tự vận hành. Cẩn thận!
+greeting: Đám máy móc trong phế tích tự chạy. Ta ghét máy móc. Muốn học kiếm thì theo sát.
 shopId: shop_outpost

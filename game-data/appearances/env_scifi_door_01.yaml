@@ -1,0 +1,4 @@
+id: env_scifi_door_01
+kind: environment
+modelAssetId: env_scifi_door_01
+placeholder: { shape: box, color: "#384451", height: 3, radius: 1.4 }

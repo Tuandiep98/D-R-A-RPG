@@ -14,7 +14,11 @@ const svc = new TokenService('x'.repeat(40));
 
 describe('auth', () => {
   it('signs and verifies access tokens; rejects tampering and wrong keys', async () => {
-    const token = await svc.signAccess({ sub: 'acc-1', role: 'player', chr: 'chr-1' });
+    const token = await svc.signAccess({
+      sub: 'acc-1',
+      role: 'player',
+      chr: 'chr-1',
+    });
     expect(await svc.verifyAccess(token)).toMatchObject({
       sub: 'acc-1',
       chr: 'chr-1',
@@ -27,7 +31,10 @@ describe('auth', () => {
   it('does not accept a ticket as an access token', async () => {
     const ticket = await svc.signTicket({ sub: 'chr-1', map: 'm', arr: null });
     await expect(svc.verifyAccess(ticket)).rejects.toThrow();
-    expect(await svc.verifyTicket(ticket)).toMatchObject({ sub: 'chr-1', map: 'm' });
+    expect(await svc.verifyTicket(ticket)).toMatchObject({
+      sub: 'chr-1',
+      map: 'm',
+    });
   });
 
   it('hashes passwords with argon2id and refresh tokens with sha256', async () => {

@@ -39,7 +39,7 @@ describe('starter kit and stats', () => {
     expect(state?.hp).toBe(500);
   });
 
-  it('unequip removes the bonus and level-gated items are refused', () => {
+  it('unequip removes the bonus and realm-gated items are refused', () => {
     const world = new World({ content: makeContent(), mapId: 'test_map' });
     const id = world.spawnPlayer('hero');
     world.enqueueIntent(id, { type: 'UNEQUIP', slot: 'main_hand' });
@@ -47,17 +47,24 @@ describe('starter kit and stats', () => {
     expect(world.playerState(id)?.stats.attack).toBe(30);
 
     const player = get(world, id);
-    player.player?.inventory.push({ instanceId: 'helm-1', itemId: 'helm', count: 1 });
+    player.player?.inventory.push({
+      instanceId: 'helm-1',
+      itemId: 'helm',
+      count: 1,
+    });
     world.enqueueIntent(id, { type: 'EQUIP', instanceId: 'helm-1' });
     const events = world.step();
-    expect(events.some((e) => e.type === 'NOTICE' && e.code === 'level_too_low')).toBe(true);
+    expect(events.some((e) => e.type === 'NOTICE' && e.code === 'realm_too_low')).toBe(true);
     expect(world.playerState(id)?.equipment.head).toBeUndefined();
   });
 
   it('cannot equip an item it does not own', () => {
     const world = new World({ content: makeContent(), mapId: 'test_map' });
     const id = world.spawnPlayer('hero');
-    world.enqueueIntent(id, { type: 'EQUIP', instanceId: 'someone-elses-sword' });
+    world.enqueueIntent(id, {
+      type: 'EQUIP',
+      instanceId: 'someone-elses-sword',
+    });
     world.step();
     expect(world.stats.rejectedIntents).toBe(1);
   });
@@ -68,13 +75,21 @@ describe('skills', () => {
     const world = new World({ content: makeContent(), mapId: 'test_map' });
     const id = world.spawnPlayer('hero');
     const mob = adjacentMonster(world, id);
-    world.enqueueIntent(id, { type: 'CAST_SKILL', skillId: 'slash', targetId: mob.id });
+    world.enqueueIntent(id, {
+      type: 'CAST_SKILL',
+      skillId: 'slash',
+      targetId: mob.id,
+    });
     const events = world.step();
     const hit = events.find((e) => e.type === 'DAMAGE' && e.skillId === 'slash');
     expect(hit).toBeDefined();
     expect(get(world, id).stats.mp).toBe(90);
 
-    world.enqueueIntent(id, { type: 'CAST_SKILL', skillId: 'slash', targetId: mob.id });
+    world.enqueueIntent(id, {
+      type: 'CAST_SKILL',
+      skillId: 'slash',
+      targetId: mob.id,
+    });
     const again = world.step();
     expect(again.some((e) => e.type === 'NOTICE' && e.code === 'cooldown')).toBe(true);
   });
@@ -84,7 +99,11 @@ describe('skills', () => {
     const id = world.spawnPlayer('hero');
     const mob = adjacentMonster(world, id);
     get(world, id).stats.mp = 5;
-    world.enqueueIntent(id, { type: 'CAST_SKILL', skillId: 'slash', targetId: mob.id });
+    world.enqueueIntent(id, {
+      type: 'CAST_SKILL',
+      skillId: 'slash',
+      targetId: mob.id,
+    });
     world.enqueueIntent(id, { type: 'CAST_SKILL', skillId: 'slam' });
     const events = world.step();
     expect(
@@ -96,7 +115,11 @@ describe('skills', () => {
     const world = new World({ content: makeContent(), mapId: 'test_map' });
     const id = world.spawnPlayer('hero');
     const mob = firstOf(world, 'monster'); // 20 m away
-    world.enqueueIntent(id, { type: 'CAST_SKILL', skillId: 'slash', targetId: mob.id });
+    world.enqueueIntent(id, {
+      type: 'CAST_SKILL',
+      skillId: 'slash',
+      targetId: mob.id,
+    });
     const events = run(world, TICK_RATE * 5);
     expect(events.some((e) => e.type === 'DAMAGE' && e.skillId === 'slash')).toBe(true);
   });
@@ -197,7 +220,9 @@ describe('boss telegraph and phases', () => {
 describe('rewards', () => {
   const quickKill = () => {
     const world = new World({
-      content: makeContent({ monster: { stats: { hp: 1, attack: 0, defense: 0, critChance: 0 } } }),
+      content: makeContent({
+        monster: { stats: { hp: 1, attack: 0, defense: 0, critChance: 0 } },
+      }),
       mapId: 'test_map',
     });
     const id = world.spawnPlayer('hero');
@@ -207,13 +232,16 @@ describe('rewards', () => {
     return { world, id, mob, events };
   };
 
-  it('grants XP, gold through the ledger, and drops owned loot', () => {
-    const { world, id, events } = quickKill();
-    expect(events.some((e) => e.type === 'XP' && e.amount === 60)).toBe(true);
+  it('grants gold through the ledger and drops owned loot (no XP)', () => {
+    const { world, id } = quickKill();
     expect(world.playerState(id)?.gold).toBe(5);
     const ledger = world.drainLedger();
     expect(ledger).toHaveLength(1);
-    expect(ledger[0]).toMatchObject({ amount: 5, balanceAfter: 5, reason: 'monster_drop' });
+    expect(ledger[0]).toMatchObject({
+      amount: 5,
+      balanceAfter: 5,
+      reason: 'monster_drop',
+    });
     const loot = firstOf(world, 'loot');
     expect(loot.loot).toMatchObject({ itemId: 'fang', count: 2, ownerId: id });
   });
@@ -226,24 +254,6 @@ describe('rewards', () => {
     run(world, TICK_RATE * 3);
     expect(world.entities.has(loot.id)).toBe(false);
     expect(world.playerState(id)?.inventory.find((i) => i.itemId === 'fang')?.count).toBe(2);
-  });
-
-  it('levels up past the XP curve and restores HP', () => {
-    const { world, id } = quickKill();
-    const player = get(world, id);
-    player.stats.hp = 10;
-    // Level 1 → 2 needs 100 XP; 60 already granted.
-    if (player.player) player.player.xp = 99;
-    const mob = firstOf(world, 'monster');
-    run(world, secondsToTicks(3) + 2); // respawn
-    mob.pos = { x: player.pos.x, z: player.pos.z + 1.2 };
-    world.enqueueIntent(id, { type: 'ATTACK_TARGET', targetId: mob.id });
-    const events = run(world, 3);
-    expect(events.some((e) => e.type === 'LEVEL_UP' && e.level === 2)).toBe(true);
-    const state = world.playerState(id);
-    expect(state?.maxHp).toBe(550);
-    expect(state?.hp).toBe(550);
-    expect(state?.stats.attack).toBe(55);
   });
 
   it('ledger keys are idempotent', () => {
@@ -269,10 +279,16 @@ describe('items', () => {
     const potion = world.playerState(id)?.inventory.find((i) => i.itemId === 'potion');
     if (!potion) throw new Error('no potion');
     get(world, id).stats.hp = 100;
-    world.enqueueIntent(id, { type: 'USE_ITEM', instanceId: potion.instanceId });
+    world.enqueueIntent(id, {
+      type: 'USE_ITEM',
+      instanceId: potion.instanceId,
+    });
     world.step();
     expect(get(world, id).stats.hp).toBe(350);
-    world.enqueueIntent(id, { type: 'USE_ITEM', instanceId: potion.instanceId });
+    world.enqueueIntent(id, {
+      type: 'USE_ITEM',
+      instanceId: potion.instanceId,
+    });
     const ev = world.step();
     expect(ev.some((e) => e.type === 'NOTICE' && e.code === 'cooldown')).toBe(true);
     expect(world.playerState(id)?.inventory.find((i) => i.itemId === 'potion')?.count).toBe(2);
@@ -292,7 +308,15 @@ describe('world structure', () => {
             targetArrival: 'gate',
           },
         ],
-        zones: [{ id: 'town', name: 'Town', kind: 'safe', center: { x: 0, z: -20 }, radius: 6 }],
+        zones: [
+          {
+            id: 'town',
+            name: 'Town',
+            kind: 'safe',
+            center: { x: 0, z: -20 },
+            radius: 6,
+          },
+        ],
       },
       extraMaps: [
         {
@@ -388,12 +412,20 @@ describe('npcs: quests, shop, crafting, upgrades', () => {
     const { world, id, npc } = setup();
     world.enqueueIntent(id, { type: 'INTERACT', entityId: npc.id });
     expect(world.step().some((e) => e.type === 'NPC_OPEN' && e.npcId === 'elder')).toBe(true);
-    world.enqueueIntent(id, { type: 'QUEST_ACCEPT', npcId: npc.id, questId: 'q_fangs' });
+    world.enqueueIntent(id, {
+      type: 'QUEST_ACCEPT',
+      npcId: npc.id,
+      questId: 'q_fangs',
+    });
     expect(world.step().some((e) => e.type === 'NOTICE' && e.code === 'quest_unavailable')).toBe(
       true,
     );
 
-    world.enqueueIntent(id, { type: 'QUEST_ACCEPT', npcId: npc.id, questId: 'q_wolves' });
+    world.enqueueIntent(id, {
+      type: 'QUEST_ACCEPT',
+      npcId: npc.id,
+      questId: 'q_wolves',
+    });
     world.step();
     const mob = adjacentMonster(world, id);
     world.enqueueIntent(id, { type: 'ATTACK_TARGET', targetId: mob.id });
@@ -405,7 +437,11 @@ describe('npcs: quests, shop, crafting, upgrades', () => {
     });
     get(world, id).pos = { x: 1, z: 0 };
     world.drainLedger();
-    world.enqueueIntent(id, { type: 'QUEST_TURN_IN', npcId: npc.id, questId: 'q_wolves' });
+    world.enqueueIntent(id, {
+      type: 'QUEST_TURN_IN',
+      npcId: npc.id,
+      questId: 'q_wolves',
+    });
     world.step();
     expect(world.playerState(id)?.quests[0]?.status).toBe('done');
     expect(world.drainLedger().map((l) => l.reason)).toEqual(['quest']);
@@ -416,13 +452,21 @@ describe('npcs: quests, shop, crafting, upgrades', () => {
     const p = get(world, id).player;
     if (!p) throw new Error('no player');
     p.quests.push({ questId: 'q_wolves', status: 'done', progress: [1] });
-    world.enqueueIntent(id, { type: 'QUEST_ACCEPT', npcId: npc.id, questId: 'q_fangs' });
+    world.enqueueIntent(id, {
+      type: 'QUEST_ACCEPT',
+      npcId: npc.id,
+      questId: 'q_fangs',
+    });
     world.step();
     p.inventory.push({ instanceId: 'f1', itemId: 'fang', count: 3 });
     expect(world.playerState(id)?.quests.find((q) => q.questId === 'q_fangs')?.progress).toEqual([
       2,
     ]);
-    world.enqueueIntent(id, { type: 'QUEST_TURN_IN', npcId: npc.id, questId: 'q_fangs' });
+    world.enqueueIntent(id, {
+      type: 'QUEST_TURN_IN',
+      npcId: npc.id,
+      questId: 'q_fangs',
+    });
     world.step();
     expect(world.playerState(id)?.inventory.find((i) => i.itemId === 'fang')?.count).toBe(1);
   });
@@ -431,16 +475,31 @@ describe('npcs: quests, shop, crafting, upgrades', () => {
     const { world, id, npc } = setup();
     const p = get(world, id).player;
     if (!p) throw new Error('no player');
-    world.enqueueIntent(id, { type: 'SHOP_BUY', npcId: npc.id, itemId: 'potion', count: 1 });
+    world.enqueueIntent(id, {
+      type: 'SHOP_BUY',
+      npcId: npc.id,
+      itemId: 'potion',
+      count: 1,
+    });
     expect(world.step().some((e) => e.type === 'NOTICE' && e.code === 'not_enough_gold')).toBe(
       true,
     );
     p.gold = 10;
-    world.enqueueIntent(id, { type: 'SHOP_BUY', npcId: npc.id, itemId: 'potion', count: 2 });
+    world.enqueueIntent(id, {
+      type: 'SHOP_BUY',
+      npcId: npc.id,
+      itemId: 'potion',
+      count: 2,
+    });
     world.step();
     expect(p.gold).toBe(2);
     p.inventory.push({ instanceId: 'f9', itemId: 'fang', count: 4 });
-    world.enqueueIntent(id, { type: 'SHOP_SELL', npcId: npc.id, instanceId: 'f9', count: 4 });
+    world.enqueueIntent(id, {
+      type: 'SHOP_SELL',
+      npcId: npc.id,
+      instanceId: 'f9',
+      count: 4,
+    });
     world.step();
     expect(p.gold).toBe(6); // 2 + floor(2 x 0.5) x 4
     const sword = p.inventory.find((i) => i.itemId === 'sword');
@@ -452,7 +511,12 @@ describe('npcs: quests, shop, crafting, upgrades', () => {
     });
     expect(world.step().some((e) => e.type === 'NOTICE' && e.code === 'not_sellable')).toBe(true);
     get(world, id).pos = { x: 30, z: 0 };
-    world.enqueueIntent(id, { type: 'SHOP_BUY', npcId: npc.id, itemId: 'potion', count: 1 });
+    world.enqueueIntent(id, {
+      type: 'SHOP_BUY',
+      npcId: npc.id,
+      itemId: 'potion',
+      count: 1,
+    });
     expect(world.step().some((e) => e.type === 'NOTICE' && e.code === 'too_far')).toBe(true);
   });
 
@@ -462,13 +526,20 @@ describe('npcs: quests, shop, crafting, upgrades', () => {
     if (!p) throw new Error('no player');
     p.gold = 5;
     p.inventory.push({ instanceId: 'f1', itemId: 'fang', count: 2 });
-    world.enqueueIntent(id, { type: 'CRAFT', npcId: npc.id, recipeId: 'r_charm' });
+    world.enqueueIntent(id, {
+      type: 'CRAFT',
+      npcId: npc.id,
+      recipeId: 'r_charm',
+    });
     world.step();
     const charm = p.inventory.find((i) => i.itemId === 'charm');
     expect(charm).toBeDefined();
     expect(p.inventory.filter((i) => i.itemId === 'fang')).toHaveLength(0);
 
-    world.enqueueIntent(id, { type: 'EQUIP', instanceId: charm?.instanceId ?? 'x' });
+    world.enqueueIntent(id, {
+      type: 'EQUIP',
+      instanceId: charm?.instanceId ?? 'x',
+    });
     world.step();
     expect(world.playerState(id)?.stats.attack).toBe(60); // 30 + sword 20 + charm 10
     world.enqueueIntent(id, {
@@ -494,7 +565,11 @@ describe('npcs: quests, shop, crafting, upgrades', () => {
 
   it('quest state survives save/load', () => {
     const { world, id, npc } = setup();
-    world.enqueueIntent(id, { type: 'QUEST_ACCEPT', npcId: npc.id, questId: 'q_wolves' });
+    world.enqueueIntent(id, {
+      type: 'QUEST_ACCEPT',
+      npcId: npc.id,
+      questId: 'q_wolves',
+    });
     world.step();
     const save = world.exportPlayer(id);
     const other = new World({ content: world.content, mapId: 'test_map' });

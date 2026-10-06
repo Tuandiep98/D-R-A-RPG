@@ -142,7 +142,11 @@ export class LocalSimHost implements SimHost {
 
   get debug(): LocalSimHostDebug | null {
     return this.world
-      ? { ...this.world.stats, droppedIntents: this.dropped, mapId: this.world.map.id }
+      ? {
+          ...this.world.stats,
+          droppedIntents: this.dropped,
+          mapId: this.world.map.id,
+        }
       : null;
   }
 
@@ -163,7 +167,12 @@ export class LocalSimHost implements SimHost {
     const map = this.opts.content.maps.get(mapId);
     if (!map) throw new Error(`unknown map ${mapId}`);
     const nav = (await this.opts.navFor?.(map)) ?? null;
-    const world = new World({ content: this.opts.content, mapId, seed: this.opts.seed, nav });
+    const world = new World({
+      content: this.opts.content,
+      mapId,
+      seed: this.opts.seed,
+      nav,
+    });
     this.playerId = world.spawnPlayer(this.opts.characterId, { save, arrival });
     this.world = world;
     const join: JoinInfo = {

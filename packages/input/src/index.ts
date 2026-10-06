@@ -11,7 +11,10 @@ export type GameAction =
   | { type: 'INTERACT' }
   | { type: 'TARGET_NEXT' }
   | { type: 'USE_POTION' }
-  | { type: 'TOGGLE_PANEL'; panel: 'inventory' | 'character' | 'settings' }
+  | {
+      type: 'TOGGLE_PANEL';
+      panel: 'inventory' | 'character' | 'cultivation' | 'settings';
+    }
   | { type: 'TOGGLE_DEBUG' };
 
 export type ActionListener = (action: GameAction) => void;
@@ -69,7 +72,9 @@ export class MouseKeyboardAdapter implements InputAdapter {
     window.addEventListener('pointermove', this.onMove, { signal });
     window.addEventListener('pointerup', this.onUp, { signal });
     target.addEventListener('wheel', this.onWheel, { signal, passive: false });
-    target.addEventListener('contextmenu', (e) => e.preventDefault(), { signal });
+    target.addEventListener('contextmenu', (e) => e.preventDefault(), {
+      signal,
+    });
     window.addEventListener('keydown', this.onKey, { signal });
   }
 
@@ -87,7 +92,11 @@ export class MouseKeyboardAdapter implements InputAdapter {
 
   private readonly onMove = (e: PointerEvent) => {
     if (e.pointerType !== 'mouse' || !this.rotating) return;
-    this.emit({ type: 'CAMERA_ROTATE', dx: e.clientX - this.last.x, dy: e.clientY - this.last.y });
+    this.emit({
+      type: 'CAMERA_ROTATE',
+      dx: e.clientX - this.last.x,
+      dy: e.clientY - this.last.y,
+    });
     this.last = { x: e.clientX, y: e.clientY };
   };
 
@@ -96,7 +105,11 @@ export class MouseKeyboardAdapter implements InputAdapter {
     const moved = Math.hypot(e.clientX - this.down.x, e.clientY - this.down.y);
     if (this.down.button === 0 && moved < CLICK_SLOP && this.target) {
       const rect = this.target.getBoundingClientRect();
-      this.emit({ type: 'SELECT', x: e.clientX - rect.left, y: e.clientY - rect.top });
+      this.emit({
+        type: 'SELECT',
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      });
     }
     this.down = null;
     this.rotating = false;
@@ -117,6 +130,7 @@ export class MouseKeyboardAdapter implements InputAdapter {
     else if (e.code === 'KeyI' || e.code === 'KeyB')
       this.emit({ type: 'TOGGLE_PANEL', panel: 'inventory' });
     else if (e.code === 'KeyC') this.emit({ type: 'TOGGLE_PANEL', panel: 'character' });
+    else if (e.code === 'KeyK') this.emit({ type: 'TOGGLE_PANEL', panel: 'cultivation' });
     else if (e.code === 'Tab') {
       e.preventDefault();
       this.emit({ type: 'TARGET_NEXT' });
@@ -192,7 +206,11 @@ export class TouchAdapter implements InputAdapter {
     this.touches.delete(e.pointerId);
     if (e.type === 'pointerup' && this.touches.size === 0 && !this.dragged && this.target) {
       const rect = this.target.getBoundingClientRect();
-      this.emit({ type: 'SELECT', x: e.clientX - rect.left, y: e.clientY - rect.top });
+      this.emit({
+        type: 'SELECT',
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      });
     }
   };
 
@@ -226,7 +244,11 @@ export class GamepadAdapter implements InputAdapter {
     const [, , rx = 0, ry = 0] = pad.axes;
     const dead = (v: number) => (Math.abs(v) < 0.15 ? 0 : v);
     if (dead(rx) || dead(ry))
-      this.emit({ type: 'CAMERA_ROTATE', dx: dead(rx) * 600 * dt, dy: dead(ry) * 400 * dt });
+      this.emit({
+        type: 'CAMERA_ROTATE',
+        dx: dead(rx) * 600 * dt,
+        dy: dead(ry) * 400 * dt,
+      });
     const pressed = pad.buttons.map((b) => b.pressed);
     const edge = (i: number) => pressed[i] && !this.prev[i];
     for (const [idx, b] of [0, 1, 2, 3].entries())

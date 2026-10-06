@@ -1,9 +1,8 @@
 id: q_boss_golem
-name: Cơ Quan Thần Tướng
-description: Phá huỷ Cơ Quan Thần Tướng trong Đấu Trường Cơ Quan.
+name: Huyền Vũ Thức Tỉnh
+description: Tượng Huyền Vũ trong Huyền Vũ Cổ Mộ tỉnh dậy — dưới vỏ đá là Guardian X-04. Hạ nó (khuyến nghị Trúc Cơ).
 giverNpcId: npc_elder
 requires: [q_elite_stag]
-level: 7
 objectives:
   - { type: kill, monsterId: mech_golem_001, count: 1 }
-rewards: { xp: 2000, gold: 500, items: [{ itemId: item_potion_hp_large, count: 5 }] }
+rewards: { gold: 500, items: [{ itemId: item_potion_hp_large, count: 5 }] }

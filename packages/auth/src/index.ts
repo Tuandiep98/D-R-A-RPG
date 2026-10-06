@@ -46,7 +46,12 @@ export class TokenService {
   }
 
   signAccess(claims: Omit<AccessClaims, 'typ'>): Promise<string> {
-    return new SignJWT({ role: claims.role, chr: claims.chr, mfa: claims.mfa, typ: 'access' })
+    return new SignJWT({
+      role: claims.role,
+      chr: claims.chr,
+      mfa: claims.mfa,
+      typ: 'access',
+    })
       .setProtectedHeader({ alg: 'HS256' })
       .setSubject(claims.sub)
       .setIssuer(ISSUER)
@@ -56,7 +61,10 @@ export class TokenService {
   }
 
   async verifyAccess(token: string): Promise<AccessClaims> {
-    const { payload } = await jwtVerify(token, this.key, { issuer: ISSUER, algorithms: ['HS256'] });
+    const { payload } = await jwtVerify(token, this.key, {
+      issuer: ISSUER,
+      algorithms: ['HS256'],
+    });
     return AccessClaims.parse(payload);
   }
 
@@ -71,7 +79,10 @@ export class TokenService {
   }
 
   async verifyTicket(token: string): Promise<TicketClaims> {
-    const { payload } = await jwtVerify(token, this.key, { issuer: ISSUER, algorithms: ['HS256'] });
+    const { payload } = await jwtVerify(token, this.key, {
+      issuer: ISSUER,
+      algorithms: ['HS256'],
+    });
     return TicketClaims.parse(payload);
   }
 }

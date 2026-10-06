@@ -2,7 +2,14 @@ import type { DebugStats, Notice, QualityMode, UiState } from '@rpg/babylon-rend
 import type { ChatMessage } from '@rpg/game-protocol';
 import { create } from 'zustand';
 
-export type Panel = 'inventory' | 'character' | 'settings' | 'leaderboard' | 'social' | null;
+export type Panel =
+  | 'inventory'
+  | 'character'
+  | 'cultivation'
+  | 'settings'
+  | 'leaderboard'
+  | 'social'
+  | null;
 
 export interface ToastNotice extends Notice {
   id: number;

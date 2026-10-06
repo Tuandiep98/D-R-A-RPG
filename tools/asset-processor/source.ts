@@ -21,6 +21,33 @@ export const PackSourceSchema = z.strictObject({
         assetId: z.string().regex(/^[a-z][a-z0-9_]*$/),
         /** Path relative to the pack folder, usually under originals/. */
         file: z.string().regex(/\.(glb|gltf)$/i, 'only .glb/.gltf are supported'),
+        /** Extra image lookup folders, relative to the source glTF file. */
+        textureDirs: z.array(z.string()).default([]),
+        /**
+         * Optional compatible rig containing animation clips. The clips are
+         * retargeted by joint name into this asset during the build.
+         */
+        animationSource: z
+          .string()
+          .regex(/\.(glb|gltf)$/i)
+          .optional(),
+        animationClips: z.array(z.string()).min(1).optional(),
+        /**
+         * Skinned parts grafted onto this file's skeleton by joint name, e.g. a
+         * UBC head and hairstyle on a headless modular outfit. `keepJoints`
+         * keeps only part triangles weighted to those joints.
+         */
+        parts: z
+          .array(
+            z.strictObject({
+              file: z.string().regex(/\.(glb|gltf)$/i),
+              textureDirs: z.array(z.string()).default([]),
+              keepJoints: z.array(z.string()).optional(),
+            }),
+          )
+          .default([]),
+        /** Meshes (mesh or node name) removed from the main file. */
+        dropMeshes: z.array(z.string()).default([]),
         type: z.enum(['character', 'monster', 'environment', 'prop', 'ground']),
         modified: z.boolean().default(false),
         /** Assets plan §14: exceeding a locked budget needs a reason and an owner. */

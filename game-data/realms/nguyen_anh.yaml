@@ -1,0 +1,8 @@
+id: nguyen_anh
+order: 3
+name: Nguyên Anh
+mechName: Synthetic Soul
+description: Ý thức tồn tại ngoài thân xác.
+bonus: { hp: 6000, mp: 900, attack: 380, defense: 110 }
+meridianCapacity: 220
+bodyLoad: 220

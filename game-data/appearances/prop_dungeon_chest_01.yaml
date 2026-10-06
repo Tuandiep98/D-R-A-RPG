@@ -1,0 +1,4 @@
+id: prop_dungeon_chest_01
+kind: environment
+modelAssetId: prop_dungeon_chest_01
+placeholder: { shape: box, color: "#b68a39", height: 0.8, radius: 0.65 }

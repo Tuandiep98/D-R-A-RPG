@@ -32,7 +32,8 @@ export interface CharacterSummary {
   accountId: string;
   name: string;
   characterDefId: string;
-  level: number;
+  /** Realm id (game-data/realms). */
+  realm: string;
   mapId: string;
 }
 
@@ -158,7 +159,7 @@ export class GameRepository {
         accountId: characters.accountId,
         name: characters.name,
         characterDefId: characters.characterDefId,
-        level: characters.level,
+        realm: characters.realm,
         mapId: characters.mapId,
       })
       .from(characters)
@@ -173,7 +174,7 @@ export class GameRepository {
         accountId: characters.accountId,
         name: characters.name,
         characterDefId: characters.characterDefId,
-        level: characters.level,
+        realm: characters.realm,
         mapId: characters.mapId,
       })
       .from(characters)
@@ -199,15 +200,15 @@ export class GameRepository {
       accountId: c.accountId,
       name: c.name,
       characterDefId: c.characterDefId,
-      level: c.level,
+      realm: c.realm,
       mapId: c.mapId,
       x: c.x,
       z: c.z,
       version: c.version,
       save: {
         characterId: c.characterDefId,
-        level: c.level,
-        xp: c.xp,
+        realm: c.realm,
+        nodes: (c.nodes as string[]) ?? [],
         gold: wallet[0]?.gold ?? 0,
         hp: c.hp,
         mp: c.mp,
@@ -273,8 +274,9 @@ export class GameRepository {
       const updated = await tx
         .update(characters)
         .set({
-          level: save.level,
-          xp: save.xp,
+          realm: save.realm,
+          realmRank: save.realmRank ?? 0,
+          nodes: save.nodes,
           hp: save.hp,
           mp: save.mp,
           mapId: place.mapId,
@@ -333,12 +335,20 @@ export class GameRepository {
       .limit(limit);
   }
 
-  /** Top characters by level then XP (tech plan §31: cache in Redis when traffic needs it). */
+  /**
+   * Top characters by realm, then by how much they have cultivated inside it
+   * (no character level — master plan §31). Cache in Redis when traffic needs it.
+   */
   async leaderboard(limit = 20) {
+    const nodeCount = sql<number>`jsonb_array_length(${characters.nodes})`;
     return this.db
-      .select({ name: characters.name, level: characters.level, xp: characters.xp })
+      .select({
+        name: characters.name,
+        realm: characters.realm,
+        nodes: nodeCount,
+      })
       .from(characters)
-      .orderBy(desc(characters.level), desc(characters.xp), characters.createdAt)
+      .orderBy(desc(characters.realmRank), desc(nodeCount), characters.createdAt)
       .limit(limit);
   }
 
@@ -351,7 +361,7 @@ export class GameRepository {
         accountId: characters.accountId,
         name: characters.name,
         characterDefId: characters.characterDefId,
-        level: characters.level,
+        realm: characters.realm,
         mapId: characters.mapId,
       })
       .from(characters)
@@ -412,7 +422,11 @@ export class GameRepository {
     const otherIds = rows.map((r) => (r.requesterId === characterId ? r.targetId : r.requesterId));
     const others = otherIds.length
       ? await this.db
-          .select({ id: characters.id, name: characters.name, level: characters.level })
+          .select({
+            id: characters.id,
+            name: characters.name,
+            realm: characters.realm,
+          })
           .from(characters)
           .where(inArray(characters.id, otherIds))
       : [];
@@ -438,7 +452,7 @@ export class GameRepository {
       id: string;
       name: string;
       leaderId: string;
-      members: { id: string; name: string; level: number; rank: string }[];
+      members: { id: string; name: string; realm: string; rank: string }[];
     } | null = null;
     if (membership[0]) {
       const g = await this.db
@@ -450,13 +464,19 @@ export class GameRepository {
         .select({
           id: characters.id,
           name: characters.name,
-          level: characters.level,
+          realm: characters.realm,
           rank: guildMembers.rank,
         })
         .from(guildMembers)
         .innerJoin(characters, eq(characters.id, guildMembers.characterId))
         .where(eq(guildMembers.guildId, membership[0].guildId));
-      if (g[0]) guild = { id: g[0].id, name: g[0].name, leaderId: g[0].leaderId, members };
+      if (g[0])
+        guild = {
+          id: g[0].id,
+          name: g[0].name,
+          leaderId: g[0].leaderId,
+          members,
+        };
     }
     return { friends, guild };
   }
@@ -540,9 +560,13 @@ export class GameRepository {
     target: string | null,
     payload?: unknown,
   ): Promise<void> {
-    await this.db
-      .insert(auditLog)
-      .values({ id: newId(), actorAccountId, action, target, payload: payload ?? null });
+    await this.db.insert(auditLog).values({
+      id: newId(),
+      actorAccountId,
+      action,
+      target,
+      payload: payload ?? null,
+    });
   }
 
   async listAudit(limit = 100) {

@@ -1,0 +1,4 @@
+id: env_dungeon_pillar_01
+kind: environment
+modelAssetId: env_dungeon_pillar_01
+placeholder: { shape: cylinder, color: "#72747d", height: 3, radius: 0.5 }

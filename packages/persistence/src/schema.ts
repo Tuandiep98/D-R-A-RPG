@@ -70,8 +70,12 @@ export const characters = pgTable(
     name: text('name').notNull(),
     /** Content definition (game-data/characters). */
     characterDefId: text('character_def_id').notNull(),
-    level: integer('level').notNull().default(1),
-    xp: integer('xp').notNull().default(0),
+    /** Cảnh giới id (game-data/realms). There is no character level (master plan §31). */
+    realm: text('realm').notNull().default('luyen_khi'),
+    /** Realm order, denormalised for leaderboard sorting. */
+    realmRank: integer('realm_rank').notNull().default(0),
+    /** Open cultivation nodes (string[]). */
+    nodes: jsonb('nodes').notNull().default([]),
     hp: integer('hp').notNull().default(0),
     mp: integer('mp').notNull().default(0),
     mapId: text('map_id').notNull(),

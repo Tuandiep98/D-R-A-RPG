@@ -1,0 +1,4 @@
+id: prop_lantern_wall_01
+kind: environment
+modelAssetId: prop_lantern_wall_01
+placeholder: { shape: box, color: "#efb849", height: 0.6, radius: 0.25 }

@@ -1,8 +1,8 @@
 id: q_meet_scout
-name: Tin Từ Trạm Gác
-description: Tới Trạm Gác Thanh Vân trong Rừng Cơ Quan gặp Trinh Sát Mộc Phong.
+name: Kiếm Khách Ở Doanh Trại
+description: Tới Doanh Trại Tiền Tiêu trong Phế Tích Vô Danh gặp Lục Viễn. Gặp xong có thể học công pháp Kiếm Khí.
 giverNpcId: npc_elder
 requires: [q_wolf_cull]
 objectives:
   - { type: talk, npcId: npc_scout }
-rewards: { xp: 120, gold: 20 }
+rewards: { gold: 20 }

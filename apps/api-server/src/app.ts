@@ -95,9 +95,9 @@ export async function buildApi(deps: ApiDeps) {
     if (err instanceof HttpError) return reply.status(err.status).send({ error: err.message });
     const status = (err as { statusCode?: number }).statusCode ?? 500;
     if (status >= 500) app.log.error(err);
-    return reply
-      .status(status)
-      .send({ error: status >= 500 ? 'internal error' : (err as Error).message });
+    return reply.status(status).send({
+      error: status >= 500 ? 'internal error' : (err as Error).message,
+    });
   });
 
   const authenticate = async (req: FastifyRequest) => {
@@ -216,7 +216,10 @@ export async function buildApi(deps: ApiDeps) {
   app.post('/auth/mfa/enable', { preHandler: authenticate }, async (req) => {
     const c = claimsOf(req);
     const body = parse(
-      z.object({ secret: z.string().min(16).max(64), code: z.string().length(6) }),
+      z.object({
+        secret: z.string().min(16).max(64),
+        code: z.string().length(6),
+      }),
       req.body,
     );
     if (!verifyTotp(body.secret, body.code)) throw new HttpError(400, 'invalid code');
@@ -234,7 +237,10 @@ export async function buildApi(deps: ApiDeps) {
   app.post('/characters', { preHandler: authenticate }, async (req, reply) => {
     const c = claimsOf(req);
     const body = parse(
-      z.object({ name: CharacterNameSchema, characterDefId: z.string().optional() }),
+      z.object({
+        name: CharacterNameSchema,
+        characterDefId: z.string().optional(),
+      }),
       req.body,
     );
     const existing = await deps.repo.listCharacters(c.sub);
@@ -266,7 +272,11 @@ export async function buildApi(deps: ApiDeps) {
     const character = await deps.repo.loadCharacter(id);
     if (!character || character.accountId !== c.sub)
       throw new HttpError(404, 'character not found');
-    const accessToken = await deps.tokens.signAccess({ sub: c.sub, role: c.role, chr: id });
+    const accessToken = await deps.tokens.signAccess({
+      sub: c.sub,
+      role: c.role,
+      chr: id,
+    });
     return {
       accessToken,
       mapId: character.mapId,
@@ -409,9 +419,13 @@ export async function buildApi(deps: ApiDeps) {
     return { ok: true, until };
   });
 
-  app.get('/admin/audit', staff, async () => ({ entries: await deps.repo.listAudit(200) }));
+  app.get('/admin/audit', staff, async () => ({
+    entries: await deps.repo.listAudit(200),
+  }));
 
-  app.get('/leaderboard', async () => ({ leaderboard: await deps.repo.leaderboard(20) }));
+  app.get('/leaderboard', async () => ({
+    leaderboard: await deps.repo.leaderboard(20),
+  }));
 
   app.get('/content/items', async () => ({
     items: [...deps.content.items.values()].map((i) => ({

@@ -51,7 +51,9 @@ page.on('pageerror', (e) => errors.push(e.message));
 const entities = () =>
   page.evaluate(() =>
     (
-      window as unknown as { __rpg: { view: { debugEntities(): DebugEntity[] } } }
+      window as unknown as {
+        __rpg: { view: { debugEntities(): DebugEntity[] } };
+      }
     ).__rpg.view.debugEntities(),
   );
 const debugText = () =>
@@ -62,7 +64,9 @@ const debugText = () =>
 
 try {
   await page.goto(url, { waitUntil: 'domcontentloaded' });
-  await page.waitForFunction(() => '__rpg' in window, null, { timeout: 60_000 });
+  await page.waitForFunction(() => '__rpg' in window, null, {
+    timeout: 60_000,
+  });
   await page.waitForTimeout(1500);
   await page.screenshot({ path: resolve(outDir, '01_boot.png') });
   console.log(`  debug: ${(await debugText()).replace(/\n/g, ' | ')}`);
@@ -173,7 +177,9 @@ try {
     await page.goto(`${url}${url.includes('?') ? '&' : '?'}map=map_forest_mechanism_01`, {
       waitUntil: 'domcontentloaded',
     });
-    await page.waitForFunction(() => '__rpg' in window, null, { timeout: 60_000 });
+    await page.waitForFunction(() => '__rpg' in window, null, {
+      timeout: 60_000,
+    });
     await page.waitForTimeout(2500);
     const forest = await entities();
     const mobs = forest.filter((e) => e.kind === 'monster');

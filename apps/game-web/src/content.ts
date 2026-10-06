@@ -18,3 +18,14 @@ export function loadContent(): ContentBundle {
     })),
   );
 }
+
+let cached: ContentBundle | null = null;
+
+/** Display name of a realm id (API rows carry ids). */
+export const realmName = (id: string): string => sharedContent().realms.get(id)?.name ?? id;
+
+/** One parsed bundle shared by HUD panels (the renderer gets its own at boot). */
+export function sharedContent(): ContentBundle {
+  cached ??= loadContent();
+  return cached;
+}

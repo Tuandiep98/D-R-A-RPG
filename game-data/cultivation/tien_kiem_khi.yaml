@@ -1,0 +1,13 @@
+id: tien_kiem_khi
+name: Công Pháp · Kiếm Khí
+description: Lục Viễn chỉ điểm cách phóng kiếm khí. Mở kỹ năng Kiếm Khí.
+icon: "✴"
+axis: dao
+path: tien
+realm: luyen_khi
+requires: [tien_khai_mach]
+quests: [q_meet_scout]
+cost: { gold: 80, materials: [{ itemId: item_wolf_fang, count: 4 }] }
+meridian: 15
+bonus: { attack: 4 }
+skillId: skill_sword_qi

@@ -29,6 +29,20 @@
       "when": 1791293419872,
       "tag": "0003_social",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791299515027,
+      "tag": "0004_realms",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791299520363,
+      "tag": "0005_drop_character_level",
+      "breakpoints": true
     }
   ]
 }

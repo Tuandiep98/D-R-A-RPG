@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { realmName } from '../content';
 import { game } from '../game';
 import { fetchLeaderboard } from '../online';
 import { useUiStore } from '../store';
@@ -96,7 +97,7 @@ export function ChatBox() {
 /** Online only: top characters from the API. */
 export function LeaderboardPanel() {
   const close = useUiStore((s) => s.closePanel);
-  const [rows, setRows] = useState<{ name: string; level: number; xp: number }[] | null>(null);
+  const [rows, setRows] = useState<{ name: string; realm: string; nodes: number }[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     fetchLeaderboard()
@@ -117,7 +118,9 @@ export function LeaderboardPanel() {
         {rows?.map((r) => (
           <li key={r.name}>
             <span>{r.name}</span>
-            <span className="muted">Lv {r.level}</span>
+            <span className="muted">
+              {realmName(r.realm)} · {r.nodes} node
+            </span>
           </li>
         ))}
       </ol>

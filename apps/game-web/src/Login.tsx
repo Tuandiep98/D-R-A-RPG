@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { realmName } from './content';
 import {
   type CharacterSummary,
   createCharacter,
@@ -50,7 +51,7 @@ export function Login({ onPlay }: { onPlay: (choice: OnlineChoice) => void }) {
 
   return (
     <div className="login" onPointerDown={(e) => e.stopPropagation()}>
-      <h1>D-R-A RPG</h1>
+      <h1>Thiên Cơ Kỷ</h1>
       {stage === 'login' ? (
         <form
           onSubmit={(e) => {
@@ -100,11 +101,14 @@ export function Login({ onPlay }: { onPlay: (choice: OnlineChoice) => void }) {
               disabled={busy}
               onClick={() =>
                 void run(async () =>
-                  onPlay({ characterId: c.id, session: await startSession(c.id) }),
+                  onPlay({
+                    characterId: c.id,
+                    session: await startSession(c.id),
+                  }),
                 )
               }
             >
-              <strong>{c.name}</strong> · Lv {c.level}
+              <strong>{c.name}</strong> · {realmName(c.realm)}
             </button>
           ))}
           {characters.length < 4 && (

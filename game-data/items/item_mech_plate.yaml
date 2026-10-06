@@ -4,6 +4,6 @@ kind: equipment
 slot: chest
 rarity: rare
 icon: "🛡"
-level: 6
+realm: truc_co
 bonus: { defense: 12, hp: 80, speed: -0.3 }
 sellPrice: 180

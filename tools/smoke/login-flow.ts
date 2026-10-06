@@ -33,19 +33,27 @@ try {
   await page.fill('input[autocomplete="username"]', user);
   await page.fill('input[type="password"]', 'password123');
   await page.click('button:has-text("Tạo tài khoản")');
-  await page.waitForSelector('input[placeholder="Tên nhân vật mới"]', { timeout: 15_000 });
+  await page.waitForSelector('input[placeholder="Tên nhân vật mới"]', {
+    timeout: 15_000,
+  });
   check(true, 'registered and logged in');
   await page.fill('input[placeholder="Tên nhân vật mới"]', `Hiệp ${user.slice(-4)}`);
   await page.click('button:has-text("Tạo nhân vật")');
-  await page.waitForSelector('.chars button:has-text("Lv")', { timeout: 15_000 });
-  await page.click('.chars button:has-text("Lv")');
-  await page.waitForFunction(() => '__rpg' in window, null, { timeout: 60_000 });
+  await page.waitForSelector('.chars button:has-text("Luyện Khí")', {
+    timeout: 15_000,
+  });
+  await page.click('.chars button:has-text("Luyện Khí")');
+  await page.waitForFunction(() => '__rpg' in window, null, {
+    timeout: 60_000,
+  });
   await page.waitForTimeout(2000);
   const debug = await page.locator('.debug').innerText();
   check(debug.includes('online'), `in game via API session (${debug.split('\n')[1]})`);
 
   await page.click('button[title="Bạn bè & Bang hội"]');
-  await page.waitForSelector('input[placeholder="Tên bang"]', { timeout: 10_000 });
+  await page.waitForSelector('input[placeholder="Tên bang"]', {
+    timeout: 10_000,
+  });
   await page.fill('input[placeholder="Tên bang"]', `Bang ${user.slice(-4)}`);
   await page.click('button:has-text("Lập bang")');
   await page.waitForSelector('button:has-text("Rời bang")', { timeout: 10_000 }).catch(() => null);

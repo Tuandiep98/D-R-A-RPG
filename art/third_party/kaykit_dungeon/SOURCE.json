@@ -1,0 +1,79 @@
+{
+  "packId": "kaykit_dungeon",
+  "author": "Kay Lousberg",
+  "pack": "KayKit Dungeon Pack 1.1 FREE",
+  "sourceUrl": "https://kaylousberg.itch.io/kaykit-dungeon-remastered",
+  "license": "CC0-1.0",
+  "licenseVerified": true,
+  "downloadedAt": "2026-10-06",
+  "status": "approved",
+  "notes": "Fallback stone shell for the surface layer of Huyền Vũ Cổ Mộ.",
+  "assets": [
+    {
+      "assetId": "env_dungeon_wall_01",
+      "file": "originals/wall.gltf",
+      "type": "environment",
+      "modified": false
+    },
+    {
+      "assetId": "env_dungeon_arch_01",
+      "file": "originals/wall_arched.gltf",
+      "type": "environment",
+      "modified": false
+    },
+    {
+      "assetId": "env_dungeon_floor_01",
+      "file": "originals/floor_tile_large.gltf",
+      "type": "ground",
+      "modified": false
+    },
+    {
+      "assetId": "env_ground_dirt_01",
+      "file": "originals/floor_dirt_large.gltf",
+      "type": "ground",
+      "modified": false
+    },
+    {
+      "assetId": "env_ground_dirt_rocky_01",
+      "file": "originals/floor_dirt_large_rocky.gltf",
+      "type": "ground",
+      "modified": false
+    },
+    {
+      "assetId": "env_ground_weeds_01",
+      "file": "originals/floor_dirt_small_weeds.gltf",
+      "type": "ground",
+      "modified": false
+    },
+    {
+      "assetId": "env_ground_stone_weeds_01",
+      "file": "originals/floor_tile_small_weeds_A.gltf",
+      "type": "ground",
+      "modified": false
+    },
+    {
+      "assetId": "env_dungeon_pillar_01",
+      "file": "originals/pillar_decorated.gltf",
+      "type": "environment",
+      "modified": false
+    },
+    {
+      "assetId": "prop_dungeon_torch_01",
+      "file": "originals/torch_mounted.gltf",
+      "type": "prop",
+      "modified": false
+    },
+    {
+      "assetId": "prop_dungeon_rubble_01",
+      "file": "originals/rubble_large.gltf",
+      "type": "prop",
+      "modified": false
+    },
+    {
+      "assetId": "prop_dungeon_chest_01",
+      "file": "originals/chest_gold.gltf",
+      "type": "prop",
+      "modified": false
+    }
+  ]
+}

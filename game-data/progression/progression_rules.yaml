@@ -1,0 +1,7 @@
+# Global progression rules (master plan §56–57). No character level anywhere.
+id: progression_rules
+# Damage multiplier by realm gap. lower[0]: attacker one realm below the defender.
+realmGap:
+  lower: [0.7, 0.3, 0.05]
+  higher: [1.3, 1.8, 2.5]
+breakthroughInSafeZone: true

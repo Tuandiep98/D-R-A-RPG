@@ -24,7 +24,11 @@ export async function navFor(map: MapDef): Promise<RecastNavQuery> {
   let baked: { hash: string; data: Uint8Array } | null = null;
   if (meta && urlKey) {
     const res = await fetch(binUrls[urlKey] as string);
-    if (res.ok) baked = { hash: meta.hash, data: new Uint8Array(await res.arrayBuffer()) };
+    if (res.ok)
+      baked = {
+        hash: meta.hash,
+        data: new Uint8Array(await res.arrayBuffer()),
+      };
   }
   const query = createNavQuery(map, baked);
   cache.set(map.id, query);

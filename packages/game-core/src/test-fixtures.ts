@@ -2,13 +2,15 @@ import {
   AppearanceDefSchema,
   CharacterDefSchema,
   type ContentBundle,
+  CultivationNodeDefSchema,
   ItemDefSchema,
   LootTableDefSchema,
   MapDefSchema,
   MonsterDefSchema,
   NpcDefSchema,
-  ProgressionDefSchema,
+  ProgressionRulesSchema,
   QuestDefSchema,
+  RealmDefSchema,
   RecipeDefSchema,
   ShopDefSchema,
   SkillDefSchema,
@@ -23,6 +25,7 @@ export interface FixtureOverrides {
   character?: Raw;
   extraMonsters?: Raw[];
   extraMaps?: Raw[];
+  realm1?: Raw;
 }
 
 /** Small in-memory content set for unit tests. Overrides are raw (pre-schema) objects. */
@@ -32,12 +35,77 @@ export function makeContent(o: FixtureOverrides = {}): ContentBundle {
     kind: 'monster',
     placeholder: { shape: 'box', color: '#fff', height: 1, radius: 0.5 },
   });
-  const progression = ProgressionDefSchema.parse({
-    id: 'prog',
-    maxLevel: 10,
-    xpCurve: { base: 100, exponent: 1 },
-    perLevel: { hp: 50, attack: 5 },
+  const progression = ProgressionRulesSchema.parse({
+    id: 'rules',
+    realmGap: { lower: [0.5, 0.1], higher: [2] },
   });
+  const realms = [
+    {
+      id: 'r0',
+      order: 0,
+      name: 'Luyện Khí',
+      mechName: 'Core',
+      meridianCapacity: 20,
+      bodyLoad: 20,
+    },
+    {
+      id: 'r1',
+      order: 1,
+      name: 'Trúc Cơ',
+      mechName: 'Frame',
+      bonus: { hp: 50, attack: 5 },
+      meridianCapacity: 40,
+      bodyLoad: 40,
+      breakthrough: {
+        minNodes: 1,
+        quests: [],
+        materials: [{ itemId: 'fang', count: 1 }],
+        gold: 0,
+        baseChance: 1,
+        backlashSeconds: 10,
+        backlashAttack: 0.5,
+      },
+      ...o.realm1,
+    },
+  ].map((r) => RealmDefSchema.parse(r));
+  const cultivation = [
+    {
+      id: 'n_bone',
+      name: 'Bone',
+      axis: 'than',
+      path: 'tien',
+      realm: 'r0',
+      cost: { gold: 0, materials: [{ itemId: 'fang', count: 1 }] },
+      meridian: 10,
+      bonus: { hp: 100 },
+    },
+    {
+      id: 'n_arm',
+      name: 'Arm',
+      axis: 'than',
+      path: 'co',
+      realm: 'r0',
+      body: 10,
+      skillId: 'slam',
+    },
+    {
+      id: 'n_big',
+      name: 'Big',
+      axis: 'dao',
+      path: 'tien',
+      realm: 'r0',
+      requires: ['n_bone'],
+      meridian: 15,
+    },
+    {
+      id: 'n_high',
+      name: 'High',
+      axis: 'dao',
+      path: 'co',
+      realm: 'r1',
+      body: 5,
+    },
+  ].map((n) => CultivationNodeDefSchema.parse(n));
   const skills = [
     {
       id: 'slash',
@@ -75,11 +143,37 @@ export function makeContent(o: FixtureOverrides = {}): ContentBundle {
     },
   ].map((s) => SkillDefSchema.parse(s));
   const items = [
-    { id: 'sword', name: 'Sword', kind: 'equipment', slot: 'main_hand', bonus: { attack: 20 } },
-    { id: 'helm', name: 'Helm', kind: 'equipment', slot: 'head', level: 5, bonus: { defense: 5 } },
-    { id: 'potion', name: 'Potion', kind: 'consumable', heal: 0.5, cooldown: 3, maxStack: 20 },
+    {
+      id: 'sword',
+      name: 'Sword',
+      kind: 'equipment',
+      slot: 'main_hand',
+      bonus: { attack: 20 },
+    },
+    {
+      id: 'helm',
+      name: 'Helm',
+      kind: 'equipment',
+      slot: 'head',
+      realm: 'r1',
+      bonus: { defense: 5 },
+    },
+    {
+      id: 'potion',
+      name: 'Potion',
+      kind: 'consumable',
+      heal: 0.5,
+      cooldown: 3,
+      maxStack: 20,
+    },
     { id: 'fang', name: 'Fang', kind: 'material', maxStack: 99, sellPrice: 2 },
-    { id: 'charm', name: 'Fang Charm', kind: 'equipment', slot: 'artifact', bonus: { attack: 10 } },
+    {
+      id: 'charm',
+      name: 'Fang Charm',
+      kind: 'equipment',
+      slot: 'artifact',
+      bonus: { attack: 10 },
+    },
   ].map((i) => ItemDefSchema.parse(i));
   const npc = NpcDefSchema.parse({
     id: 'elder',
@@ -96,7 +190,7 @@ export function makeContent(o: FixtureOverrides = {}): ContentBundle {
       name: 'Wolves',
       giverNpcId: 'elder',
       objectives: [{ type: 'kill', monsterId: 'wolf', count: 1 }],
-      rewards: { xp: 10, gold: 7, items: [{ itemId: 'potion', count: 1 }] },
+      rewards: { gold: 7, items: [{ itemId: 'potion', count: 1 }] },
     },
     {
       id: 'q_fangs',
@@ -138,8 +232,15 @@ export function makeContent(o: FixtureOverrides = {}): ContentBundle {
     id: 'hero',
     name: 'Hero',
     appearanceId: 'look',
-    progressionId: 'prog',
-    stats: { hp: 500, mp: 100, attack: 30, defense: 5, critChance: 0, hpRegen: 10, mpRegen: 5 },
+    stats: {
+      hp: 500,
+      mp: 100,
+      attack: 30,
+      defense: 5,
+      critChance: 0,
+      hpRegen: 10,
+      mpRegen: 5,
+    },
     movement: { speed: 5, radius: 0.4 },
     combat: { range: 1.5, attackInterval: 1 },
     respawnSeconds: 5,
@@ -154,13 +255,12 @@ export function makeContent(o: FixtureOverrides = {}): ContentBundle {
     MonsterDefSchema.parse({
       id: 'wolf',
       name: 'Wolf',
-      level: 1,
+      realm: 'r0',
       appearanceId: 'look',
       stats: { hp: 100, attack: 10, defense: 0, critChance: 0 },
       movement: { speed: 3, radius: 0.5 },
       combat: { range: 1.2, attackInterval: 1 },
       ai: { type: 'melee', aggroRadius: 6, leashRadius: 12, wanderRadius: 0 },
-      xp: 60,
       lootTable: ['wolf_loot'],
       ...extra,
     });
@@ -175,7 +275,13 @@ export function makeContent(o: FixtureOverrides = {}): ContentBundle {
     playerSpawn: { x: 0, z: 0 },
     chunks: [{ id: 'chunk_0_0', instances: [] }],
     spawns: [
-      { id: 'camp', monsterId: 'wolf', position: { x: 0, z: 20 }, count: 1, respawnSeconds: 3 },
+      {
+        id: 'camp',
+        monsterId: 'wolf',
+        position: { x: 0, z: 20 },
+        count: 1,
+        respawnSeconds: 3,
+      },
     ],
     ...o.map,
   });
@@ -189,6 +295,8 @@ export function makeContent(o: FixtureOverrides = {}): ContentBundle {
     items: new Map(items.map((i) => [i.id, i])),
     loot: new Map([[loot.id, loot]]),
     progression: new Map([[progression.id, progression]]),
+    realms: new Map(realms.map((r) => [r.id, r])),
+    cultivation: new Map(cultivation.map((n) => [n.id, n])),
     npcs: new Map([[npc.id, npc]]),
     quests: new Map(quests.map((q) => [q.id, q])),
     shops: new Map([[shop.id, shop]]),

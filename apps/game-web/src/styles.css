@@ -170,18 +170,6 @@ body,
   text-shadow: 0 1px 2px #000;
 }
 
-.xp {
-  height: 4px;
-  background: rgba(0, 0, 0, 0.45);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.xp-fill {
-  height: 100%;
-  background: var(--xp);
-}
-
 /* ---- Action bar --------------------------------------------------------- */
 
 .actionbar {
@@ -868,4 +856,88 @@ kbd {
   border: 1px solid var(--hud-border);
   background: #1d2632;
   cursor: pointer;
+}
+
+/* ---- Tu luyện (cultivation & breakthrough) ------------------------------------ */
+
+.cultivation {
+  width: min(960px, calc(100vw - 24px));
+  max-height: min(86vh, 720px);
+  overflow-y: auto;
+}
+
+.cultivation-paths {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 760px) {
+  .cultivation-paths {
+    grid-template-columns: 1fr;
+  }
+}
+
+.realm-ladder {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.realm-ladder span {
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid var(--hud-border);
+  opacity: 0.5;
+}
+
+.realm-ladder .passed {
+  opacity: 0.8;
+}
+
+.realm-ladder .current {
+  opacity: 1;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.loads {
+  display: flex;
+  gap: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.node {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.node-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.node-action button {
+  margin-left: auto;
+}
+
+.node-open {
+  border-left: 2px solid var(--accent);
+}
+
+.lacking {
+  color: #ff9b8f;
+}
+
+.breakthrough {
+  display: grid;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 210, 63, 0.35);
+  background: rgba(255, 210, 63, 0.05);
+}
+
+.backlash {
+  color: #ff9b8f;
 }

@@ -1,9 +1,7 @@
 id: mob_stag_elite_01
-# Quaternius Ultimate Animated Animals — Stag.gltf (elite variant, tinted)
+# Procedural fallback. Ultimate Animated Animals source is not present.
 kind: monster
-modelAssetId: mob_stag_elite_01
 scale: 0.5
-tint: '#ffd86b'
-animations: { idle: Idle, run: Gallop, attack: Attack_Headbutt, cast: Attack_Kick, hit: Idle_HitReact1, death: Death }
+tint: "#ffd86b"
 hitDelay: 0.3
-placeholder: { shape: box, color: '#c9a24a', height: 1.8, radius: 0.8 }
+placeholder: { shape: box, color: "#c9a24a", height: 1.8, radius: 0.8 }

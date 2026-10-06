@@ -552,19 +552,19 @@ Khi ổn định lâu:
 
 # 13. Quality preset mẫu
 
-| Setting | Low | Medium | High |
-|---|---:|---:|---:|
-| Resolution scale | 0.65 | 0.8 | 1.0 |
-| Visible players | 10 | 25 | 50 |
-| Visible mobs | 25 | 40 | 60 |
-| Shadow | Off | Player | Player + mobs |
-| Shadow texture | - | 512 | 1024 |
-| Particles | 30% | 65% | 100% |
-| Grass | Low | Medium | High |
-| VFX | Low | Medium | High |
-| LOD range | Short | Medium | Long |
-| Post processing | Off | Limited | Full |
-| FPS target | 30 | 45/60 | 60 |
+| Setting          |   Low |  Medium |          High |
+| ---------------- | ----: | ------: | ------------: |
+| Resolution scale |  0.65 |     0.8 |           1.0 |
+| Visible players  |    10 |      25 |            50 |
+| Visible mobs     |    25 |      40 |            60 |
+| Shadow           |   Off |  Player | Player + mobs |
+| Shadow texture   |     - |     512 |          1024 |
+| Particles        |   30% |     65% |          100% |
+| Grass            |   Low |  Medium |          High |
+| VFX              |   Low |  Medium |          High |
+| LOD range        | Short |  Medium |          Long |
+| Post processing  |   Off | Limited |          Full |
+| FPS target       |    30 |   45/60 |            60 |
 
 ---
 
@@ -1878,22 +1878,22 @@ Các tech dưới đây lấp khoảng trống giữa các thành phần đã ch
 
 ## 54.1. Bắt buộc từ Phase 0
 
-| Mảng | Chọn | Ghi chú |
-|---|---|---|
-| Schema validation | Zod | Một nguồn schema cho network message, API body, game-data YAML, env config. |
-| Auth | JWT access token ngắn hạn + refresh token xoay vòng | Refresh token lưu hash trong DB, có thể thu hồi. |
-| Password hashing | argon2id | Không dùng bcrypt/sha cho account mới. |
-| Social login | Google / Apple OAuth (sau) | iOS bắt buộc Sign in with Apple nếu có social login khác. |
-| DB migration | drizzle-kit | Migration versioned, review được trong PR. |
-| Job queue / Worker | BullMQ (Redis) | Mail, phát thưởng, reset daily, leaderboard. |
-| Logging | pino (JSON) | Fastify dùng sẵn. Gắn `requestId`, `accountId`, `roomId`. |
-| Config / secrets | `.env` + Zod validate khi boot | Không bao giờ để secret trong biến `VITE_*`. |
-| Lint / format | Biome | Một tool cho lint + format. |
-| Boundary check | dependency-cruiser | Chặn `game-core` import Babylon/React/DOM (ép quy tắc mục 50.1–50.2). |
-| Local env | Docker Compose | Postgres + Redis. |
-| CI | GitHub Actions | Theo pipeline mục 44. |
-| ID | UUIDv7 | Có thứ tự thời gian, tốt cho index và log. |
-| RNG | PRNG có seed (mulberry32 / xoshiro) trong `game-core` | Loot/crit replay được, test được. |
+| Mảng               | Chọn                                                  | Ghi chú                                                                     |
+| ------------------ | ----------------------------------------------------- | --------------------------------------------------------------------------- |
+| Schema validation  | Zod                                                   | Một nguồn schema cho network message, API body, game-data YAML, env config. |
+| Auth               | JWT access token ngắn hạn + refresh token xoay vòng   | Refresh token lưu hash trong DB, có thể thu hồi.                            |
+| Password hashing   | argon2id                                              | Không dùng bcrypt/sha cho account mới.                                      |
+| Social login       | Google / Apple OAuth (sau)                            | iOS bắt buộc Sign in with Apple nếu có social login khác.                   |
+| DB migration       | drizzle-kit                                           | Migration versioned, review được trong PR.                                  |
+| Job queue / Worker | BullMQ (Redis)                                        | Mail, phát thưởng, reset daily, leaderboard.                                |
+| Logging            | pino (JSON)                                           | Fastify dùng sẵn. Gắn `requestId`, `accountId`, `roomId`.                   |
+| Config / secrets   | `.env` + Zod validate khi boot                        | Không bao giờ để secret trong biến `VITE_*`.                                |
+| Lint / format      | Biome                                                 | Một tool cho lint + format.                                                 |
+| Boundary check     | dependency-cruiser                                    | Chặn `game-core` import Babylon/React/DOM (ép quy tắc mục 50.1–50.2).       |
+| Local env          | Docker Compose                                        | Postgres + Redis.                                                           |
+| CI                 | GitHub Actions                                        | Theo pipeline mục 44.                                                       |
+| ID                 | UUIDv7                                                | Có thứ tự thời gian, tốt cho index và log.                                  |
+| RNG                | PRNG có seed (mulberry32 / xoshiro) trong `game-core` | Loot/crit replay được, test được.                                           |
 
 ## 54.2. Asset tooling (bổ sung cho `tools/`)
 
@@ -1904,14 +1904,14 @@ Các tech dưới đây lấp khoảng trống giữa các thành phần đã ch
 
 ## 54.3. Deploy bản đầu
 
-| Mảng | Chọn |
-|---|---|
-| Game server | VPS (Hetzner/DigitalOcean) hoặc Fly.io. Không dùng serverless cho WebSocket. |
-| Reverse proxy + TLS | Caddy (auto HTTPS) hoặc Nginx. |
-| Web client | Cloudflare Pages; asset trên R2 + CDN. |
-| Database | Postgres managed (Neon/Supabase/RDS) hoặc self-host có backup. |
-| Backup | `pg_dump` theo lịch hoặc PITR. |
-| Scale Colyseus | `@colyseus/redis-presence` + `@colyseus/redis-driver` khi cần nhiều process. |
+| Mảng                | Chọn                                                                         |
+| ------------------- | ---------------------------------------------------------------------------- |
+| Game server         | VPS (Hetzner/DigitalOcean) hoặc Fly.io. Không dùng serverless cho WebSocket. |
+| Reverse proxy + TLS | Caddy (auto HTTPS) hoặc Nginx.                                               |
+| Web client          | Cloudflare Pages; asset trên R2 + CDN.                                       |
+| Database            | Postgres managed (Neon/Supabase/RDS) hoặc self-host có backup.               |
+| Backup              | `pg_dump` theo lịch hoặc PITR.                                               |
+| Scale Colyseus      | `@colyseus/redis-presence` + `@colyseus/redis-driver` khi cần nhiều process. |
 
 ## 54.4. Nên có sớm
 
@@ -1946,13 +1946,13 @@ Nguyên tắc: bảo mật của game này nằm ở **server authoritative + va
 
 ## 55.2. Làm theo phase
 
-| Feature | Yêu cầu |
-|---|---|
-| IAP | Verify receipt Apple/Google ở server, không tin client. |
-| Chat | Lọc từ, mute/report, rate limit riêng. |
-| Marketplace / trade | Escrow, lock item trong giao dịch, phát hiện bất thường qua ledger. |
-| DDoS | Cloudflare trước API/web (WebSocket proxy được). |
-| Dữ liệu cá nhân | Thu thập tối thiểu; DB managed encryption at rest; endpoint xoá tài khoản (App Store bắt buộc). |
+| Feature             | Yêu cầu                                                                                         |
+| ------------------- | ----------------------------------------------------------------------------------------------- |
+| IAP                 | Verify receipt Apple/Google ở server, không tin client.                                         |
+| Chat                | Lọc từ, mute/report, rate limit riêng.                                                          |
+| Marketplace / trade | Escrow, lock item trong giao dịch, phát hiện bất thường qua ledger.                             |
+| DDoS                | Cloudflare trước API/web (WebSocket proxy được).                                                |
+| Dữ liệu cá nhân     | Thu thập tối thiểu; DB managed encryption at rest; endpoint xoá tài khoản (App Store bắt buộc). |
 
 ## 55.3. Không làm
 

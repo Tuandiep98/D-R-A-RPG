@@ -15,12 +15,12 @@ art/third_party/<pack_id>/
 
 Đã kiểm tra trang tác giả ngày 06/10/2026: cả 4 pack đều CC0 và có bản glTF.
 
-| Thư mục (`packId`) | Pack | Link | Dùng cho assetId |
-|---|---|---|---|
-| `quaternius_rpg_characters` | RPG Characters (6 nhân vật rigged + animated) | https://quaternius.com/packs/rpgcharacters.html | `char_player_default` |
-| `quaternius_animated_animals` | Ultimate Animated Animal Pack (12 con, mỗi con 12+ animation) | https://quaternius.com/packs/ultimateanimatedanimals.html | `mob_wolf_01` |
-| `quaternius_space_kit` | Ultimate Space Kit (nhân vật/enemy animated) | https://quaternius.com/packs/ultimatespacekit.html | `mob_robot_scout_01` |
-| `quaternius_nature_megakit` | Stylized Nature MegaKit (bản Standard miễn phí) | https://quaternius.com/packs/stylizednaturemegakit.html | `env_tree_01`, `env_tree_02`, `env_rock_01`, `env_bush_01` |
+| Thư mục (`packId`)            | Pack                                                          | Link                                                      | Dùng cho assetId                                           |
+| ----------------------------- | ------------------------------------------------------------- | --------------------------------------------------------- | ---------------------------------------------------------- |
+| `quaternius_rpg_characters`   | RPG Characters (6 nhân vật rigged + animated)                 | https://quaternius.com/packs/rpgcharacters.html           | `char_player_default`                                      |
+| `quaternius_animated_animals` | Ultimate Animated Animal Pack (12 con, mỗi con 12+ animation) | https://quaternius.com/packs/ultimateanimatedanimals.html | `mob_wolf_01`                                              |
+| `quaternius_space_kit`        | Ultimate Space Kit (nhân vật/enemy animated)                  | https://quaternius.com/packs/ultimatespacekit.html        | `mob_robot_scout_01`                                       |
+| `quaternius_nature_megakit`   | Stylized Nature MegaKit (bản Standard miễn phí)               | https://quaternius.com/packs/stylizednaturemegakit.html   | `env_tree_01`, `env_tree_02`, `env_rock_01`, `env_bush_01` |
 
 Không dùng **Ultimate Nature**: pack đó không có glTF. Nếu Animated Animals không có sói, dùng Husky/Fox hoặc một con trong **Ultimate Monsters** (https://quaternius.com/packs/ultimatemonsters.html).
 

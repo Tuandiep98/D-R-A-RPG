@@ -1,7 +1,7 @@
 id: q_wolf_cull
 name: Dẹp Bầy Sói
-description: Sói rừng quấy phá quanh thôn. Hạ 5 con.
+description: Sói rừng quấy phá đường tới Phế Tích Vô Danh. Hạ 5 con.
 giverNpcId: npc_elder
 objectives:
   - { type: kill, monsterId: wolf_001, count: 5 }
-rewards: { xp: 150, gold: 30, items: [{ itemId: item_potion_hp_small, count: 3 }] }
+rewards: { gold: 30, items: [{ itemId: item_potion_hp_small, count: 3 }] }

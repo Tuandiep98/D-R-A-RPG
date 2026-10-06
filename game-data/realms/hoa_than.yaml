@@ -1,0 +1,8 @@
+id: hoa_than
+order: 4
+name: Hóa Thần
+mechName: Distributed Ascension
+description: Thực thể cấp chiến trường. Domain thay đổi luật của trận đấu.
+bonus: { hp: 20000, mp: 3000, attack: 1300, defense: 380 }
+meridianCapacity: 320
+bodyLoad: 320

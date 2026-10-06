@@ -1,0 +1,4 @@
+id: prop_barrel_01
+kind: environment
+modelAssetId: prop_barrel_01
+placeholder: { shape: cylinder, color: "#765238", height: 1, radius: 0.45 }

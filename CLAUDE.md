@@ -1,11 +1,14 @@
-# D-R-A-RPG
+# D-R-A-RPG — Thiên Cơ Kỷ
 
-RPG online 2.5D semi-mini (Robot + Tu tiên + Võ hiệp). Web/PWA trước, mobile sau.
+RPG online 2.5D semi-mini (Tu Tiên × Cơ Giới). Web/PWA trước, mobile sau. **Không có Character Level**: nhân vật mạnh lên bằng cảnh giới, node tu luyện và đột phá.
 
 Tài liệu chính:
+
+- `docs/plan/00_game_design_master.md` — master plan: lore, thế lực, NPC, progression không level, cảnh giới, breakthrough
 - `docs/plan/01_tech_stack_plan.md` — tech stack, kiến trúc, security baseline (mục 54–57)
 - `docs/plan/02_assets_models_maps_plan.md` — art bible, rig, equipment, map, asset pipeline
 - `docs/plan/03_implementation_roadmap.md` — trạng thái từng phase/hạng mục, việc tiếp theo
+- `docs/asset_sourcing.md` — pack asset/model/map đề xuất theo lore mới, khoảng trống phải tự làm
 - `docs/decision_log.md` — quyết định đã chốt (ưu tiên khi mâu thuẫn với plan)
 - Contracts: `docs/rig_contract.md`, `docs/equipment_contract.md`, `docs/map_contract.md`, `docs/art_bible.md`, `docs/performance_budget.md`, `docs/asset_catalog.md` (tự sinh)
 
@@ -61,8 +64,9 @@ infra/                     docker (compose, Dockerfiles), deploy (Caddyfile)
 
 1. Không import Babylon, React hay DOM vào `game-core`, `game-protocol`, `game-data`, `sim-host` (depcruise chặn).
 2. Server (hoặc `LocalSimHost`) là authoritative. Client chỉ gửi intent qua `SimHost`.
-3. Client không tự tính damage/gold/XP/item/loot/cooldown/HP.
-4. Không hardcode stats quái, item, skill, map trong source — để trong `game-data/`.
+3. Client không tự tính damage/gold/item/loot/cooldown/HP/kết quả đột phá.
+4. Không hardcode stats quái, item, skill, map, cảnh giới, node tu luyện trong source — để trong `game-data/` (`realms/`, `cultivation/`, `progression/`).
+   4b. Không thêm Character Level/XP. Sức mạnh đến từ cảnh giới, node, trang bị; mọi thứ data-driven (D-024).
 5. Thời gian trong sim tính bằng tick (`TICK_RATE = 20`). Không dùng `Math.random()` hay `Date.now()` trong `game-core`; dùng RNG của `World`.
 6. Mọi data quan trọng (intent, snapshot, YAML, env, API body) phải validate bằng Zod.
 7. Không đưa transform/per-frame state vào React state hay Zustand. UI cập nhật 10 Hz.

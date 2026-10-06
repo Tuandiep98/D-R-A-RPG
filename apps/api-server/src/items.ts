@@ -19,7 +19,11 @@ export function addItemToSave(save: PlayerSave, item: ItemDef, count: number): P
   while (left > 0) {
     if (inventory.length >= INVENTORY_CAPACITY) throw new Error('inventory full');
     const add = Math.min(left, item.maxStack);
-    inventory.push({ instanceId: crypto.randomUUID(), itemId: item.id, count: add });
+    inventory.push({
+      instanceId: crypto.randomUUID(),
+      itemId: item.id,
+      count: add,
+    });
     left -= add;
   }
   return { ...save, inventory };

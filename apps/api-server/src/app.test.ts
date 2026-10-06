@@ -36,24 +36,47 @@ const post = (url: string, payload: unknown, token?: string) =>
     headers: token ? { authorization: `Bearer ${token}` } : {},
   });
 const get = (url: string, token?: string) =>
-  app.inject({ method: 'GET', url, headers: token ? { authorization: `Bearer ${token}` } : {} });
+  app.inject({
+    method: 'GET',
+    url,
+    headers: token ? { authorization: `Bearer ${token}` } : {},
+  });
 
 describe('auth', () => {
   it('registers, logs in, rejects bad credentials without leaking which part was wrong', async () => {
     expect(
-      (await post('/auth/register', { username: 'hero', password: 'password123' })).statusCode,
+      (
+        await post('/auth/register', {
+          username: 'hero',
+          password: 'password123',
+        })
+      ).statusCode,
     ).toBe(201);
     expect(
-      (await post('/auth/register', { username: 'HERO', password: 'password123' })).statusCode,
+      (
+        await post('/auth/register', {
+          username: 'HERO',
+          password: 'password123',
+        })
+      ).statusCode,
     ).toBe(409);
     expect((await post('/auth/register', { username: 'x', password: 'short' })).statusCode).toBe(
       400,
     );
-    const wrongPw = await post('/auth/login', { username: 'hero', password: 'nope' });
-    const noUser = await post('/auth/login', { username: 'ghost', password: 'nope' });
+    const wrongPw = await post('/auth/login', {
+      username: 'hero',
+      password: 'nope',
+    });
+    const noUser = await post('/auth/login', {
+      username: 'ghost',
+      password: 'nope',
+    });
     expect(wrongPw.statusCode).toBe(401);
     expect(wrongPw.json()).toEqual(noUser.json());
-    const ok = await post('/auth/login', { username: 'hero', password: 'password123' });
+    const ok = await post('/auth/login', {
+      username: 'hero',
+      password: 'password123',
+    });
     expect(ok.json()).toMatchObject({
       accessToken: expect.any(String),
       refreshToken: expect.any(String),
@@ -61,9 +84,15 @@ describe('auth', () => {
   });
 
   it('rotates refresh tokens and revokes the family on reuse', async () => {
-    await post('/auth/register', { username: 'rotator', password: 'password123' });
+    await post('/auth/register', {
+      username: 'rotator',
+      password: 'password123',
+    });
     const first = (
-      await post('/auth/login', { username: 'rotator', password: 'password123' })
+      await post('/auth/login', {
+        username: 'rotator',
+        password: 'password123',
+      })
     ).json();
     const second = (await post('/auth/refresh', { refreshToken: first.refreshToken })).json();
     expect(second.refreshToken).toBeDefined();
@@ -79,9 +108,15 @@ describe('auth', () => {
 
 describe('characters', () => {
   it('creates characters and issues a session token bound to one of them', async () => {
-    await post('/auth/register', { username: 'player1', password: 'password123' });
+    await post('/auth/register', {
+      username: 'player1',
+      password: 'password123',
+    });
     const { accessToken } = (
-      await post('/auth/login', { username: 'player1', password: 'password123' })
+      await post('/auth/login', {
+        username: 'player1',
+        password: 'password123',
+      })
     ).json();
     expect((await get('/characters')).statusCode).toBe(401);
     const created = await post('/characters', { name: 'Lý Tiêu Dao' }, accessToken);
@@ -89,13 +124,22 @@ describe('characters', () => {
     const { characters } = (await get('/characters', accessToken)).json();
     expect(characters).toHaveLength(1);
     const session = (await post(`/characters/${characters[0].id}/session`, {}, accessToken)).json();
-    expect(session).toMatchObject({ mapId: 'map_sandbox_01', gameServerUrl: 'ws://game.test' });
+    expect(session).toMatchObject({
+      mapId: 'map_sandbox_01',
+      gameServerUrl: 'ws://game.test',
+    });
     expect((await tokens.verifyAccess(session.accessToken)).chr).toBe(characters[0].id);
 
     // Someone else's character cannot be played.
-    await post('/auth/register', { username: 'player2', password: 'password123' });
+    await post('/auth/register', {
+      username: 'player2',
+      password: 'password123',
+    });
     const other = (
-      await post('/auth/login', { username: 'player2', password: 'password123' })
+      await post('/auth/login', {
+        username: 'player2',
+        password: 'password123',
+      })
     ).json();
     expect(
       (await post(`/characters/${characters[0].id}/session`, {}, other.accessToken)).statusCode,
@@ -105,7 +149,10 @@ describe('characters', () => {
 
 describe('admin', () => {
   it('requires a staff role and TOTP; staff actions are audited', async () => {
-    await post('/auth/register', { username: 'gm_one', password: 'password123' });
+    await post('/auth/register', {
+      username: 'gm_one',
+      password: 'password123',
+    });
     const gm = await repo.findAccountByUsername('gm_one');
     if (!gm) throw new Error('no gm');
     await repo.setRole(gm.id, 'gm');
@@ -123,7 +170,12 @@ describe('admin', () => {
     );
     expect(enable.statusCode).toBe(200);
     expect(
-      (await post('/auth/login', { username: 'gm_one', password: 'password123' })).json(),
+      (
+        await post('/auth/login', {
+          username: 'gm_one',
+          password: 'password123',
+        })
+      ).json(),
     ).toEqual({ mfaRequired: true });
     const staff = (
       await post('/auth/login', {
@@ -152,7 +204,10 @@ describe('admin', () => {
 
     // Players never reach admin routes, even with a valid token.
     const player = (
-      await post('/auth/login', { username: 'player1', password: 'password123' })
+      await post('/auth/login', {
+        username: 'player1',
+        password: 'password123',
+      })
     ).json();
     expect((await get('/admin/audit', player.accessToken)).statusCode).toBe(403);
   });
@@ -160,8 +215,14 @@ describe('admin', () => {
 
 describe('social', () => {
   it('manages friends and guilds for owned characters only', async () => {
-    await post('/auth/register', { username: 'soc_a', password: 'password123' });
-    await post('/auth/register', { username: 'soc_b', password: 'password123' });
+    await post('/auth/register', {
+      username: 'soc_a',
+      password: 'password123',
+    });
+    await post('/auth/register', {
+      username: 'soc_b',
+      password: 'password123',
+    });
     const ta = (await post('/auth/login', { username: 'soc_a', password: 'password123' })).json()
       .accessToken;
     const tb = (await post('/auth/login', { username: 'soc_b', password: 'password123' })).json()

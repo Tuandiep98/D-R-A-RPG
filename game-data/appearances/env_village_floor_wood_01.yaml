@@ -1,0 +1,4 @@
+id: env_village_floor_wood_01
+kind: ground
+modelAssetId: env_village_floor_wood_01
+placeholder: { shape: box, color: "#8a6847", height: 0.05, radius: 1 }

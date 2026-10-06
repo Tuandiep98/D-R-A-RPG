@@ -1,0 +1,4 @@
+id: env_village_fence_01
+kind: environment
+modelAssetId: env_village_fence_01
+placeholder: { shape: box, color: "#79583c", height: 1.1, radius: 1 }

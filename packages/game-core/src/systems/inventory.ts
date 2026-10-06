@@ -2,7 +2,7 @@ import type { ItemInstanceId } from '@rpg/game-protocol';
 import type { SimContext } from '../context';
 import type { Entity, EquipSlot, LedgerEntry } from '../entity';
 import { secondsToTicks } from '../time';
-import { recomputePlayerStats } from './progression';
+import { realmRank, recomputePlayerStats } from './progression';
 
 export const INVENTORY_CAPACITY = 40;
 
@@ -24,7 +24,11 @@ export function addItem(ctx: SimContext, e: Entity, itemId: string, count: numbe
   }
   while (left > 0 && p.inventory.length < INVENTORY_CAPACITY) {
     const add = Math.min(left, def.maxStack);
-    p.inventory.push({ instanceId: ctx.newItemInstanceId(), itemId, count: add });
+    p.inventory.push({
+      instanceId: ctx.newItemInstanceId(),
+      itemId,
+      count: add,
+    });
     left -= add;
   }
   const gained = count - left;
@@ -65,8 +69,8 @@ export function equip(ctx: SimContext, e: Entity, instanceId: ItemInstanceId): b
     ctx.notice(e.id, 'invalid');
     return false;
   }
-  if (def.level > e.level) {
-    ctx.notice(e.id, 'level_too_low');
+  if (def.realm && realmRank(ctx, def.realm) > e.realm) {
+    ctx.notice(e.id, 'realm_too_low');
     return false;
   }
   p.equipment[def.slot as EquipSlot] = instanceId;

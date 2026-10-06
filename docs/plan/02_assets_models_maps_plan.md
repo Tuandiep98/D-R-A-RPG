@@ -25,19 +25,19 @@ Deliverables:
 
 ## 2. Đầu vào cần có trước khi triển khai
 
-| Đầu vào | Mặc định để bắt đầu | Khi nào cần chốt |
-|---|---|---|
-| Repository và cấu trúc game | Kiểm tra repo nếu có; không tự tạo lại kiến trúc sẵn có | Trước tích hợp |
-| Renderer | Dùng engine hiện có; nếu chưa có, spike Three.js và Babylon.js rồi chọn một | Giai đoạn 0 |
-| Thiết bị chuẩn | Một Android tầm trung và một iPhone thực tế; ghi model/OS/browser | Trước khóa budget |
-| Camera | Orthographic, không xoay tự do trong MVP | Trước dựng asset chuẩn |
-| Gameplay | Di chuyển trên mặt đất, combat thời gian thực, 10–20 quái cùng hiện diện | Vertical slice |
-| Player | Một body prototype; hỗ trợ kiến trúc mở rộng body khác | MVP |
-| Phong cách | Semi-mini khoảng 4.5–5.5 đầu, mục tiêu gần 5 đầu | Art test |
-| Trang bị | 3 bộ võ hiệp / tu tiên / cơ giới dùng cùng nhân vật chuẩn | MVP |
-| Map đầu tiên | Rừng và di tích môn phái có khu cơ quan cổ | Blockout |
-| Animation còn thiếu | Kiếm/đao, quyền, skill, phản ứng, chết; xác định sau audit pack | Trước combat polish |
-| Multiplayer | Chưa giả định có; asset loading tách khỏi networking | Trước mở rộng |
+| Đầu vào                     | Mặc định để bắt đầu                                                         | Khi nào cần chốt       |
+| --------------------------- | --------------------------------------------------------------------------- | ---------------------- |
+| Repository và cấu trúc game | Kiểm tra repo nếu có; không tự tạo lại kiến trúc sẵn có                     | Trước tích hợp         |
+| Renderer                    | Dùng engine hiện có; nếu chưa có, spike Three.js và Babylon.js rồi chọn một | Giai đoạn 0            |
+| Thiết bị chuẩn              | Một Android tầm trung và một iPhone thực tế; ghi model/OS/browser           | Trước khóa budget      |
+| Camera                      | Orthographic, không xoay tự do trong MVP                                    | Trước dựng asset chuẩn |
+| Gameplay                    | Di chuyển trên mặt đất, combat thời gian thực, 10–20 quái cùng hiện diện    | Vertical slice         |
+| Player                      | Một body prototype; hỗ trợ kiến trúc mở rộng body khác                      | MVP                    |
+| Phong cách                  | Semi-mini khoảng 4.5–5.5 đầu, mục tiêu gần 5 đầu                            | Art test               |
+| Trang bị                    | 3 bộ võ hiệp / tu tiên / cơ giới dùng cùng nhân vật chuẩn                   | MVP                    |
+| Map đầu tiên                | Rừng và di tích môn phái có khu cơ quan cổ                                  | Blockout               |
+| Animation còn thiếu         | Kiếm/đao, quyền, skill, phản ứng, chết; xác định sau audit pack             | Trước combat polish    |
+| Multiplayer                 | Chưa giả định có; asset loading tách khỏi networking                        | Trước mở rộng          |
 
 Agent tự quyết các chi tiết reversible và ghi vào decision log. Chỉ cần làm rõ khi quyết định thay đổi phạm vi hoặc tạo chi phí bên ngoài. Không tự mua asset.
 
@@ -53,15 +53,15 @@ Agent tự quyết các chi tiết reversible và ghi vào decision log. Chỉ c
 - Thống nhất độ bão hòa, độ mềm cạnh, mức chi tiết và mật độ texture giữa các pack.
 - Tỷ lệ semi-mini không tự làm giảm poly hay texture: phải tối ưu riêng.
 
-| Nhóm | Silhouette | Vật liệu / điểm nhấn |
-|---|---|---|
-| Võ hiệp | Thân gọn, áo bào, tóc dài, kiếm/đao rõ | Vải, da, thép, gỗ |
-| Tu tiên | Tay áo rộng, pháp khí, phi kiếm | Ngọc, vàng, vải, ánh sáng linh lực |
-| Robot/cyborg | Vai, cẳng tay lớn; khớp và giáp góc cạnh | Kim loại stylized, gốm, năng lượng |
-| Ma tu | Bất đối xứng, sừng/giáp, hình khối sắc | Tím/đỏ có kiểm soát |
-| Quái | Khác biệt về hình khối và chuyển động | Fantasy hoặc lai cơ giới |
-| Boss | Silhouette riêng, điểm yếu rõ | Quy mô khoảng 1.8–4 lần player để thử |
-| Pet | Có thể tiny/chibi | Ít chi tiết, dễ nhận biết |
+| Nhóm         | Silhouette                               | Vật liệu / điểm nhấn                  |
+| ------------ | ---------------------------------------- | ------------------------------------- |
+| Võ hiệp      | Thân gọn, áo bào, tóc dài, kiếm/đao rõ   | Vải, da, thép, gỗ                     |
+| Tu tiên      | Tay áo rộng, pháp khí, phi kiếm          | Ngọc, vàng, vải, ánh sáng linh lực    |
+| Robot/cyborg | Vai, cẳng tay lớn; khớp và giáp góc cạnh | Kim loại stylized, gốm, năng lượng    |
+| Ma tu        | Bất đối xứng, sừng/giáp, hình khối sắc   | Tím/đỏ có kiểm soát                   |
+| Quái         | Khác biệt về hình khối và chuyển động    | Fantasy hoặc lai cơ giới              |
+| Boss         | Silhouette riêng, điểm yếu rõ            | Quy mô khoảng 1.8–4 lần player để thử |
+| Pet          | Có thể tiny/chibi                        | Ít chi tiết, dễ nhận biết             |
 
 ### 3.2. Bộ hình tham chiếu cần tạo
 
@@ -86,23 +86,23 @@ Agent tự quyết các chi tiết reversible và ghi vào decision log. Chỉ c
 
 ### 4.1. Danh sách nguồn cần audit
 
-| Nguồn / bộ | Vai trò dự kiến | Link |
-|---|---|---|
-| Quaternius Universal Base Characters | Ứng viên base/skeleton player | https://quaternius.com/packs/universalbasecharacters.html |
-| Modular Character Outfits Fantasy | Tham khảo trang bị modular | https://quaternius.com/packs/modularcharacteroutfitsfantasy.html |
-| Universal Animation Library | Animation/retarget | https://quaternius.itch.io/universal-animation-library |
-| Quaternius RPG Characters | NPC/player prototype | https://quaternius.com/packs/rpgcharacters.html |
-| Quaternius Ultimate RPG | Quái, props và prototype | https://quaternius.com/packs/ultimaterpg.html |
-| Quaternius Ultimate Space Kit | Robot, sci-fi props | https://quaternius.com/packs/ultimatespacekit.html |
-| Ultimate Modular Men | Tham khảo modular/NPC | https://quaternius.com/packs/ultimatemodularcharacters.html |
-| Ultimate Modular Women | Tham khảo modular/NPC | https://quaternius.com/packs/ultimatemodularwomen.html |
-| Kenney Assets | Environment/props/base bổ sung | https://kenney.nl/assets |
-| Kenney Protagonists | Prototype nhân vật/cyborg | https://kenney.nl/assets/animated-characters-protagonists |
-| Kenney Survivors | NPC prototype | https://kenney.nl/assets/animated-characters-survivors |
-| Poly Pizza | Tìm props/environment đồng style | https://poly.pizza/ |
-| OpenGameArt LowPoly RPG Characters | Đối chiếu nguồn; tránh nhập trùng pack | https://opengameart.org/content/lowpoly-rpg-characters |
-| Stylized Humanoid Character YW | Ứng viên base cần kiểm tra kỹ | https://opengameart.org/content/base-rigged-stylized-humanoid-character-yw |
-| itch.io Free CC0 RPG | Khám phá nguồn bổ sung | https://itch.io/game-assets/free/assets-cc0/genre-rpg |
+| Nguồn / bộ                           | Vai trò dự kiến                        | Link                                                                       |
+| ------------------------------------ | -------------------------------------- | -------------------------------------------------------------------------- |
+| Quaternius Universal Base Characters | Ứng viên base/skeleton player          | https://quaternius.com/packs/universalbasecharacters.html                  |
+| Modular Character Outfits Fantasy    | Tham khảo trang bị modular             | https://quaternius.com/packs/modularcharacteroutfitsfantasy.html           |
+| Universal Animation Library          | Animation/retarget                     | https://quaternius.itch.io/universal-animation-library                     |
+| Quaternius RPG Characters            | NPC/player prototype                   | https://quaternius.com/packs/rpgcharacters.html                            |
+| Quaternius Ultimate RPG              | Quái, props và prototype               | https://quaternius.com/packs/ultimaterpg.html                              |
+| Quaternius Ultimate Space Kit        | Robot, sci-fi props                    | https://quaternius.com/packs/ultimatespacekit.html                         |
+| Ultimate Modular Men                 | Tham khảo modular/NPC                  | https://quaternius.com/packs/ultimatemodularcharacters.html                |
+| Ultimate Modular Women               | Tham khảo modular/NPC                  | https://quaternius.com/packs/ultimatemodularwomen.html                     |
+| Kenney Assets                        | Environment/props/base bổ sung         | https://kenney.nl/assets                                                   |
+| Kenney Protagonists                  | Prototype nhân vật/cyborg              | https://kenney.nl/assets/animated-characters-protagonists                  |
+| Kenney Survivors                     | NPC prototype                          | https://kenney.nl/assets/animated-characters-survivors                     |
+| Poly Pizza                           | Tìm props/environment đồng style       | https://poly.pizza/                                                        |
+| OpenGameArt LowPoly RPG Characters   | Đối chiếu nguồn; tránh nhập trùng pack | https://opengameart.org/content/lowpoly-rpg-characters                     |
+| Stylized Humanoid Character YW       | Ứng viên base cần kiểm tra kỹ          | https://opengameart.org/content/base-rigged-stylized-humanoid-character-yw |
+| itch.io Free CC0 RPG                 | Khám phá nguồn bổ sung                 | https://itch.io/game-assets/free/assets-cc0/genre-rpg                      |
 
 Không mặc định mọi asset trên một website là CC0. Không mặc định các pack có humanoid rig dùng chung bone hierarchy hoặc animation trực tiếp. Kiểm tra compatibility bằng import và animation test.
 
@@ -185,14 +185,14 @@ Baseline: idle, walk, run, turn, attack, cast, hit, death; thêm dodge nếu gam
 
 ### 8.1. Kit modular
 
-| Nhóm | Asset cần có |
-|---|---|
-| Ground | Cỏ, đất, đá, đường, mép terrain |
-| Nature | 3 cây, 2 bụi, 3 đá, cỏ cụm, vách đá |
-| Structures | Tường, cổng, bậc thang, cầu, nhà nhỏ, đền |
-| Props | Đèn, biển, rương, thùng, tượng, đống lửa |
-| Tech | Cột năng lượng, máy cổ, panel, cơ quan |
-| Gameplay | Spawn marker, portal, checkpoint, boss arena |
+| Nhóm       | Asset cần có                                 |
+| ---------- | -------------------------------------------- |
+| Ground     | Cỏ, đất, đá, đường, mép terrain              |
+| Nature     | 3 cây, 2 bụi, 3 đá, cỏ cụm, vách đá          |
+| Structures | Tường, cổng, bậc thang, cầu, nhà nhỏ, đền    |
+| Props      | Đèn, biển, rương, thùng, tượng, đống lửa     |
+| Tech       | Cột năng lượng, máy cổ, panel, cơ quan       |
+| Gameplay   | Spawn marker, portal, checkpoint, boss arena |
 
 Kit là source modular; runtime có thể batch thành chunk để giảm overhead. Không buộc toàn map thành một GLB, cũng không buộc mỗi viên đá là một draw call riêng.
 
@@ -246,15 +246,15 @@ Công cụ tối thiểu: xem map, đặt/move/rotate/snap object, chọn asset,
 - Chạy combat 10 phút và chuyển map lặp lại để phát hiện tăng memory/leak.
 - Budget phải điều chỉnh từ profile thực; ghi cấu hình thiết bị, viewport và quality khi báo cáo.
 
-| Loại | LOD0 tham khảo |
-|---|---:|
-| Player hoàn chỉnh gồm trang bị | 10–20k triangles |
-| NPC | 5–12k |
-| Quái thường | 3–10k |
-| Tinh anh | 10–20k |
-| Boss | 20–50k tùy kích thước |
-| Vũ khí riêng | 500–4k; vẫn tính vào tổng player |
-| Prop | 100–5k tùy vai trò |
+| Loại                           |                   LOD0 tham khảo |
+| ------------------------------ | -------------------------------: |
+| Player hoàn chỉnh gồm trang bị |                 10–20k triangles |
+| NPC                            |                            5–12k |
+| Quái thường                    |                            3–10k |
+| Tinh anh                       |                           10–20k |
+| Boss                           |            20–50k tùy kích thước |
+| Vũ khí riêng                   | 500–4k; vẫn tính vào tổng player |
+| Prop                           |               100–5k tùy vai trò |
 
 Baseline texture: props nhỏ 256–512; character atlas 1024; asset nổi bật tối đa 2048 khi có lý do. Đây là kích thước khởi điểm, không áp dụng máy móc cho mọi asset.
 
@@ -370,8 +370,8 @@ Naming: lowercase snake_case; ID ổn định, không dùng tên hiển thị l�
   "rigId": "humanoid_v1",
   "bodyTypes": ["regular_v1"],
   "slots": {
-    "chest": {"assetId": "armor_wuxia_chest_01"},
-    "main_hand": {"assetId": "weapon_sword_iron_01", "socket": "hand_r"}
+    "chest": { "assetId": "armor_wuxia_chest_01" },
+    "main_hand": { "assetId": "weapon_sword_iron_01", "socket": "hand_r" }
   },
   "bodyMasks": ["torso"],
   "materialVariant": "default",
@@ -386,16 +386,20 @@ Naming: lowercase snake_case; ID ổn định, không dùng tên hiển thị l�
   "mapId": "map_forest_mechanism_01",
   "schemaVersion": 1,
   "seed": 1001,
-  "chunks": [{
-    "id": "chunk_0_0",
-    "bounds": {"min": [0, 0, 0], "max": [32, 12, 32]},
-    "instances": [{
-      "assetId": "env_forest_tree_01",
-      "position": [4, 0, 8],
-      "rotationEulerRad": [0, 0, 0],
-      "scale": [1, 1, 1]
-    }]
-  }],
+  "chunks": [
+    {
+      "id": "chunk_0_0",
+      "bounds": { "min": [0, 0, 0], "max": [32, 12, 32] },
+      "instances": [
+        {
+          "assetId": "env_forest_tree_01",
+          "position": [4, 0, 8],
+          "rotationEulerRad": [0, 0, 0],
+          "scale": [1, 1, 1]
+        }
+      ]
+    }
+  ],
   "spawns": [],
   "portals": [],
   "navigationAssetId": "nav_forest_mechanism_01"
@@ -423,17 +427,17 @@ Giữ bản trước tối ưu để so sánh. Không overwrite source. Build ph
 
 ## 15. Roadmap và phụ thuộc
 
-| Giai đoạn | Việc thực hiện | Đầu ra / điều kiện qua |
-|---|---|---|
-| 0 — Khảo sát | Kiểm tra repo, engine, thiết bị, audit vài pack | Decision log; chọn renderer và ứng viên base |
-| 1 — Art test | Camera, palette, lineup 3 hệ, vật liệu | Art Bible v0; silhouette rõ trên mobile |
-| 2 — Character spike | Base, rig, 3 outfit, 2 weapon, retarget | Thay đồ + đi/chạy/đánh không méo nghiêm trọng |
-| 3 — Map blockout | Layout, collision/nav, spawn, boss arena | Chơi hết map bằng hình khối đơn giản |
-| 4 — Vertical slice | 3 quái, robot, tinh anh, boss, VFX/loot | Loop di chuyển → đánh → nhặt → thay đồ → boss |
-| 5 — Asset build | Export/optimize/validate/manifest/cache | Tái build được; lỗi asset có fallback |
-| 6 — Tối ưu | Profile, LOD, instancing, quality tiers | Đạt mục tiêu FPS và loading trên thiết bị chuẩn |
-| 7 — Khóa chuẩn | Review visual/technical; sửa lệch style | Art Bible v1 và contracts ổn định |
-| 8 — Mở rộng | Biome, outfit, quái/boss mới | Thêm content qua pipeline mà không sửa core tùy tiện |
+| Giai đoạn           | Việc thực hiện                                  | Đầu ra / điều kiện qua                               |
+| ------------------- | ----------------------------------------------- | ---------------------------------------------------- |
+| 0 — Khảo sát        | Kiểm tra repo, engine, thiết bị, audit vài pack | Decision log; chọn renderer và ứng viên base         |
+| 1 — Art test        | Camera, palette, lineup 3 hệ, vật liệu          | Art Bible v0; silhouette rõ trên mobile              |
+| 2 — Character spike | Base, rig, 3 outfit, 2 weapon, retarget         | Thay đồ + đi/chạy/đánh không méo nghiêm trọng        |
+| 3 — Map blockout    | Layout, collision/nav, spawn, boss arena        | Chơi hết map bằng hình khối đơn giản                 |
+| 4 — Vertical slice  | 3 quái, robot, tinh anh, boss, VFX/loot         | Loop di chuyển → đánh → nhặt → thay đồ → boss        |
+| 5 — Asset build     | Export/optimize/validate/manifest/cache         | Tái build được; lỗi asset có fallback                |
+| 6 — Tối ưu          | Profile, LOD, instancing, quality tiers         | Đạt mục tiêu FPS và loading trên thiết bị chuẩn      |
+| 7 — Khóa chuẩn      | Review visual/technical; sửa lệch style         | Art Bible v1 và contracts ổn định                    |
+| 8 — Mở rộng         | Biome, outfit, quái/boss mới                    | Thêm content qua pipeline mà không sửa core tùy tiện |
 
 Không mở rộng kho asset trước khi giai đoạn 6 đạt yêu cầu. Chưa ấn định thời gian vì phụ thuộc nhân lực, asset thực tế và engine.
 
@@ -500,19 +504,19 @@ Không mở rộng kho asset trước khi giai đoạn 6 đạt yêu cầu. Chư
 
 ## 18. Rủi ro và cách xử lý
 
-| Rủi ro | Cách xử lý |
-|---|---|
-| Pack khác style | Lineup test trước tích hợp, chỉnh materials/proportions |
-| Rig nhìn giống nhưng không tương thích | Retarget/bind-pose audit và test animation |
-| Hàng trăm item làm bùng nổ content | Appearance families, palette variants, rarity rules |
-| Áo bào/tóc xuyên giáp | Compatibility rules, body masks, pose tests |
-| Draw calls từ modular character | Giảm material, merge có kiểm chứng, hạn chế parts |
-| VFX/bloom quá nặng | Pool, emitter cap, quality tiers, giữ telegraph |
-| Map load quá lớn | Chunk/dependency loading, atlas theo biome |
-| Atlas/merge làm mất culling | Chia batch theo khu vực và usage |
-| AI mesh khó rig | Cleanup/retopo; dùng làm concept nếu sửa quá tốn |
-| Nguồn/license không rõ | Quarantine asset, chỉ nhận khi có bằng chứng |
-| Web/mobile khác desktop | Kiểm tra thiết bị thực từ sớm |
+| Rủi ro                                 | Cách xử lý                                              |
+| -------------------------------------- | ------------------------------------------------------- |
+| Pack khác style                        | Lineup test trước tích hợp, chỉnh materials/proportions |
+| Rig nhìn giống nhưng không tương thích | Retarget/bind-pose audit và test animation              |
+| Hàng trăm item làm bùng nổ content     | Appearance families, palette variants, rarity rules     |
+| Áo bào/tóc xuyên giáp                  | Compatibility rules, body masks, pose tests             |
+| Draw calls từ modular character        | Giảm material, merge có kiểm chứng, hạn chế parts       |
+| VFX/bloom quá nặng                     | Pool, emitter cap, quality tiers, giữ telegraph         |
+| Map load quá lớn                       | Chunk/dependency loading, atlas theo biome              |
+| Atlas/merge làm mất culling            | Chia batch theo khu vực và usage                        |
+| AI mesh khó rig                        | Cleanup/retopo; dùng làm concept nếu sửa quá tốn        |
+| Nguồn/license không rõ                 | Quarantine asset, chỉ nhận khi có bằng chứng            |
+| Web/mobile khác desktop                | Kiểm tra thiết bị thực từ sớm                           |
 
 ## 19. Chỉ dẫn cho agent triển khai
 

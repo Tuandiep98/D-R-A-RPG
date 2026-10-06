@@ -1,4 +1,4 @@
-import type { ContentBundle, MapDef } from '@rpg/game-data';
+import { type ContentBundle, type MapDef, type RealmDef, realmLadder } from '@rpg/game-data';
 import type {
   EntityId,
   EntitySnapshot,
@@ -14,6 +14,7 @@ import { type Bounds, clampToBounds, type Vec2 } from './math';
 import { Rng } from './rng';
 import { aiSystem } from './systems/ai';
 import { combatSystem } from './systems/combat';
+import { breakthroughChance } from './systems/cultivation';
 import { applyIntents, pendingSystem, type QueuedIntent } from './systems/intents';
 import { addItem, equip, INVENTORY_CAPACITY } from './systems/inventory';
 import { actionSystem, lifeSystem } from './systems/life';
@@ -21,7 +22,7 @@ import { lootSystem, makeInert } from './systems/loot';
 import { movementSystem } from './systems/movement';
 import { questProgress } from './systems/npc';
 import { Parties } from './systems/party';
-import { recomputePlayerStats, xpToNext } from './systems/progression';
+import { cultivationLoad, realmRank, recomputePlayerStats } from './systems/progression';
 import { skillSystem } from './systems/skills';
 import { secondsToTicks } from './time';
 
@@ -62,6 +63,7 @@ export class World implements SimContext {
   readonly obstacles: CircleObstacle[];
   readonly map: MapDef;
   readonly content: ContentBundle;
+  readonly realms: readonly RealmDef[];
   readonly nav: NavQuery | null;
   readonly parties = new Parties();
   private readonly entityMap = new Map<EntityId, Entity>();
@@ -79,6 +81,7 @@ export class World implements SimContext {
     const map = opts.content.maps.get(opts.mapId);
     if (!map) throw new Error(`Unknown map "${opts.mapId}"`);
     this.content = opts.content;
+    this.realms = realmLadder(opts.content);
     this.map = map;
     this.nav = opts.nav ?? null;
     this.rng = new Rng(opts.seed ?? map.seed);
@@ -189,7 +192,7 @@ export class World implements SimContext {
       defId: def.id,
       faction: 'players',
       inert: false,
-      level: save?.level ?? 1,
+      realm: realmRank(this, save?.realm),
       pos,
       yaw: 0,
       movement: {
@@ -231,12 +234,17 @@ export class World implements SimContext {
         characterId: def.id,
         name: opts.name ?? def.name,
         partyId: null,
-        xp: save?.xp ?? 0,
         gold: save?.gold ?? 0,
+        // Nodes removed from content are dropped instead of failing the load.
+        nodes: (save?.nodes ?? []).filter((n) => this.content.cultivation.has(n)),
+        backlashUntilTick: 0,
         inventory: save ? save.inventory.map((i) => ({ ...i })) : [],
         equipment: save ? { ...save.equipment } : {},
         itemReadyAtTick: 0,
-        quests: (save?.quests ?? []).map((q) => ({ ...q, progress: [...q.progress] })),
+        quests: (save?.quests ?? []).map((q) => ({
+          ...q,
+          progress: [...q.progress],
+        })),
       },
       loot: null,
       portal: null,
@@ -270,8 +278,9 @@ export class World implements SimContext {
     if (!e?.player) return null;
     return {
       characterId: e.player.characterId,
-      level: e.level,
-      xp: e.player.xp,
+      realm: this.realms[e.realm]?.id ?? this.realms[0]?.id ?? '',
+      realmRank: e.realm,
+      nodes: [...e.player.nodes],
       gold: e.player.gold,
       hp: e.life.alive ? e.stats.hp : e.stats.maxHp,
       mp: e.stats.mp,
@@ -285,14 +294,16 @@ export class World implements SimContext {
     const e = this.entityMap.get(id);
     const p = e?.player;
     if (!e || !p) return null;
-    const def = this.content.characters.get(p.characterId);
-    const prog = def ? this.content.progression.get(def.progressionId) : undefined;
+    const load = cultivationLoad(this, p.nodes);
     return {
       id: e.id,
       characterId: p.characterId,
-      level: e.level,
-      xp: p.xp,
-      xpToNext: prog ? xpToNext(prog, e.level) : 0,
+      realm: this.realms[e.realm]?.id ?? '',
+      nodes: [...p.nodes],
+      meridianLoad: load.meridian,
+      bodyLoad: load.body,
+      breakthroughChance: breakthroughChance(this, e),
+      backlashUntilTick: p.backlashUntilTick,
       hp: e.stats.hp,
       maxHp: e.stats.maxHp,
       mp: e.stats.mp,
@@ -304,7 +315,10 @@ export class World implements SimContext {
         critChance: e.stats.critChance,
         speed: e.movement.speed,
       },
-      skills: [...e.skills].map(([skillId, readyAtTick]) => ({ skillId, readyAtTick })),
+      skills: [...e.skills].map(([skillId, readyAtTick]) => ({
+        skillId,
+        readyAtTick,
+      })),
       inventory: p.inventory.map((i) => ({ ...i })),
       inventoryCapacity: INVENTORY_CAPACITY,
       equipment: { ...p.equipment },
@@ -331,7 +345,7 @@ export class World implements SimContext {
               {
                 id,
                 name: m.player.name,
-                level: m.level,
+                realm: m.realm,
                 hp: Math.round(m.stats.hp),
                 maxHp: Math.round(m.stats.maxHp),
               },
@@ -393,7 +407,7 @@ export class World implements SimContext {
           defId: def.id,
           faction: 'monsters',
           inert: false,
-          level: def.level,
+          realm: realmRank(this, def.realm),
           pos: { ...home },
           yaw: this.rng.range(-Math.PI, Math.PI),
           movement: {
@@ -450,7 +464,10 @@ export class World implements SimContext {
     if (radius <= 0) return { ...center };
     const angle = this.rng.range(0, Math.PI * 2);
     const r = Math.sqrt(this.rng.next()) * radius;
-    return { x: center.x + Math.sin(angle) * r, z: center.z + Math.cos(angle) * r };
+    return {
+      x: center.x + Math.sin(angle) * r,
+      z: center.z + Math.cos(angle) * r,
+    };
   }
 }
 
@@ -466,13 +483,17 @@ function toSnapshot(e: Entity): EntitySnapshot {
     yaw: round(e.yaw),
     hp: Math.max(0, Math.round(e.stats.hp)),
     maxHp: Math.round(e.stats.maxHp),
-    level: e.level,
+    realm: e.realm,
     action: e.action,
     targetId: e.combat.targetId,
     ownerId: e.loot?.ownerId ?? null,
     phase: e.ai?.phase ?? 0,
     cast: e.cast
-      ? { skillId: e.cast.skillId, startTick: e.cast.startTick, endTick: e.cast.endTick }
+      ? {
+          skillId: e.cast.skillId,
+          startTick: e.cast.startTick,
+          endTick: e.cast.endTick,
+        }
       : null,
     gear: e.player ? gearOf(e) : null,
     name: e.player?.name ?? null,

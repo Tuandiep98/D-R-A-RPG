@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { realmName } from '../content';
 import {
   acceptFriend,
   addFriend,
@@ -66,7 +67,7 @@ export function SocialPanel() {
         {data?.friends.map((f) => (
           <div key={f.id} className="npc-row">
             <span>
-              {f.name} <span className="muted small">Lv {f.level}</span>
+              {f.name} <span className="muted small">{realmName(f.realm)}</span>
               {f.status === 'incoming' && <span className="small reward"> · muốn kết bạn</span>}
               {f.status === 'outgoing' && <span className="small muted"> · đã gửi lời mời</span>}
             </span>
@@ -115,7 +116,7 @@ export function SocialPanel() {
           {data.guild.members.map((m) => (
             <div key={m.id} className="small">
               {m.rank === 'leader' ? '★ ' : ''}
-              {m.name} · Lv {m.level}
+              {m.name} · {realmName(m.realm)}
             </div>
           ))}
         </div>

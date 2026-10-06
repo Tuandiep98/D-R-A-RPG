@@ -1,0 +1,19 @@
+id: truc_co
+order: 1
+name: Trúc Cơ
+mechName: Foundation Frame
+description: Từ người được cường hoá thành chiến binh. Nền móng quyết định build dài hạn.
+bonus: { hp: 450, mp: 80, attack: 28, defense: 10 }
+meridianCapacity: 80
+bodyLoad: 80
+breakthrough:
+  minNodes: 3
+  quests: [q_elite_stag]
+  materials:
+    - { itemId: item_truc_co_dan, count: 1 }
+    - { itemId: item_robot_scrap, count: 6 }
+  gold: 200
+  baseChance: 0.6
+  chancePerExtraNode: 0.1
+  backlashSeconds: 90
+  backlashAttack: 0.75

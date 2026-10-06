@@ -6,7 +6,7 @@ import { secondsToTicks } from '../time';
 
 export const PARTY_MAX = 5;
 const INVITE_SECONDS = 30;
-/** Members this close to a kill share its XP (tech plan Phase 8). */
+/** Members this close to a kill share its quest credit (tech plan Phase 8). */
 export const PARTY_SHARE_RANGE = 40;
 
 export interface Party {
@@ -115,7 +115,7 @@ export class Parties implements PartyService {
     void party;
   }
 
-  /** Party members (including `e`) close to `pos`, for XP sharing. */
+  /** Party members (including `e`) close to `pos`, for kill credit. */
   nearbyMembers(ctx: SimContext, e: Entity, pos: { x: number; z: number }): Entity[] {
     const party =
       e.player?.partyId !== null && e.player?.partyId !== undefined
@@ -138,7 +138,3 @@ export class Parties implements PartyService {
     );
   }
 }
-
-/** Shared XP: everyone gets a slice, with +20% per extra member as a grouping bonus. */
-export const sharedXp = (xp: number, members: number): number =>
-  Math.round((xp * (1 + 0.2 * (members - 1))) / members);

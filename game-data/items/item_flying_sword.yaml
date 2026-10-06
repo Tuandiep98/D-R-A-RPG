@@ -4,7 +4,7 @@ kind: equipment
 slot: artifact
 rarity: epic
 icon: "🗲"
-level: 6
+realm: truc_co
 bonus: { attack: 10, mp: 40 }
 sellPrice: 400
 appearanceId: equip_flying_sword_01

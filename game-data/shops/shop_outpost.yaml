@@ -1,5 +1,5 @@
 id: shop_outpost
-name: Hậu Cần Trạm Gác
+name: Hậu Cần Doanh Trại
 buybackRate: 0.8
 items:
   - { itemId: item_potion_hp_small, price: 10 }

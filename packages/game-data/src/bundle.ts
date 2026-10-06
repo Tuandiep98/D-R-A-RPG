@@ -5,6 +5,8 @@ import {
   AppearanceDefSchema,
   type CharacterDef,
   CharacterDefSchema,
+  type CultivationNodeDef,
+  CultivationNodeDefSchema,
   type ItemDef,
   ItemDefSchema,
   type LootTableDef,
@@ -15,10 +17,12 @@ import {
   MonsterDefSchema,
   type NpcDef,
   NpcDefSchema,
-  type ProgressionDef,
-  ProgressionDefSchema,
+  type ProgressionRules,
+  ProgressionRulesSchema,
   type QuestDef,
   QuestDefSchema,
+  type RealmDef,
+  RealmDefSchema,
   type RecipeDef,
   RecipeDefSchema,
   type ShopDef,
@@ -37,7 +41,9 @@ export interface ContentBundle {
   skills: ReadonlyMap<string, SkillDef>;
   items: ReadonlyMap<string, ItemDef>;
   loot: ReadonlyMap<string, LootTableDef>;
-  progression: ReadonlyMap<string, ProgressionDef>;
+  progression: ReadonlyMap<string, ProgressionRules>;
+  realms: ReadonlyMap<string, RealmDef>;
+  cultivation: ReadonlyMap<string, CultivationNodeDef>;
   npcs: ReadonlyMap<string, NpcDef>;
   quests: ReadonlyMap<string, QuestDef>;
   shops: ReadonlyMap<string, ShopDef>;
@@ -74,7 +80,9 @@ const FOLDERS = {
   skills: SkillDefSchema,
   items: ItemDefSchema,
   loot: LootTableDefSchema,
-  progression: ProgressionDefSchema,
+  progression: ProgressionRulesSchema,
+  realms: RealmDefSchema,
+  cultivation: CultivationNodeDefSchema,
   npcs: NpcDefSchema,
   quests: QuestDefSchema,
   shops: ShopDefSchema,
@@ -111,6 +119,8 @@ export function buildContentBundle(files: readonly ContentFile[]): ContentBundle
     items: new Map(),
     loot: new Map(),
     progression: new Map(),
+    realms: new Map(),
+    cultivation: new Map(),
     npcs: new Map(),
     quests: new Map(),
     shops: new Map(),
@@ -122,14 +132,20 @@ export function buildContentBundle(files: readonly ContentFile[]): ContentBundle
     if (!/\.ya?ml$/i.test(file.path)) continue;
     const folder = folderOf(file.path);
     if (!folder) {
-      issues.push({ path: file.path, message: 'file is not inside a known content folder' });
+      issues.push({
+        path: file.path,
+        message: 'file is not inside a known content folder',
+      });
       continue;
     }
     let raw: unknown;
     try {
       raw = parseYaml(file.text);
     } catch (err) {
-      issues.push({ path: file.path, message: `YAML parse error: ${(err as Error).message}` });
+      issues.push({
+        path: file.path,
+        message: `YAML parse error: ${(err as Error).message}`,
+      });
       continue;
     }
     const schema: z.ZodType = FOLDERS[folder];
@@ -146,7 +162,10 @@ export function buildContentBundle(files: readonly ContentFile[]): ContentBundle
     const def = result.data as { id: string };
     const target = out[folder] as Map<string, unknown>;
     if (target.has(def.id)) {
-      issues.push({ path: file.path, message: `duplicate ${folder} id "${def.id}"` });
+      issues.push({
+        path: file.path,
+        message: `duplicate ${folder} id "${def.id}"`,
+      });
       continue;
     }
     target.set(def.id, def);
@@ -167,30 +186,66 @@ function checkReferences(bundle: ContentBundle, issues: ContentIssue[]): void {
   const needSkill = need(bundle.skills, 'skillId');
   const needItem = need(bundle.items, 'itemId');
   const needLoot = need(bundle.loot, 'lootTable');
-  const needProgression = need(bundle.progression, 'progressionId');
+  const needRealm = need(bundle.realms, 'realm');
   const needMap = need(bundle.maps, 'mapId');
+
+  checkRealms(bundle, issues);
+  if (bundle.progression.size === 0)
+    issues.push({
+      path: 'progression',
+      message: 'missing progression rules file',
+    });
+  for (const n of bundle.cultivation.values()) {
+    const owner = `cultivation/${n.id}`;
+    needRealm(owner, n.realm);
+    for (const r of n.requires) need(bundle.cultivation, 'node')(owner, r);
+    for (const q of n.quests) need(bundle.quests, 'questId')(owner, q);
+    for (const m of n.cost.materials) needItem(owner, m.itemId);
+    needSkill(owner, n.skillId);
+    if (n.path === 'tien' && n.body > 0)
+      issues.push({
+        path: owner,
+        message: 'Tiên-path nodes use meridian, not body',
+      });
+    if (n.path === 'co' && n.meridian > 0)
+      issues.push({
+        path: owner,
+        message: 'Cơ-path nodes use body, not meridian',
+      });
+  }
+  for (const r of bundle.realms.values()) {
+    const owner = `realms/${r.id}`;
+    for (const q of r.breakthrough?.quests ?? []) need(bundle.quests, 'questId')(owner, q);
+    for (const m of r.breakthrough?.materials ?? []) needItem(owner, m.itemId);
+  }
 
   for (const c of bundle.characters.values()) {
     const owner = `characters/${c.id}`;
     needAppearance(owner, c.appearanceId);
-    needProgression(owner, c.progressionId);
     for (const s of c.skills) needSkill(owner, s);
     for (const it of c.starterItems) {
       needItem(owner, it.itemId);
       const def = bundle.items.get(it.itemId);
       if (it.equip && def && def.kind !== 'equipment') {
-        issues.push({ path: owner, message: `starter item "${it.itemId}" is not equipment` });
+        issues.push({
+          path: owner,
+          message: `starter item "${it.itemId}" is not equipment`,
+        });
       }
     }
   }
   for (const m of bundle.monsters.values()) {
     const owner = `monsters/${m.id}`;
     needAppearance(owner, m.appearanceId);
+    needRealm(owner, m.realm);
     for (const s of m.skills) needSkill(owner, s);
     for (const p of m.phases) for (const s of p.skills ?? []) needSkill(owner, s);
     for (const l of m.lootTable) needLoot(owner, l);
     if (m.ai.leashRadius < m.ai.aggroRadius) {
-      issues.push({ path: owner, message: 'ai.leashRadius must be >= ai.aggroRadius' });
+      issues.push({
+        path: owner,
+        message: 'ai.leashRadius must be >= ai.aggroRadius',
+      });
     }
   }
   for (const l of bundle.loot.values()) {
@@ -200,8 +255,12 @@ function checkReferences(bundle: ContentBundle, issues: ContentIssue[]): void {
   }
   for (const it of bundle.items.values()) {
     needAppearance(`items/${it.id}`, it.appearanceId);
+    needRealm(`items/${it.id}`, it.realm);
     if (it.kind === 'equipment' && it.maxStack !== 1) {
-      issues.push({ path: `items/${it.id}`, message: 'equipment cannot stack' });
+      issues.push({
+        path: `items/${it.id}`,
+        message: 'equipment cannot stack',
+      });
     }
   }
   const needNpc = need(bundle.npcs, 'npcId');
@@ -217,6 +276,7 @@ function checkReferences(bundle: ContentBundle, issues: ContentIssue[]): void {
     const owner = `quests/${q.id}`;
     needNpc(owner, q.giverNpcId);
     needNpc(owner, q.turnInNpcId);
+    needRealm(owner, q.realm);
     for (const r of q.requires) needQuest(owner, r);
     for (const o of q.objectives) {
       if (o.type === 'kill') need(bundle.monsters, 'monsterId')(owner, o.monsterId);
@@ -230,11 +290,15 @@ function checkReferences(bundle: ContentBundle, issues: ContentIssue[]): void {
   }
   for (const r of bundle.recipes.values()) {
     needItem(`recipes/${r.id}`, r.result.itemId);
+    needRealm(`recipes/${r.id}`, r.realm);
     for (const m of r.materials) needItem(`recipes/${r.id}`, m.itemId);
   }
   for (const u of bundle.upgrades.values()) {
     if (u.steps.length !== u.maxLevel) {
-      issues.push({ path: `upgrades/${u.id}`, message: 'steps must have maxLevel entries' });
+      issues.push({
+        path: `upgrades/${u.id}`,
+        message: 'steps must have maxLevel entries',
+      });
     }
     for (const st of u.steps) for (const m of st.materials) needItem(`upgrades/${u.id}`, m.itemId);
   }
@@ -259,13 +323,19 @@ function checkReferences(bundle: ContentBundle, issues: ContentIssue[]): void {
       unique('spawn', s.id);
       need(bundle.monsters, 'monsterId')(`${owner}#spawns.${s.id}`, s.monsterId);
       if (!inBounds(s.position))
-        issues.push({ path: `${owner}#spawns.${s.id}`, message: 'outside bounds' });
+        issues.push({
+          path: `${owner}#spawns.${s.id}`,
+          message: 'outside bounds',
+        });
     }
     for (const p of map.portals) {
       unique('portal', p.id);
       needMap(`${owner}#portals.${p.id}`, p.targetMapId);
       if (!inBounds(p.position))
-        issues.push({ path: `${owner}#portals.${p.id}`, message: 'outside bounds' });
+        issues.push({
+          path: `${owner}#portals.${p.id}`,
+          message: 'outside bounds',
+        });
       const target = bundle.maps.get(p.targetMapId);
       if (target && p.targetArrival && !target.arrivals.some((a) => a.id === p.targetArrival)) {
         issues.push({
@@ -277,11 +347,38 @@ function checkReferences(bundle: ContentBundle, issues: ContentIssue[]): void {
     for (const a of map.arrivals) {
       unique('arrival', a.id);
       if (!inBounds(a.position))
-        issues.push({ path: `${owner}#arrivals.${a.id}`, message: 'outside bounds' });
+        issues.push({
+          path: `${owner}#arrivals.${a.id}`,
+          message: 'outside bounds',
+        });
     }
     for (const chunk of map.chunks) {
       unique('chunk', chunk.id);
       for (const inst of chunk.instances) needAppearance(`${owner}#${chunk.id}`, inst.appearanceId);
     }
   }
+}
+
+/** Realm orders must be 0…n-1; the starting realm has no breakthrough. */
+function checkRealms(bundle: ContentBundle, issues: ContentIssue[]): void {
+  const ladder = [...bundle.realms.values()].sort((a, b) => a.order - b.order);
+  if (ladder.length === 0)
+    issues.push({ path: 'realms', message: 'at least one realm is required' });
+  ladder.forEach((r, i) => {
+    if (r.order !== i)
+      issues.push({
+        path: `realms/${r.id}`,
+        message: `order must be ${i} (contiguous from 0)`,
+      });
+  });
+  if (ladder[0]?.breakthrough)
+    issues.push({
+      path: `realms/${ladder[0].id}`,
+      message: 'starting realm cannot have a breakthrough',
+    });
+}
+
+/** Realms sorted by order: index = realm rank used by the simulation and snapshots. */
+export function realmLadder(bundle: Pick<ContentBundle, 'realms'>): RealmDef[] {
+  return [...bundle.realms.values()].sort((a, b) => a.order - b.order);
 }

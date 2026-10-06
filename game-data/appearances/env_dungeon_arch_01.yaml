@@ -1,0 +1,4 @@
+id: env_dungeon_arch_01
+kind: environment
+modelAssetId: env_dungeon_arch_01
+placeholder: { shape: box, color: "#6d6f79", height: 3, radius: 1.5 }

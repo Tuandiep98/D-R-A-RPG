@@ -1,0 +1,4 @@
+id: env_village_corner_01
+kind: environment
+modelAssetId: env_village_corner_01
+placeholder: { shape: box, color: "#6f4d36", height: 3.1, radius: 0.35 }

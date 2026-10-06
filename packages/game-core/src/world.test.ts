@@ -39,8 +39,14 @@ describe('rollDamage', () => {
   const attacker = { attack: 50, defense: 0, critChance: 0, critMultiplier: 2 };
   it('is mitigated by defense and never below 1', () => {
     const rng = new Rng(1);
-    const noArmor = rollDamage(rng, attacker, { ...attacker, defense: 0 }).amount;
-    const armored = rollDamage(new Rng(1), attacker, { ...attacker, defense: 40 }).amount;
+    const noArmor = rollDamage(rng, attacker, {
+      ...attacker,
+      defense: 0,
+    }).amount;
+    const armored = rollDamage(new Rng(1), attacker, {
+      ...attacker,
+      defense: 40,
+    }).amount;
     expect(armored).toBeLessThan(noArmor);
     const weak = { ...attacker, attack: 0 };
     expect(rollDamage(rng, weak, attacker).amount).toBe(1);
@@ -159,7 +165,10 @@ describe('World', () => {
 
   it('player dies and respawns at the map spawn point', () => {
     const content = makeContent({
-      character: { stats: { hp: 1, attack: 0, defense: 0, critChance: 0 }, starterItems: [] },
+      character: {
+        stats: { hp: 1, attack: 0, defense: 0, critChance: 0 },
+        starterItems: [],
+      },
     });
     const world = new World({ content, mapId: 'test_map' });
     const id = world.spawnPlayer('hero');
@@ -204,9 +213,16 @@ describe('World', () => {
 
   it('is deterministic for the same seed and intents', () => {
     const play = () => {
-      const world = new World({ content: makeContent(), mapId: 'test_map', seed: 99 });
+      const world = new World({
+        content: makeContent(),
+        mapId: 'test_map',
+        seed: 99,
+      });
       const id = world.spawnPlayer('hero');
-      world.enqueueIntent(id, { type: 'ATTACK_TARGET', targetId: monsterOf(world).id });
+      world.enqueueIntent(id, {
+        type: 'ATTACK_TARGET',
+        targetId: monsterOf(world).id,
+      });
       return run(world, TICK_RATE * 10);
     };
     expect(play()).toEqual(play());

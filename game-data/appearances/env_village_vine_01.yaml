@@ -1,0 +1,4 @@
+id: env_village_vine_01
+kind: environment
+modelAssetId: env_village_vine_01
+placeholder: { shape: box, color: "#3e7337", height: 2.6, radius: 0.4 }

@@ -1,11 +1,10 @@
 id: fox_001
 name: Hồ Ly Lửa
-level: 2
+realm: luyen_khi
 tier: normal
 appearanceId: mob_fox_01
 stats: { hp: 150, attack: 13, defense: 2, critChance: 0.1 }
 movement: { speed: 4.2, radius: 0.4 }
 combat: { range: 1.1, attackInterval: 1.0 }
 ai: { type: melee, aggroRadius: 6, leashRadius: 13, wanderRadius: 4 }
-xp: 22
 lootTable: [loot_fox]

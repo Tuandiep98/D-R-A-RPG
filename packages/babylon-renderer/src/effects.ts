@@ -87,7 +87,13 @@ export class DamageTextPool {
     material.backFaceCulling = false;
     plane.material = material;
     plane.renderingGroupId = 1;
-    const item: DamageText = { plane, texture, material, age: 0, active: false };
+    const item: DamageText = {
+      plane,
+      texture,
+      material,
+      age: 0,
+      active: false,
+    };
     this.items.push(item);
     return item;
   }

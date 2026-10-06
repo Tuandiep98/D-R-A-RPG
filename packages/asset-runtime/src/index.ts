@@ -22,7 +22,11 @@ export const AssetManifestSchema = z.object({
       license: z.string(),
       licenseVerified: z.boolean(),
       lod1: z
-        .object({ url: z.string(), bytes: z.number().int(), tris: z.number().int() })
+        .object({
+          url: z.string(),
+          bytes: z.number().int(),
+          tris: z.number().int(),
+        })
         .optional(),
     }),
   ),
@@ -30,7 +34,12 @@ export const AssetManifestSchema = z.object({
 export type AssetManifest = z.infer<typeof AssetManifestSchema>;
 export type AssetEntry = AssetManifest['assets'][string];
 
-const EMPTY_MANIFEST: AssetManifest = { version: 1, generatedAt: '', decoders: {}, assets: {} };
+const EMPTY_MANIFEST: AssetManifest = {
+  version: 1,
+  generatedAt: '',
+  decoders: {},
+  assets: {},
+};
 const MAX_ATTEMPTS = 3;
 
 export interface LoadProgress {
@@ -50,7 +59,11 @@ export class AssetLibrary {
   private manifest: AssetManifest = EMPTY_MANIFEST;
   private baseUrl = '';
   private readonly containers = new Map<string, Promise<AssetContainer | null>>();
-  private readonly progress: LoadProgress = { loadedBytes: 0, totalBytes: 0, pending: 0 };
+  private readonly progress: LoadProgress = {
+    loadedBytes: 0,
+    totalBytes: 0,
+    pending: 0,
+  };
   private readonly progressListeners = new Set<(p: LoadProgress) => void>();
 
   constructor(private readonly scene: Scene) {}
@@ -72,7 +85,9 @@ export class AssetLibrary {
     }
     const meshopt = this.manifest.decoders.meshopt;
     if (meshopt) {
-      MeshoptCompression.Configuration = { decoder: { url: new URL(meshopt, this.baseUrl).href } };
+      MeshoptCompression.Configuration = {
+        decoder: { url: new URL(meshopt, this.baseUrl).href },
+      };
     }
     return this.manifest;
   }

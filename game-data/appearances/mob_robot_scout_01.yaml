@@ -1,17 +1,17 @@
-# Quaternius Ultimate Space Kit — Enemy_Large.gltf
+# Quaternius Animated Mech Pack — Leela.gltf
 id: mob_robot_scout_01
 kind: monster
 modelAssetId: mob_robot_scout_01
-scale: 0.52
+scale: 0.36
 animations:
   idle: Idle
   run: Walk
-  attack: Punch
-  hit: HitReact
+  attack: Shoot
+  hit: HitRecieve_1
   death: Death
 hitDelay: 0.3
 placeholder:
   shape: cylinder
-  color: '#9aa4b1'
+  color: "#9aa4b1"
   height: 1.9
   radius: 0.6

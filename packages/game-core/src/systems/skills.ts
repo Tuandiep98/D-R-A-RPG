@@ -4,7 +4,7 @@ import { areHostile, edgeDistance, isAlive, type SimContext } from '../context';
 import type { Entity } from '../entity';
 import { distance, sub, type Vec2, yawOf } from '../math';
 import { secondsToTicks } from '../time';
-import { applyDamage, rollDamage } from './combat';
+import { applyDamage, rollHit } from './combat';
 
 export const effectRadius = (skill: SkillDef): number =>
   Math.max(0, ...skill.effects.map((e) => (e.type === 'damage' ? e.radius : 0)));
@@ -55,7 +55,12 @@ export function requestCast(
 
   if (!castInRange(e, skill, target, aim)) {
     // Walk into range first, like an auto-attack approach.
-    e.pending = { type: 'cast', skillId, targetId: target?.id ?? null, point: aim };
+    e.pending = {
+      type: 'cast',
+      skillId,
+      targetId: target?.id ?? null,
+      point: aim,
+    };
     if (target) e.combat.targetId = target.id;
     return true;
   }
@@ -174,7 +179,7 @@ function resolveCast(ctx: SimContext, e: Entity): void {
       victims.push(target);
     }
     for (const v of victims) {
-      const roll = rollDamage(ctx.rng, e.stats, v.stats, effect.multiplier, effect.flat);
+      const roll = rollHit(ctx, e, v, effect.multiplier, effect.flat);
       applyDamage(ctx, e, v, roll.amount, roll.crit, skill.id);
     }
   }

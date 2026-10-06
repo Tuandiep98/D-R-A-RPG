@@ -1,0 +1,4 @@
+id: prop_workbench_01
+kind: environment
+modelAssetId: prop_workbench_01
+placeholder: { shape: box, color: "#765238", height: 1, radius: 0.9 }

@@ -1,12 +1,12 @@
-# Rừng Cơ Quan — first real map (assets plan §8.2).
+# Phế Tích Vô Danh — first real map (assets plan §8.2).
 # West → east: safe outpost → forest path → wolf/fox hills → robot ruins + elite
 # → boss arena → portal home. Run `pnpm maps:build` after editing.
 id: map_forest_mechanism_01
-name: Rừng Cơ Quan
+name: Phế Tích Vô Danh
 seed: 20261006
 bounds: { min: { x: -80, z: -48 }, max: { x: 80, z: 48 } }
 chunkSize: 32
-ground: { color: '#5b7f43' }
+ground: { color: "#5b7f43" }
 playerSpawn: { x: -70, z: 0 }
 arrivals:
   - { id: from_town, position: { x: -68, z: 2 } }
@@ -31,36 +31,153 @@ paths:
     points: [{ x: 18, z: -2 }, { x: 24, z: -26 }]
 
 clearings:
-  - { center: { x: -68, z: 0 }, radius: 10 }   # outpost
-  - { center: { x: -34, z: 16 }, radius: 7 }   # wolf den
-  - { center: { x: -24, z: -24 }, radius: 7 }  # fox burrows
-  - { center: { x: 16, z: 22 }, radius: 9 }    # robot ruins
-  - { center: { x: 24, z: -26 }, radius: 8 }   # elite yard
-  - { center: { x: 60, z: 0 }, radius: 14 }    # boss arena
-  - { center: { x: 22, z: 34 }, radius: 5 }    # dungeon gate
+  - { center: { x: -68, z: 0 }, radius: 10 } # outpost
+  - { center: { x: -34, z: 16 }, radius: 7 } # wolf den
+  - { center: { x: -24, z: -24 }, radius: 7 } # fox burrows
+  - { center: { x: 16, z: 22 }, radius: 9 } # robot ruins
+  - { center: { x: 24, z: -26 }, radius: 8 } # elite yard
+  - { center: { x: 60, z: 0 }, radius: 14 } # boss arena
+  - { center: { x: 22, z: 34 }, radius: 5 } # dungeon gate
+
+groundCovers:
+  - appearanceIds: [env_ground_dirt_01, env_ground_dirt_rocky_01]
+    min: { x: 8, z: 16 }
+    max: { x: 24, z: 32 }
+    tileSize: 4
+    y: 0.02
+    scale: 1.03
+  - appearanceIds: [env_ground_dirt_01, env_ground_dirt_rocky_01]
+    min: { x: 16, z: -34 }
+    max: { x: 32, z: -18 }
+    tileSize: 4
+    y: 0.02
+    scale: 1.03
+  - appearanceIds: [env_ground_dirt_rocky_01]
+    min: { x: 52, z: -8 }
+    max: { x: 68, z: 8 }
+    tileSize: 4
+    y: 0.02
+    scale: 1.03
 
 zones:
-  - { id: outpost, name: Trạm Gác Thanh Vân, kind: safe, center: { x: -68, z: 0 }, radius: 9 }
-  - { id: wolf_hills, name: Đồi Sói, kind: combat, center: { x: -30, z: 0 }, radius: 26 }
-  - { id: ruins, name: Phế Tích Cơ Giới, kind: combat, center: { x: 18, z: 4 }, radius: 28 }
-  - { id: boss_arena, name: Đấu Trường Cơ Quan, kind: boss_arena, center: { x: 60, z: 0 }, radius: 14 }
+  - {
+      id: outpost,
+      name: Doanh Trại Tiền Tiêu,
+      kind: safe,
+      center: { x: -68, z: 0 },
+      radius: 9,
+    }
+  - {
+      id: wolf_hills,
+      name: Đồi Sói,
+      kind: combat,
+      center: { x: -30, z: 0 },
+      radius: 26,
+    }
+  - {
+      id: ruins,
+      name: Cửa Hợp Kim,
+      kind: combat,
+      center: { x: 18, z: 4 },
+      radius: 28,
+    }
+  - {
+      id: boss_arena,
+      name: Đài Tượng Đá,
+      kind: boss_arena,
+      center: { x: 60, z: 0 },
+      radius: 14,
+    }
 
 spawns:
-  - { id: wolf_den, monsterId: wolf_001, position: { x: -34, z: 16 }, count: 4, radius: 4, respawnSeconds: 12 }
-  - { id: wolf_path, monsterId: wolf_001, position: { x: -10, z: 10 }, count: 2, radius: 3, respawnSeconds: 12 }
-  - { id: fox_burrows, monsterId: fox_001, position: { x: -24, z: -24 }, count: 4, radius: 4, respawnSeconds: 10 }
-  - { id: fox_path, monsterId: fox_001, position: { x: -44, z: -10 }, count: 2, radius: 3, respawnSeconds: 10 }
-  - { id: robot_ruins, monsterId: robot_scout_001, position: { x: 16, z: 22 }, count: 4, radius: 5, respawnSeconds: 15 }
-  - { id: elite_yard, monsterId: stag_elite_001, position: { x: 24, z: -26 }, count: 1, respawnSeconds: 90 }
-  - { id: boss, monsterId: mech_golem_001, position: { x: 62, z: 0 }, count: 1, respawnSeconds: 180 }
+  - {
+      id: wolf_den,
+      monsterId: wolf_001,
+      position: { x: -34, z: 16 },
+      count: 4,
+      radius: 4,
+      respawnSeconds: 12,
+    }
+  - {
+      id: wolf_path,
+      monsterId: wolf_001,
+      position: { x: -10, z: 10 },
+      count: 2,
+      radius: 3,
+      respawnSeconds: 12,
+    }
+  - {
+      id: fox_burrows,
+      monsterId: fox_001,
+      position: { x: -24, z: -24 },
+      count: 4,
+      radius: 4,
+      respawnSeconds: 10,
+    }
+  - {
+      id: fox_path,
+      monsterId: fox_001,
+      position: { x: -44, z: -10 },
+      count: 2,
+      radius: 3,
+      respawnSeconds: 10,
+    }
+  - {
+      id: robot_ruins,
+      monsterId: robot_scout_001,
+      position: { x: 16, z: 22 },
+      count: 4,
+      radius: 5,
+      respawnSeconds: 15,
+    }
+  - {
+      id: stone_guard,
+      monsterId: stone_guardian_001,
+      position: { x: 38, z: 8 },
+      count: 2,
+      radius: 3,
+      respawnSeconds: 45,
+    }
+  - {
+      id: elite_yard,
+      monsterId: stag_elite_001,
+      position: { x: 24, z: -26 },
+      count: 1,
+      respawnSeconds: 90,
+    }
+  - {
+      id: boss,
+      monsterId: mech_golem_001,
+      position: { x: 62, z: 0 },
+      count: 1,
+      respawnSeconds: 180,
+    }
 
 npcs:
   - { npcId: npc_scout, position: { x: -66, z: -4 }, rotationY: 1.2 }
 
 portals:
-  - { id: forest_to_town, name: Về Thôn Thanh Vân, position: { x: -77, z: 0 }, targetMapId: map_sandbox_01, targetArrival: from_forest }
-  - { id: sanctum_gate, name: Cơ Quan Điện (phó bản), position: { x: 22, z: 35 }, targetMapId: map_golem_sanctum_01, targetArrival: entrance }
-  - { id: arena_exit, name: Lối Ra Đấu Trường, position: { x: 77, z: 0 }, targetMapId: map_sandbox_01, targetArrival: from_forest }
+  - {
+      id: forest_to_town,
+      name: Về Tân Nguyên Trấn,
+      position: { x: -77, z: 0 },
+      targetMapId: map_sandbox_01,
+      targetArrival: from_forest,
+    }
+  - {
+      id: sanctum_gate,
+      name: Huyền Vũ Cổ Mộ (phó bản),
+      position: { x: 22, z: 35 },
+      targetMapId: map_golem_sanctum_01,
+      targetArrival: entrance,
+    }
+  - {
+      id: arena_exit,
+      name: Lối Tắt Về Trấn,
+      position: { x: 77, z: 0 },
+      targetMapId: map_sandbox_01,
+      targetArrival: from_forest,
+    }
 
 # Arena wall with entrances on the west (path in) and east (exit portal).
 rings:
@@ -75,17 +192,174 @@ rings:
 
 landmarks:
   # Ruins: rocks standing in for broken machinery until the tech kit exists.
-  - { appearanceId: env_rock_01, position: { x: 10, z: 26 }, scale: 1.6, colliderRadius: 1.3 }
-  - { appearanceId: env_rock_01, position: { x: 22, z: 28 }, rotationY: 1.2, scale: 1.3, colliderRadius: 1.1 }
-  - { appearanceId: env_rock_01, position: { x: 25, z: 17 }, rotationY: 2.4, scale: 1.2, colliderRadius: 1 }
-  - { appearanceId: env_rock_01, position: { x: 30, z: -30 }, scale: 1.5, colliderRadius: 1.2 }
-  - { appearanceId: env_rock_01, position: { x: 17, z: -31 }, rotationY: 0.8, scale: 1.3, colliderRadius: 1.1 }
+  - {
+      appearanceId: env_rock_01,
+      position: { x: 10, z: 26 },
+      scale: 1.6,
+      colliderRadius: 1.3,
+    }
+  - {
+      appearanceId: env_rock_01,
+      position: { x: 22, z: 28 },
+      rotationY: 1.2,
+      scale: 1.3,
+      colliderRadius: 1.1,
+    }
+  - {
+      appearanceId: env_rock_01,
+      position: { x: 25, z: 17 },
+      rotationY: 2.4,
+      scale: 1.2,
+      colliderRadius: 1,
+    }
+  - {
+      appearanceId: env_rock_01,
+      position: { x: 30, z: -30 },
+      scale: 1.5,
+      colliderRadius: 1.2,
+    }
+  - {
+      appearanceId: env_rock_01,
+      position: { x: 17, z: -31 },
+      rotationY: 0.8,
+      scale: 1.3,
+      colliderRadius: 1.1,
+    }
   # Outpost
-  - { appearanceId: env_tree_02, position: { x: -72, z: 7 }, scale: 1.1, colliderRadius: 0.6 }
-  - { appearanceId: env_tree_02, position: { x: -72, z: -7 }, scale: 1.1, colliderRadius: 0.6 }
+  - {
+      appearanceId: env_tree_02,
+      position: { x: -72, z: 7 },
+      scale: 1.1,
+      colliderRadius: 0.6,
+    }
+  - {
+      appearanceId: env_tree_02,
+      position: { x: -72, z: -7 },
+      scale: 1.1,
+      colliderRadius: 0.6,
+    }
+
+prefabs:
+  - id: forward_market
+    members:
+      - {
+          appearanceId: prop_market_stall_01,
+          offset: { x: 0, z: 0 },
+          colliderRadius: 1.3,
+        }
+      - {
+          appearanceId: prop_barrel_01,
+          offset: { x: -1.8, z: 0.8 },
+          colliderRadius: 0.4,
+        }
+      - {
+          appearanceId: prop_crate_01,
+          offset: { x: 1.7, z: 0.7 },
+          rotationY: 0.4,
+          colliderRadius: 0.5,
+        }
+      - {
+          appearanceId: prop_workbench_01,
+          offset: { x: 0, z: 2.2 },
+          rotationY: 3.14159,
+          colliderRadius: 0.8,
+        }
+      - {
+          appearanceId: prop_anvil_01,
+          offset: { x: 1.5, z: 2.2 },
+          rotationY: 0.7,
+          colliderRadius: 0.4,
+        }
+  - id: alloy_gate
+    members:
+      - {
+          appearanceId: env_scifi_door_frame_01,
+          offset: { x: 0, z: 0 },
+          colliderRadius: 1.4,
+        }
+      - {
+          appearanceId: env_scifi_door_01,
+          offset: { x: 0, z: 0.1 },
+          colliderRadius: 1.2,
+        }
+      - {
+          appearanceId: env_scifi_wall_broken_01,
+          offset: { x: -3, z: 0 },
+          colliderRadius: 1.4,
+        }
+      - {
+          appearanceId: env_scifi_wall_01,
+          offset: { x: 3, z: 0 },
+          colliderRadius: 1.4,
+        }
+      - {
+          appearanceId: prop_scifi_terminal_01,
+          offset: { x: 2, z: -1.2 },
+          rotationY: -1.5708,
+          colliderRadius: 0.5,
+        }
+      - {
+          appearanceId: prop_scifi_access_point_01,
+          offset: { x: -2, z: -1.2 },
+          rotationY: 1.5708,
+          colliderRadius: 0.35,
+        }
+      - {
+          appearanceId: env_scifi_column_01,
+          offset: { x: -4.5, z: 0 },
+          colliderRadius: 0.55,
+        }
+      - {
+          appearanceId: env_scifi_column_01,
+          offset: { x: 4.5, z: 0 },
+          colliderRadius: 0.55,
+        }
+
+prefabPlacements:
+  - { prefabId: forward_market, position: { x: -68, z: 6 }, rotationY: 3.14159 }
+  - { prefabId: alloy_gate, position: { x: 16, z: 26 }, rotationY: 1.5708 }
+  - { prefabId: alloy_gate, position: { x: 22, z: 34 } }
 
 scatter:
-  - { appearanceId: env_tree_01, count: 34, minSpacing: 5, colliderRadius: 0.6, scale: [0.8, 1.2] }
-  - { appearanceId: env_tree_02, count: 44, minSpacing: 4.5, colliderRadius: 0.5, scale: [0.8, 1.25] }
-  - { appearanceId: env_rock_01, count: 20, minSpacing: 4, colliderRadius: 0.8, scale: [0.6, 1.1] }
-  - { appearanceId: env_bush_01, count: 50, minSpacing: 2.5, scale: [0.7, 1.2], allowOnPath: false }
+  - {
+      appearanceId: env_ground_weeds_01,
+      count: 24,
+      minSpacing: 4,
+      scale: [0.8, 1.1],
+      allowOnPath: false,
+    }
+  - {
+      appearanceId: env_ground_stone_weeds_01,
+      count: 10,
+      minSpacing: 5,
+      scale: [0.8, 1.1],
+      allowOnPath: false,
+    }
+  - {
+      appearanceId: env_tree_01,
+      count: 34,
+      minSpacing: 5,
+      colliderRadius: 0.6,
+      scale: [0.8, 1.2],
+    }
+  - {
+      appearanceId: env_tree_02,
+      count: 44,
+      minSpacing: 4.5,
+      colliderRadius: 0.5,
+      scale: [0.8, 1.25],
+    }
+  - {
+      appearanceId: env_rock_01,
+      count: 20,
+      minSpacing: 4,
+      colliderRadius: 0.8,
+      scale: [0.6, 1.1],
+    }
+  - {
+      appearanceId: env_bush_01,
+      count: 50,
+      minSpacing: 2.5,
+      scale: [0.7, 1.2],
+      allowOnPath: false,
+    }

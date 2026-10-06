@@ -1,5 +1,5 @@
 id: shop_village
-name: Tạp Hoá Thôn Thanh Vân
+name: Y Quán Tân Nguyên
 buybackRate: 1
 items:
   - { itemId: item_potion_hp_small, price: 8 }

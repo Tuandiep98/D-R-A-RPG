@@ -1,4 +1,4 @@
 id: equip_gauntlet_01
 kind: equipment
 attach: { socket: hand_r, position: [0, 0, 0], rotation: [0, 0, 0] }
-placeholder: { shape: sphere, color: '#6fa8dc', height: 0.3, radius: 0.16 }
+placeholder: { shape: sphere, color: "#6fa8dc", height: 0.3, radius: 0.16 }

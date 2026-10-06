@@ -1,10 +1,9 @@
-# Quaternius Stylized Nature MegaKit — Pine_1.gltf
+# Procedural fallback. Stylized Nature MegaKit source is not present.
 id: env_tree_02
 kind: environment
-modelAssetId: env_tree_02
 scale: 0.7
 placeholder:
   shape: cone
-  color: '#3f7f2f'
+  color: "#3f7f2f"
   height: 3
   radius: 1

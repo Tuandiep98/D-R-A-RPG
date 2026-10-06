@@ -1,0 +1,10 @@
+id: tien_cuong_cot
+name: Luyện Thể · Cường Cốt
+description: Tôi luyện xương cốt bằng linh khí.
+icon: "🦴"
+axis: than
+path: tien
+realm: luyen_khi
+cost: { gold: 40, materials: [{ itemId: item_fox_fur, count: 4 }] }
+meridian: 10
+bonus: { hp: 150, defense: 4 }

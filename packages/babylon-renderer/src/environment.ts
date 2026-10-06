@@ -10,6 +10,7 @@ import {
   Quaternion,
   type Scene,
   Vector3,
+  VertexBufferDeduceStride,
 } from './babylon';
 import { colorMaterial, createPlaceholderMesh } from './placeholder';
 
@@ -200,7 +201,12 @@ export class EnvironmentView {
     this.flush();
   }
 
-  get stats(): { batches: number; activeChunks: number; totalChunks: number; instances: number } {
+  get stats(): {
+    batches: number;
+    activeChunks: number;
+    totalChunks: number;
+    instances: number;
+  } {
     let instances = 0;
     for (const b of this.batches) for (const i of b.instances) if (this.isActive(i)) instances++;
     return {
@@ -340,11 +346,37 @@ async function mergedModel(
     .flatMap((root) => root.getChildMeshes(false))
     .filter((m: AbstractMesh): m is Mesh => m instanceof Mesh && m.getTotalVertices() > 0);
   for (const m of meshes) m.computeWorldMatrix(true);
-  const merged = meshes.length
-    ? Mesh.MergeMeshes(meshes, true, true, undefined, false, true)
-    : null;
+  let merged: Mesh | null = null;
+  try {
+    completeVertexAttributes(meshes);
+    merged = meshes.length ? Mesh.MergeMeshes(meshes, true, true, undefined, false, true) : null;
+  } catch (error) {
+    console.warn(`[env] could not merge ${assetId}; using placeholder`, error);
+  }
   for (const root of entries.rootNodes) root.dispose();
   for (const g of entries.animationGroups) g.dispose();
   if (!merged) console.warn(`[env] could not merge ${assetId}; using placeholder`);
   return merged;
+}
+
+/**
+ * Babylon only merges meshes with identical vertex-buffer kinds. Some source
+ * packs mix optional UV/color/tangent channels between submeshes, so complete
+ * those channels with neutral values before baking the static thin-instance
+ * source mesh.
+ */
+function completeVertexAttributes(meshes: readonly Mesh[]): void {
+  const kinds = new Set(meshes.flatMap((mesh) => mesh.getVerticesDataKinds()));
+  for (const mesh of meshes) {
+    const own = new Set(mesh.getVerticesDataKinds());
+    const vertices = mesh.getTotalVertices();
+    for (const kind of kinds) {
+      if (own.has(kind)) continue;
+      const stride = VertexBufferDeduceStride(kind);
+      const data = new Float32Array(vertices * stride);
+      if (kind === 'color') data.fill(1);
+      if (kind === 'tangent') for (let i = 3; i < data.length; i += stride) data[i] = 1;
+      mesh.setVerticesData(kind, data, false, stride);
+    }
+  }
 }

@@ -1,6 +1,7 @@
 id: npc_merchant
-name: Thương Nhân Lý
-title: Tạp hoá
+name: Tô Tiểu Linh
+title: Dược sư · Y quán
 appearanceId: npc_merchant_01
-greeting: Thuốc men, giày dép, áo vải — giá phải chăng!
+greeting: Linh thảo quanh phế tích lạ lắm… À, cần đan dược thì cứ hỏi ta!
 shopId: shop_village
+recipes: [r_truc_co_dan, r_potion_large]

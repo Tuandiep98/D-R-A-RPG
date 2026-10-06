@@ -1,0 +1,4 @@
+id: env_village_floor_redbrick_01
+kind: ground
+modelAssetId: env_village_floor_redbrick_01
+placeholder: { shape: box, color: "#87584a", height: 0.05, radius: 1 }

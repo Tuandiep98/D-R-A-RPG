@@ -1,0 +1,4 @@
+id: prop_cauldron_01
+kind: environment
+modelAssetId: prop_cauldron_01
+placeholder: { shape: cylinder, color: "#34383c", height: 0.8, radius: 0.55 }

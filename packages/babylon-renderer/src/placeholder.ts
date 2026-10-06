@@ -55,7 +55,12 @@ export function createPlaceholderMesh(scene: Scene, appearance: AppearanceDef, n
     case 'sphere':
       mesh = MeshBuilder.CreateSphere(
         name,
-        { diameterX: radius * 2, diameterY: height, diameterZ: radius * 2, segments: 8 },
+        {
+          diameterX: radius * 2,
+          diameterY: height,
+          diameterZ: radius * 2,
+          segments: 8,
+        },
         scene,
       );
       break;

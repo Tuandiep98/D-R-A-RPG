@@ -58,7 +58,7 @@ export function makeInert(
     defId,
     faction: 'neutral',
     inert: true,
-    level: 0,
+    realm: 0,
     pos: { ...pos },
     yaw: 0,
     movement: {

@@ -8,7 +8,10 @@ import { loadContent } from './content';
 import { navFor } from './nav';
 
 // The page passes start parameters through the worker name (static URL keeps Vite bundling happy).
-const params = JSON.parse(self.name || '{}') as { map?: string; character?: string };
+const params = JSON.parse(self.name || '{}') as {
+  map?: string;
+  character?: string;
+};
 const host = new LocalSimHost({
   content: loadContent(),
   mapId: params.map ?? 'map_sandbox_01',

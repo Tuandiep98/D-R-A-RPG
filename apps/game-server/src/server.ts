@@ -37,7 +37,9 @@ export async function startGameServer(
     (await openDatabase(
       config.DATABASE_URL
         ? { url: config.DATABASE_URL }
-        : { dataDir: config.PGLITE_DIR === 'memory' ? undefined : config.PGLITE_DIR },
+        : {
+            dataDir: config.PGLITE_DIR === 'memory' ? undefined : config.PGLITE_DIR,
+          },
     ));
   ZoneRoom.deps = {
     content,
@@ -57,7 +59,13 @@ export async function startGameServer(
   http.prependListener('request', (req, res) => {
     if (req.url !== '/health') return;
     res.writeHead(200, { 'content-type': 'application/json' });
-    res.end(JSON.stringify({ ok: true, db: database.kind, maps: [...content.maps.keys()] }));
+    res.end(
+      JSON.stringify({
+        ok: true,
+        db: database.kind,
+        maps: [...content.maps.keys()],
+      }),
+    );
   });
   const gameServer = new Server({
     transport: new WebSocketTransport({ server: http }),

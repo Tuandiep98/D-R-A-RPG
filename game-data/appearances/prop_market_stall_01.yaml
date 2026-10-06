@@ -1,0 +1,4 @@
+id: prop_market_stall_01
+kind: environment
+modelAssetId: prop_market_stall_01
+placeholder: { shape: box, color: "#a26b47", height: 2.6, radius: 1.5 }

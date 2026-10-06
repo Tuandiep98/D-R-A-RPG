@@ -1,0 +1,4 @@
+id: env_scifi_column_01
+kind: environment
+modelAssetId: env_scifi_column_01
+placeholder: { shape: cylinder, color: "#596978", height: 3.2, radius: 0.6 }

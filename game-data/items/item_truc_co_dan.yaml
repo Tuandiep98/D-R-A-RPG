@@ -1,0 +1,8 @@
+id: item_truc_co_dan
+name: Trúc Cơ Đan
+kind: material
+rarity: rare
+icon: "💊"
+description: Đan dược ổn định nền móng khi đột phá Trúc Cơ.
+maxStack: 5
+sellPrice: 40

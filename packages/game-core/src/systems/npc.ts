@@ -4,7 +4,7 @@ import { INTERACT_RANGE, type SimContext } from '../context';
 import type { Entity, QuestState } from '../entity';
 import { distance } from '../math';
 import { addItem, canAdd, countItem, grantGold, removeItems } from './inventory';
-import { grantXp, recomputePlayerStats } from './progression';
+import { realmRank, recomputePlayerStats } from './progression';
 
 /** NPC actions are allowed a little beyond pickup reach (dialog stays open while you shuffle). */
 const NPC_RANGE = INTERACT_RANGE + 1.5;
@@ -26,7 +26,12 @@ function npcFor(ctx: SimContext, player: Entity, npcEntityId: EntityId) {
 
 export function openNpc(ctx: SimContext, player: Entity, npc: Entity): void {
   if (!npc.npc || !player.player) return;
-  ctx.emit({ type: 'NPC_OPEN', ownerId: player.id, npcEntityId: npc.id, npcId: npc.npc.npcId });
+  ctx.emit({
+    type: 'NPC_OPEN',
+    ownerId: player.id,
+    npcEntityId: npc.id,
+    npcId: npc.npc.npcId,
+  });
   // Talking to an NPC completes "talk" objectives for it.
   for (const q of player.player.quests) {
     if (q.status !== 'active') continue;
@@ -61,7 +66,12 @@ function refreshStatus(ctx: SimContext, player: Entity, q: QuestState): void {
   const next = objectivesMet(ctx, player, q, def) ? 'ready' : 'active';
   if (next !== q.status) {
     q.status = next;
-    ctx.emit({ type: 'QUEST', ownerId: player.id, questId: q.questId, status: next });
+    ctx.emit({
+      type: 'QUEST',
+      ownerId: player.id,
+      questId: q.questId,
+      status: next,
+    });
   }
 }
 
@@ -78,14 +88,18 @@ export function acceptQuest(
   const available =
     found.def.quests.includes(questId) &&
     def.giverNpcId === found.def.id &&
-    player.level >= def.level &&
+    (!def.realm || realmRank(ctx, def.realm) <= player.realm) &&
     !p.quests.some((q) => q.questId === questId) &&
     def.requires.every((r) => p.quests.some((q) => q.questId === r && q.status === 'done'));
   if (!available) {
     ctx.notice(player.id, 'quest_unavailable');
     return false;
   }
-  const q: QuestState = { questId, status: 'active', progress: def.objectives.map(() => 0) };
+  const q: QuestState = {
+    questId,
+    status: 'active',
+    progress: def.objectives.map(() => 0),
+  };
   p.quests.push(q);
   ctx.emit({ type: 'QUEST', ownerId: player.id, questId, status: 'active' });
   refreshStatus(ctx, player, q);
@@ -111,7 +125,10 @@ export function turnInQuest(
     ctx.notice(player.id, 'quest_incomplete');
     return false;
   }
-  const rewardItems = def.rewards.items.map((i) => ({ itemId: i.itemId, count: i.count }));
+  const rewardItems = def.rewards.items.map((i) => ({
+    itemId: i.itemId,
+    count: i.count,
+  }));
   if (!canAdd(ctx, player, rewardItems)) {
     ctx.notice(player.id, 'inventory_full');
     return false;
@@ -122,7 +139,6 @@ export function turnInQuest(
   }
   q.status = 'done';
   ctx.emit({ type: 'QUEST', ownerId: player.id, questId, status: 'done' });
-  grantXp(ctx, player, def.rewards.xp);
   if (def.rewards.gold > 0)
     grantGold(ctx, player, def.rewards.gold, 'quest', `quest:${p.characterId}:${questId}`);
   for (const it of rewardItems) addItem(ctx, player, it.itemId, it.count);
@@ -232,8 +248,8 @@ export function craft(
     if (found) ctx.notice(player.id, 'invalid');
     return false;
   }
-  if (player.level < recipe.level) {
-    ctx.notice(player.id, 'level_too_low');
+  if (recipe.realm && realmRank(ctx, recipe.realm) > player.realm) {
+    ctx.notice(player.id, 'realm_too_low');
     return false;
   }
   if (recipe.materials.some((m) => countItem(player, m.itemId) < m.count)) {

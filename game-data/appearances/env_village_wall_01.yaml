@@ -1,0 +1,4 @@
+id: env_village_wall_01
+kind: environment
+modelAssetId: env_village_wall_01
+placeholder: { shape: box, color: "#c9b28a", height: 3.1, radius: 1 }

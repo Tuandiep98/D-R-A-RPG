@@ -9,7 +9,8 @@ const REFRESH_KEY = 'rpg.refresh';
 export interface CharacterSummary {
   id: string;
   name: string;
-  level: number;
+  /** Realm id (game-data/realms). */
+  realm: string;
   mapId: string;
 }
 
@@ -75,12 +76,13 @@ export async function register(username: string, password: string): Promise<void
 }
 
 export async function login(username: string, password: string): Promise<void> {
-  const t = await request<{ accessToken: string; refreshToken: string; mfaRequired?: boolean }>(
-    '/auth/login',
-    {
-      body: { username, password },
-    },
-  );
+  const t = await request<{
+    accessToken: string;
+    refreshToken: string;
+    mfaRequired?: boolean;
+  }>('/auth/login', {
+    body: { username, password },
+  });
   if (t.mfaRequired) throw new Error('Tài khoản quản trị: hãy đăng nhập qua trang admin');
   storeTokens(t);
 }
@@ -102,20 +104,21 @@ export const startSession = (characterId: string) =>
 export const hasSession = (): boolean => accessToken !== null;
 
 export const fetchLeaderboard = () =>
-  request<{ leaderboard: { name: string; level: number; xp: number }[] }>('/leaderboard');
+  request<{ leaderboard: { name: string; realm: string; nodes: number }[] }>('/leaderboard');
 
 export interface SocialState {
   friends: {
     id: string;
     name: string;
-    level: number;
+    /** Realm id (game-data/realms). */
+    realm: string;
     status: 'friend' | 'incoming' | 'outgoing';
   }[];
   guild: {
     id: string;
     name: string;
     leaderId: string;
-    members: { id: string; name: string; level: number; rank: string }[];
+    members: { id: string; name: string; realm: string; rank: string }[];
   } | null;
 }
 
@@ -130,10 +133,20 @@ export const acceptFriend = (characterId: string, otherId: string) =>
     auth: true,
   });
 export const removeFriend = (characterId: string, otherId: string) =>
-  request(`/characters/${characterId}/friends/${otherId}`, { method: 'DELETE', auth: true });
+  request(`/characters/${characterId}/friends/${otherId}`, {
+    method: 'DELETE',
+    auth: true,
+  });
 export const createGuild = (characterId: string, name: string) =>
   request(`/characters/${characterId}/guild`, { body: { name }, auth: true });
 export const joinGuild = (characterId: string, name: string) =>
-  request(`/characters/${characterId}/guild/join`, { body: { name }, auth: true });
+  request(`/characters/${characterId}/guild/join`, {
+    body: { name },
+    auth: true,
+  });
 export const leaveGuild = (characterId: string) =>
-  request(`/characters/${characterId}/guild/leave`, { method: 'POST', body: {}, auth: true });
+  request(`/characters/${characterId}/guild/leave`, {
+    method: 'POST',
+    body: {},
+    auth: true,
+  });

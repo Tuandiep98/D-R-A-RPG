@@ -1,8 +1,10 @@
 import type { ItemView, QualityMode, SkillSlot, UnitFrame } from '@rpg/babylon-renderer';
-import type { EquipSlot } from '@rpg/game-data';
+import { type EquipSlot, realmLadder } from '@rpg/game-data';
 import { useEffect, useState } from 'react';
+import { sharedContent } from '../content';
 import { game } from '../game';
 import { useUiStore } from '../store';
+import { CultivationPanel } from './CultivationPanel';
 import { NpcPanel } from './NpcPanel';
 import { ChatBox, LeaderboardPanel, QuestTracker } from './Social';
 import { SocialPanel } from './SocialPanel';
@@ -27,6 +29,8 @@ const SLOT_LABEL: Record<EquipSlot, string> = {
   back: 'Lưng',
   artifact: 'Pháp khí',
 };
+
+const realmNameOf = (rank: number): string => realmLadder(sharedContent())[rank]?.name ?? '';
 
 function Bar({
   value,
@@ -59,7 +63,7 @@ function UnitPanel({ unit, className }: { unit: UnitFrame; className: string }) 
         <span>
           {unit.name} {tier && <span className={`tier tier-${unit.tier}`}>{tier}</span>}
         </span>
-        {unit.level > 0 && <span className="frame-level">Lv {unit.level}</span>}
+        {unit.realmName && <span className="frame-level">{unit.realmName}</span>}
       </div>
       {unit.maxHp > 0 && <Bar value={unit.hp} max={unit.maxHp} tone="enemy" />}
       {canInvite && (
@@ -96,16 +100,15 @@ function PlayerPanel() {
     <div className="frame frame-player">
       <div className="frame-name">
         <span>{p.name}</span>
-        <span className="frame-level">Lv {p.level}</span>
+        <span className="frame-level" title={p.cultivation.mechName}>
+          {p.cultivation.realmName}
+        </span>
       </div>
       <Bar value={p.hp} max={p.maxHp} tone="player" />
       <Bar value={p.mp} max={p.maxMp} tone="mp" />
-      <div className="xp">
-        <div
-          className="xp-fill"
-          style={{ width: `${p.xpToNext ? (p.xp / p.xpToNext) * 100 : 100}%` }}
-        />
-      </div>
+      {p.cultivation.backlash > 0 && (
+        <div className="backlash small">Phản phệ {Math.ceil(p.cultivation.backlash)}s</div>
+      )}
       <div className="frame-meta">
         <span>🪙 {p.gold}</span>
         <span className="zone">
@@ -134,7 +137,9 @@ function SkillButton({ slot, index }: { slot: SkillSlot; index: number }) {
       {sweep > 0 && (
         <span
           className="skill-cd"
-          style={{ background: `conic-gradient(rgba(0,0,0,.65) ${sweep * 360}deg, transparent 0)` }}
+          style={{
+            background: `conic-gradient(rgba(0,0,0,.65) ${sweep * 360}deg, transparent 0)`,
+          }}
         >
           {Math.ceil(slot.remaining)}
         </span>
@@ -156,7 +161,7 @@ function PartyFrames() {
           <div key={m.id} className="party-member">
             <span className="small">
               {m.id === party.leaderId ? '★ ' : ''}
-              {m.name} · Lv {m.level}
+              {m.name} · {realmNameOf(m.realm)}
             </span>
             <Bar value={m.hp} max={m.maxHp} tone="player" label=" " />
           </div>
@@ -249,7 +254,7 @@ function ItemTile({ item, onClick }: { item: ItemView; onClick?: () => void }) {
       className={`item ${item.equipped ? 'item-equipped' : ''}`}
       style={{ borderColor: item.rarityColor }}
       onClick={onClick}
-      title={`${item.name}\n${item.bonus}${item.level > 1 ? `\nYêu cầu cấp ${item.level}` : ''}${item.description ? `\n${item.description}` : ''}`}
+      title={`${item.name}\n${item.bonus}${item.realmName ? `\nYêu cầu ${item.realmName}` : ''}${item.description ? `\n${item.description}` : ''}`}
     >
       <span>{item.icon}</span>
       {item.count > 1 && <span className="item-count">{item.count}</span>}
@@ -314,7 +319,7 @@ function InventoryPanel() {
           <>
             <strong style={{ color: hover.rarityColor }}>{hover.name}</strong>
             <span>{hover.bonus}</span>
-            {hover.level > 1 && <span>Yêu cầu cấp {hover.level}</span>}
+            {hover.realmName && <span>Yêu cầu cảnh giới {hover.realmName}</span>}
           </>
         ) : (
           <span className="muted">Chạm/nhấn vào trang bị để mặc hoặc tháo, vào thuốc để dùng.</span>
@@ -333,7 +338,7 @@ function CharacterPanel() {
     <div className="panel panel-small" onPointerDown={(e) => e.stopPropagation()}>
       <div className="panel-head">
         <strong>
-          {p.name} · Lv {p.level}
+          {p.name} · {p.cultivation.realmName}
         </strong>
         <button type="button" onClick={close}>
           ✕
@@ -356,9 +361,17 @@ function CharacterPanel() {
         <dd>{(p.stats.critChance * 100).toFixed(0)}%</dd>
         <dt>Tốc độ</dt>
         <dd>{p.stats.speed.toFixed(1)} m/s</dd>
-        <dt>Kinh nghiệm</dt>
+        <dt>Cảnh giới</dt>
         <dd>
-          {p.xp} / {p.xpToNext || '—'}
+          {p.cultivation.realmName} · {p.cultivation.mechName}
+        </dd>
+        <dt>Kinh mạch tải</dt>
+        <dd>
+          {p.cultivation.meridianLoad} / {p.cultivation.meridianCapacity}
+        </dd>
+        <dt>Body load</dt>
+        <dd>
+          {p.cultivation.bodyLoad} / {p.cultivation.bodyCapacity}
         </dd>
       </dl>
     </div>
@@ -470,6 +483,9 @@ function MenuButtons() {
       <button type="button" title="Nhân vật (C)" onClick={() => toggle('character')}>
         👤
       </button>
+      <button type="button" title="Tu luyện & Đột phá (K)" onClick={() => toggle('cultivation')}>
+        ☯
+      </button>
       {ONLINE && (
         <button type="button" title="Bảng xếp hạng" onClick={() => toggle('leaderboard')}>
           🏆
@@ -511,6 +527,7 @@ export function Hud() {
       <ActionBar />
       {panel === 'inventory' && <InventoryPanel />}
       {panel === 'character' && <CharacterPanel />}
+      {panel === 'cultivation' && <CultivationPanel />}
       {panel === 'settings' && <SettingsPanel />}
       {panel === 'leaderboard' && <LeaderboardPanel />}
       {panel === 'social' && <SocialPanel />}
@@ -519,7 +536,7 @@ export function Hud() {
       <ChatBox />
       <div className="help">
         Click: đi/đánh/nhặt/nói chuyện · 1–5: chiêu · Q: thuốc · F: tương tác · Tab: đổi mục tiêu ·
-        I: túi đồ · Enter: chat · Chuột phải: xoay
+        I: túi đồ · K: tu luyện · Enter: chat · Chuột phải: xoay
       </div>
     </div>
   );

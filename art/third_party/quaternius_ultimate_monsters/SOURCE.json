@@ -1,0 +1,19 @@
+{
+  "packId": "quaternius_ultimate_monsters",
+  "author": "Quaternius",
+  "pack": "Ultimate Monsters",
+  "sourceUrl": "https://quaternius.com/packs/ultimatemonsters.html",
+  "license": "CC0-1.0",
+  "licenseVerified": true,
+  "downloadedAt": "2026-10-06",
+  "status": "approved",
+  "notes": "Goleling Evolved is reserved for the stone-shell phase of Guardian X-04.",
+  "assets": [
+    {
+      "assetId": "mob_guardian_stone_01",
+      "file": "originals/Goleling_Evolved.gltf",
+      "type": "monster",
+      "modified": false
+    }
+  ]
+}

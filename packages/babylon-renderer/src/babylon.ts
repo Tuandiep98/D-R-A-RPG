@@ -15,6 +15,7 @@ import '@babylonjs/core/Meshes/thinInstanceMesh';
 
 export { AnimationGroup } from '@babylonjs/core/Animations/animationGroup';
 export { AssetContainer } from '@babylonjs/core/assetContainer';
+export { VertexBufferDeduceStride } from '@babylonjs/core/Buffers/buffer.pure';
 export { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
 export type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 export { Engine } from '@babylonjs/core/Engines/engine';

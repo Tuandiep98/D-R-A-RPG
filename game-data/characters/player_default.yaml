@@ -1,12 +1,11 @@
 id: player_default
-name: Du Hiệp
+name: Du Hành Giả
 appearanceId: char_player_default
-progressionId: progression_player
 stats:
-  hp: 600
+  hp: 750
   mp: 120
-  attack: 30
-  defense: 8
+  attack: 36
+  defense: 10
   critChance: 0.15
   critMultiplier: 1.6
   hpRegen: 12
@@ -20,10 +19,8 @@ combat:
 respawnSeconds: 5
 skills:
   - skill_heavy_slash
-  - skill_whirlwind
-  - skill_sword_qi
-  - skill_ground_slam
   - skill_qi_heal
+# More skills come from cultivation nodes (game-data/cultivation), not levels.
 starterItems:
   - { itemId: item_sword_iron, equip: true }
   - { itemId: item_potion_hp_small, count: 5 }

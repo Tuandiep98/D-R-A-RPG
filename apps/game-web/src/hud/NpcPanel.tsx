@@ -7,6 +7,8 @@ import { useUiStore } from '../store';
 
 type Tab = 'quests' | 'shop' | 'craft' | 'upgrade';
 
+const rankOf = (c: ContentBundle, realmId: string) => c.realms.get(realmId)?.order ?? 0;
+
 let contentCache: ContentBundle | null = null;
 const content = () => {
   contentCache ??= loadContent();
@@ -102,13 +104,15 @@ function Quests({
         if (ui.questsDone.includes(id)) return null;
         const locked =
           !q &&
-          (def.level > (ui.player?.level ?? 1) ||
+          ((def.realm !== undefined && rankOf(c, def.realm) > (ui.player?.realm ?? 0)) ||
             !def.requires.every((r) => ui.questsDone.includes(r)));
         return (
           <div key={id} className={`npc-row ${locked ? 'locked' : ''}`}>
             <div>
               <strong>{def.name}</strong>{' '}
-              {def.level > 1 && <span className="muted">Lv {def.level}</span>}
+              {def.realm && (
+                <span className="muted">{c.realms.get(def.realm)?.name ?? def.realm}</span>
+              )}
               <div className="muted small">{def.description}</div>
               {q && (
                 <div className="small">
@@ -120,8 +124,7 @@ function Quests({
                 </div>
               )}
               <div className="small reward">
-                Thưởng: {def.rewards.xp > 0 && `${def.rewards.xp} XP `}
-                {def.rewards.gold > 0 && `${def.rewards.gold} vàng `}
+                Thưởng: {def.rewards.gold > 0 && `${def.rewards.gold} vàng `}
                 {def.rewards.items
                   .map((i) => `${c.items.get(i.itemId)?.name ?? i.itemId}×${i.count}`)
                   .join(', ')}
@@ -130,7 +133,13 @@ function Quests({
             {!q && !locked && (
               <button
                 type="button"
-                onClick={() => send?.({ type: 'QUEST_ACCEPT', npcId: npcEntityId, questId: id })}
+                onClick={() =>
+                  send?.({
+                    type: 'QUEST_ACCEPT',
+                    npcId: npcEntityId,
+                    questId: id,
+                  })
+                }
               >
                 Nhận
               </button>
@@ -139,7 +148,13 @@ function Quests({
               <button
                 type="button"
                 className="primary"
-                onClick={() => send?.({ type: 'QUEST_TURN_IN', npcId: npcEntityId, questId: id })}
+                onClick={() =>
+                  send?.({
+                    type: 'QUEST_TURN_IN',
+                    npcId: npcEntityId,
+                    questId: id,
+                  })
+                }
               >
                 Trả
               </button>
@@ -184,7 +199,12 @@ function Shop({
                 type="button"
                 disabled={(ui.player?.gold ?? 0) < entry.price}
                 onClick={() =>
-                  send?.({ type: 'SHOP_BUY', npcId: npcEntityId, itemId: entry.itemId, count: 1 })
+                  send?.({
+                    type: 'SHOP_BUY',
+                    npcId: npcEntityId,
+                    itemId: entry.itemId,
+                    count: 1,
+                  })
                 }
               >
                 {entry.price} 🪙
@@ -305,7 +325,11 @@ function Upgrade({ ui, npcEntityId, send }: { ui: UiState; npcEntityId: number; 
               <button
                 type="button"
                 onClick={() =>
-                  send?.({ type: 'UPGRADE', npcId: npcEntityId, instanceId: i.instanceId })
+                  send?.({
+                    type: 'UPGRADE',
+                    npcId: npcEntityId,
+                    instanceId: i.instanceId,
+                  })
                 }
               >
                 +{level + 1}

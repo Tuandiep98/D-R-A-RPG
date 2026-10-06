@@ -10,7 +10,7 @@ const ent = (x: number, yaw = 0): EntitySnapshot => ({
   yaw,
   hp: 1,
   maxHp: 1,
-  level: 1,
+  realm: 0,
   action: 'move',
   targetId: null,
   ownerId: null,
@@ -19,7 +19,10 @@ const ent = (x: number, yaw = 0): EntitySnapshot => ({
   gear: null,
   name: null,
 });
-const snap = (tick: number, e: EntitySnapshot): Snapshot => ({ tick, entities: [e] });
+const snap = (tick: number, e: EntitySnapshot): Snapshot => ({
+  tick,
+  entities: [e],
+});
 
 describe('SnapshotBuffer', () => {
   it('interpolates between bracketing snapshots with a delay', () => {

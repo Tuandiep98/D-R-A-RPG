@@ -19,7 +19,9 @@ for (const size of [192, 512]) {
 // Maskable: keep the logo inside the 80% safe zone on a solid background.
 const inner = Math.round(512 * 0.7);
 const logo = await sharp(svg, { density: 512 }).resize(inner, inner).png().toBuffer();
-await sharp({ create: { width: 512, height: 512, channels: 4, background: '#1b2430' } })
+await sharp({
+  create: { width: 512, height: 512, channels: 4, background: '#1b2430' },
+})
   .composite([{ input: logo, gravity: 'center' }])
   .png()
   .toFile(join(pub, 'icons', 'maskable-512.png'));

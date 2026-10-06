@@ -1,0 +1,12 @@
+id: tien_luyen_huyet
+name: Luyện Thể · Luyện Huyết
+description: Khí huyết cuộn trào. Mở kỹ năng Toàn Phong Kiếm.
+icon: "🩸"
+axis: than
+path: tien
+realm: luyen_khi
+requires: [tien_cuong_cot]
+cost: { gold: 80, materials: [{ itemId: item_fox_fur, count: 6 }] }
+meridian: 10
+bonus: { hp: 120, attack: 3 }
+skillId: skill_whirlwind

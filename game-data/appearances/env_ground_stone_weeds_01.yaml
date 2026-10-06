@@ -1,0 +1,4 @@
+id: env_ground_stone_weeds_01
+kind: ground
+modelAssetId: env_ground_stone_weeds_01
+placeholder: { shape: box, color: "#64645b", height: 0.15, radius: 1 }

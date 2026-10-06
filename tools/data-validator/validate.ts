@@ -7,6 +7,7 @@ import { join, relative, resolve } from 'node:path';
 import { buildContentBundle, ContentError } from '@rpg/game-data';
 
 const root = resolve(import.meta.dirname, '../../game-data');
+const artRoot = resolve(import.meta.dirname, '../../art/third_party');
 
 const files = (readdirSync(root, { recursive: true }) as string[])
   .filter((p) => /\.ya?ml$/i.test(p))
@@ -17,6 +18,7 @@ const files = (readdirSync(root, { recursive: true }) as string[])
 
 try {
   const bundle = buildContentBundle(files);
+  validateAppearanceAssets(bundle.appearances);
   console.log(
     `game-data OK (${files.length} files): ` +
       Object.entries(bundle)
@@ -29,4 +31,52 @@ try {
     process.exit(1);
   }
   throw err;
+}
+
+/**
+ * Keep presentation data honest: every declared model must come from an
+ * approved, licensed source pack, and every approved runtime asset must be
+ * reachable through an appearance. Placeholder-only appearances deliberately
+ * omit modelAssetId.
+ */
+function validateAppearanceAssets(
+  appearances: ReadonlyMap<string, { modelAssetId?: string }>,
+): void {
+  const approved = new Set<string>();
+  for (const pack of readdirSync(artRoot, { withFileTypes: true })) {
+    if (!pack.isDirectory()) continue;
+    const sourcePath = join(artRoot, pack.name, 'SOURCE.json');
+    let source: {
+      status?: string;
+      licenseVerified?: boolean;
+      assets?: { assetId?: string }[];
+    };
+    try {
+      source = JSON.parse(readFileSync(sourcePath, 'utf8'));
+    } catch {
+      continue;
+    }
+    if (source.status !== 'approved' || source.licenseVerified !== true) continue;
+    for (const asset of source.assets ?? []) {
+      if (asset.assetId) approved.add(asset.assetId);
+    }
+  }
+
+  const referenced = new Set<string>();
+  const problems: string[] = [];
+  for (const [appearanceId, appearance] of appearances) {
+    if (!appearance.modelAssetId) continue;
+    referenced.add(appearance.modelAssetId);
+    if (!approved.has(appearance.modelAssetId)) {
+      problems.push(
+        `appearance "${appearanceId}" references unapproved or unavailable modelAssetId "${appearance.modelAssetId}"`,
+      );
+    }
+  }
+  for (const assetId of approved) {
+    if (!referenced.has(assetId)) problems.push(`approved asset "${assetId}" has no appearance`);
+  }
+  if (problems.length > 0) {
+    throw new Error(`Invalid appearance assets:\n  - ${problems.join('\n  - ')}`);
+  }
 }

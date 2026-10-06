@@ -22,7 +22,7 @@ import {
 } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
-import { type Document, NodeIO } from '@gltf-transform/core';
+import { type Accessor, type Document, NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import {
   cloneDocument,
@@ -36,6 +36,8 @@ import {
 } from '@gltf-transform/functions';
 import { MeshoptDecoder, MeshoptEncoder, MeshoptSimplifier } from 'meshoptimizer';
 import sharp from 'sharp';
+import { dropMeshes, graftParts, keepTrianglesByJoints } from './parts';
+import { readTolerant } from './read';
 import { type PackSource, PackSourceSchema, TEXTURE_BUDGET, TRIANGLE_BUDGET } from './source';
 
 const repo = resolve(import.meta.dirname, '../..');
@@ -72,9 +74,10 @@ interface CatalogRow {
 await MeshoptEncoder.ready;
 await MeshoptDecoder.ready;
 await MeshoptSimplifier.ready;
-const io = new NodeIO()
-  .registerExtensions(ALL_EXTENSIONS)
-  .registerDependencies({ 'meshopt.encoder': MeshoptEncoder, 'meshopt.decoder': MeshoptDecoder });
+const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({
+  'meshopt.encoder': MeshoptEncoder,
+  'meshopt.decoder': MeshoptDecoder,
+});
 
 const errors: string[] = [];
 const warnings: string[] = [];
@@ -131,7 +134,34 @@ for (const dir of packs) {
       continue;
     }
     try {
-      const doc = await io.read(file);
+      const doc = await readTolerant(io, file, asset.textureDirs, (message) =>
+        warnings.push(`${asset.assetId}: ${message}`),
+      );
+      if (asset.dropMeshes.length) dropMeshes(doc, asset.dropMeshes);
+      if (asset.parts.length) {
+        const parts: Document[] = [];
+        for (const part of asset.parts) {
+          const partFile = join(packDir, part.file);
+          if (!existsSync(partFile)) throw new Error(`${part.file} not found`);
+          const partDoc = await readTolerant(io, partFile, part.textureDirs, (message) =>
+            warnings.push(`${asset.assetId}: ${message}`),
+          );
+          if (part.keepJoints) keepTrianglesByJoints(partDoc, part.keepJoints);
+          parts.push(partDoc);
+        }
+        await graftParts(doc, parts);
+      }
+      if (asset.animationSource) {
+        const animationFile = join(packDir, asset.animationSource);
+        if (!existsSync(animationFile)) {
+          errors.push(`${pack.packId}/${asset.assetId}: ${asset.animationSource} not found`);
+          continue;
+        }
+        const animationDoc = await readTolerant(io, animationFile, [], (message) =>
+          warnings.push(`${asset.assetId}: ${message}`),
+        );
+        graftAnimations(doc, animationDoc, asset.animationClips);
+      }
       const tris = countTriangles(doc);
       const sourceBytes = (await io.writeBinary(doc)).byteLength;
       const animations = doc
@@ -251,6 +281,86 @@ function countTriangles(doc: Document): number {
     }
   }
   return Math.round(tris);
+}
+
+/**
+ * Copies animation channels onto a compatible rig by node name. Quaternius
+ * UBC, Modular Outfits and UAL share the same 65-joint skeleton, but ship as
+ * separate files. Keeping only the destination skeleton avoids duplicate
+ * armatures in the runtime GLB.
+ */
+function graftAnimations(
+  target: Document,
+  source: Document,
+  selectedClips: readonly string[] | undefined,
+): void {
+  const targetNodes = new Map(
+    target
+      .getRoot()
+      .listNodes()
+      .map((node) => [node.getName(), node]),
+  );
+  const buffer = target.getRoot().listBuffers()[0] ?? target.createBuffer('animation_buffer');
+  const wanted = selectedClips ? new Set(selectedClips) : null;
+
+  for (const sourceAnimation of source.getRoot().listAnimations()) {
+    if (wanted && !wanted.has(sourceAnimation.getName())) continue;
+    const animation = target.createAnimation(sourceAnimation.getName());
+    const accessorMap = new Map<Accessor, Accessor>();
+    const samplerMap = new Map(
+      sourceAnimation.listSamplers().map((sourceSampler) => {
+        const input = sourceSampler.getInput();
+        const output = sourceSampler.getOutput();
+        if (!input || !output)
+          throw new Error(`animation ${sourceAnimation.getName()} has an empty sampler`);
+        const sampler = target
+          .createAnimationSampler(sourceSampler.getName())
+          .setInput(copyAccessor(input, target, buffer, accessorMap))
+          .setOutput(copyAccessor(output, target, buffer, accessorMap))
+          .setInterpolation(sourceSampler.getInterpolation());
+        animation.addSampler(sampler);
+        return [sourceSampler, sampler] as const;
+      }),
+    );
+
+    for (const sourceChannel of sourceAnimation.listChannels()) {
+      const sourceNode = sourceChannel.getTargetNode();
+      const sourceSampler = sourceChannel.getSampler();
+      const targetPath = sourceChannel.getTargetPath();
+      const targetNode = sourceNode ? targetNodes.get(sourceNode.getName()) : undefined;
+      if (!targetNode || !sourceSampler || !targetPath) continue;
+      const sampler = samplerMap.get(sourceSampler);
+      if (!sampler) continue;
+      animation.addChannel(
+        target
+          .createAnimationChannel(sourceChannel.getName())
+          .setTargetNode(targetNode)
+          .setTargetPath(targetPath)
+          .setSampler(sampler),
+      );
+    }
+    if (animation.listChannels().length === 0) animation.dispose();
+  }
+}
+
+function copyAccessor(
+  source: Accessor,
+  target: Document,
+  buffer: ReturnType<Document['createBuffer']>,
+  cache: Map<Accessor, Accessor>,
+): Accessor {
+  const cached = cache.get(source);
+  if (cached) return cached;
+  const array = source.getArray();
+  if (!array) throw new Error(`animation accessor ${source.getName()} has no data`);
+  const copy = target
+    .createAccessor(source.getName())
+    .setType(source.getType())
+    .setArray(array.slice() as typeof array)
+    .setNormalized(source.getNormalized())
+    .setBuffer(buffer);
+  cache.set(source, copy);
+  return copy;
 }
 
 /** Assets plan §5.1: no negative or wildly non-uniform scale on scene roots. */

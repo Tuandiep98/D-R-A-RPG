@@ -34,7 +34,12 @@ export function serveSimHost(endpoint: MessageEndpoint, host: SimHost): void {
   host.onPlayerState((state) => endpoint.postMessage({ t: 'player', state } satisfies FromWorker));
   host.onChat((message) => endpoint.postMessage({ t: 'chat', message } satisfies FromWorker));
   host.onJoin((join) => {
-    if (connected) endpoint.postMessage({ t: 'join', join, reply: false } satisfies FromWorker);
+    if (connected)
+      endpoint.postMessage({
+        t: 'join',
+        join,
+        reply: false,
+      } satisfies FromWorker);
   });
   endpoint.addEventListener('message', (ev) => {
     const msg = ev.data as ToWorker;
@@ -43,7 +48,11 @@ export function serveSimHost(endpoint: MessageEndpoint, host: SimHost): void {
         .connect()
         .then((join) => {
           connected = true;
-          endpoint.postMessage({ t: 'join', join, reply: true } satisfies FromWorker);
+          endpoint.postMessage({
+            t: 'join',
+            join,
+            reply: true,
+          } satisfies FromWorker);
         })
         .catch((err: unknown) =>
           endpoint.postMessage({
@@ -60,8 +69,10 @@ export function serveSimHost(endpoint: MessageEndpoint, host: SimHost): void {
 /** Main-thread side: a SimHost whose simulation runs in a worker. */
 export class WorkerSimHost implements SimHost {
   private readonly emitter = new HostEmitter();
-  private pendingConnect: { resolve: (j: JoinInfo) => void; reject: (e: Error) => void } | null =
-    null;
+  private pendingConnect: {
+    resolve: (j: JoinInfo) => void;
+    reject: (e: Error) => void;
+  } | null = null;
   private readonly listener = (ev: { data: unknown }) => this.onMessage(ev.data as FromWorker);
 
   constructor(

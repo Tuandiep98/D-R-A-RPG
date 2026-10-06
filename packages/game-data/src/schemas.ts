@@ -27,7 +27,7 @@ export const StatsSchema = z.strictObject({
 });
 export type StatsDef = z.infer<typeof StatsSchema>;
 
-/** Flat additive bonuses (items, level growth, phases). */
+/** Flat additive bonuses (items, realms, cultivation nodes). */
 export const StatBonusSchema = z.strictObject({
   hp: z.number().default(0),
   mp: z.number().default(0),
@@ -130,8 +130,8 @@ export const ItemDefSchema = z
     icon: z.string().default('◆'),
     description: z.string().default(''),
     slot: EquipSlotSchema.optional(),
-    /** Minimum character level to equip/use. */
-    level: z.number().int().positive().default(1),
+    /** Minimum realm to equip/use (no character level — master plan §31). */
+    realm: IdSchema.optional(),
     bonus: StatBonusSchema.optional(),
     /** Consumables: fraction of max HP restored. */
     heal: chance.optional(),
@@ -154,7 +154,10 @@ export type ItemDef = z.infer<typeof ItemDefSchema>;
 export const LootTableDefSchema = z.strictObject({
   id: IdSchema,
   gold: z
-    .strictObject({ min: z.number().int().nonnegative(), max: z.number().int().nonnegative() })
+    .strictObject({
+      min: z.number().int().nonnegative(),
+      max: z.number().int().nonnegative(),
+    })
     .optional(),
   /** Each entry rolls independently. */
   entries: z
@@ -170,15 +173,118 @@ export const LootTableDefSchema = z.strictObject({
 });
 export type LootTableDef = z.infer<typeof LootTableDefSchema>;
 
-export const ProgressionDefSchema = z.strictObject({
-  id: IdSchema,
-  maxLevel: z.number().int().positive(),
-  /** XP needed to go from level n to n+1 = round(base * n^exponent). */
-  xpCurve: z.strictObject({ base: positive, exponent: positive }),
-  /** Stat gain per level above 1, added to the character's base stats. */
-  perLevel: StatBonusSchema,
+const ItemCostSchema = z.strictObject({
+  itemId: IdSchema,
+  count: z.number().int().positive(),
 });
-export type ProgressionDef = z.infer<typeof ProgressionDefSchema>;
+
+/**
+ * Global progression rules (master plan §56–57). One file; the first one wins.
+ * Realm gap: damage multiplier by how many realms the attacker is below
+ * (`lower[0]` = one realm below) or above (`higher[0]` = one realm above).
+ * Gaps past the end of a list use its last entry.
+ */
+export const ProgressionRulesSchema = z.strictObject({
+  id: IdSchema,
+  realmGap: z.strictObject({
+    lower: z.array(positive).min(1),
+    higher: z.array(positive).min(1),
+  }),
+  /** Breakthrough only inside a safe zone (never mid-fight). */
+  breakthroughInSafeZone: z.boolean().default(true),
+});
+export type ProgressionRules = z.infer<typeof ProgressionRulesSchema>;
+
+/**
+ * Cảnh giới (master plan §38–55). A realm is a leap in what the character is,
+ * not a level: it sets the stat floor and how much cultivation the body can
+ * carry. Tu Tiên and Cơ Giới names describe the same step.
+ */
+export const RealmDefSchema = z.strictObject({
+  id: IdSchema,
+  /** 0 = starting realm; must be contiguous. */
+  order: z.number().int().nonnegative(),
+  name: z.string().min(1),
+  /** Cơ Giới name of the same realm (Core Awakening, Foundation Frame…). */
+  mechName: z.string().min(1),
+  description: z.string().default(''),
+  /** Total bonus while in this realm (not cumulative with lower realms). */
+  bonus: StatBonusSchema.default({
+    hp: 0,
+    mp: 0,
+    attack: 0,
+    defense: 0,
+    critChance: 0,
+    speed: 0,
+  }),
+  /** Kinh Mạch Tải: meridian capacity for Tiên-path nodes (§72). */
+  meridianCapacity: z.number().int().nonnegative(),
+  /** Body Load: capacity for Cơ-path nodes (§71). */
+  bodyLoad: z.number().int().nonnegative(),
+  /**
+   * How to break through INTO this realm (§59–62). Missing → not reachable in
+   * this build. Failure never loses progression: materials are spent and a
+   * temporary backlash weakens attacks.
+   */
+  breakthrough: z
+    .strictObject({
+      /** Cultivation nodes that must be open (stable foundation). */
+      minNodes: z.number().int().nonnegative(),
+      /** Trials/knowledge: quests that must be turned in. */
+      quests: z.array(IdSchema).default([]),
+      materials: z.array(ItemCostSchema).default([]),
+      gold: z.number().int().nonnegative().default(0),
+      baseChance: chance,
+      /** Stability: each node beyond `minNodes` adds this to the chance. */
+      chancePerExtraNode: chance.default(0),
+      backlashSeconds: seconds,
+      /** Attack multiplier while backlash lasts. */
+      backlashAttack: z.number().min(0).max(1),
+    })
+    .optional(),
+});
+export type RealmDef = z.infer<typeof RealmDefSchema>;
+
+export const CultivationAxisSchema = z.enum(['than', 'nang_luong', 'than_thuc', 'dao']);
+export type CultivationAxis = z.infer<typeof CultivationAxisSchema>;
+
+/** tien = Tiên Đạo, co = Cơ Đạo, hon_nguyen = hybrid (uses both capacities). */
+export const CultivationPathSchema = z.enum(['tien', 'co', 'hon_nguyen']);
+export type CultivationPath = z.infer<typeof CultivationPathSchema>;
+
+/**
+ * One step of building a character (master plan §32–36, §71–73): opening a
+ * meridian, an augmentation, a technique. Nodes change what you can do
+ * (`skillId`), not only numbers. Capacity forces choices.
+ */
+export const CultivationNodeDefSchema = z.strictObject({
+  id: IdSchema,
+  name: z.string().min(1),
+  description: z.string().default(''),
+  icon: z.string().default('✦'),
+  axis: CultivationAxisSchema,
+  path: CultivationPathSchema,
+  /** Minimum realm. */
+  realm: IdSchema,
+  /** Nodes that must be open first. */
+  requires: z.array(IdSchema).default([]),
+  /** Knowledge: quests that must be turned in first. */
+  quests: z.array(IdSchema).default([]),
+  cost: z
+    .strictObject({
+      gold: z.number().int().nonnegative().default(0),
+      materials: z.array(ItemCostSchema).default([]),
+    })
+    .default({ gold: 0, materials: [] }),
+  /** Meridian capacity used. */
+  meridian: z.number().int().nonnegative().default(0),
+  /** Body load used. */
+  body: z.number().int().nonnegative().default(0),
+  bonus: StatBonusSchema.optional(),
+  /** Skill unlocked by this node (appended to the skill bar). */
+  skillId: IdSchema.optional(),
+});
+export type CultivationNodeDef = z.infer<typeof CultivationNodeDefSchema>;
 
 // ---------------------------------------------------------------------------
 // Characters and monsters
@@ -188,7 +294,6 @@ export const CharacterDefSchema = z.strictObject({
   id: IdSchema,
   name: z.string().min(1),
   appearanceId: IdSchema,
-  progressionId: IdSchema,
   stats: StatsSchema,
   movement: MovementDefSchema,
   combat: CombatDefSchema,
@@ -224,7 +329,8 @@ export const MonsterPhaseSchema = z.strictObject({
 export const MonsterDefSchema = z.strictObject({
   id: IdSchema,
   name: z.string().min(1),
-  level: z.number().int().positive(),
+  /** Cảnh giới; the realm gap scales damage both ways (master plan §57). */
+  realm: IdSchema,
   tier: MonsterTierSchema.default('normal'),
   appearanceId: IdSchema,
   stats: StatsSchema,
@@ -239,7 +345,6 @@ export const MonsterDefSchema = z.strictObject({
   }),
   skills: z.array(IdSchema).default([]),
   phases: z.array(MonsterPhaseSchema).default([]),
-  xp: z.number().int().nonnegative().default(0),
   lootTable: z.array(IdSchema).default([]),
 });
 export type MonsterDef = z.infer<typeof MonsterDefSchema>;
@@ -286,17 +391,22 @@ export const QuestDefSchema = z.strictObject({
   giverNpcId: IdSchema,
   /** Defaults to the giver. */
   turnInNpcId: IdSchema.optional(),
-  level: z.number().int().positive().default(1),
+  /** Minimum realm to accept. */
+  realm: IdSchema.optional(),
   /** Quests that must be turned in first. */
   requires: z.array(IdSchema).default([]),
   objectives: z.array(QuestObjectiveSchema).min(1),
   /** Collected items are removed on turn-in. */
   consumeItems: z.boolean().default(true),
   rewards: z.strictObject({
-    xp: z.number().int().nonnegative().default(0),
     gold: z.number().int().nonnegative().default(0),
     items: z
-      .array(z.strictObject({ itemId: IdSchema, count: z.number().int().positive().default(1) }))
+      .array(
+        z.strictObject({
+          itemId: IdSchema,
+          count: z.number().int().positive().default(1),
+        }),
+      )
       .default([]),
   }),
 });
@@ -314,12 +424,14 @@ export type ShopDef = z.infer<typeof ShopDefSchema>;
 export const RecipeDefSchema = z.strictObject({
   id: IdSchema,
   name: z.string().min(1),
-  result: z.strictObject({ itemId: IdSchema, count: z.number().int().positive().default(1) }),
-  materials: z
-    .array(z.strictObject({ itemId: IdSchema, count: z.number().int().positive() }))
-    .min(1),
+  result: z.strictObject({
+    itemId: IdSchema,
+    count: z.number().int().positive().default(1),
+  }),
+  materials: z.array(ItemCostSchema).min(1),
   gold: z.number().int().nonnegative().default(0),
-  level: z.number().int().positive().default(1),
+  /** Minimum realm. */
+  realm: IdSchema.optional(),
 });
 export type RecipeDef = z.infer<typeof RecipeDefSchema>;
 
@@ -335,7 +447,12 @@ export const UpgradeRulesSchema = z.strictObject({
       z.strictObject({
         gold: z.number().int().nonnegative(),
         materials: z
-          .array(z.strictObject({ itemId: IdSchema, count: z.number().int().positive() }))
+          .array(
+            z.strictObject({
+              itemId: IdSchema,
+              count: z.number().int().positive(),
+            }),
+          )
           .default([]),
         successRate: chance,
       }),
@@ -413,7 +530,13 @@ export const MapDefSchema = z
     portals: z.array(MapPortalSchema).default([]),
     zones: z.array(MapZoneSchema).default([]),
     npcs: z
-      .array(z.strictObject({ npcId: IdSchema, position: Vec2, rotationY: z.number().default(0) }))
+      .array(
+        z.strictObject({
+          npcId: IdSchema,
+          position: Vec2,
+          rotationY: z.number().default(0),
+        }),
+      )
       .default([]),
     /**
      * shared: one world per channel (default). solo: a private copy per

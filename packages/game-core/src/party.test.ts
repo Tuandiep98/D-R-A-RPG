@@ -17,7 +17,9 @@ const get = (world: World, id: number): Entity => {
 
 function partyWorld() {
   const world = new World({
-    content: makeContent({ monster: { stats: { hp: 1, attack: 0, defense: 0, critChance: 0 } } }),
+    content: makeContent({
+      monster: { stats: { hp: 1, attack: 0, defense: 0, critChance: 0 } },
+    }),
     mapId: 'test_map',
   });
   const a = world.spawnPlayer('hero', { name: 'An' });
@@ -49,7 +51,7 @@ describe('party', () => {
     expect(world.step().some((e) => e.type === 'NOTICE' && e.code === 'no_invite')).toBe(true);
   });
 
-  it('shares kill XP with nearby members and lets them loot', () => {
+  it('shares kill quest credit with nearby members and lets them loot', () => {
     const { world, a, b } = partyWorld();
     world.enqueueIntent(a, { type: 'PARTY_INVITE', targetId: b });
     world.step();
@@ -58,15 +60,17 @@ describe('party', () => {
     let mob: Entity | undefined;
     for (const e of world.entities.values()) if (e.kind === 'monster') mob = e;
     if (!mob) throw new Error('no mob');
+    for (const id of [a, b])
+      world.entities.get(id)?.player?.quests.push({
+        questId: 'q_wolves',
+        status: 'active',
+        progress: [0],
+      });
     mob.pos = { x: 0, z: 1.2 };
     world.enqueueIntent(a, { type: 'ATTACK_TARGET', targetId: mob.id });
-    const events = run(world, 3);
-    const xp = events.filter((e) => e.type === 'XP');
-    // 60 XP shared by 2 with a 20% group bonus → 36 each.
-    expect(xp.map((e) => (e.type === 'XP' ? [e.id, e.amount] : null))).toEqual([
-      [a, 36],
-      [b, 36],
-    ]);
+    run(world, 3);
+    expect(world.playerState(a)?.quests[0]?.status).toBe('ready');
+    expect(world.playerState(b)?.quests[0]?.status).toBe('ready');
     const loot = [...world.entities.values()].find((e) => e.kind === 'loot');
     if (!loot) throw new Error('no loot');
     get(world, b).pos = { ...loot.pos };

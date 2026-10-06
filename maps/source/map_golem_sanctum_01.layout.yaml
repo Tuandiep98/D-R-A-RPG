@@ -1,12 +1,12 @@
-# Cơ Quan Điện — solo dungeon (tech plan §29: one private instance per character).
+# Huyền Vũ Cổ Mộ — solo dungeon (tech plan §29: one private instance per character).
 # Corridor of robot guards → sanctum with a copy of the boss → exit portal.
 id: map_golem_sanctum_01
-name: Cơ Quan Điện
+name: Huyền Vũ Cổ Mộ
 seed: 777
 instance: solo
 bounds: { min: { x: -24, z: -40 }, max: { x: 24, z: 40 } }
 chunkSize: 32
-ground: { color: '#4a4f57' }
+ground: { color: "#4a4f57" }
 playerSpawn: { x: 0, z: -35 }
 arrivals:
   - { id: entrance, position: { x: 0, z: -34 } }
@@ -19,17 +19,169 @@ clearings:
   - { center: { x: 0, z: -34 }, radius: 5 }
   - { center: { x: 0, z: 20 }, radius: 13 }
 
+groundCovers:
+  - appearanceIds: [env_dungeon_floor_01]
+    min: { x: -24, z: -40 }
+    max: { x: 24, z: 40 }
+    tileSize: 4
+    y: 0.01
+    scale: 1.02
+
 zones:
-  - { id: sanctum_gate, name: Cổng Điện, kind: safe, center: { x: 0, z: -35 }, radius: 4 }
-  - { id: sanctum, name: Chính Điện, kind: boss_arena, center: { x: 0, z: 20 }, radius: 13 }
+  - {
+      id: sanctum_gate,
+      name: Cửa Mộ,
+      kind: safe,
+      center: { x: 0, z: -35 },
+      radius: 4,
+    }
+  - {
+      id: sanctum,
+      name: Mộ Thất Hợp Kim,
+      kind: boss_arena,
+      center: { x: 0, z: 20 },
+      radius: 13,
+    }
 
 spawns:
-  - { id: guards_a, monsterId: robot_scout_001, position: { x: 0, z: -18 }, count: 3, radius: 3, respawnSeconds: 600 }
-  - { id: guards_b, monsterId: robot_scout_001, position: { x: 0, z: -4 }, count: 3, radius: 3, respawnSeconds: 600 }
-  - { id: sanctum_boss, monsterId: mech_golem_001, position: { x: 0, z: 22 }, count: 1, respawnSeconds: 900 }
+  - {
+      id: guards_a,
+      monsterId: robot_scout_001,
+      position: { x: 0, z: -18 },
+      count: 3,
+      radius: 3,
+      respawnSeconds: 600,
+    }
+  - {
+      id: guards_b,
+      monsterId: robot_scout_001,
+      position: { x: 0, z: -4 },
+      count: 3,
+      radius: 3,
+      respawnSeconds: 600,
+    }
+  - {
+      id: stone_sentinels,
+      monsterId: stone_guardian_001,
+      position: { x: 0, z: 9 },
+      count: 2,
+      radius: 3,
+      respawnSeconds: 600,
+    }
+  - {
+      id: sanctum_boss,
+      monsterId: mech_golem_001,
+      position: { x: 0, z: 22 },
+      count: 1,
+      respawnSeconds: 900,
+    }
 
 portals:
-  - { id: sanctum_exit, name: Rời Cơ Quan Điện, position: { x: 0, z: 36 }, targetMapId: map_forest_mechanism_01, targetArrival: from_sanctum }
+  - {
+      id: sanctum_exit,
+      name: Rời Cổ Mộ,
+      position: { x: 0, z: 36 },
+      targetMapId: map_forest_mechanism_01,
+      targetArrival: from_sanctum,
+    }
+
+prefabs:
+  - id: tomb_corridor
+    members:
+      - { appearanceId: env_dungeon_floor_01, offset: { x: 0, z: 0 }, scale: 2 }
+      - {
+          appearanceId: env_dungeon_wall_01,
+          offset: { x: -4, z: 0 },
+          rotationY: 1.5708,
+          colliderRadius: 1.4,
+        }
+      - {
+          appearanceId: env_dungeon_wall_01,
+          offset: { x: 4, z: 0 },
+          rotationY: -1.5708,
+          colliderRadius: 1.4,
+        }
+      - {
+          appearanceId: env_dungeon_pillar_01,
+          offset: { x: -3.6, z: 3 },
+          colliderRadius: 0.45,
+        }
+      - {
+          appearanceId: env_dungeon_pillar_01,
+          offset: { x: 3.6, z: 3 },
+          colliderRadius: 0.45,
+        }
+      - {
+          appearanceId: prop_dungeon_rubble_01,
+          offset: { x: 2.8, z: -2 },
+          rotationY: 0.7,
+          colliderRadius: 0.6,
+        }
+      - {
+          appearanceId: prop_dungeon_torch_01,
+          offset: { x: -3.7, z: -2.5 },
+          rotationY: 1.5708,
+        }
+      - {
+          appearanceId: prop_dungeon_torch_01,
+          offset: { x: 3.7, z: -2.5 },
+          rotationY: -1.5708,
+        }
+  - id: tomb_alloy_gate
+    members:
+      - {
+          appearanceId: env_dungeon_arch_01,
+          offset: { x: 0, z: 0 },
+          colliderRadius: 1.4,
+        }
+      - {
+          appearanceId: env_scifi_door_frame_01,
+          offset: { x: 0, z: 0.15 },
+          colliderRadius: 1.3,
+        }
+      - {
+          appearanceId: env_scifi_door_01,
+          offset: { x: 0, z: 0.25 },
+          colliderRadius: 1.2,
+        }
+      - {
+          appearanceId: env_scifi_column_01,
+          offset: { x: -2.4, z: 0.2 },
+          colliderRadius: 0.55,
+        }
+      - {
+          appearanceId: env_scifi_column_01,
+          offset: { x: 2.4, z: 0.2 },
+          colliderRadius: 0.55,
+        }
+      - {
+          appearanceId: prop_scifi_access_point_01,
+          offset: { x: 2, z: -0.8 },
+          rotationY: -1.5708,
+          colliderRadius: 0.35,
+        }
+
+prefabPlacements:
+  - { prefabId: tomb_alloy_gate, position: { x: 0, z: -29 } }
+  - { prefabId: tomb_corridor, position: { x: 0, z: -20 } }
+  - { prefabId: tomb_corridor, position: { x: 0, z: -8 } }
+  - { prefabId: tomb_corridor, position: { x: 0, z: 4 } }
+  - { prefabId: tomb_alloy_gate, position: { x: 0, z: 10 } }
+
+landmarks:
+  - { appearanceId: env_dungeon_floor_01, position: { x: 0, z: 20 }, scale: 5 }
+  - {
+      appearanceId: prop_dungeon_chest_01,
+      position: { x: -8, z: 26 },
+      rotationY: 1.1,
+      colliderRadius: 0.65,
+    }
+  - {
+      appearanceId: prop_dungeon_chest_01,
+      position: { x: 8, z: 26 },
+      rotationY: -1.1,
+      colliderRadius: 0.65,
+    }
 
 rings:
   - appearanceId: env_rock_01
@@ -42,5 +194,24 @@ rings:
     gapWidth: 0.3
 
 scatter:
-  - { appearanceId: env_rock_01, count: 18, minSpacing: 3.5, colliderRadius: 0.8, scale: [0.7, 1.3] }
-  - { appearanceId: env_tree_02, count: 6, minSpacing: 6, colliderRadius: 0.5, scale: [0.7, 0.9] }
+  - {
+      appearanceId: env_ground_stone_weeds_01,
+      count: 18,
+      minSpacing: 3,
+      scale: [0.8, 1.1],
+      allowOnPath: true,
+    }
+  - {
+      appearanceId: env_rock_01,
+      count: 18,
+      minSpacing: 3.5,
+      colliderRadius: 0.8,
+      scale: [0.7, 1.3],
+    }
+  - {
+      appearanceId: env_tree_02,
+      count: 6,
+      minSpacing: 6,
+      colliderRadius: 0.5,
+      scale: [0.7, 0.9],
+    }

@@ -1,8 +1,8 @@
 id: q_fox_fur
 name: Lông Hồ Ly
-description: Mang về 5 tấm lông hồ ly để may áo ấm cho dân làng.
+description: Mang về 5 tấm lông hồ ly cho Tân Nguyên Trấn — Tô Tiểu Linh cũng cần lông hồ ly để luyện đan.
 giverNpcId: npc_elder
 requires: [q_wolf_cull]
 objectives:
   - { type: collect, itemId: item_fox_fur, count: 5 }
-rewards: { xp: 220, gold: 40, items: [{ itemId: item_boots_leather, count: 1 }] }
+rewards: { gold: 40, items: [{ itemId: item_boots_leather, count: 1 }] }

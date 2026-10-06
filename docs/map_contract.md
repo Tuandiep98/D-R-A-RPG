@@ -18,14 +18,14 @@ game-data/nav/<mapId>.navmesh.bin + .json (hash nguồn)
 
 ## Cấu trúc map runtime
 
-| Trường | Ý nghĩa |
-|---|---|
-| `bounds`, `chunkSize` | Vùng chơi; chunk vuông `chunkSize` m, id `chunk_<i>_<j>` tính từ `bounds.min` |
-| `playerSpawn`, `arrivals[]` | Điểm hồi sinh; điểm đến khi qua portal (`targetArrival`) |
-| `chunks[].instances[]` | Decoration/vật cản. `colliderRadius` có → vật cản (sim + navmesh) |
-| `spawns[]` | Nhóm quái: `monsterId`, `count`, `radius`, `respawnSeconds` |
-| `portals[]` | `targetMapId` + `targetArrival`; server cấp ticket ký số khi dùng |
-| `zones[]` | `safe` (quái không aggro), `combat`, `boss_arena`, `hazard` |
+| Trường                      | Ý nghĩa                                                                       |
+| --------------------------- | ----------------------------------------------------------------------------- |
+| `bounds`, `chunkSize`       | Vùng chơi; chunk vuông `chunkSize` m, id `chunk_<i>_<j>` tính từ `bounds.min` |
+| `playerSpawn`, `arrivals[]` | Điểm hồi sinh; điểm đến khi qua portal (`targetArrival`)                      |
+| `chunks[].instances[]`      | Decoration/vật cản. `colliderRadius` có → vật cản (sim + navmesh)             |
+| `spawns[]`                  | Nhóm quái: `monsterId`, `count`, `radius`, `respawnSeconds`                   |
+| `portals[]`                 | `targetMapId` + `targetArrival`; server cấp ticket ký số khi dùng             |
+| `zones[]`                   | `safe` (quái không aggro), `combat`, `boss_arena`, `hazard`                   |
 
 ## Quy tắc thiết kế
 
@@ -45,7 +45,7 @@ game-data/nav/<mapId>.navmesh.bin + .json (hash nguồn)
 
 ## Map hiện có
 
-| mapId | Tên | Kích thước | Chunk | Nội dung |
-|---|---|---|---|---|
-| `map_sandbox_01` | Thôn Thanh Vân | 40×40 m | 1 | Vùng an toàn, 2 trại quái nhập môn, portal sang rừng |
-| `map_forest_mechanism_01` | Rừng Cơ Quan | 160×96 m | 15 | Trạm gác (safe) → Đồi Sói (sói, hồ ly) → Phế Tích Cơ Giới (robot + Linh Lộc Tinh Anh) → Đấu Trường Cơ Quan (boss) → portal về |
+| mapId                     | Tên            | Kích thước | Chunk | Nội dung                                                                                                                      |
+| ------------------------- | -------------- | ---------- | ----- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `map_sandbox_01`          | Thôn Thanh Vân | 40×40 m    | 1     | Vùng an toàn, 2 trại quái nhập môn, portal sang rừng                                                                          |
+| `map_forest_mechanism_01` | Rừng Cơ Quan   | 160×96 m   | 15    | Trạm gác (safe) → Đồi Sói (sói, hồ ly) → Phế Tích Cơ Giới (robot + Linh Lộc Tinh Anh) → Đấu Trường Cơ Quan (boss) → portal về |

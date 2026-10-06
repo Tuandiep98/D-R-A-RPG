@@ -1,0 +1,62 @@
+{
+  "packId": "quaternius_modular_scifi",
+  "author": "Quaternius",
+  "pack": "Modular Sci-Fi MegaKit (Standard)",
+  "sourceUrl": "https://quaternius.itch.io/modular-sci-fi-megakit",
+  "license": "CC0-1.0",
+  "licenseVerified": true,
+  "downloadedAt": "2026-10-06",
+  "status": "approved",
+  "notes": "Mechanical deep-layer kit for Cửa Hợp Kim and Huyền Vũ Cổ Mộ.",
+  "assets": [
+    {
+      "assetId": "env_scifi_door_frame_01",
+      "file": "originals/Platforms/Door_Frame_SquareTall.gltf",
+      "textureDirs": ["../Textures"],
+      "type": "environment",
+      "modified": false
+    },
+    {
+      "assetId": "env_scifi_door_01",
+      "file": "originals/Platforms/Door_DarkMetal.gltf",
+      "textureDirs": ["../Textures"],
+      "type": "environment",
+      "modified": false
+    },
+    {
+      "assetId": "env_scifi_wall_01",
+      "file": "originals/Walls/WallAstra_Straight.gltf",
+      "textureDirs": ["../Textures"],
+      "type": "environment",
+      "modified": false
+    },
+    {
+      "assetId": "env_scifi_wall_broken_01",
+      "file": "originals/Walls/WallAstra_Straight_Broken.gltf",
+      "textureDirs": ["../Textures"],
+      "type": "environment",
+      "modified": false
+    },
+    {
+      "assetId": "env_scifi_column_01",
+      "file": "originals/Columns/Column_Pipes.gltf",
+      "textureDirs": ["../Textures"],
+      "type": "environment",
+      "modified": false
+    },
+    {
+      "assetId": "prop_scifi_terminal_01",
+      "file": "originals/Props/Prop_Computer.gltf",
+      "textureDirs": ["../Textures"],
+      "type": "prop",
+      "modified": false
+    },
+    {
+      "assetId": "prop_scifi_access_point_01",
+      "file": "originals/Props/Prop_AccessPoint.gltf",
+      "textureDirs": ["../Textures"],
+      "type": "prop",
+      "modified": false
+    }
+  ]
+}

@@ -17,8 +17,8 @@ export default defineConfig(({ mode }) => ({
       injectRegister: 'auto',
       includeAssets: ['favicon.svg', 'icons/apple-touch-icon.png'],
       manifest: {
-        name: 'D-R-A RPG',
-        short_name: 'D-R-A',
+        name: 'Thiên Cơ Kỷ',
+        short_name: 'Thiên Cơ Kỷ',
         description: 'RPG 2.5D semi-mini: Robot · Tu tiên · Võ hiệp',
         lang: 'vi',
         display: 'fullscreen',
@@ -92,8 +92,14 @@ export default defineConfig(({ mode }) => ({
         codeSplitting: {
           groups: [
             { name: 'babylon', test: /node_modules[/]\.pnpm[/]@babylonjs/ },
-            { name: 'recast', test: /node_modules[/]\.pnpm[/]@?recast-navigation/ },
-            { name: 'react', test: /node_modules[/]\.pnpm[/](react|react-dom|scheduler|zustand)@/ },
+            {
+              name: 'recast',
+              test: /node_modules[/]\.pnpm[/]@?recast-navigation/,
+            },
+            {
+              name: 'react',
+              test: /node_modules[/]\.pnpm[/](react|react-dom|scheduler|zustand)@/,
+            },
           ],
         },
       },

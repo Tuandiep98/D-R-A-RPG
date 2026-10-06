@@ -1,7 +1,7 @@
 id: npc_smith
-name: Thợ Rèn Thiết Thủ
-title: Rèn đúc & cường hoá
+name: Lão Mộc
+title: Thợ rèn · Lò rèn
 appearanceId: npc_smith_01
-greeting: Mang nguyên liệu tới đây, ta rèn cho.
-recipes: [r_wuxia_robe, r_mech_visor, r_potion_large]
+greeting: Pháp khí hay robot, hỏng gì ta sửa nấy. Đừng hỏi ta học ở đâu.
+recipes: [r_wuxia_robe, r_mech_visor]
 upgrades: true

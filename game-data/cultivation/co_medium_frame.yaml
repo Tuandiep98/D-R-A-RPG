@@ -1,0 +1,14 @@
+id: co_medium_frame
+name: Medium Frame
+description: Foundation Frame hạng trung — tăng tải và giáp.
+icon: "🛡"
+axis: than
+path: co
+realm: truc_co
+cost:
+  gold: 300
+  materials:
+    - { itemId: item_golem_core, count: 1 }
+    - { itemId: item_robot_scrap, count: 10 }
+body: 25
+bonus: { hp: 300, defense: 8 }

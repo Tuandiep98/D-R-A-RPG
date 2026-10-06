@@ -1,10 +1,9 @@
-# Quaternius Stylized Nature MegaKit — Rock_Medium_1.gltf
+# Procedural fallback. Stylized Nature MegaKit source is not present.
 id: env_rock_01
 kind: environment
-modelAssetId: env_rock_01
 scale: 0.6
 placeholder:
   shape: sphere
-  color: '#7d7f86'
+  color: "#7d7f86"
   height: 1.2
   radius: 0.9

@@ -1,6 +1,6 @@
 id: robot_scout_001
 name: Cơ Giáp Trinh Sát
-level: 5
+realm: luyen_khi
 tier: normal
 appearanceId: mob_robot_scout_01
 stats: { hp: 360, attack: 22, defense: 10, critChance: 0.02 }
@@ -8,5 +8,4 @@ movement: { speed: 2.8, radius: 0.6 }
 combat: { range: 1.5, attackInterval: 1.6 }
 ai: { type: melee, aggroRadius: 8, leashRadius: 14, wanderRadius: 2 }
 skills: [skill_robot_laser]
-xp: 45
 lootTable: [loot_robot]

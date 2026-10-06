@@ -31,13 +31,18 @@ describe('GameRepository', () => {
     expect(await repo.hasBeenPlayed(id)).toBe(false);
     const save = {
       characterId: 'player_default',
-      level: 3,
-      xp: 40,
+      realm: 'truc_co',
+      nodes: ['tien_khai_mach', 'co_micro_reactor'],
       gold: 15,
       hp: 500,
       mp: 80,
       inventory: [
-        { instanceId: 'i-sword', itemId: 'item_sword_iron', count: 1, enhance: 2 },
+        {
+          instanceId: 'i-sword',
+          itemId: 'item_sword_iron',
+          count: 1,
+          enhance: 2,
+        },
         { instanceId: 'i-pot', itemId: 'item_potion_hp_small', count: 4 },
       ],
       equipment: { main_hand: 'i-sword' },
@@ -65,6 +70,7 @@ describe('GameRepository', () => {
     const loaded = await repo.loadCharacter(id);
     expect(loaded?.mapId).toBe('map_forest_mechanism_01');
     expect(loaded?.save).toEqual(save);
+    expect(loaded?.realm).toBe('truc_co');
     expect(await repo.ledgerFor(id)).toHaveLength(1);
   });
 
@@ -78,8 +84,8 @@ describe('GameRepository', () => {
     });
     const base = {
       characterId: 'player_default',
-      level: 1,
-      xp: 0,
+      realm: 'luyen_khi',
+      nodes: [],
       hp: 1,
       mp: 0,
       inventory: [],
@@ -130,8 +136,8 @@ describe('GameRepository', () => {
     });
     const base = {
       characterId: 'player_default',
-      level: 1,
-      xp: 0,
+      realm: 'luyen_khi',
+      nodes: [],
       hp: 1,
       mp: 0,
       inventory: [],

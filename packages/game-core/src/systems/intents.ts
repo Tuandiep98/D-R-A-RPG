@@ -2,6 +2,7 @@ import type { EntityId, Intent } from '@rpg/game-protocol';
 import { areHostile, INTERACT_RANGE, isAlive, type SimContext } from '../context';
 import type { Entity } from '../entity';
 import { clampToBounds, distance } from '../math';
+import { breakthrough, openNode } from './cultivation';
 import { equip, unequip, useItem } from './inventory';
 import { tryPickup } from './loot';
 import { acceptQuest, craft, openNpc, shopBuy, shopSell, turnInQuest, upgrade } from './npc';
@@ -48,7 +49,10 @@ function apply(ctx: SimContext, actor: Entity, intent: Intent): boolean {
     case 'MOVE_TO': {
       clearActions(actor);
       const target = clampToBounds(intent.target, ctx.bounds, actor.movement.radius);
-      actor.movement.goal = { pos: ctx.nav ? ctx.nav.closest(target) : target, stopWithin: 0.05 };
+      actor.movement.goal = {
+        pos: ctx.nav ? ctx.nav.closest(target) : target,
+        stopWithin: 0.05,
+      };
       return true;
     }
     case 'STOP':
@@ -71,7 +75,10 @@ function apply(ctx: SimContext, actor: Entity, intent: Intent): boolean {
       clearActions(actor);
       if (!tryPickup(ctx, actor, loot)) {
         actor.pending = { type: 'pickup', lootId: loot.id };
-        actor.movement.goal = { pos: { ...loot.pos }, stopWithin: INTERACT_RANGE * 0.6 };
+        actor.movement.goal = {
+          pos: { ...loot.pos },
+          stopWithin: INTERACT_RANGE * 0.6,
+        };
       }
       return true;
     }
@@ -82,7 +89,10 @@ function apply(ctx: SimContext, actor: Entity, intent: Intent): boolean {
       if (distance(actor.pos, target.pos) <= INTERACT_RANGE) interactWith(ctx, actor, target);
       else {
         actor.pending = { type: 'interact', entityId: target.id };
-        actor.movement.goal = { pos: { ...target.pos }, stopWithin: INTERACT_RANGE * 0.6 };
+        actor.movement.goal = {
+          pos: { ...target.pos },
+          stopWithin: INTERACT_RANGE * 0.6,
+        };
       }
       return true;
     }
@@ -113,6 +123,10 @@ function apply(ctx: SimContext, actor: Entity, intent: Intent): boolean {
     case 'PARTY_LEAVE':
       ctx.parties.leave(actor);
       return true;
+    case 'OPEN_NODE':
+      return openNode(ctx, actor, intent.nodeId);
+    case 'BREAKTHROUGH':
+      return breakthrough(ctx, actor);
   }
 }
 

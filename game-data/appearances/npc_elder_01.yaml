@@ -1,7 +1,7 @@
-# Quaternius RPG Characters — Wizard.gltf
+# Quaternius Modular Outfits — Male Peasant + UAL
 id: npc_elder_01
 kind: npc
 modelAssetId: npc_elder_01
-scale: 0.55
-animations: { idle: Idle }
-placeholder: { shape: capsule, color: '#7a6bd9', height: 1.65, radius: 0.4 }
+scale: 1.05
+animations: { idle: Idle_Loop }
+placeholder: { shape: capsule, color: "#7a6bd9", height: 1.65, radius: 0.4 }

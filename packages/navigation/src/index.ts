@@ -31,7 +31,10 @@ export const NAV_CONFIG = {
 export const NAV_VERSION = 1;
 
 /** Ground quad + one prism per collider, in world space (Y up). */
-export function buildNavGeometry(map: MapDef): { positions: number[]; indices: number[] } {
+export function buildNavGeometry(map: MapDef): {
+  positions: number[];
+  indices: number[];
+} {
   const positions: number[] = [];
   const indices: number[] = [];
   const { min, max } = map.bounds;

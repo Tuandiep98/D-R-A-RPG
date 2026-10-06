@@ -1,0 +1,67 @@
+{
+  "packId": "quaternius_fantasy_props",
+  "author": "Quaternius",
+  "pack": "Fantasy Props MegaKit (Standard)",
+  "sourceUrl": "https://quaternius.itch.io/fantasy-props-megakit",
+  "license": "CC0-1.0",
+  "licenseVerified": true,
+  "downloadedAt": "2026-10-06",
+  "status": "approved",
+  "notes": "Gameplay-readable props for the market, smithy and apothecary.",
+  "assets": [
+    {
+      "assetId": "prop_market_stall_01",
+      "file": "originals/Stall_Empty.gltf",
+      "type": "environment",
+      "modified": false
+    },
+    {
+      "assetId": "prop_anvil_01",
+      "file": "originals/Anvil.gltf",
+      "type": "prop",
+      "modified": false
+    },
+    {
+      "assetId": "prop_barrel_01",
+      "file": "originals/Barrel.gltf",
+      "type": "prop",
+      "modified": false
+    },
+    {
+      "assetId": "prop_crate_01",
+      "file": "originals/Crate_Wooden.gltf",
+      "type": "prop",
+      "modified": false
+    },
+    {
+      "assetId": "prop_cauldron_01",
+      "file": "originals/Cauldron.gltf",
+      "type": "prop",
+      "modified": false
+    },
+    {
+      "assetId": "prop_banner_01",
+      "file": "originals/Banner_1.gltf",
+      "type": "prop",
+      "modified": false
+    },
+    {
+      "assetId": "prop_weapon_rack_01",
+      "file": "originals/WeaponStand.gltf",
+      "type": "prop",
+      "modified": false
+    },
+    {
+      "assetId": "prop_lantern_wall_01",
+      "file": "originals/Lantern_Wall.gltf",
+      "type": "prop",
+      "modified": false
+    },
+    {
+      "assetId": "prop_workbench_01",
+      "file": "originals/Workbench.gltf",
+      "type": "prop",
+      "modified": false
+    }
+  ]
+}

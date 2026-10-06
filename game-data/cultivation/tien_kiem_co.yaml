@@ -1,0 +1,10 @@
+id: tien_kiem_co
+name: Nền Móng · Kiếm Cơ
+description: Foundation của Kiếm Đạo — đúc kiếm ý vào nền móng.
+icon: "⚔"
+axis: dao
+path: tien
+realm: truc_co
+cost: { gold: 300, materials: [{ itemId: item_golem_core, count: 1 }] }
+meridian: 25
+bonus: { attack: 15, critChance: 0.04 }

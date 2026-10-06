@@ -1,0 +1,4 @@
+id: prop_banner_01
+kind: environment
+modelAssetId: prop_banner_01
+placeholder: { shape: box, color: "#9c3434", height: 2.2, radius: 0.5 }

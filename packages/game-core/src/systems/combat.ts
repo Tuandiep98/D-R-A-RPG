@@ -5,8 +5,7 @@ import type { Rng } from '../rng';
 import { grantGold } from './inventory';
 import { dropLoot } from './loot';
 import { questOnKill } from './npc';
-import { sharedXp } from './party';
-import { grantXp } from './progression';
+import { backlashFactor, realmGapFactor } from './progression';
 
 /** Damage roll before mitigation varies by ±10%. */
 const VARIANCE = 0.1;
@@ -40,6 +39,22 @@ export function rollDamage(
 }
 
 /**
+ * A roll between two entities, scaled by the realm gap (master plan §57) and
+ * by the attacker's breakthrough backlash.
+ */
+export function rollHit(
+  ctx: SimContext,
+  attacker: Entity,
+  defender: Entity,
+  multiplier = 1,
+  flat = 0,
+): DamageRoll {
+  const roll = rollDamage(ctx.rng, attacker.stats, defender.stats, multiplier, flat);
+  const f = realmGapFactor(ctx, attacker, defender) * backlashFactor(ctx, attacker);
+  return f === 1 ? roll : { amount: Math.max(1, Math.round(roll.amount * f)), crit: roll.crit };
+}
+
+/**
  * For every entity with a combat target: close the distance, then swing on
  * cooldown. Runs before movement so a chase goal is followed in the same tick.
  * Casting suspends auto-attacks.
@@ -58,7 +73,10 @@ export function combatSystem(ctx: SimContext): void {
     if (!inAttackRange(e, target)) {
       if (e.pending) continue; // a queued skill is driving the approach
       const reach = e.combat.range + e.movement.radius + target.movement.radius;
-      e.movement.goal = { pos: { ...target.pos }, stopWithin: Math.max(0.05, reach * 0.9) };
+      e.movement.goal = {
+        pos: { ...target.pos },
+        stopWithin: Math.max(0.05, reach * 0.9),
+      };
       continue;
     }
 
@@ -69,7 +87,7 @@ export function combatSystem(ctx: SimContext): void {
 
     e.combat.nextAttackTick = ctx.tick + e.combat.attackIntervalTicks;
     ctx.emit({ type: 'ATTACK', sourceId: e.id, targetId: target.id });
-    const { amount, crit } = rollDamage(ctx.rng, e.stats, target.stats);
+    const { amount, crit } = rollHit(ctx, e, target);
     applyDamage(ctx, e, target, amount, crit, null);
   }
 }
@@ -137,29 +155,29 @@ function kill(ctx: SimContext, target: Entity, killer: Entity | null): void {
   if (target.kind === 'monster') rewardKill(ctx, target);
 }
 
-/** XP to every player who contributed; gold and loot ownership to the top damager. */
+/**
+ * Quest kill credit to every contributor and their nearby party members; gold
+ * and loot ownership to the top damager. Kills grant no XP: there is no
+ * character level (master plan §31) — monsters drop materials for cultivation.
+ */
 function rewardKill(ctx: SimContext, monster: Entity): void {
   const def = ctx.content.monsters.get(monster.defId);
   if (!def) return;
   let top: Entity | null = null;
   let topDamage = 0;
   // Every contributor plus their nearby party members are credited exactly once.
-  const credited = new Map<number, { e: Entity; groupSize: number }>();
+  const credited = new Map<number, Entity>();
   for (const [id, dmg] of monster.life.damageBy) {
     const p = ctx.entities.get(id);
     if (!p?.player) continue;
     const group = ctx.parties.nearbyMembers(ctx, p, monster.pos);
-    for (const m of group)
-      if (!credited.has(m.id)) credited.set(m.id, { e: m, groupSize: group.length });
+    for (const m of group) if (!credited.has(m.id)) credited.set(m.id, m);
     if (dmg > topDamage) {
       top = p;
       topDamage = dmg;
     }
   }
-  for (const { e, groupSize } of credited.values()) {
-    grantXp(ctx, e, sharedXp(def.xp, groupSize));
-    questOnKill(ctx, e, def.id);
-  }
+  for (const e of credited.values()) questOnKill(ctx, e, def.id);
   if (!top) return;
   for (const tableId of def.lootTable) {
     const table = ctx.content.loot.get(tableId);

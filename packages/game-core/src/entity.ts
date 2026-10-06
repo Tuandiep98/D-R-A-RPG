@@ -55,7 +55,12 @@ export interface Cast {
 export type PendingAction =
   | { type: 'pickup'; lootId: EntityId }
   | { type: 'interact'; entityId: EntityId }
-  | { type: 'cast'; skillId: string; targetId: EntityId | null; point: Vec2 | null };
+  | {
+      type: 'cast';
+      skillId: string;
+      targetId: EntityId | null;
+      point: Vec2 | null;
+    };
 
 export interface QuestState {
   questId: string;
@@ -68,8 +73,11 @@ export interface PlayerData {
   characterId: string;
   name: string;
   partyId: number | null;
-  xp: number;
   gold: number;
+  /** Open cultivation nodes, in the order they were opened. */
+  nodes: string[];
+  /** Failed breakthrough: attacks are weakened until this tick. */
+  backlashUntilTick: number;
   inventory: InventoryItem[];
   equipment: Partial<Record<EquipSlot, ItemInstanceId>>;
   itemReadyAtTick: number;
@@ -102,7 +110,8 @@ export interface Entity {
   faction: Faction;
   /** Loot and portals: no movement, combat or AI. */
   inert: boolean;
-  level: number;
+  /** Cảnh giới rank (index in the realm ladder). There is no character level. */
+  realm: number;
 
   pos: Vec2;
   yaw: number;
@@ -138,7 +147,7 @@ export interface Entity {
     respawnAtTick: number | null;
     spawnPos: Vec2;
     lastAttackerId: EntityId | null;
-    /** Damage taken per attacker since last (re)spawn: XP and loot ownership. */
+    /** Damage taken per attacker since last (re)spawn: kill credit and loot ownership. */
     damageBy: Map<EntityId, number>;
   };
 
@@ -174,8 +183,11 @@ export interface CircleObstacle {
 /** Persisted character state (DB row in M4, carried across map transfers). */
 export interface PlayerSave {
   characterId: string;
-  level: number;
-  xp: number;
+  /** Realm id (stable across ladder changes). */
+  realm: string;
+  /** Realm order at save time (leaderboard sorting); derived, never read back. */
+  realmRank?: number;
+  nodes: string[];
   gold: number;
   hp: number;
   mp: number;
@@ -191,7 +203,16 @@ export interface LedgerEntry {
   characterId: string;
   amount: number;
   balanceAfter: number;
-  reason: 'monster_drop' | 'sell' | 'buy' | 'craft' | 'upgrade' | 'admin' | 'quest';
+  reason:
+    | 'monster_drop'
+    | 'sell'
+    | 'buy'
+    | 'craft'
+    | 'upgrade'
+    | 'admin'
+    | 'quest'
+    | 'cultivation'
+    | 'breakthrough';
   /** Idempotency key: the same key is never applied twice. */
   key: string;
 }

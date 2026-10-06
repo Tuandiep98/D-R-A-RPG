@@ -1,0 +1,8 @@
+id: r_truc_co_dan
+name: Luyện Trúc Cơ Đan
+result: { itemId: item_truc_co_dan }
+materials:
+  - { itemId: item_elite_antler, count: 1 }
+  - { itemId: item_fox_fur, count: 5 }
+  - { itemId: item_wolf_fang, count: 5 }
+gold: 100

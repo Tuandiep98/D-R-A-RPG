@@ -1,5 +1,11 @@
 import { AssetLibrary, type LoadProgress } from '@rpg/asset-runtime';
-import type { AppearanceDef, ContentBundle, EquipSlot, MonsterTier } from '@rpg/game-data';
+import {
+  type AppearanceDef,
+  type ContentBundle,
+  type EquipSlot,
+  type MonsterTier,
+  realmLadder,
+} from '@rpg/game-data';
 import type {
   ChatMessage,
   EntityId,
@@ -50,7 +56,9 @@ export interface UnitFrame {
   id: EntityId;
   kind: EntitySnapshot['kind'];
   name: string;
-  level: number;
+  /** Realm rank and display name ('' for loot/portals/NPCs). No character level. */
+  realm: number;
+  realmName: string;
   tier: MonsterTier | null;
   hp: number;
   maxHp: number;
@@ -78,7 +86,8 @@ export interface ItemView {
   rarityColor: string;
   kind: 'equipment' | 'consumable' | 'material';
   slot: EquipSlot | null;
-  level: number;
+  /** Required realm name, null when any realm may use it. */
+  realmName: string | null;
   count: number;
   equipped: boolean;
   description: string;
@@ -93,8 +102,7 @@ export interface UiState {
     | (UnitFrame & {
         mp: number;
         maxMp: number;
-        xp: number;
-        xpToNext: number;
+        cultivation: CultivationView;
         gold: number;
         inSafeZone: boolean;
         stats: PlayerState['stats'];
@@ -103,7 +111,12 @@ export interface UiState {
   target: UnitFrame | null;
   boss: UnitFrame | null;
   skills: SkillSlot[];
-  potion: { instanceId: string; icon: string; count: number; remaining: number } | null;
+  potion: {
+    instanceId: string;
+    icon: string;
+    count: number;
+    remaining: number;
+  } | null;
   inventory: ItemView[];
   inventoryCapacity: number;
   equipment: Partial<Record<EquipSlot, ItemView>>;
@@ -111,6 +124,22 @@ export interface UiState {
   quests: QuestView[];
   questsDone: string[];
   party: PlayerState['party'];
+}
+
+export interface CultivationView {
+  realmId: string;
+  realmName: string;
+  mechName: string;
+  nextRealmName: string | null;
+  nodes: string[];
+  meridianLoad: number;
+  meridianCapacity: number;
+  bodyLoad: number;
+  bodyCapacity: number;
+  /** Server-computed; 0 when no breakthrough exists from this realm. */
+  breakthroughChance: number;
+  /** Seconds of breakthrough backlash left. */
+  backlash: number;
 }
 
 export interface QuestView {
@@ -162,7 +191,7 @@ const NOTICE_TEXT: Record<NoticeCode, string> = {
   no_mp: 'Không đủ nội lực',
   no_target: 'Chưa chọn mục tiêu',
   inventory_full: 'Túi đồ đã đầy',
-  level_too_low: 'Cấp độ chưa đủ',
+  realm_too_low: 'Cảnh giới chưa đủ',
   not_owner: 'Vật phẩm thuộc về người khác',
   invalid: 'Không thể thực hiện',
   dead: 'Bạn đã gục ngã',
@@ -177,6 +206,11 @@ const NOTICE_TEXT: Record<NoticeCode, string> = {
   party_full: 'Nhóm đã đủ người',
   already_in_party: 'Người này đã có nhóm',
   no_invite: 'Lời mời đã hết hạn',
+  capacity_full: 'Kinh mạch / Body Load không đủ chỗ',
+  requirements_unmet: 'Chưa đủ điều kiện',
+  max_realm: 'Chưa thể đột phá cảnh giới tiếp theo',
+  not_in_safe_zone: 'Chỉ đột phá được trong vùng an toàn',
+  backlash: 'Đang bị phản phệ, chưa thể đột phá lại',
 };
 
 /**
@@ -199,7 +233,11 @@ export class GameView {
   private environment: EnvironmentView | null = null;
   private join: JoinInfo;
   private loadingMap: Promise<void> | null = null;
-  private assetProgress: LoadProgress = { loadedBytes: 0, totalBytes: 0, pending: 0 };
+  private assetProgress: LoadProgress = {
+    loadedBytes: 0,
+    totalBytes: 0,
+    pending: 0,
+  };
   /** Presentation delayed to match animation events (hit frames). */
   private readonly delayed: { at: number; run: () => void }[] = [];
   private readonly quality: QualityManager;
@@ -232,7 +270,9 @@ export class GameView {
   }
 
   static async create(opts: GameViewOptions): Promise<GameView> {
-    const { engine, kind } = await createEngine(opts.canvas, { forceWebGL: opts.forceWebGL });
+    const { engine, kind } = await createEngine(opts.canvas, {
+      forceWebGL: opts.forceWebGL,
+    });
     const scene = new Scene(engine);
     scene.clearColor = new Color4(0.55, 0.72, 0.85, 1);
     scene.ambientColor = new Color3(0.3, 0.3, 0.3);
@@ -666,7 +706,10 @@ export class GameView {
     const p = groundHit?.pickedPoint;
     if (p) {
       this.marker.show(p.x, p.z);
-      this.opts.host.sendIntent({ type: 'MOVE_TO', target: { x: p.x, z: p.z } });
+      this.opts.host.sendIntent({
+        type: 'MOVE_TO',
+        target: { x: p.x, z: p.z },
+      });
     }
   }
 
@@ -793,15 +836,45 @@ export class GameView {
           if (ev.id === this.selectedId) this.select(null);
           this.telegraphs.clear(`${ev.id}`);
           break;
-        case 'LEVEL_UP': {
+        case 'BREAKTHROUGH': {
           const view = this.views.get(ev.id);
+          const realm = realmLadder(this.opts.content)[ev.realm];
           if (view) {
-            this.floatText(view, `Cấp ${ev.level}!`, '#ffd23f');
-            this.impacts.spawn(view.root.position.x, view.root.position.z, 2, 'level');
+            this.floatText(
+              view,
+              ev.success ? `${realm?.name ?? ''}!` : 'Phản phệ!',
+              ev.success ? '#ffd23f' : '#ff6b6b',
+            );
+            this.impacts.spawn(
+              view.root.position.x,
+              view.root.position.z,
+              ev.success ? 4 : 1.5,
+              'level',
+            );
           }
-          if (mine(ev.id)) this.opts.onNotice?.({ text: `Thăng cấp ${ev.level}!`, tone: 'good' });
+          if (mine(ev.id))
+            this.opts.onNotice?.(
+              ev.success
+                ? {
+                    text: `Đột phá thành công — ${realm?.name ?? ''}!`,
+                    tone: 'boss',
+                  }
+                : {
+                    text: 'Đột phá thất bại — phản phệ, công lực suy giảm tạm thời',
+                    tone: 'warn',
+                  },
+            );
           break;
         }
+        case 'NODE_OPENED':
+          if (mine(ev.ownerId)) {
+            const node = this.opts.content.cultivation.get(ev.nodeId);
+            this.opts.onNotice?.({
+              text: `Khai mở: ${node?.name ?? ev.nodeId}`,
+              tone: 'good',
+            });
+          }
+          break;
         case 'ITEM_GAINED':
           if (mine(ev.ownerId)) {
             const item = this.opts.content.items.get(ev.itemId);
@@ -814,18 +887,28 @@ export class GameView {
           break;
         case 'GOLD':
           if (mine(ev.ownerId))
-            this.opts.onNotice?.({ text: `+${ev.amount} vàng`, tone: 'good', color: '#ffd23f' });
+            this.opts.onNotice?.({
+              text: `+${ev.amount} vàng`,
+              tone: 'good',
+              color: '#ffd23f',
+            });
           break;
         case 'NOTICE':
           if (mine(ev.ownerId)) this.opts.onNotice?.({ text: NOTICE_TEXT[ev.code], tone: 'warn' });
           break;
         case 'PARTY_INVITE':
           if (mine(ev.ownerId))
-            this.opts.onPartyInvite?.({ fromId: ev.fromId, fromName: ev.fromName });
+            this.opts.onPartyInvite?.({
+              fromId: ev.fromId,
+              fromName: ev.fromName,
+            });
           break;
         case 'NPC_OPEN':
           if (mine(ev.ownerId))
-            this.opts.onNpcOpen?.({ npcEntityId: ev.npcEntityId, npcId: ev.npcId });
+            this.opts.onNpcOpen?.({
+              npcEntityId: ev.npcEntityId,
+              npcId: ev.npcId,
+            });
           break;
         case 'QUEST':
           if (mine(ev.ownerId)) {
@@ -845,8 +928,15 @@ export class GameView {
           if (mine(ev.ownerId)) {
             this.opts.onNotice?.(
               ev.success
-                ? { text: `Cường hoá thành công: +${ev.level}`, tone: 'good', color: '#ffd23f' }
-                : { text: `Cường hoá thất bại (giữ +${ev.level})`, tone: 'warn' },
+                ? {
+                    text: `Cường hoá thành công: +${ev.level}`,
+                    tone: 'good',
+                    color: '#ffd23f',
+                  }
+                : {
+                    text: `Cường hoá thất bại (giữ +${ev.level})`,
+                    tone: 'warn',
+                  },
             );
           }
           break;
@@ -936,7 +1026,9 @@ export class GameView {
       id,
       kind: e.kind,
       name,
-      level: e.level,
+      realm: e.realm,
+      realmName:
+        e.kind === 'player' || e.kind === 'monster' ? (realmLadder(c)[e.realm]?.name ?? '') : '',
       tier: monster?.tier ?? null,
       hp: e.hp,
       maxHp: e.maxHp,
@@ -977,12 +1069,35 @@ export class GameView {
       rarityColor: RARITY_COLORS[rarity] ?? '#fff',
       kind: def?.kind ?? 'material',
       slot: (def?.slot as EquipSlot | undefined) ?? null,
-      level: def?.level ?? 1,
+      realmName: def?.realm ? (this.opts.content.realms.get(def.realm)?.name ?? def.realm) : null,
       count,
       equipped,
       description: def?.description ?? '',
       bonus: parts.join(' · '),
       enhance,
+    };
+  }
+
+  private cultivationView(ps: PlayerState, tick: number): CultivationView {
+    const ladder = realmLadder(this.opts.content);
+    const rank = Math.max(
+      0,
+      ladder.findIndex((r) => r.id === ps.realm),
+    );
+    const realm = ladder[rank];
+    const next = ladder[rank + 1];
+    return {
+      realmId: ps.realm,
+      realmName: realm?.name ?? ps.realm,
+      mechName: realm?.mechName ?? '',
+      nextRealmName: next?.breakthrough ? next.name : null,
+      nodes: ps.nodes,
+      meridianLoad: ps.meridianLoad,
+      meridianCapacity: realm?.meridianCapacity ?? 0,
+      bodyLoad: ps.bodyLoad,
+      bodyCapacity: realm?.bodyLoad ?? 0,
+      breakthroughChance: ps.breakthroughChance,
+      backlash: Math.max(0, (ps.backlashUntilTick - tick) / TICK_RATE),
     };
   }
 
@@ -1049,8 +1164,7 @@ export class GameView {
               ...meFrame,
               mp: ps.mp,
               maxMp: ps.maxMp,
-              xp: ps.xp,
-              xpToNext: ps.xpToNext,
+              cultivation: this.cultivationView(ps, tick),
               gold: ps.gold,
               inSafeZone: ps.inSafeZone,
               stats: ps.stats,
@@ -1111,7 +1225,11 @@ export class GameView {
                   current,
                   required: o.count,
                 };
-              return { text: `Gặp ${c.npcs.get(o.npcId)?.name ?? o.npcId}`, current, required: 1 };
+              return {
+                text: `Gặp ${c.npcs.get(o.npcId)?.name ?? o.npcId}`,
+                current,
+                required: 1,
+              };
             }),
           };
         }),

@@ -1,0 +1,4 @@
+id: env_ground_dirt_01
+kind: ground
+modelAssetId: env_ground_dirt_01
+placeholder: { shape: box, color: "#705338", height: 0.1, radius: 2 }

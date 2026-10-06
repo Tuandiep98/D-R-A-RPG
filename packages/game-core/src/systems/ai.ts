@@ -51,7 +51,10 @@ export function aiSystem(ctx: SimContext): void {
           const r = ctx.rng.range(0, ai.wanderRadius);
           e.movement.goal = {
             pos: clampToBounds(
-              { x: ai.home.x + Math.sin(angle) * r, z: ai.home.z + Math.cos(angle) * r },
+              {
+                x: ai.home.x + Math.sin(angle) * r,
+                z: ai.home.z + Math.cos(angle) * r,
+              },
               ctx.bounds,
               e.movement.radius,
             ),
@@ -79,7 +82,10 @@ export function aiSystem(ctx: SimContext): void {
           e.life.lastAttackerId = null;
           e.life.damageBy.clear();
         } else if (!e.movement.goal) {
-          e.movement.goal = { pos: { ...ai.home }, stopWithin: HOME_ARRIVE * 0.5 };
+          e.movement.goal = {
+            pos: { ...ai.home },
+            stopWithin: HOME_ARRIVE * 0.5,
+          };
         }
         break;
       }

@@ -1,0 +1,4 @@
+id: env_scifi_wall_broken_01
+kind: environment
+modelAssetId: env_scifi_wall_broken_01
+placeholder: { shape: box, color: "#46515e", height: 3, radius: 1.5 }

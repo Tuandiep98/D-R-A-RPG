@@ -4,6 +4,5 @@ kind: equipment
 slot: head
 rarity: uncommon
 icon: "👑"
-level: 4
 bonus: { defense: 2, mp: 20 }
 sellPrice: 70

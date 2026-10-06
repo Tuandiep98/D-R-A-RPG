@@ -1,0 +1,4 @@
+id: prop_dungeon_torch_01
+kind: environment
+modelAssetId: prop_dungeon_torch_01
+placeholder: { shape: cylinder, color: "#e7a63d", height: 1.4, radius: 0.18 }

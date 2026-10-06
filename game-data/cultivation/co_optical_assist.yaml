@@ -1,0 +1,10 @@
+id: co_optical_assist
+name: Optical Assist
+description: Mắt cơ giới hỗ trợ ngắm điểm yếu.
+icon: "👁"
+axis: than_thuc
+path: co
+realm: luyen_khi
+cost: { gold: 50, materials: [{ itemId: item_robot_scrap, count: 3 }] }
+body: 10
+bonus: { critChance: 0.06 }

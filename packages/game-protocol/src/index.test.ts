@@ -10,8 +10,11 @@ describe('IntentSchema', () => {
     expect(IntentSchema.safeParse({ type: 'ATTACK_TARGET', targetId: 3 }).success).toBe(true);
     expect(IntentSchema.safeParse({ type: 'STOP' }).success).toBe(true);
     expect(
-      IntentSchema.safeParse({ type: 'CAST_SKILL', skillId: 'skill_heavy_slash', targetId: 2 })
-        .success,
+      IntentSchema.safeParse({
+        type: 'CAST_SKILL',
+        skillId: 'skill_heavy_slash',
+        targetId: 2,
+      }).success,
     ).toBe(true);
     expect(IntentSchema.safeParse({ type: 'EQUIP', instanceId: 'i_1' }).success).toBe(true);
     expect(IntentSchema.safeParse({ type: 'UNEQUIP', slot: 'main_hand' }).success).toBe(true);
@@ -23,10 +26,16 @@ describe('IntentSchema', () => {
     expect(IntentSchema.safeParse({ type: 'ATTACK_TARGET', targetId: -1 }).success).toBe(false);
     expect(IntentSchema.safeParse({ type: 'ATTACK_TARGET', targetId: 1.5 }).success).toBe(false);
     expect(
-      IntentSchema.safeParse({ type: 'MOVE_TO', target: { x: Number.NaN, z: 0 } }).success,
+      IntentSchema.safeParse({
+        type: 'MOVE_TO',
+        target: { x: Number.NaN, z: 0 },
+      }).success,
     ).toBe(false);
     expect(
-      IntentSchema.safeParse({ type: 'MOVE_TO', target: { x: MAX_COORD + 1, z: 0 } }).success,
+      IntentSchema.safeParse({
+        type: 'MOVE_TO',
+        target: { x: MAX_COORD + 1, z: 0 },
+      }).success,
     ).toBe(false);
     expect(IntentSchema.safeParse({ type: 'CAST_SKILL', skillId: '../../etc' }).success).toBe(
       false,

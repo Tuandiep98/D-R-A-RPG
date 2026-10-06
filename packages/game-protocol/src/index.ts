@@ -4,7 +4,7 @@ import { z } from 'zod';
  * Wire contract between client and simulation host (local or server).
  * Bump PROTOCOL_VERSION on any breaking change to these schemas.
  */
-export const PROTOCOL_VERSION = 4;
+export const PROTOCOL_VERSION = 5;
 
 /** Max world coordinate magnitude accepted from a client, in metres. */
 export const MAX_COORD = 10_000;
@@ -44,7 +44,10 @@ export const EquipSlotSchema = z.enum([
 
 export const IntentSchema = z.discriminatedUnion('type', [
   z.strictObject({ type: z.literal('MOVE_TO'), target: Vec2Schema }),
-  z.strictObject({ type: z.literal('ATTACK_TARGET'), targetId: EntityIdSchema }),
+  z.strictObject({
+    type: z.literal('ATTACK_TARGET'),
+    targetId: EntityIdSchema,
+  }),
   z.strictObject({ type: z.literal('STOP') }),
   z.strictObject({
     type: z.literal('CAST_SKILL'),
@@ -54,11 +57,25 @@ export const IntentSchema = z.discriminatedUnion('type', [
   }),
   z.strictObject({ type: z.literal('PICKUP'), lootId: EntityIdSchema }),
   z.strictObject({ type: z.literal('INTERACT'), entityId: EntityIdSchema }),
-  z.strictObject({ type: z.literal('EQUIP'), instanceId: ItemInstanceIdSchema }),
+  z.strictObject({
+    type: z.literal('EQUIP'),
+    instanceId: ItemInstanceIdSchema,
+  }),
   z.strictObject({ type: z.literal('UNEQUIP'), slot: EquipSlotSchema }),
-  z.strictObject({ type: z.literal('USE_ITEM'), instanceId: ItemInstanceIdSchema }),
-  z.strictObject({ type: z.literal('QUEST_ACCEPT'), npcId: EntityIdSchema, questId: contentId }),
-  z.strictObject({ type: z.literal('QUEST_TURN_IN'), npcId: EntityIdSchema, questId: contentId }),
+  z.strictObject({
+    type: z.literal('USE_ITEM'),
+    instanceId: ItemInstanceIdSchema,
+  }),
+  z.strictObject({
+    type: z.literal('QUEST_ACCEPT'),
+    npcId: EntityIdSchema,
+    questId: contentId,
+  }),
+  z.strictObject({
+    type: z.literal('QUEST_TURN_IN'),
+    npcId: EntityIdSchema,
+    questId: contentId,
+  }),
   z.strictObject({
     type: z.literal('SHOP_BUY'),
     npcId: EntityIdSchema,
@@ -71,7 +88,11 @@ export const IntentSchema = z.discriminatedUnion('type', [
     instanceId: ItemInstanceIdSchema,
     count: z.number().int().min(1).max(999),
   }),
-  z.strictObject({ type: z.literal('CRAFT'), npcId: EntityIdSchema, recipeId: contentId }),
+  z.strictObject({
+    type: z.literal('CRAFT'),
+    npcId: EntityIdSchema,
+    recipeId: contentId,
+  }),
   z.strictObject({
     type: z.literal('UPGRADE'),
     npcId: EntityIdSchema,
@@ -80,6 +101,10 @@ export const IntentSchema = z.discriminatedUnion('type', [
   z.strictObject({ type: z.literal('PARTY_INVITE'), targetId: EntityIdSchema }),
   z.strictObject({ type: z.literal('PARTY_ACCEPT'), fromId: EntityIdSchema }),
   z.strictObject({ type: z.literal('PARTY_LEAVE') }),
+  /** Open a cultivation node (no character level — master plan §31). */
+  z.strictObject({ type: z.literal('OPEN_NODE'), nodeId: contentId }),
+  /** Attempt to break through to the next realm. */
+  z.strictObject({ type: z.literal('BREAKTHROUGH') }),
 ]);
 export type Intent = z.infer<typeof IntentSchema>;
 export type IntentType = Intent['type'];
@@ -105,7 +130,8 @@ export const EntitySnapshotSchema = z.object({
   yaw: z.number().finite(),
   hp: z.number().int().nonnegative(),
   maxHp: z.number().int().nonnegative(),
-  level: z.number().int().nonnegative(),
+  /** Realm rank (index in the realm ladder); 0 for loot/portals/NPCs. */
+  realm: z.number().int().nonnegative(),
   action: EntityActionSchema,
   targetId: EntityIdSchema.nullable(),
   /** Loot: who may pick it up (null = anyone). Players: unused. */
@@ -113,7 +139,11 @@ export const EntitySnapshotSchema = z.object({
   /** Monster phase index (0 = base). */
   phase: z.number().int().nonnegative(),
   cast: z
-    .object({ skillId: z.string(), startTick: z.number().int(), endTick: z.number().int() })
+    .object({
+      skillId: z.string(),
+      startTick: z.number().int(),
+      endTick: z.number().int(),
+    })
     .nullable(),
   /** Players: display name (character name online). */
   name: z.string().nullable(),
@@ -134,7 +164,7 @@ export const NoticeCodeSchema = z.enum([
   'no_mp',
   'no_target',
   'inventory_full',
-  'level_too_low',
+  'realm_too_low',
   'not_owner',
   'invalid',
   'dead',
@@ -149,13 +179,22 @@ export const NoticeCodeSchema = z.enum([
   'party_full',
   'already_in_party',
   'no_invite',
+  'capacity_full',
+  'requirements_unmet',
+  'max_realm',
+  'not_in_safe_zone',
+  'backlash',
 ]);
 export type NoticeCode = z.infer<typeof NoticeCodeSchema>;
 
 export const SimEventSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('SPAWN'), id: EntityIdSchema }),
   z.object({ type: z.literal('DESPAWN'), id: EntityIdSchema }),
-  z.object({ type: z.literal('ATTACK'), sourceId: EntityIdSchema, targetId: EntityIdSchema }),
+  z.object({
+    type: z.literal('ATTACK'),
+    sourceId: EntityIdSchema,
+    targetId: EntityIdSchema,
+  }),
   z.object({
     type: z.literal('DAMAGE'),
     sourceId: EntityIdSchema,
@@ -169,7 +208,11 @@ export const SimEventSchema = z.discriminatedUnion('type', [
     targetId: EntityIdSchema,
     amount: z.number().int().nonnegative(),
   }),
-  z.object({ type: z.literal('DEATH'), id: EntityIdSchema, killerId: EntityIdSchema.nullable() }),
+  z.object({
+    type: z.literal('DEATH'),
+    id: EntityIdSchema,
+    killerId: EntityIdSchema.nullable(),
+  }),
   z.object({ type: z.literal('RESPAWN'), id: EntityIdSchema }),
   z.object({
     type: z.literal('CAST_START'),
@@ -196,8 +239,18 @@ export const SimEventSchema = z.discriminatedUnion('type', [
     phase: z.number().int(),
     name: z.string(),
   }),
-  z.object({ type: z.literal('XP'), id: EntityIdSchema, amount: z.number().int() }),
-  z.object({ type: z.literal('LEVEL_UP'), id: EntityIdSchema, level: z.number().int() }),
+  /** Public: everyone nearby sees a breakthrough (success or backlash). */
+  z.object({
+    type: z.literal('BREAKTHROUGH'),
+    id: EntityIdSchema,
+    realm: z.number().int().nonnegative(),
+    success: z.boolean(),
+  }),
+  z.object({
+    type: z.literal('NODE_OPENED'),
+    ownerId: EntityIdSchema,
+    nodeId: z.string(),
+  }),
   z.object({
     type: z.literal('ITEM_GAINED'),
     ownerId: EntityIdSchema,
@@ -210,7 +263,11 @@ export const SimEventSchema = z.discriminatedUnion('type', [
     amount: z.number().int(),
     reason: z.string(),
   }),
-  z.object({ type: z.literal('NOTICE'), ownerId: EntityIdSchema, code: NoticeCodeSchema }),
+  z.object({
+    type: z.literal('NOTICE'),
+    ownerId: EntityIdSchema,
+    code: NoticeCodeSchema,
+  }),
   z.object({
     type: z.literal('TRANSFER'),
     id: EntityIdSchema,
@@ -262,9 +319,15 @@ export type InventoryItem = z.infer<typeof InventoryItemSchema>;
 export const PlayerStateSchema = z.object({
   id: EntityIdSchema,
   characterId: z.string(),
-  level: z.number().int().positive(),
-  xp: z.number().int().nonnegative(),
-  xpToNext: z.number().int().nonnegative(),
+  /** Realm id (game-data/realms). */
+  realm: z.string(),
+  /** Open cultivation nodes. */
+  nodes: z.array(z.string()),
+  meridianLoad: z.number().int().nonnegative(),
+  bodyLoad: z.number().int().nonnegative(),
+  /** Server-computed success chance of the next breakthrough (0 = unavailable). */
+  breakthroughChance: z.number().min(0).max(1),
+  backlashUntilTick: z.number().int(),
   hp: z.number().int().nonnegative(),
   maxHp: z.number().int().positive(),
   mp: z.number().int().nonnegative(),
@@ -289,7 +352,7 @@ export const PlayerStateSchema = z.object({
         z.object({
           id: EntityIdSchema,
           name: z.string(),
-          level: z.number().int(),
+          realm: z.number().int(),
           hp: z.number().int(),
           maxHp: z.number().int(),
         }),

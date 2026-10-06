@@ -1,0 +1,67 @@
+{
+  "packId": "quaternius_medieval_village",
+  "author": "Quaternius",
+  "pack": "Medieval Village MegaKit (Standard)",
+  "sourceUrl": "https://quaternius.com/packs/medievalvillagemegakit.html",
+  "license": "CC0-1.0",
+  "licenseVerified": true,
+  "downloadedAt": "2026-10-06",
+  "status": "approved",
+  "notes": "A compact modular subset used for Tân Nguyên Trấn and the forward camp.",
+  "assets": [
+    {
+      "assetId": "env_village_wall_01",
+      "file": "originals/Wall_Plaster_Straight.gltf",
+      "type": "environment",
+      "modified": false
+    },
+    {
+      "assetId": "env_village_door_01",
+      "file": "originals/Wall_Plaster_Door_Round.gltf",
+      "type": "environment",
+      "modified": false
+    },
+    {
+      "assetId": "env_village_corner_01",
+      "file": "originals/Corner_Exterior_Wood.gltf",
+      "type": "environment",
+      "modified": false
+    },
+    {
+      "assetId": "env_village_roof_01",
+      "file": "originals/Roof_RoundTiles_4x4.gltf",
+      "type": "environment",
+      "modified": false
+    },
+    {
+      "assetId": "env_village_floor_01",
+      "file": "originals/Floor_Brick.gltf",
+      "type": "ground",
+      "modified": false
+    },
+    {
+      "assetId": "env_village_floor_redbrick_01",
+      "file": "originals/Floor_RedBrick.gltf",
+      "type": "ground",
+      "modified": false
+    },
+    {
+      "assetId": "env_village_floor_wood_01",
+      "file": "originals/Floor_WoodLight.gltf",
+      "type": "ground",
+      "modified": false
+    },
+    {
+      "assetId": "env_village_vine_01",
+      "file": "originals/Prop_Vine1.gltf",
+      "type": "environment",
+      "modified": false
+    },
+    {
+      "assetId": "env_village_fence_01",
+      "file": "originals/Prop_WoodenFence_Single.gltf",
+      "type": "environment",
+      "modified": false
+    }
+  ]
+}

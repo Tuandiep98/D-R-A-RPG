@@ -31,10 +31,18 @@ export async function openDatabase(opts: OpenDatabaseOptions = {}): Promise<Data
     const client = postgres(opts.url, { max: 10, onnotice: () => {} });
     const db = drizzlePostgres(client, { schema });
     await migratePostgres(db, { migrationsFolder });
-    return { db: db as unknown as Db, kind: 'postgres', close: () => client.end() };
+    return {
+      db: db as unknown as Db,
+      kind: 'postgres',
+      close: () => client.end(),
+    };
   }
   const client = new PGlite(opts.dataDir);
   const db = drizzlePglite({ client, schema });
   await migratePglite(db, { migrationsFolder });
-  return { db: db as unknown as Db, kind: 'pglite', close: () => client.close() };
+  return {
+    db: db as unknown as Db,
+    kind: 'pglite',
+    close: () => client.close(),
+  };
 }

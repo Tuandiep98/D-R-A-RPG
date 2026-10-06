@@ -1,0 +1,11 @@
+id: stone_guardian_001
+name: Thạch Khôi Tiền Vệ
+realm: luyen_khi
+tier: elite
+appearanceId: mob_guardian_stone_01
+stats: { hp: 1100, attack: 30, defense: 16, critChance: 0.05 }
+movement: { speed: 2.5, radius: 0.8 }
+combat: { range: 1.5, attackInterval: 1.5 }
+ai: { type: melee, aggroRadius: 9, leashRadius: 18, wanderRadius: 2 }
+skills: [skill_elite_charge]
+lootTable: [loot_elite]

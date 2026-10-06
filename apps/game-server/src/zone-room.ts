@@ -71,13 +71,7 @@ interface Session {
 const INTENTS_PER_SECOND = 15;
 const KICK_AFTER_VIOLATIONS = 60;
 const PLAYER_STATE_EVERY = 2;
-const PRIVATE_EVENTS = new Set<SimEvent['type']>([
-  'NOTICE',
-  'ITEM_GAINED',
-  'GOLD',
-  'XP',
-  'TRANSFER',
-]);
+const PRIVATE_EVENTS = new Set<SimEvent['type']>(['NOTICE', 'ITEM_GAINED', 'GOLD', 'TRANSFER']);
 
 /**
  * One channel of one map (tech plan §29–30). Authoritative World + AOI +
@@ -88,7 +82,11 @@ export class ZoneRoom extends Room {
   private world!: World;
   private mapId!: string;
   private readonly sessions = new Map<string, Session>();
-  private readonly grid = new SpatialGrid({ cellSize: 30, radius: 60, maxEntities: 100 });
+  private readonly grid = new SpatialGrid({
+    cellSize: 30,
+    radius: 60,
+    maxEntities: 100,
+  });
   private accumulator = 0;
   private lastStepAt = performance.now();
 
@@ -483,7 +481,12 @@ async function devLogin(deps: ZoneDeps, rawName: string): Promise<AccessClaims> 
     character = (await deps.repo.listCharacters(account.id)).find((c) => c.id === id);
   }
   if (!character) throw new Error('dev character missing');
-  return { sub: account.id, role: account.role, chr: character.id, typ: 'access' };
+  return {
+    sub: account.id,
+    role: account.role,
+    chr: character.id,
+    typ: 'access',
+  };
 }
 
 /** Minimal profanity mask; replace with a maintained list/service before launch. */

@@ -1,7 +1,7 @@
-# Quaternius RPG Characters — Rogue.gltf
+# Quaternius Modular Outfits — Female Ranger + UAL
 id: npc_scout_01
 kind: npc
 modelAssetId: npc_scout_01
-scale: 0.55
-animations: { idle: Idle }
-placeholder: { shape: capsule, color: '#4f8f5a', height: 1.65, radius: 0.4 }
+scale: 0.9
+animations: { idle: Idle_Loop }
+placeholder: { shape: capsule, color: "#4f8f5a", height: 1.65, radius: 0.4 }

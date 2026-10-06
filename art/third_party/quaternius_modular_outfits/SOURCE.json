@@ -1,0 +1,128 @@
+{
+  "packId": "quaternius_modular_outfits",
+  "author": "Quaternius",
+  "pack": "Modular Character Outfits - Fantasy (Standard) + Universal Base Characters (Standard) + Universal Animation Library",
+  "sourceUrl": "https://quaternius.itch.io/modular-character-outfits-fantasy",
+  "license": "CC0-1.0",
+  "licenseVerified": true,
+  "downloadedAt": "2026-10-06",
+  "status": "approved",
+  "notes": "Male Ranger is a complete 65-joint UBC-compatible character. The build grafts selected UAL1 clips onto the shared skeleton by joint name. Outfits have no head: NPCs graft the UBC Superhero head (triangles weighted to Head/neck_01 only) and a UBC hairstyle onto the outfit skeleton (`parts`). UBC is Quaternius CC0 too; its license is kept at originals/base/LICENSE_UBC.txt.",
+  "assets": [
+    {
+      "assetId": "char_player_default",
+      "file": "originals/outfits/Male_Ranger.gltf",
+      "textureDirs": ["../../textures/Ranger", "../../textures/Base"],
+      "animationSource": "originals/animations/UAL1_Standard.glb",
+      "animationClips": [
+        "Idle_Loop",
+        "Jog_Fwd_Loop",
+        "Sword_Attack",
+        "Spell_Simple_Shoot",
+        "Hit_Chest",
+        "Death01"
+      ],
+      "type": "character",
+      "modified": true,
+      "budgetException": {
+        "tris": 28000,
+        "reason": "Complete modular ranger outfit with body, hood, bracers and pauldron; kept intact for the first humanoid_v1 integration pass.",
+        "owner": "tech-art"
+      }
+    },
+    {
+      "assetId": "npc_elder_01",
+      "file": "originals/outfits/Male_Peasant.gltf",
+      "textureDirs": ["../../textures/Peasant", "../../textures/Base"],
+      "animationSource": "originals/animations/UAL1_Standard.glb",
+      "animationClips": ["Idle_Loop"],
+      "parts": [
+        {
+          "file": "originals/base/Superhero_Male_FullBody.gltf",
+          "textureDirs": ["../base_textures"],
+          "keepJoints": ["Head", "neck_01"]
+        },
+        {
+          "file": "originals/hair/Hair_Long.gltf"
+        },
+        {
+          "file": "originals/hair/Hair_Beard.gltf"
+        }
+      ],
+      "type": "character",
+      "modified": true,
+      "budgetException": {
+        "tris": 23000,
+        "reason": "Outfit + grafted UBC head (with eyes) and hairstyle; split/LOD when the Source-tier modular parts are available.",
+        "owner": "tech-art"
+      }
+    },
+    {
+      "assetId": "npc_merchant_01",
+      "file": "originals/outfits/Female_Peasant.gltf",
+      "textureDirs": ["../../textures/Peasant", "../../textures/Base"],
+      "animationSource": "originals/animations/UAL1_Standard.glb",
+      "animationClips": ["Idle_Loop"],
+      "parts": [
+        {
+          "file": "originals/base/Superhero_Female_FullBody.gltf",
+          "textureDirs": ["../base_textures"],
+          "keepJoints": ["Head", "neck_01"]
+        },
+        {
+          "file": "originals/hair/Hair_Buns.gltf"
+        }
+      ],
+      "type": "character",
+      "modified": true,
+      "budgetException": {
+        "tris": 23000,
+        "reason": "Outfit + grafted UBC head (with eyes) and hairstyle; split/LOD when the Source-tier modular parts are available.",
+        "owner": "tech-art"
+      }
+    },
+    {
+      "assetId": "npc_smith_01",
+      "file": "originals/outfits/Male_Peasant.gltf",
+      "textureDirs": ["../../textures/Peasant", "../../textures/Base"],
+      "animationSource": "originals/animations/UAL1_Standard.glb",
+      "animationClips": ["Idle_Loop"],
+      "parts": [
+        {
+          "file": "originals/base/Superhero_Male_FullBody.gltf",
+          "textureDirs": ["../base_textures"],
+          "keepJoints": ["Head", "neck_01"]
+        },
+        {
+          "file": "originals/hair/Hair_Buzzed.gltf"
+        },
+        {
+          "file": "originals/hair/Hair_Beard.gltf"
+        }
+      ],
+      "type": "character",
+      "modified": true
+    },
+    {
+      "assetId": "npc_scout_01",
+      "file": "originals/outfits/Female_Ranger.gltf",
+      "textureDirs": ["../../textures/Ranger", "../../textures/Base"],
+      "animationSource": "originals/animations/UAL1_Standard.glb",
+      "animationClips": ["Idle_Loop"],
+      "parts": [
+        {
+          "file": "originals/base/Superhero_Female_FullBody.gltf",
+          "textureDirs": ["../base_textures"],
+          "keepJoints": ["Head", "neck_01"]
+        }
+      ],
+      "type": "character",
+      "modified": true,
+      "budgetException": {
+        "tris": 33000,
+        "reason": "Complete ranger outfit + grafted UBC head; split/LOD when the Source-tier modular parts are available.",
+        "owner": "tech-art"
+      }
+    }
+  ]
+}
