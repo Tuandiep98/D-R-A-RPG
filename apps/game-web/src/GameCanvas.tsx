@@ -90,8 +90,9 @@ export function GameCanvas() {
         }
         view = created;
         setGame(created);
-        // Exposed in dev only, for tools/smoke and manual console poking.
-        if (import.meta.env.DEV) (window as unknown as { __rpg: unknown }).__rpg = { view, host };
+        // Exposed in dev (or with ?debug) for tools/smoke and console poking.
+        if (import.meta.env.DEV || params.has('debug'))
+          (window as unknown as { __rpg: unknown }).__rpg = { view, host };
         store.setStatus('ready');
       } catch (err) {
         console.error(err);

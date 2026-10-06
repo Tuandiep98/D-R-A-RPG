@@ -1,0 +1,60 @@
+# Tech plan §44: lint → typecheck → unit tests → game-data validation →
+# generated-content checks → build → integration/smoke.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Package boundaries
+        run: pnpm depcruise
+      - name: Unit + integration tests
+        run: pnpm test
+
+      - name: Validate game data
+        run: pnpm validate:data
+      - name: Generated maps are up to date
+        run: |
+          pnpm maps:build
+          git diff --exit-code -- game-data/maps
+      - name: Baked navmeshes are up to date
+        run: pnpm nav:build --check
+
+      - name: Build web
+        run: pnpm --filter @rpg/game-web build
+
+      # Third-party art is not in git, so the smoke test runs with placeholders.
+      - name: Smoke test (headless Chromium)
+        run: |
+          pnpm exec playwright-core install --with-deps chromium
+          pnpm --filter @rpg/game-web exec vite preview --port 4173 --strictPort &
+          npx wait-on http://localhost:4173 --timeout 60000
+          pnpm smoke "http://localhost:4173/?debug&webgl" --chromium
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-screenshots
+          path: reports/smoke/
+          if-no-files-found: ignore

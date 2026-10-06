@@ -31,7 +31,12 @@ const check = (ok: boolean, msg: string) => {
 };
 
 const browser = await chromium.launch({
-  channel: process.argv.includes('--edge') ? 'msedge' : 'chrome',
+  // --chromium: Playwright's bundled browser (CI); default: the locally installed Chrome.
+  channel: process.argv.includes('--chromium')
+    ? undefined
+    : process.argv.includes('--edge')
+      ? 'msedge'
+      : 'chrome',
   headless: true,
 });
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });

@@ -21,7 +21,9 @@
     "dev:mobile": "pnpm --filter @rpg/game-web dev:mobile",
     "maps:build": "tsx tools/map-builder/build.ts",
     "nav:build": "tsx tools/navmesh-builder/build.ts",
-    "content:build": "pnpm maps:build && pnpm nav:build && pnpm validate:data"
+    "content:build": "pnpm maps:build && pnpm nav:build && pnpm validate:data",
+    "pwa:icons": "tsx tools/asset-processor/icons.ts",
+    "preview": "pnpm --filter @rpg/game-web preview"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
