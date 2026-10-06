@@ -17,7 +17,8 @@
     "depcruise": "depcruise apps packages tools --config .dependency-cruiser.cjs",
     "validate:data": "tsx tools/data-validator/validate.ts",
     "assets:build": "tsx tools/asset-processor/build.ts",
-    "smoke": "tsx tools/smoke/smoke.ts"
+    "smoke": "tsx tools/smoke/smoke.ts",
+    "dev:mobile": "pnpm --filter @rpg/game-web dev:mobile"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

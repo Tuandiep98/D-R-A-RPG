@@ -49,6 +49,12 @@ Mỗi quyết định: ngày, bối cảnh, quyết định, hệ quả. Khi mâ
 - **Ngày:** 2026-10-06
 - **Quyết định:** pnpm (qua corepack) + Turborepo. ID entity runtime trong sim là số nguyên tăng dần; ID lưu DB dùng UUIDv7 (từ M4).
 
+## D-011 — Thiết bị đo chuẩn: iPhone 13 Pro Max
+- **Ngày:** 2026-10-06
+- **Bối cảnh:** Assets plan §2 và §17 yêu cầu đo trên thiết bị thật, không nghiệm thu bằng desktop.
+- **Quyết định:** iPhone 13 Pro Max là thiết bị chuẩn chính. Mục tiêu 60 FPS ổn định ở preset High. Test qua `pnpm dev:mobile` (HTTPS) để Safari bật WebGPU.
+- **Hệ quả:** Đây là máy mạnh; budget cho preset Low chưa được kiểm chứng. Nên thêm một máy Android tầm trung trước khi khoá budget Low. Chi tiết trong `docs/performance_budget.md`.
+
 ## D-010 — Asset M1: Quaternius CC0
 - **Ngày:** 2026-10-06
 - **Quyết định:** M1 dùng model Quaternius (CC0) do user tự tải về `art/third_party/<pack>/originals/`, kèm `SOURCE.json` + `LICENSE.txt`. Trạng thái `candidate` cho tới khi license được xác minh. Khi thiếu asset, renderer dùng placeholder primitive.
