@@ -141,4 +141,37 @@ describe('GameRepository', () => {
       repo.saveCharacter(id, { ...base, gold: -5 }, { mapId: 'm', x: 0, z: 0 }),
     ).rejects.toThrow();
   });
+
+  it('friend requests become friendships; guild leadership passes on', async () => {
+    const acc = await repo.createAccount('social', 'hash');
+    const a = await repo.createCharacter({
+      accountId: acc,
+      name: 'Áo Xanh',
+      characterDefId: 'player_default',
+      mapId: 'm',
+    });
+    const b = await repo.createCharacter({
+      accountId: acc,
+      name: 'Áo Đỏ',
+      characterDefId: 'player_default',
+      mapId: 'm',
+    });
+    expect(await repo.requestFriend(a, b)).toBe('pending');
+    expect((await repo.socialOf(b)).friends).toEqual([
+      expect.objectContaining({ id: a, status: 'incoming' }),
+    ]);
+    expect(await repo.requestFriend(b, a)).toBe('accepted'); // asking back accepts
+    expect((await repo.socialOf(a)).friends[0]?.status).toBe('friend');
+    await expect(repo.requestFriend(a, a)).rejects.toThrow();
+
+    await repo.createGuild(a, 'Thanh Vân Môn');
+    await expect(repo.createGuild(a, 'Khác')).rejects.toThrow(/already/);
+    await repo.joinGuild(b, 'thanh vân môn');
+    expect((await repo.socialOf(b)).guild?.members).toHaveLength(2);
+    await repo.leaveGuild(a);
+    const g = (await repo.socialOf(b)).guild;
+    expect(g?.leaderId).toBe(b);
+    await repo.leaveGuild(b);
+    expect((await repo.socialOf(b)).guild).toBeNull();
+  });
 });

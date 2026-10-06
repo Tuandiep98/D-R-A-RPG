@@ -7,6 +7,7 @@ import {
   jsonb,
   pgEnum,
   pgTable,
+  primaryKey,
   real,
   text,
   timestamp,
@@ -157,4 +158,55 @@ export const auditLog = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index('audit_log_created_idx').on(t.createdAt)],
+);
+
+/** Friend requests and friendships between characters (tech plan §32 Friend). */
+export const friendStatusEnum = pgEnum('friend_status', ['pending', 'accepted']);
+export const friendships = pgTable(
+  'friendships',
+  {
+    requesterId: uuid('requester_id')
+      .notNull()
+      .references(() => characters.id, { onDelete: 'cascade' }),
+    targetId: uuid('target_id')
+      .notNull()
+      .references(() => characters.id, { onDelete: 'cascade' }),
+    status: friendStatusEnum('status').notNull().default('pending'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.requesterId, t.targetId] }),
+    index('friendships_target_idx').on(t.targetId),
+    check('friendships_not_self', sql`${t.requesterId} <> ${t.targetId}`),
+  ],
+);
+
+/** Guilds (tech plan §32 Guild). One guild per character. */
+export const guilds = pgTable(
+  'guilds',
+  {
+    id: uuid('id').primaryKey(),
+    name: text('name').notNull(),
+    leaderId: uuid('leader_id')
+      .notNull()
+      .references(() => characters.id, { onDelete: 'restrict' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex('guilds_name_uq').on(sql`lower(${t.name})`)],
+);
+
+export const guildRankEnum = pgEnum('guild_rank', ['leader', 'officer', 'member']);
+export const guildMembers = pgTable(
+  'guild_members',
+  {
+    characterId: uuid('character_id')
+      .primaryKey()
+      .references(() => characters.id, { onDelete: 'cascade' }),
+    guildId: uuid('guild_id')
+      .notNull()
+      .references(() => guilds.id, { onDelete: 'cascade' }),
+    rank: guildRankEnum('rank').notNull().default('member'),
+    joinedAt: timestamp('joined_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('guild_members_guild_idx').on(t.guildId)],
 );

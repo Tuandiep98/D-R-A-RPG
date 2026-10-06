@@ -843,3 +843,29 @@ kbd {
   border-radius: 10px;
   pointer-events: auto;
 }
+
+.row-form {
+  display: flex;
+  gap: 6px;
+}
+
+.row-form input {
+  flex: 1;
+  min-width: 0;
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--hud-border);
+  background: #0f141b;
+  color: var(--hud-text);
+  font: inherit;
+}
+
+.row-form button,
+.npc-row span button {
+  pointer-events: auto;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--hud-border);
+  background: #1d2632;
+  cursor: pointer;
+}

@@ -1,5 +1,5 @@
 import type { LedgerEntry, PlayerSave } from '@rpg/game-core';
-import { and, desc, eq, ilike, isNull, sql } from 'drizzle-orm';
+import { and, desc, eq, ilike, inArray, isNull, or, sql } from 'drizzle-orm';
 import { v7 as uuidv7 } from 'uuid';
 import type { Db } from './db';
 import {
@@ -7,6 +7,9 @@ import {
   auditLog,
   characters,
   currencyTransactions,
+  friendships,
+  guildMembers,
+  guilds,
   itemInstances,
   refreshTokens,
   wallets,
@@ -337,6 +340,196 @@ export class GameRepository {
       .from(characters)
       .orderBy(desc(characters.level), desc(characters.xp), characters.createdAt)
       .limit(limit);
+  }
+
+  // ---- Social: friends and guilds -----------------------------------------
+
+  async findCharacterByName(name: string): Promise<CharacterSummary | null> {
+    const rows = await this.db
+      .select({
+        id: characters.id,
+        accountId: characters.accountId,
+        name: characters.name,
+        characterDefId: characters.characterDefId,
+        level: characters.level,
+        mapId: characters.mapId,
+      })
+      .from(characters)
+      .where(sql`lower(${characters.name}) = lower(${name})`)
+      .limit(1);
+    return rows[0] ?? null;
+  }
+
+  /** Sends a request, or accepts it if the other side already asked. */
+  async requestFriend(fromId: string, toId: string): Promise<'pending' | 'accepted'> {
+    if (fromId === toId) throw new Error('cannot befriend yourself');
+    return this.db.transaction(async (tx) => {
+      const reverse = await tx
+        .select()
+        .from(friendships)
+        .where(and(eq(friendships.requesterId, toId), eq(friendships.targetId, fromId)))
+        .limit(1);
+      if (reverse[0]) {
+        await tx
+          .update(friendships)
+          .set({ status: 'accepted' })
+          .where(and(eq(friendships.requesterId, toId), eq(friendships.targetId, fromId)));
+        return 'accepted' as const;
+      }
+      await tx
+        .insert(friendships)
+        .values({ requesterId: fromId, targetId: toId })
+        .onConflictDoNothing();
+      return 'pending' as const;
+    });
+  }
+
+  async acceptFriend(characterId: string, requesterId: string): Promise<boolean> {
+    const rows = await this.db
+      .update(friendships)
+      .set({ status: 'accepted' })
+      .where(and(eq(friendships.requesterId, requesterId), eq(friendships.targetId, characterId)))
+      .returning({ r: friendships.requesterId });
+    return rows.length > 0;
+  }
+
+  async removeFriend(characterId: string, otherId: string): Promise<void> {
+    await this.db
+      .delete(friendships)
+      .where(
+        or(
+          and(eq(friendships.requesterId, characterId), eq(friendships.targetId, otherId)),
+          and(eq(friendships.requesterId, otherId), eq(friendships.targetId, characterId)),
+        ),
+      );
+  }
+
+  async socialOf(characterId: string) {
+    const rows = await this.db
+      .select()
+      .from(friendships)
+      .where(or(eq(friendships.requesterId, characterId), eq(friendships.targetId, characterId)));
+    const otherIds = rows.map((r) => (r.requesterId === characterId ? r.targetId : r.requesterId));
+    const others = otherIds.length
+      ? await this.db
+          .select({ id: characters.id, name: characters.name, level: characters.level })
+          .from(characters)
+          .where(inArray(characters.id, otherIds))
+      : [];
+    const byId = new Map(others.map((o) => [o.id, o]));
+    const friends = rows.flatMap((r) => {
+      const other = byId.get(r.requesterId === characterId ? r.targetId : r.requesterId);
+      if (!other) return [];
+      const direction =
+        r.status === 'accepted'
+          ? 'friend'
+          : r.requesterId === characterId
+            ? 'outgoing'
+            : 'incoming';
+      return [{ ...other, status: direction as 'friend' | 'outgoing' | 'incoming' }];
+    });
+
+    const membership = await this.db
+      .select()
+      .from(guildMembers)
+      .where(eq(guildMembers.characterId, characterId))
+      .limit(1);
+    let guild: {
+      id: string;
+      name: string;
+      leaderId: string;
+      members: { id: string; name: string; level: number; rank: string }[];
+    } | null = null;
+    if (membership[0]) {
+      const g = await this.db
+        .select()
+        .from(guilds)
+        .where(eq(guilds.id, membership[0].guildId))
+        .limit(1);
+      const members = await this.db
+        .select({
+          id: characters.id,
+          name: characters.name,
+          level: characters.level,
+          rank: guildMembers.rank,
+        })
+        .from(guildMembers)
+        .innerJoin(characters, eq(characters.id, guildMembers.characterId))
+        .where(eq(guildMembers.guildId, membership[0].guildId));
+      if (g[0]) guild = { id: g[0].id, name: g[0].name, leaderId: g[0].leaderId, members };
+    }
+    return { friends, guild };
+  }
+
+  async createGuild(characterId: string, name: string): Promise<string> {
+    const id = newId();
+    await this.db.transaction(async (tx) => {
+      const already = await tx
+        .select()
+        .from(guildMembers)
+        .where(eq(guildMembers.characterId, characterId))
+        .limit(1);
+      if (already[0]) throw new Error('already in a guild');
+      await tx.insert(guilds).values({ id, name, leaderId: characterId });
+      await tx.insert(guildMembers).values({ characterId, guildId: id, rank: 'leader' });
+    });
+    return id;
+  }
+
+  async joinGuild(characterId: string, guildName: string): Promise<string> {
+    return this.db.transaction(async (tx) => {
+      const g = await tx
+        .select()
+        .from(guilds)
+        .where(sql`lower(${guilds.name}) = lower(${guildName})`)
+        .limit(1);
+      if (!g[0]) throw new Error('guild not found');
+      const already = await tx
+        .select()
+        .from(guildMembers)
+        .where(eq(guildMembers.characterId, characterId))
+        .limit(1);
+      if (already[0]) throw new Error('already in a guild');
+      const count = await tx
+        .select({ n: sql<number>`count(*)::int` })
+        .from(guildMembers)
+        .where(eq(guildMembers.guildId, g[0].id));
+      if ((count[0]?.n ?? 0) >= 50) throw new Error('guild is full');
+      await tx.insert(guildMembers).values({ characterId, guildId: g[0].id });
+      return g[0].id;
+    });
+  }
+
+  /** Leaving as leader hands leadership to the longest-standing member, or disbands. */
+  async leaveGuild(characterId: string): Promise<void> {
+    await this.db.transaction(async (tx) => {
+      const m = await tx
+        .select()
+        .from(guildMembers)
+        .where(eq(guildMembers.characterId, characterId))
+        .limit(1);
+      if (!m[0]) return;
+      await tx.delete(guildMembers).where(eq(guildMembers.characterId, characterId));
+      if (m[0].rank !== 'leader') return;
+      const next = await tx
+        .select()
+        .from(guildMembers)
+        .where(eq(guildMembers.guildId, m[0].guildId))
+        .orderBy(guildMembers.joinedAt)
+        .limit(1);
+      if (next[0]) {
+        await tx
+          .update(guildMembers)
+          .set({ rank: 'leader' })
+          .where(eq(guildMembers.characterId, next[0].characterId));
+        await tx
+          .update(guilds)
+          .set({ leaderId: next[0].characterId })
+          .where(eq(guilds.id, m[0].guildId));
+      } else {
+        await tx.delete(guilds).where(eq(guilds.id, m[0].guildId));
+      }
+    });
   }
 
   // ---- Audit -------------------------------------------------------------

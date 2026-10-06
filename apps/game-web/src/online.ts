@@ -103,3 +103,37 @@ export const hasSession = (): boolean => accessToken !== null;
 
 export const fetchLeaderboard = () =>
   request<{ leaderboard: { name: string; level: number; xp: number }[] }>('/leaderboard');
+
+export interface SocialState {
+  friends: {
+    id: string;
+    name: string;
+    level: number;
+    status: 'friend' | 'incoming' | 'outgoing';
+  }[];
+  guild: {
+    id: string;
+    name: string;
+    leaderId: string;
+    members: { id: string; name: string; level: number; rank: string }[];
+  } | null;
+}
+
+export const fetchSocial = (characterId: string) =>
+  request<SocialState>(`/characters/${characterId}/social`, { auth: true });
+export const addFriend = (characterId: string, name: string) =>
+  request(`/characters/${characterId}/friends`, { body: { name }, auth: true });
+export const acceptFriend = (characterId: string, otherId: string) =>
+  request(`/characters/${characterId}/friends/${otherId}/accept`, {
+    method: 'POST',
+    body: {},
+    auth: true,
+  });
+export const removeFriend = (characterId: string, otherId: string) =>
+  request(`/characters/${characterId}/friends/${otherId}`, { method: 'DELETE', auth: true });
+export const createGuild = (characterId: string, name: string) =>
+  request(`/characters/${characterId}/guild`, { body: { name }, auth: true });
+export const joinGuild = (characterId: string, name: string) =>
+  request(`/characters/${characterId}/guild/join`, { body: { name }, auth: true });
+export const leaveGuild = (characterId: string) =>
+  request(`/characters/${characterId}/guild/leave`, { method: 'POST', body: {}, auth: true });

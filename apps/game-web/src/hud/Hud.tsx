@@ -5,6 +5,7 @@ import { game } from '../game';
 import { useUiStore } from '../store';
 import { NpcPanel } from './NpcPanel';
 import { ChatBox, LeaderboardPanel, QuestTracker } from './Social';
+import { SocialPanel } from './SocialPanel';
 
 const ONLINE = new URLSearchParams(window.location.search).has('online');
 
@@ -474,6 +475,11 @@ function MenuButtons() {
           🏆
         </button>
       )}
+      {ONLINE && (
+        <button type="button" title="Bạn bè & Bang hội" onClick={() => toggle('social')}>
+          👥
+        </button>
+      )}
       <button type="button" title="Cài đặt" onClick={() => toggle('settings')}>
         ⚙
       </button>
@@ -507,6 +513,7 @@ export function Hud() {
       {panel === 'character' && <CharacterPanel />}
       {panel === 'settings' && <SettingsPanel />}
       {panel === 'leaderboard' && <LeaderboardPanel />}
+      {panel === 'social' && <SocialPanel />}
       <NpcPanel />
       <QuestTracker />
       <ChatBox />

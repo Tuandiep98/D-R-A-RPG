@@ -108,3 +108,12 @@ Mỗi quyết định: ngày, bối cảnh, quyết định, hệ quả. Khi mâ
 ## D-021 — NPC, quest, shop, chế tạo, cường hoá là data
 - **Ngày:** 2026-10-06
 - **Quyết định:** `game-data/{npcs,quests,shops,recipes,upgrades}`. Mọi thao tác kiểm tra khoảng cách tới NPC phía server; vàng đi qua ledger (`buy`, `sell`, `craft`, `upgrade`, `quest`). Cường hoá thất bại giữ nguyên cấp (không phá đồ ở MVP). Quest log và cấp cường hoá lưu DB (migration 0002).
+
+## D-022 — Dev không Docker: một process cho cả backend
+- **Ngày:** 2026-10-06
+- **Bối cảnh:** PGlite chỉ mở được bởi một process; API và game server là hai process.
+- **Quyết định:** `pnpm dev:stack` chạy API + game server trong một process dùng chung một PGlite. Production vẫn tách hai service + Postgres (docker-compose).
+
+## D-023 — Bạn bè và bang hội ở tầng API
+- **Ngày:** 2026-10-06
+- **Quyết định:** `friendships` (yêu cầu/chấp nhận, hỏi ngược lại = chấp nhận) và `guilds`/`guild_members` (một bang/nhân vật, tối đa 50, trưởng bang rời → chuyển cho người vào sớm nhất, hết người → giải tán). Mọi endpoint kiểm tra nhân vật thuộc tài khoản gọi.

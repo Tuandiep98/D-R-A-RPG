@@ -26,5 +26,9 @@
   "devDependencies": {
     "@colyseus/sdk": "^0.18.5",
     "@rpg/net-client": "workspace:*"
+  },
+  "exports": {
+    ".": "./src/server.ts",
+    "./config": "./src/config.ts"
   }
 }

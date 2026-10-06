@@ -5,7 +5,7 @@ import { TokenService } from '@rpg/auth';
 import type { NavQuery } from '@rpg/game-core';
 import { loadContentFromDir, readBakedNav } from '@rpg/game-data/node';
 import { createNavQuery, initNavigation } from '@rpg/navigation';
-import { GameRepository, openDatabase } from '@rpg/persistence';
+import { type Database, GameRepository, openDatabase } from '@rpg/persistence';
 import pino from 'pino';
 import type { Config } from './config';
 import { ZoneRoom } from './zone-room';
@@ -16,7 +16,14 @@ export interface RunningGameServer {
 }
 
 /** Builds and starts the game server. Used by main.ts and the integration tests. */
-export async function startGameServer(config: Config): Promise<RunningGameServer> {
+/**
+ * `database` lets a dev runner share one PGlite instance with the API server
+ * (PGlite cannot be opened by two processes).
+ */
+export async function startGameServer(
+  config: Config,
+  shared?: { database: Database },
+): Promise<RunningGameServer> {
   const log = pino({ level: config.LOG_LEVEL, base: { svc: 'game-server' } });
   const content = loadContentFromDir(config.CONTENT_DIR);
   await initNavigation();
@@ -25,11 +32,13 @@ export async function startGameServer(config: Config): Promise<RunningGameServer
     navs.set(map.id, createNavQuery(map, readBakedNav(config.CONTENT_DIR, map.id)));
   }
 
-  const database = await openDatabase(
-    config.DATABASE_URL
-      ? { url: config.DATABASE_URL }
-      : { dataDir: config.PGLITE_DIR === 'memory' ? undefined : config.PGLITE_DIR },
-  );
+  const database =
+    shared?.database ??
+    (await openDatabase(
+      config.DATABASE_URL
+        ? { url: config.DATABASE_URL }
+        : { dataDir: config.PGLITE_DIR === 'memory' ? undefined : config.PGLITE_DIR },
+    ));
   ZoneRoom.deps = {
     content,
     repo: new GameRepository(database.db),
@@ -72,7 +81,7 @@ export async function startGameServer(config: Config): Promise<RunningGameServer
       ]);
       http.closeAllConnections();
       await new Promise((resolve) => http.close(() => resolve(undefined)));
-      await database.close();
+      if (!shared) await database.close();
     },
   };
 }

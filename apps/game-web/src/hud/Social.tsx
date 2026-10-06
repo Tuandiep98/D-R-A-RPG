@@ -41,8 +41,10 @@ export function ChatBox() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Enter' && document.activeElement !== input.current) {
+        // Focus synchronously so keys typed right after Enter are not lost.
+        e.preventDefault();
+        input.current?.focus();
         setOpen(true);
-        setTimeout(() => input.current?.focus(), 0);
       }
     };
     window.addEventListener('keydown', onKey);

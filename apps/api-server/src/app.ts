@@ -28,7 +28,8 @@ export interface ApiDeps {
   content: ContentBundle;
   /** ws(s):// URL handed to clients when a game session starts. */
   gameServerUrl: string;
-  corsOrigins: string[];
+  /** Exact origins or patterns (dev runner allows any localhost port). */
+  corsOrigins: (string | RegExp)[];
   logLevel?: string;
   /** Tests disable rate limiting to run many requests quickly. */
   rateLimit?: boolean;
@@ -272,6 +273,79 @@ export async function buildApi(deps: ApiDeps) {
       gameServerUrl: deps.gameServerUrl,
       expiresIn: ACCESS_TTL_SECONDS,
     };
+  });
+
+  // ---- Social: friends and guilds (tech plan Phase 8) -----------------------
+
+  /** Resolves `:id` to a character owned by the caller. */
+  const ownCharacter = async (req: FastifyRequest): Promise<string> => {
+    const c = claimsOf(req);
+    const { id } = parse(z.object({ id: z.string().uuid() }), req.params);
+    const character = await deps.repo.loadCharacter(id);
+    if (!character || character.accountId !== c.sub)
+      throw new HttpError(404, 'character not found');
+    return id;
+  };
+  const GuildNameSchema = z
+    .string()
+    .trim()
+    .min(3)
+    .max(24)
+    .regex(/^[\p{L}\p{N} ]+$/u, 'letters, digits, spaces');
+
+  app.get('/characters/:id/social', { preHandler: authenticate }, async (req) =>
+    deps.repo.socialOf(await ownCharacter(req)),
+  );
+
+  app.post('/characters/:id/friends', { preHandler: authenticate }, async (req) => {
+    const me = await ownCharacter(req);
+    const { name } = parse(z.object({ name: z.string().min(2).max(20) }), req.body);
+    const other = await deps.repo.findCharacterByName(name);
+    if (!other) throw new HttpError(404, 'character not found');
+    if (other.id === me) throw new HttpError(400, 'cannot befriend yourself');
+    return { status: await deps.repo.requestFriend(me, other.id) };
+  });
+
+  app.post('/characters/:id/friends/:otherId/accept', { preHandler: authenticate }, async (req) => {
+    const me = await ownCharacter(req);
+    const { otherId } = parse(z.object({ otherId: z.string().uuid() }), req.params);
+    if (!(await deps.repo.acceptFriend(me, otherId))) throw new HttpError(404, 'no such request');
+    return { ok: true };
+  });
+
+  app.delete('/characters/:id/friends/:otherId', { preHandler: authenticate }, async (req) => {
+    const me = await ownCharacter(req);
+    const { otherId } = parse(z.object({ otherId: z.string().uuid() }), req.params);
+    await deps.repo.removeFriend(me, otherId);
+    return { ok: true };
+  });
+
+  app.post('/characters/:id/guild', { preHandler: authenticate }, async (req, reply) => {
+    const me = await ownCharacter(req);
+    const { name } = parse(z.object({ name: GuildNameSchema }), req.body);
+    try {
+      return reply.status(201).send({ guildId: await deps.repo.createGuild(me, name) });
+    } catch (err) {
+      throw new HttpError(
+        409,
+        /already/.test((err as Error).message) ? 'already in a guild' : 'guild name taken',
+      );
+    }
+  });
+
+  app.post('/characters/:id/guild/join', { preHandler: authenticate }, async (req) => {
+    const me = await ownCharacter(req);
+    const { name } = parse(z.object({ name: GuildNameSchema }), req.body);
+    try {
+      return { guildId: await deps.repo.joinGuild(me, name) };
+    } catch (err) {
+      throw new HttpError(409, (err as Error).message);
+    }
+  });
+
+  app.post('/characters/:id/guild/leave', { preHandler: authenticate }, async (req) => {
+    await deps.repo.leaveGuild(await ownCharacter(req));
+    return { ok: true };
   });
 
   // ---- Admin (tech plan §40) ---------------------------------------------

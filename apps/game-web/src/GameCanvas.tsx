@@ -98,6 +98,7 @@ export function GameCanvas({ online = null }: { online?: OnlineChoice | null }) 
         const content = loadContent();
         const params = new URLSearchParams(window.location.search);
         const { host, kind } = createHost(params, online);
+        store.setCharacterId(online?.characterId ?? null);
         store.setHostKind(kind);
         const quality =
           (params.get('quality') as 'auto' | 'low' | 'medium' | 'high' | null) ?? 'auto';

@@ -157,3 +157,38 @@ describe('admin', () => {
     expect((await get('/admin/audit', player.accessToken)).statusCode).toBe(403);
   });
 });
+
+describe('social', () => {
+  it('manages friends and guilds for owned characters only', async () => {
+    await post('/auth/register', { username: 'soc_a', password: 'password123' });
+    await post('/auth/register', { username: 'soc_b', password: 'password123' });
+    const ta = (await post('/auth/login', { username: 'soc_a', password: 'password123' })).json()
+      .accessToken;
+    const tb = (await post('/auth/login', { username: 'soc_b', password: 'password123' })).json()
+      .accessToken;
+    const a = (await post('/characters', { name: 'Kiếm Khách' }, ta)).json().id;
+    const b = (await post('/characters', { name: 'Đao Khách' }, tb)).json().id;
+
+    expect((await post(`/characters/${a}/friends`, { name: 'Đao Khách' }, ta)).json()).toEqual({
+      status: 'pending',
+    });
+    expect((await post(`/characters/${b}/friends/${a}/accept`, {}, tb)).statusCode).toBe(200);
+    expect((await get(`/characters/${a}/social`, ta)).json().friends[0]).toMatchObject({
+      name: 'Đao Khách',
+      status: 'friend',
+    });
+    // Using someone else's character id is a 404, not a leak.
+    expect((await get(`/characters/${b}/social`, ta)).statusCode).toBe(404);
+
+    expect((await post(`/characters/${a}/guild`, { name: 'Thiên Kiếm Các' }, ta)).statusCode).toBe(
+      201,
+    );
+    expect((await post(`/characters/${b}/guild`, { name: 'thiên kiếm các' }, tb)).statusCode).toBe(
+      409,
+    );
+    expect(
+      (await post(`/characters/${b}/guild/join`, { name: 'Thiên Kiếm Các' }, tb)).statusCode,
+    ).toBe(200);
+    expect((await get(`/characters/${b}/social`, tb)).json().guild.members).toHaveLength(2);
+  });
+});

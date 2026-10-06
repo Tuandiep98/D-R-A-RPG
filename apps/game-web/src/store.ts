@@ -2,7 +2,7 @@ import type { DebugStats, Notice, QualityMode, UiState } from '@rpg/babylon-rend
 import type { ChatMessage } from '@rpg/game-protocol';
 import { create } from 'zustand';
 
-export type Panel = 'inventory' | 'character' | 'settings' | 'leaderboard' | null;
+export type Panel = 'inventory' | 'character' | 'settings' | 'leaderboard' | 'social' | null;
 
 export interface ToastNotice extends Notice {
   id: number;
@@ -21,6 +21,9 @@ interface UiStore {
   npc: { npcEntityId: number; npcId: string } | null;
   chat: ChatMessage[];
   invite: { fromId: number; fromName: string } | null;
+  /** Online character id (API social endpoints). */
+  characterId: string | null;
+  setCharacterId(id: string | null): void;
   setInvite(invite: { fromId: number; fromName: string } | null): void;
   openNpc(npc: { npcEntityId: number; npcId: string }): void;
   closeNpc(): void;
@@ -52,6 +55,8 @@ export const useUiStore = create<UiStore>((set) => ({
   npc: null,
   chat: [],
   invite: null,
+  characterId: null,
+  setCharacterId: (characterId) => set({ characterId }),
   setInvite: (invite) => set({ invite }),
   openNpc: (npc) => set({ npc, panel: null }),
   closeNpc: () => set({ npc: null }),

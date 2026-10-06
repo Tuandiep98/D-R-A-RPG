@@ -18,11 +18,13 @@ pnpm dev:mobile          # HTTPS trên LAN (WebGPU trên Safari iOS)
 pnpm dev:game-server     # Colyseus :2567 (đọc ../../.env)
 pnpm dev:api             # Fastify :3000
 pnpm dev:admin           # trang quản trị :5190
+pnpm dev:stack           # API + game server trong 1 process (dùng chung PGlite) — dev không Docker
 pnpm test                # Vitest toàn repo (gồm integration server/API)
 pnpm typecheck && pnpm lint && pnpm depcruise
 pnpm content:build       # maps:build → nav:build → validate:data
 pnpm assets:build        # art/third_party → apps/game-web/public/assets + docs/asset_catalog.md
 pnpm smoke [url]         # headless Chrome smoke test against a running dev/preview server
+pnpm smoke:login [url]   # đăng ký → tạo nhân vật → vào game → bang hội → chat (cần dev:stack)
 pnpm db:generate         # drizzle-kit migration sau khi sửa packages/persistence/src/schema.ts
 ```
 

@@ -27,7 +27,9 @@
     "dev:game-server": "pnpm --filter @rpg/game-server dev",
     "dev:api": "pnpm --filter @rpg/api-server dev",
     "dev:admin": "pnpm --filter @rpg/admin dev",
-    "db:generate": "pnpm --filter @rpg/persistence db:generate"
+    "db:generate": "pnpm --filter @rpg/persistence db:generate",
+    "dev:stack": "tsx --env-file-if-exists=.env tools/dev-stack/main.ts",
+    "smoke:login": "tsx tools/smoke/login-flow.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

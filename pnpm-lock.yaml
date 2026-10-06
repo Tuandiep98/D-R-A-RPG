@@ -381,6 +381,24 @@ importers:
         specifier: workspace:*
         version: link:../../packages/game-data
 
+  tools/dev-stack:
+    dependencies:
+      '@rpg/api-server':
+        specifier: workspace:*
+        version: link:../../apps/api-server
+      '@rpg/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
+      '@rpg/game-data':
+        specifier: workspace:*
+        version: link:../../packages/game-data
+      '@rpg/game-server':
+        specifier: workspace:*
+        version: link:../../apps/game-server
+      '@rpg/persistence':
+        specifier: workspace:*
+        version: link:../../packages/persistence
+
   tools/map-builder:
     dependencies:
       '@rpg/game-core':

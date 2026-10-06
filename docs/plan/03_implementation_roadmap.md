@@ -28,7 +28,7 @@ Ký hiệu: ✅ xong · 🟡 có nền tảng/placeholder, cần hoàn thiện �
 | 5 World | Zone, chunk, streaming, AOI, chuyển map, dungeon instance | ✅ | Phó bản solo "Cơ Quan Điện" (1 instance/nhân vật) |
 | 6 Optimization | Pool, LOD, simulation LOD, thin instances, quality runtime, nén asset, profile mobile | 🟡 | Simulation LOD ✅, bundle Babylon 7.5→4.0 MB ✅; LOD mesh ⬜, profile thiết bị ✋ |
 | 7 Economy | Craft, upgrade, currency ledger, shop, chuẩn bị marketplace | ✅ | Shop mua/bán, 3 công thức, cường hoá +1…+5; marketplace ⬜ |
-| 8 Social | Chat, friend, guild, party, leaderboard | 🟡 | Chat ✅, party ✅, leaderboard ✅; friend/guild ⬜ |
+| 8 Social | Chat, friend, guild, party, leaderboard | ✅ | Chat, party, bạn bè, bang hội (DB + API + panel), leaderboard |
 | 9 PWA/mobile | PWA install, runtime cache, offline shell, Capacitor | 🟡 | PWA ✅; Capacitor config ✅, `cap add android/ios` ✋ |
 
 ## Assets plan — backlog P0 (mục 16)
@@ -51,7 +51,7 @@ Ký hiệu: ✅ xong · 🟡 có nền tảng/placeholder, cần hoàn thiện �
 
 ## Việc tiếp theo (tự động được)
 
-1. Friend list và guild (bảng DB + API + kênh chat guild).
+1. Kênh chat bang hội / thì thầm bạn bè (cần presence qua Redis giữa các room).
 2. Marketplace (escrow, khoá item trong giao dịch — tech plan §55.2).
 3. LOD cho mesh trong pipeline (`simplify` theo ratio) và chọn LOD theo khoảng cách.
 4. Presence `online`/takeover qua Redis khi chạy nhiều game-server process.
