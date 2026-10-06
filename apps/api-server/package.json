@@ -1,0 +1,22 @@
+{
+  "name": "@rpg/api-server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.3.0",
+    "@fastify/helmet": "^13.1.1",
+    "@fastify/rate-limit": "^11.2.0",
+    "@rpg/auth": "workspace:*",
+    "@rpg/game-core": "workspace:*",
+    "@rpg/game-data": "workspace:*",
+    "@rpg/persistence": "workspace:*",
+    "fastify": "^5.12.5",
+    "zod": "^4.6.5"
+  }
+}

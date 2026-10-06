@@ -17,3 +17,6 @@ art/third_party/*/originals/
 
 # Local smoke-test screenshots
 reports/smoke/
+
+# Local PGlite database (dev without Docker)
+.data/

@@ -1,0 +1,28 @@
+{
+  "name": "@rpg/game-server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@colyseus/core": "^0.18.18",
+    "@colyseus/ws-transport": "^0.18.4",
+    "@rpg/auth": "workspace:*",
+    "@rpg/game-core": "workspace:*",
+    "@rpg/game-data": "workspace:*",
+    "@rpg/game-protocol": "workspace:*",
+    "@rpg/navigation": "workspace:*",
+    "@rpg/persistence": "workspace:*",
+    "jose": "^6.2.12",
+    "pino": "^10.4.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@colyseus/sdk": "^0.18.5",
+    "@rpg/net-client": "workspace:*"
+  }
+}

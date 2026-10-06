@@ -138,26 +138,28 @@ try {
   await page.screenshot({ path: resolve(outDir, '04_inventory.png') });
   await page.keyboard.press('KeyI');
 
-  // Second scenario: the forest map with elite and boss.
-  await page.goto(`${url}${url.includes('?') ? '&' : '?'}map=map_forest_mechanism_01`, {
-    waitUntil: 'domcontentloaded',
-  });
-  await page.waitForFunction(() => '__rpg' in window, null, { timeout: 60_000 });
-  await page.waitForTimeout(2500);
-  const forest = await entities();
-  const mobs = forest.filter((e) => e.kind === 'monster');
-  check(mobs.length >= 18, `forest spawns monsters (${mobs.length})`);
-  check(
-    mobs.some((e) => e.defId === 'mech_golem_001'),
-    'forest has the boss',
-  );
-  check(
-    mobs.some((e) => e.defId === 'stag_elite_001'),
-    'forest has the elite',
-  );
-  check(forest.filter((e) => e.kind === 'portal').length === 2, 'forest has two portals');
-  console.log(`  debug: ${(await debugText()).replace(/\n/g, ' | ')}`);
-  await page.screenshot({ path: resolve(outDir, '05_forest.png') });
+  // Second scenario: the forest map with elite and boss (offline only; online, the server owns the map).
+  if (!url.includes('online')) {
+    await page.goto(`${url}${url.includes('?') ? '&' : '?'}map=map_forest_mechanism_01`, {
+      waitUntil: 'domcontentloaded',
+    });
+    await page.waitForFunction(() => '__rpg' in window, null, { timeout: 60_000 });
+    await page.waitForTimeout(2500);
+    const forest = await entities();
+    const mobs = forest.filter((e) => e.kind === 'monster');
+    check(mobs.length >= 18, `forest spawns monsters (${mobs.length})`);
+    check(
+      mobs.some((e) => e.defId === 'mech_golem_001'),
+      'forest has the boss',
+    );
+    check(
+      mobs.some((e) => e.defId === 'stag_elite_001'),
+      'forest has the elite',
+    );
+    check(forest.filter((e) => e.kind === 'portal').length === 2, 'forest has two portals');
+    console.log(`  debug: ${(await debugText()).replace(/\n/g, ' | ')}`);
+    await page.screenshot({ path: resolve(outDir, '05_forest.png') });
+  }
 
   check(errors.length === 0, `no console errors (${errors.length})`);
   for (const e of errors) console.log(`  error: ${e}`);

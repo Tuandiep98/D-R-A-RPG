@@ -1,0 +1,24 @@
+{
+  "name": "@rpg/persistence",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "db:generate": "drizzle-kit generate"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "^0.5.8",
+    "@rpg/game-core": "workspace:*",
+    "@rpg/game-protocol": "workspace:*",
+    "drizzle-orm": "^0.45.3",
+    "postgres": "^3.4.9",
+    "uuid": "^14.0.2"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.11"
+  }
+}

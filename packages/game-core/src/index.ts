@@ -1,3 +1,4 @@
+export * from './aoi';
 export * from './context';
 export * from './entity';
 export * from './math';

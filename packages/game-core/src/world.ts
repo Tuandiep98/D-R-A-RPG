@@ -10,7 +10,7 @@ import type {
 } from '@rpg/game-protocol';
 import type { NavQuery, SimContext } from './context';
 import type { CircleObstacle, Entity, EquipSlot, LedgerEntry, PlayerSave } from './entity';
-import type { Bounds, Vec2 } from './math';
+import { type Bounds, clampToBounds, type Vec2 } from './math';
 import { Rng } from './rng';
 import { aiSystem } from './systems/ai';
 import { combatSystem } from './systems/combat';
@@ -44,6 +44,8 @@ export interface SpawnPlayerOptions {
   save?: PlayerSave;
   /** Named arrival point in this map (portal destination). */
   arrival?: string | null;
+  /** Last saved position (reconnect/login); clamped to bounds and snapped to the navmesh. */
+  position?: Vec2 | null;
 }
 
 /**
@@ -160,7 +162,11 @@ export class World implements SimContext {
     const def = this.content.characters.get(characterId);
     if (!def) throw new Error(`Unknown character "${characterId}"`);
     const arrival = opts.arrival ? this.map.arrivals.find((a) => a.id === opts.arrival) : undefined;
-    const pos = { ...(arrival?.position ?? this.map.playerSpawn) };
+    let pos: Vec2 = { ...(arrival?.position ?? this.map.playerSpawn) };
+    if (!arrival && opts.position) {
+      const clamped = clampToBounds(opts.position, this.bounds, def.movement.radius);
+      pos = this.nav ? this.nav.closest(clamped) : clamped;
+    }
     const save = opts.save;
     const e = this.addEntity((id) => ({
       id,

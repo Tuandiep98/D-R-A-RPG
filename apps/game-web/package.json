@@ -18,6 +18,7 @@
     "@rpg/game-protocol": "workspace:*",
     "@rpg/input": "workspace:*",
     "@rpg/navigation": "workspace:*",
+    "@rpg/net-client": "workspace:*",
     "@rpg/sim-host": "workspace:*",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",

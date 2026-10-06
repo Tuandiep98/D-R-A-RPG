@@ -1,17 +1,17 @@
 {
-  "name": "@rpg/game-data",
+  "name": "@rpg/net-client",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./node": "./src/node.ts"
+    ".": "./src/index.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "zod": "^4.6.5",
-    "yaml": "^2.9.1"
+    "@colyseus/sdk": "^0.18.5",
+    "@rpg/game-protocol": "workspace:*",
+    "@rpg/sim-host": "workspace:*"
   }
 }

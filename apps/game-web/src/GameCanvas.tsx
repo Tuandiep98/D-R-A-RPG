@@ -1,9 +1,12 @@
 import { GameView } from '@rpg/babylon-renderer';
+import { ColyseusSimHost } from '@rpg/net-client';
 import { LocalSimHost, type MessageEndpoint, type SimHost, WorkerSimHost } from '@rpg/sim-host';
 import { useEffect, useRef } from 'react';
 import { loadContent } from './content';
 import { setGame } from './game';
+import type { OnlineChoice } from './Login';
 import { navFor } from './nav';
+import { startSession } from './online';
 import { useUiStore } from './store';
 
 const DEFAULT_MAP = 'map_sandbox_01';
@@ -13,8 +16,44 @@ const CHARACTER_ID = 'player_default';
  * Picks the simulation host. Default: Web Worker. `?noworker` runs it on the
  * main thread (debugging); `?map=<id>` starts on another map.
  */
-function createHost(params: URLSearchParams): { host: SimHost; kind: string } {
+function createHost(
+  params: URLSearchParams,
+  online: OnlineChoice | null,
+): { host: SimHost; kind: string } {
   const map = params.get('map') ?? DEFAULT_MAP;
+  const onDisconnect = (code: number) =>
+    useUiStore
+      .getState()
+      .setStatus('error', `Mất kết nối máy chủ (${code}). Tải lại trang để vào lại.`);
+  if (online) {
+    // Each (re)join asks the API for a fresh short-lived session token.
+    let first: string | null = online.session.accessToken;
+    return {
+      host: new ColyseusSimHost({
+        endpoint: online.session.gameServerUrl,
+        mapId: online.session.mapId,
+        getToken: async () => {
+          const t = first ?? (await startSession(online.characterId)).accessToken;
+          first = null;
+          return t;
+        },
+        onDisconnect,
+      }),
+      kind: 'online',
+    };
+  }
+  const dev = params.get('dev');
+  if (params.has('online') && dev) {
+    return {
+      host: new ColyseusSimHost({
+        endpoint: params.get('server') ?? `ws://${window.location.hostname}:2567`,
+        mapId: map,
+        getToken: () => `dev:${dev}`,
+        onDisconnect,
+      }),
+      kind: 'online-dev',
+    };
+  }
   if (!params.has('noworker') && typeof Worker !== 'undefined') {
     try {
       const worker = new Worker(new URL('./sim.worker.ts', import.meta.url), {
@@ -44,7 +83,7 @@ function createHost(params: URLSearchParams): { host: SimHost; kind: string } {
  * Mounts the Babylon game once. React never re-renders the scene; it only
  * receives throttled UI state through the store.
  */
-export function GameCanvas() {
+export function GameCanvas({ online = null }: { online?: OnlineChoice | null }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -58,7 +97,7 @@ export function GameCanvas() {
       try {
         const content = loadContent();
         const params = new URLSearchParams(window.location.search);
-        const { host, kind } = createHost(params);
+        const { host, kind } = createHost(params, online);
         store.setHostKind(kind);
         const quality =
           (params.get('quality') as 'auto' | 'low' | 'medium' | 'high' | null) ?? 'auto';
@@ -105,7 +144,7 @@ export function GameCanvas() {
       setGame(null);
       view?.dispose();
     };
-  }, []);
+  }, [online]);
 
   return <canvas ref={canvasRef} className="game-canvas" />;
 }

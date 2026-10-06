@@ -572,3 +572,56 @@ kbd {
     display: flex;
   }
 }
+
+/* ---- Online login -------------------------------------------------------- */
+
+.login {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 14px;
+  background: radial-gradient(circle at 50% 30%, #2b3a4f, #12171f);
+}
+
+.login h1 {
+  margin: 0;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+}
+
+.login form,
+.chars {
+  display: grid;
+  gap: 8px;
+  width: min(320px, 86vw);
+}
+
+.login input {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--hud-border);
+  background: #0f141b;
+  color: var(--hud-text);
+  font: inherit;
+}
+
+.login button {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--hud-border);
+  background: #1d2632;
+  color: var(--hud-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.login button[type="submit"] {
+  border-color: var(--accent);
+}
+
+.login-error {
+  color: #ffb4ab;
+  max-width: 86vw;
+}
