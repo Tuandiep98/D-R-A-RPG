@@ -1,0 +1,13 @@
+id: skill_ground_slam
+
+name: Chấn Địa
+description: Giáng kiếm xuống một điểm, gây sát thương vùng.
+icon: "💥"
+targeting: point
+range: 8
+castTime: 0.6
+cooldown: 12
+mpCost: 30
+effects:
+  - { type: damage, multiplier: 2.2, radius: 3 }
+vfx: slam

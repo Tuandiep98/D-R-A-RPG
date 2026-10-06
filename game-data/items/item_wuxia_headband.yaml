@@ -1,0 +1,8 @@
+id: item_wuxia_headband
+name: Khăn Võ Sĩ
+kind: equipment
+slot: head
+rarity: common
+icon: "🎗"
+bonus: { defense: 2, hp: 20 }
+sellPrice: 8

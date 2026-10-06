@@ -1,0 +1,8 @@
+id: item_wuxia_robe
+name: Võ Hiệp Bào
+kind: equipment
+slot: chest
+rarity: common
+icon: "🥋"
+bonus: { defense: 6, hp: 60 }
+sellPrice: 20

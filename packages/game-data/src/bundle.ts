@@ -5,10 +5,18 @@ import {
   AppearanceDefSchema,
   type CharacterDef,
   CharacterDefSchema,
+  type ItemDef,
+  ItemDefSchema,
+  type LootTableDef,
+  LootTableDefSchema,
   type MapDef,
   MapDefSchema,
   type MonsterDef,
   MonsterDefSchema,
+  type ProgressionDef,
+  ProgressionDefSchema,
+  type SkillDef,
+  SkillDefSchema,
 } from './schemas';
 
 export interface ContentBundle {
@@ -16,6 +24,10 @@ export interface ContentBundle {
   monsters: ReadonlyMap<string, MonsterDef>;
   maps: ReadonlyMap<string, MapDef>;
   appearances: ReadonlyMap<string, AppearanceDef>;
+  skills: ReadonlyMap<string, SkillDef>;
+  items: ReadonlyMap<string, ItemDef>;
+  loot: ReadonlyMap<string, LootTableDef>;
+  progression: ReadonlyMap<string, ProgressionDef>;
 }
 
 /** A raw content file. `path` is relative to the game-data root, e.g. `monsters/wolf_001.yaml`. */
@@ -44,6 +56,10 @@ const FOLDERS = {
   monsters: MonsterDefSchema,
   maps: MapDefSchema,
   appearances: AppearanceDefSchema,
+  skills: SkillDefSchema,
+  items: ItemDefSchema,
+  loot: LootTableDefSchema,
+  progression: ProgressionDefSchema,
 } as const;
 type Folder = keyof typeof FOLDERS;
 
@@ -53,17 +69,28 @@ function folderOf(path: string): Folder | null {
   return head && head in FOLDERS ? (head as Folder) : null;
 }
 
+type MutableBundle = {
+  [K in keyof ContentBundle]: Map<
+    string,
+    ContentBundle[K] extends ReadonlyMap<string, infer V> ? V : never
+  >;
+};
+
 /**
  * Parses and validates every content file, then checks cross references.
  * Throws ContentError listing all problems at once.
  */
 export function buildContentBundle(files: readonly ContentFile[]): ContentBundle {
   const issues: ContentIssue[] = [];
-  const out = {
-    characters: new Map<string, CharacterDef>(),
-    monsters: new Map<string, MonsterDef>(),
-    maps: new Map<string, MapDef>(),
-    appearances: new Map<string, AppearanceDef>(),
+  const out: MutableBundle = {
+    characters: new Map(),
+    monsters: new Map(),
+    maps: new Map(),
+    appearances: new Map(),
+    skills: new Map(),
+    items: new Map(),
+    loot: new Map(),
+    progression: new Map(),
   };
 
   for (const file of files) {
@@ -106,20 +133,50 @@ export function buildContentBundle(files: readonly ContentFile[]): ContentBundle
 }
 
 function checkReferences(bundle: ContentBundle, issues: ContentIssue[]): void {
-  const needAppearance = (owner: string, id: string | undefined) => {
-    if (id && !bundle.appearances.has(id)) {
-      issues.push({ path: owner, message: `unknown appearanceId "${id}"` });
-    }
-  };
+  const need =
+    (map: ReadonlyMap<string, unknown>, kind: string) =>
+    (owner: string, id: string | undefined) => {
+      if (id && !map.has(id)) issues.push({ path: owner, message: `unknown ${kind} "${id}"` });
+    };
+  const needAppearance = need(bundle.appearances, 'appearanceId');
+  const needSkill = need(bundle.skills, 'skillId');
+  const needItem = need(bundle.items, 'itemId');
+  const needLoot = need(bundle.loot, 'lootTable');
+  const needProgression = need(bundle.progression, 'progressionId');
+  const needMap = need(bundle.maps, 'mapId');
 
-  for (const c of bundle.characters.values()) needAppearance(`characters/${c.id}`, c.appearanceId);
+  for (const c of bundle.characters.values()) {
+    const owner = `characters/${c.id}`;
+    needAppearance(owner, c.appearanceId);
+    needProgression(owner, c.progressionId);
+    for (const s of c.skills) needSkill(owner, s);
+    for (const it of c.starterItems) {
+      needItem(owner, it.itemId);
+      const def = bundle.items.get(it.itemId);
+      if (it.equip && def && def.kind !== 'equipment') {
+        issues.push({ path: owner, message: `starter item "${it.itemId}" is not equipment` });
+      }
+    }
+  }
   for (const m of bundle.monsters.values()) {
-    needAppearance(`monsters/${m.id}`, m.appearanceId);
+    const owner = `monsters/${m.id}`;
+    needAppearance(owner, m.appearanceId);
+    for (const s of m.skills) needSkill(owner, s);
+    for (const p of m.phases) for (const s of p.skills ?? []) needSkill(owner, s);
+    for (const l of m.lootTable) needLoot(owner, l);
     if (m.ai.leashRadius < m.ai.aggroRadius) {
-      issues.push({
-        path: `monsters/${m.id}`,
-        message: 'ai.leashRadius must be >= ai.aggroRadius',
-      });
+      issues.push({ path: owner, message: 'ai.leashRadius must be >= ai.aggroRadius' });
+    }
+  }
+  for (const l of bundle.loot.values()) {
+    for (const e of l.entries) needItem(`loot/${l.id}`, e.itemId);
+    if (l.gold && l.gold.min > l.gold.max)
+      issues.push({ path: `loot/${l.id}`, message: 'gold.min > gold.max' });
+  }
+  for (const it of bundle.items.values()) {
+    needAppearance(`items/${it.id}`, it.appearanceId);
+    if (it.kind === 'equipment' && it.maxStack !== 1) {
+      issues.push({ path: `items/${it.id}`, message: 'equipment cannot stack' });
     }
   }
   for (const map of bundle.maps.values()) {
@@ -130,27 +187,40 @@ function checkReferences(bundle: ContentBundle, issues: ContentIssue[]): void {
       p.x <= map.bounds.max.x &&
       p.z >= map.bounds.min.z &&
       p.z <= map.bounds.max.z;
-    if (!inBounds(map.playerSpawn)) {
+    if (!inBounds(map.playerSpawn))
       issues.push({ path: owner, message: 'playerSpawn is outside bounds' });
-    }
-    const spawnIds = new Set<string>();
+    const ids = new Set<string>();
+    const unique = (kind: string, id: string) => {
+      const key = `${kind}:${id}`;
+      if (ids.has(key)) issues.push({ path: owner, message: `duplicate ${kind} id "${id}"` });
+      ids.add(key);
+    };
     for (const s of map.spawns) {
-      if (spawnIds.has(s.id)) issues.push({ path: owner, message: `duplicate spawn id "${s.id}"` });
-      spawnIds.add(s.id);
-      if (!bundle.monsters.has(s.monsterId)) {
+      unique('spawn', s.id);
+      need(bundle.monsters, 'monsterId')(`${owner}#spawns.${s.id}`, s.monsterId);
+      if (!inBounds(s.position))
+        issues.push({ path: `${owner}#spawns.${s.id}`, message: 'outside bounds' });
+    }
+    for (const p of map.portals) {
+      unique('portal', p.id);
+      needMap(`${owner}#portals.${p.id}`, p.targetMapId);
+      if (!inBounds(p.position))
+        issues.push({ path: `${owner}#portals.${p.id}`, message: 'outside bounds' });
+      const target = bundle.maps.get(p.targetMapId);
+      if (target && p.targetArrival && !target.arrivals.some((a) => a.id === p.targetArrival)) {
         issues.push({
-          path: `${owner}#spawns.${s.id}`,
-          message: `unknown monsterId "${s.monsterId}"`,
+          path: `${owner}#portals.${p.id}`,
+          message: `unknown arrival "${p.targetArrival}" in ${p.targetMapId}`,
         });
       }
-      if (!inBounds(s.position)) {
-        issues.push({
-          path: `${owner}#spawns.${s.id}`,
-          message: 'spawn position is outside bounds',
-        });
-      }
+    }
+    for (const a of map.arrivals) {
+      unique('arrival', a.id);
+      if (!inBounds(a.position))
+        issues.push({ path: `${owner}#arrivals.${a.id}`, message: 'outside bounds' });
     }
     for (const chunk of map.chunks) {
+      unique('chunk', chunk.id);
       for (const inst of chunk.instances) needAppearance(`${owner}#${chunk.id}`, inst.appearanceId);
     }
   }

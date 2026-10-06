@@ -1,0 +1,4 @@
+id: equip_sword_01
+kind: equipment
+attach: { socket: hand_r, position: [0, 0, 0], rotation: [0, 0, 0] }
+placeholder: { shape: box, color: '#c9ced6', height: 1.0, radius: 0.05 }

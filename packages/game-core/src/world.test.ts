@@ -36,7 +36,7 @@ describe('Rng', () => {
 });
 
 describe('rollDamage', () => {
-  const attacker = { hp: 1, maxHp: 1, attack: 50, defense: 0, critChance: 0, critMultiplier: 2 };
+  const attacker = { attack: 50, defense: 0, critChance: 0, critMultiplier: 2 };
   it('is mitigated by defense and never below 1', () => {
     const rng = new Rng(1);
     const noArmor = rollDamage(rng, attacker, { ...attacker, defense: 0 }).amount;
@@ -58,7 +58,7 @@ describe('World', () => {
     const world = new World({ content: makeContent(), mapId: 'test_map' });
     const playerId = world.spawnPlayer('hero');
     const events = world.step();
-    expect(world.entities.size).toBe(2);
+    expect([...world.entities.values()].filter((e) => !e.inert)).toHaveLength(2);
     expect(events.filter((e) => e.type === 'SPAWN')).toHaveLength(2);
     expect(get(world, playerId).pos).toEqual({ x: 0, z: 0 });
   });
@@ -106,7 +106,7 @@ describe('World', () => {
 
   it('kills, then respawns the monster at its home with full HP', () => {
     const content = makeContent({
-      monster: { stats: { hp: 1, attack: 0, defense: 0, critChance: 0, critMultiplier: 1.5 } },
+      monster: { stats: { hp: 1, attack: 0, defense: 0, critChance: 0 } },
     });
     const world = new World({ content, mapId: 'test_map' });
     const id = world.spawnPlayer('hero');
@@ -159,7 +159,7 @@ describe('World', () => {
 
   it('player dies and respawns at the map spawn point', () => {
     const content = makeContent({
-      character: { stats: { hp: 1, attack: 0, defense: 0, critChance: 0, critMultiplier: 1.5 } },
+      character: { stats: { hp: 1, attack: 0, defense: 0, critChance: 0 }, starterItems: [] },
     });
     const world = new World({ content, mapId: 'test_map' });
     const id = world.spawnPlayer('hero');

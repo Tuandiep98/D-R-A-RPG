@@ -10,8 +10,13 @@ const ent = (x: number, yaw = 0): EntitySnapshot => ({
   yaw,
   hp: 1,
   maxHp: 1,
+  level: 1,
   action: 'move',
   targetId: null,
+  ownerId: null,
+  phase: 0,
+  cast: null,
+  gear: null,
 });
 const snap = (tick: number, e: EntitySnapshot): Snapshot => ({ tick, entities: [e] });
 

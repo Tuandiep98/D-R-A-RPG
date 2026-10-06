@@ -1,0 +1,5 @@
+id: progression_player
+maxLevel: 30
+# XP to go from level n to n+1 = round(base * n^exponent)
+xpCurve: { base: 120, exponent: 1.6 }
+perLevel: { hp: 40, mp: 6, attack: 4, defense: 1.5 }

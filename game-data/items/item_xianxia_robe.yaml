@@ -1,0 +1,9 @@
+id: item_xianxia_robe
+name: Tiên Môn Đạo Bào
+kind: equipment
+slot: chest
+rarity: uncommon
+icon: "👘"
+level: 4
+bonus: { defense: 4, hp: 40, mp: 40 }
+sellPrice: 90

@@ -1,0 +1,14 @@
+id: stag_elite_001
+name: Linh Lộc Tinh Anh
+level: 8
+tier: elite
+appearanceId: mob_stag_elite_01
+stats: { hp: 1400, attack: 32, defense: 14, critChance: 0.1 }
+movement: { speed: 3.8, radius: 0.8 }
+combat: { range: 1.6, attackInterval: 1.4 }
+ai: { type: melee, aggroRadius: 9, leashRadius: 20, wanderRadius: 2 }
+skills: [skill_elite_charge]
+phases:
+  - { hpBelow: 0.35, name: Cuồng Bạo, attackMultiplier: 1.4, speedMultiplier: 1.2 }
+xp: 260
+lootTable: [loot_elite]

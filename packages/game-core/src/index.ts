@@ -3,5 +3,8 @@ export * from './entity';
 export * from './math';
 export * from './rng';
 export { rollDamage } from './systems/combat';
+export { INVENTORY_CAPACITY } from './systems/inventory';
+export { xpToNext } from './systems/progression';
+export { effectRadius } from './systems/skills';
 export * from './time';
 export * from './world';

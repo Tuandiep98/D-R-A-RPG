@@ -12,7 +12,12 @@
     {
       "assetId": "env_tree_01",
       "file": "originals/glTF/CommonTree_1.gltf",
-      "type": "environment"
+      "type": "environment",
+      "budgetException": {
+        "tris": 6500,
+        "reason": "Leaf cards are disconnected quads; simplifier cannot reduce them without visible holes. Revisit with a tree LOD/impostor in the optimization phase.",
+        "owner": "tech-art"
+      }
     },
     {
       "assetId": "env_tree_02",

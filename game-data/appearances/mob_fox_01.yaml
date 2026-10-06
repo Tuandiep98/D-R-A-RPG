@@ -1,0 +1,7 @@
+id: mob_fox_01
+# Quaternius Ultimate Animated Animals — Fox.gltf
+kind: monster
+modelAssetId: mob_fox_01
+scale: 0.4
+animations: { idle: Idle, run: Gallop, attack: Attack, hit: Idle_HitReact1, death: Death }
+placeholder: { shape: box, color: '#d9702b', height: 0.8, radius: 0.4 }

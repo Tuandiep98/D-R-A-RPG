@@ -1,0 +1,7 @@
+id: item_golem_core
+name: Lõi Cơ Quan
+kind: material
+rarity: epic
+icon: "💠"
+maxStack: 10
+sellPrice: 120

@@ -1,0 +1,12 @@
+id: skill_boss_barrage
+
+name: Pháo Năng Lượng
+icon: "☄"
+targeting: point
+range: 12
+castTime: 1.0
+cooldown: 4
+telegraph: true
+effects:
+  - { type: damage, multiplier: 2, radius: 2.5 }
+vfx: slam

@@ -1,0 +1,13 @@
+id: skill_boss_slam
+
+name: Đập Đất
+description: Đập xuống vị trí mục tiêu sau khi vung tay. Có thể né.
+icon: "🔨"
+targeting: point
+range: 9
+castTime: 1.6
+cooldown: 7
+telegraph: true
+effects:
+  - { type: damage, multiplier: 3, radius: 3.5 }
+vfx: slam

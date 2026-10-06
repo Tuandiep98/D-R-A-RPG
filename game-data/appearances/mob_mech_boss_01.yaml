@@ -1,0 +1,8 @@
+id: mob_mech_boss_01
+# Quaternius Ultimate Space Kit — Mech_FinnTheFrog.gltf (boss)
+kind: monster
+modelAssetId: mob_mech_boss_01
+scale: 1.0
+tint: '#ff4a3d'
+animations: { idle: Idle, run: Walk, attack: Kick, cast: Shoot_Big, hit: HitRecieve_1, death: Death }
+placeholder: { shape: cylinder, color: '#7a2e2e', height: 3.6, radius: 1.4 }

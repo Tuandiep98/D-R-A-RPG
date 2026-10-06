@@ -1,0 +1,7 @@
+id: item_elite_antler
+name: Linh Giác
+kind: material
+rarity: rare
+icon: "🦌"
+maxStack: 20
+sellPrice: 25

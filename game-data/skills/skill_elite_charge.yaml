@@ -1,0 +1,11 @@
+id: skill_elite_charge
+
+name: Linh Lộc Xung Kích
+icon: "🦌"
+targeting: target
+range: 6
+castTime: 0.5
+cooldown: 8
+effects:
+  - { type: damage, multiplier: 2.2 }
+vfx: slash

@@ -7,6 +7,11 @@ export type GameAction =
   | { type: 'CAMERA_ROTATE'; dx: number; dy: number }
   | { type: 'ZOOM'; delta: number }
   | { type: 'STOP' }
+  | { type: 'SKILL'; index: number }
+  | { type: 'INTERACT' }
+  | { type: 'TARGET_NEXT' }
+  | { type: 'USE_POTION' }
+  | { type: 'TOGGLE_PANEL'; panel: 'inventory' | 'character' | 'settings' }
   | { type: 'TOGGLE_DEBUG' };
 
 export type ActionListener = (action: GameAction) => void;
@@ -104,8 +109,18 @@ export class MouseKeyboardAdapter implements InputAdapter {
 
   private readonly onKey = (e: KeyboardEvent) => {
     if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-    if (e.code === 'KeyS' || e.code === 'Escape') this.emit({ type: 'STOP' });
-    else if (e.code === 'Backquote') this.emit({ type: 'TOGGLE_DEBUG' });
+    const digit = /^Digit([1-8])$/.exec(e.code);
+    if (digit) this.emit({ type: 'SKILL', index: Number(digit[1]) - 1 });
+    else if (e.code === 'KeyS' || e.code === 'Escape') this.emit({ type: 'STOP' });
+    else if (e.code === 'KeyF') this.emit({ type: 'INTERACT' });
+    else if (e.code === 'KeyQ') this.emit({ type: 'USE_POTION' });
+    else if (e.code === 'KeyI' || e.code === 'KeyB')
+      this.emit({ type: 'TOGGLE_PANEL', panel: 'inventory' });
+    else if (e.code === 'KeyC') this.emit({ type: 'TOGGLE_PANEL', panel: 'character' });
+    else if (e.code === 'Tab') {
+      e.preventDefault();
+      this.emit({ type: 'TARGET_NEXT' });
+    } else if (e.code === 'Backquote') this.emit({ type: 'TOGGLE_DEBUG' });
   };
 }
 
@@ -184,5 +199,44 @@ export class TouchAdapter implements InputAdapter {
   private currentPinch(): number {
     const [a, b] = [...this.touches.values()];
     return a && b ? Math.hypot(a.x - b.x, a.y - b.y) : 0;
+  }
+}
+
+/**
+ * Standard-mapping gamepad: right stick rotates, triggers zoom, face buttons
+ * map to skills, LB targets next, RB interacts, Start opens inventory.
+ * Polled each frame by the game via poll().
+ */
+export class GamepadAdapter implements InputAdapter {
+  private emit: ActionListener = () => {};
+  private prev: boolean[] = [];
+
+  attach(_target: HTMLElement, emit: ActionListener): void {
+    this.emit = emit;
+  }
+
+  detach(): void {
+    this.emit = () => {};
+  }
+
+  poll(dt: number): void {
+    const pad =
+      typeof navigator !== 'undefined' ? navigator.getGamepads?.().find((p) => p?.connected) : null;
+    if (!pad) return;
+    const [, , rx = 0, ry = 0] = pad.axes;
+    const dead = (v: number) => (Math.abs(v) < 0.15 ? 0 : v);
+    if (dead(rx) || dead(ry))
+      this.emit({ type: 'CAMERA_ROTATE', dx: dead(rx) * 600 * dt, dy: dead(ry) * 400 * dt });
+    const pressed = pad.buttons.map((b) => b.pressed);
+    const edge = (i: number) => pressed[i] && !this.prev[i];
+    for (const [idx, b] of [0, 1, 2, 3].entries())
+      if (edge(b)) this.emit({ type: 'SKILL', index: idx });
+    if (edge(4)) this.emit({ type: 'TARGET_NEXT' });
+    if (edge(5)) this.emit({ type: 'INTERACT' });
+    if (edge(6)) this.emit({ type: 'ZOOM', delta: -1 });
+    if (edge(7)) this.emit({ type: 'ZOOM', delta: 1 });
+    if (edge(9)) this.emit({ type: 'TOGGLE_PANEL', panel: 'inventory' });
+    if (edge(12)) this.emit({ type: 'USE_POTION' });
+    this.prev = pressed;
   }
 }

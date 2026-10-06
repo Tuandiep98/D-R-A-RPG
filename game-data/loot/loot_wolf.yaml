@@ -1,0 +1,6 @@
+id: loot_wolf
+gold: { min: 3, max: 8 }
+entries:
+  - { itemId: item_wolf_fang, chance: 0.6, min: 1, max: 2 }
+  - { itemId: item_potion_hp_small, chance: 0.15, min: 1, max: 1 }
+  - { itemId: item_boots_leather, chance: 0.03, min: 1, max: 1 }

@@ -1,12 +1,16 @@
 id: player_default
 name: Du Hiệp
 appearanceId: char_player_default
+progressionId: progression_player
 stats:
   hp: 600
-  attack: 34
+  mp: 120
+  attack: 30
   defense: 8
   critChance: 0.15
   critMultiplier: 1.6
+  hpRegen: 12
+  mpRegen: 4
 movement:
   speed: 5
   radius: 0.4
@@ -14,3 +18,12 @@ combat:
   range: 1.4
   attackInterval: 0.9
 respawnSeconds: 5
+skills:
+  - skill_heavy_slash
+  - skill_whirlwind
+  - skill_sword_qi
+  - skill_ground_slam
+  - skill_qi_heal
+starterItems:
+  - { itemId: item_sword_iron, equip: true }
+  - { itemId: item_potion_hp_small, count: 5 }

@@ -1,0 +1,13 @@
+id: skill_sword_qi
+
+name: Kiếm Khí
+description: Phóng kiếm khí đánh mục tiêu từ xa.
+icon: "✴"
+targeting: target
+range: 10
+castTime: 0.4
+cooldown: 4
+mpCost: 12
+effects:
+  - { type: damage, multiplier: 1.8 }
+vfx: projectile

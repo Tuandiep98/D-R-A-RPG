@@ -1,0 +1,7 @@
+id: loot_elite
+gold: { min: 30, max: 60 }
+entries:
+  - { itemId: item_elite_antler, chance: 1, min: 1, max: 1 }
+  - { itemId: item_great_blade, chance: 0.3, min: 1, max: 1 }
+  - { itemId: item_wuxia_robe, chance: 0.3, min: 1, max: 1 }
+  - { itemId: item_potion_hp_large, chance: 0.5, min: 1, max: 2 }

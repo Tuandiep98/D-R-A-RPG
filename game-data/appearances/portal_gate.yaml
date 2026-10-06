@@ -1,0 +1,4 @@
+id: portal_gate
+kind: portal
+tint: '#8f6bff'
+placeholder: { shape: cylinder, color: '#6a4cff', height: 3.2, radius: 1.1 }

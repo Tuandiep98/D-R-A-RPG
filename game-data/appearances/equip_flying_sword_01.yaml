@@ -1,0 +1,4 @@
+id: equip_flying_sword_01
+kind: equipment
+attach: { socket: artifact, position: [0, 0, 0], rotation: [0, 0, 0] }
+placeholder: { shape: box, color: '#7ef0ff', height: 0.9, radius: 0.05 }

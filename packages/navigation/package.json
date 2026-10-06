@@ -1,0 +1,17 @@
+{
+  "name": "@rpg/navigation",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@rpg/game-core": "workspace:*",
+    "@rpg/game-data": "workspace:*",
+    "recast-navigation": "^0.43.1"
+  }
+}

@@ -1,0 +1,8 @@
+id: item_boots_leather
+name: Giày Da Lữ Khách
+kind: equipment
+slot: boots
+rarity: common
+icon: "👢"
+bonus: { defense: 2, speed: 0.4 }
+sellPrice: 12

@@ -13,6 +13,16 @@
       "assetId": "mob_wolf_01",
       "file": "originals/glTF/Wolf.gltf",
       "type": "monster"
+    },
+    {
+      "assetId": "mob_fox_01",
+      "file": "originals/glTF/Fox.gltf",
+      "type": "monster"
+    },
+    {
+      "assetId": "mob_stag_elite_01",
+      "file": "originals/glTF/Stag.gltf",
+      "type": "monster"
     }
   ]
 }

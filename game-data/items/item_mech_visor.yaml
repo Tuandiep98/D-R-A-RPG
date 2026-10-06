@@ -1,0 +1,9 @@
+id: item_mech_visor
+name: Mũ Cơ Giới
+kind: equipment
+slot: head
+rarity: uncommon
+icon: "⛑"
+level: 3
+bonus: { defense: 5 }
+sellPrice: 50

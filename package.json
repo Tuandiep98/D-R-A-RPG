@@ -18,7 +18,10 @@
     "validate:data": "tsx tools/data-validator/validate.ts",
     "assets:build": "tsx tools/asset-processor/build.ts",
     "smoke": "tsx tools/smoke/smoke.ts",
-    "dev:mobile": "pnpm --filter @rpg/game-web dev:mobile"
+    "dev:mobile": "pnpm --filter @rpg/game-web dev:mobile",
+    "maps:build": "tsx tools/map-builder/build.ts",
+    "nav:build": "tsx tools/navmesh-builder/build.ts",
+    "content:build": "pnpm maps:build && pnpm nav:build && pnpm validate:data"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

@@ -1,0 +1,9 @@
+id: item_sword_iron
+name: Thiết Kiếm
+kind: equipment
+slot: main_hand
+rarity: common
+icon: "🗡"
+bonus: { attack: 12 }
+sellPrice: 10
+appearanceId: equip_sword_01

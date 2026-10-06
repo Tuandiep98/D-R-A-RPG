@@ -1,21 +1,43 @@
-import type { EntityId, SimEvent } from '@rpg/game-protocol';
-import type { CircleObstacle, Entity } from './entity';
-import type { Bounds } from './math';
+import type { ContentBundle, MapDef } from '@rpg/game-data';
+import type { EntityId, NoticeCode, SimEvent } from '@rpg/game-protocol';
+import type { CircleObstacle, Entity, LedgerEntry } from './entity';
+import type { Bounds, Vec2 } from './math';
 import type { Rng } from './rng';
+
+/**
+ * Pathfinding abstraction (decision D-008). Implemented with Recast in
+ * @rpg/navigation; game-core never imports the WASM module itself.
+ */
+export interface NavQuery {
+  /** Waypoints from `from` to `to` (excluding `from`), or null when unreachable. */
+  findPath(from: Vec2, to: Vec2): Vec2[] | null;
+  /** Nearest walkable point. */
+  closest(p: Vec2): Vec2;
+}
 
 /** What systems may read and mutate during a tick. Implemented by World. */
 export interface SimContext {
   readonly tick: number;
   readonly rng: Rng;
   readonly bounds: Bounds;
+  readonly map: MapDef;
+  readonly content: ContentBundle;
+  readonly nav: NavQuery | null;
   readonly obstacles: readonly CircleObstacle[];
   readonly entities: ReadonlyMap<EntityId, Entity>;
   emit(event: SimEvent): void;
+  notice(ownerId: EntityId, code: NoticeCode): void;
+  addEntity(build: (id: EntityId) => Entity): Entity;
+  removeEntity(id: EntityId): void;
+  newItemInstanceId(): string;
+  recordLedger(entry: Omit<LedgerEntry, 'tick'>): boolean;
+  inSafeZone(p: Vec2): boolean;
 }
 
-export const isAlive = (e: Entity | undefined): e is Entity => !!e && e.life.alive;
+export const isAlive = (e: Entity | undefined): e is Entity => !!e && e.life.alive && !e.inert;
 
-export const areHostile = (a: Entity, b: Entity): boolean => a.faction !== b.faction;
+export const areHostile = (a: Entity, b: Entity): boolean =>
+  a.faction !== b.faction && a.faction !== 'neutral' && b.faction !== 'neutral';
 
 /** Distance between body edges. */
 export const edgeDistance = (a: Entity, b: Entity): number =>
@@ -24,3 +46,6 @@ export const edgeDistance = (a: Entity, b: Entity): number =>
 /** True if `a` can hit `b` from where it stands. */
 export const inAttackRange = (a: Entity, b: Entity): boolean =>
   edgeDistance(a, b) <= a.combat.range;
+
+/** Interaction reach for loot and portals, centre to centre. */
+export const INTERACT_RANGE = 2.5;

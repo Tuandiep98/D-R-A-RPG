@@ -1,0 +1,9 @@
+id: item_potion_hp_small
+name: Hồi Huyết Đan (nhỏ)
+kind: consumable
+rarity: common
+icon: "🧪"
+heal: 0.35
+cooldown: 5
+maxStack: 20
+sellPrice: 2

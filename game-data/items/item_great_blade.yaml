@@ -1,0 +1,10 @@
+id: item_great_blade
+name: Đại Đao Phá Sơn
+kind: equipment
+slot: main_hand
+rarity: uncommon
+icon: "🪓"
+level: 3
+bonus: { attack: 22, critChance: 0.03 }
+sellPrice: 60
+appearanceId: equip_great_blade_01

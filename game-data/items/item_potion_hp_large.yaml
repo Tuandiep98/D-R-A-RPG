@@ -1,0 +1,9 @@
+id: item_potion_hp_large
+name: Hồi Huyết Đan (lớn)
+kind: consumable
+rarity: uncommon
+icon: "⚗"
+heal: 0.7
+cooldown: 10
+maxStack: 10
+sellPrice: 8

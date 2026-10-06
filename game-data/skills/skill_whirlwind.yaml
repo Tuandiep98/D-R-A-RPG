@@ -1,0 +1,11 @@
+id: skill_whirlwind
+
+name: Toàn Phong Kiếm
+description: Xoay kiếm chém mọi kẻ địch xung quanh.
+icon: "🌀"
+targeting: self
+cooldown: 10
+mpCost: 25
+effects:
+  - { type: damage, multiplier: 1.3, radius: 3.5 }
+vfx: whirl

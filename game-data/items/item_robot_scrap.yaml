@@ -1,0 +1,6 @@
+id: item_robot_scrap
+name: Phế Liệu Cơ Giới
+kind: material
+icon: "⚙"
+maxStack: 99
+sellPrice: 2

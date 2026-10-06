@@ -4,40 +4,85 @@ import { clampToBounds, distance, yawOf } from '../math';
 import { TICK_DT } from '../time';
 
 const ARRIVE_EPSILON = 1e-3;
+const WAYPOINT_REACHED = 0.15;
+/** Re-plan when the goal (e.g. a chased target) moved this far. */
+const REPATH_DISTANCE = 0.75;
+/** And at most this often while chasing. */
+const REPATH_TICKS = 6;
 
 /**
- * Straight-line movement toward the current goal with circle collision
- * against static obstacles and other living bodies. NavMesh replaces the
- * straight line in M2 (see decision D-008).
+ * Moves toward the current goal. With a NavQuery the entity follows a
+ * navmesh path (decision D-008); without one it walks straight. Circle
+ * collision against static obstacles and other bodies runs either way.
  */
 export function movementSystem(ctx: SimContext): void {
   const bodies: Entity[] = [];
   for (const e of ctx.entities.values()) {
     e.movement.moved = false;
-    if (!e.life.alive) continue;
+    if (e.inert || !e.life.alive) continue;
     bodies.push(e);
 
     const goal = e.movement.goal;
-    if (!goal) continue;
-    const dx = goal.pos.x - e.pos.x;
-    const dz = goal.pos.z - e.pos.z;
-    const dist = Math.hypot(dx, dz);
-    const remaining = dist - goal.stopWithin;
-    if (remaining <= ARRIVE_EPSILON) {
-      e.movement.goal = null;
+    if (!goal) {
+      e.movement.path = null;
       continue;
     }
-    const maxStep = e.movement.speed * TICK_DT;
-    const step = Math.min(remaining, maxStep);
-    e.pos.x += (dx / dist) * step;
-    e.pos.z += (dz / dist) * step;
-    e.yaw = yawOf({ x: dx, z: dz });
-    e.movement.moved = true;
-    if (remaining <= maxStep) e.movement.goal = null;
+    if (ctx.nav) updatePath(ctx, e);
+
+    let budget = e.movement.speed * TICK_DT;
+    while (budget > 1e-6) {
+      const path = e.movement.path;
+      const isFinal = !path || path.length <= 1;
+      const wp = path?.[0] ?? goal.pos;
+      const stop = isFinal ? goal.stopWithin : 0;
+      const dx = wp.x - e.pos.x;
+      const dz = wp.z - e.pos.z;
+      const dist = Math.hypot(dx, dz);
+      const remaining = dist - stop;
+      if (remaining <= (isFinal ? ARRIVE_EPSILON : WAYPOINT_REACHED)) {
+        if (isFinal) {
+          e.movement.goal = null;
+          e.movement.path = null;
+          break;
+        }
+        path?.shift();
+        continue;
+      }
+      const step = Math.min(remaining, budget);
+      e.pos.x += (dx / dist) * step;
+      e.pos.z += (dz / dist) * step;
+      e.yaw = yawOf({ x: dx, z: dz });
+      e.movement.moved = true;
+      budget -= step;
+      if (step >= remaining) {
+        if (isFinal) {
+          e.movement.goal = null;
+          e.movement.path = null;
+          break;
+        }
+        path?.shift();
+      }
+    }
   }
 
   separateBodies(bodies);
   for (const e of bodies) resolveStatic(ctx, e);
+}
+
+function updatePath(ctx: SimContext, e: Entity): void {
+  const m = e.movement;
+  const goal = m.goal;
+  if (!goal || !ctx.nav) return;
+  const stale =
+    !m.path ||
+    !m.pathGoal ||
+    (distance(m.pathGoal, goal.pos) > REPATH_DISTANCE && ctx.tick - m.pathTick >= REPATH_TICKS);
+  if (!stale) return;
+  m.pathGoal = { ...goal.pos };
+  m.pathTick = ctx.tick;
+  const path = ctx.nav.findPath(e.pos, goal.pos);
+  // Unreachable: fall back to walking straight; collision keeps us out of blockers.
+  m.path = path && path.length > 0 ? path : null;
 }
 
 function resolveStatic(ctx: SimContext, e: Entity): void {
@@ -58,7 +103,7 @@ function resolveStatic(ctx: SimContext, e: Entity): void {
   e.pos.z = clamped.z;
 }
 
-/** Pushes overlapping bodies apart equally. O(n²) is fine for the M1 budget (<100). */
+/** Pushes overlapping bodies apart equally. O(n²) is fine within the entity budget (<100). */
 function separateBodies(bodies: Entity[]): void {
   for (let i = 0; i < bodies.length; i++) {
     const a = bodies[i] as Entity;

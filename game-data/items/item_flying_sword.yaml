@@ -1,0 +1,10 @@
+id: item_flying_sword
+name: Phi Kiếm Thanh Vân
+kind: equipment
+slot: artifact
+rarity: epic
+icon: "🗲"
+level: 6
+bonus: { attack: 10, mp: 40 }
+sellPrice: 400
+appearanceId: equip_flying_sword_01

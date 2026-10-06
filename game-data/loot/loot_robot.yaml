@@ -1,0 +1,6 @@
+id: loot_robot
+gold: { min: 6, max: 14 }
+entries:
+  - { itemId: item_robot_scrap, chance: 0.7, min: 1, max: 3 }
+  - { itemId: item_mech_visor, chance: 0.05, min: 1, max: 1 }
+  - { itemId: item_gauntlet_mech, chance: 0.02, min: 1, max: 1 }

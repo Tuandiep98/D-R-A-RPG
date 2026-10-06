@@ -1,0 +1,6 @@
+id: item_wolf_fang
+name: Nanh Sói
+kind: material
+icon: "🦷"
+maxStack: 99
+sellPrice: 1

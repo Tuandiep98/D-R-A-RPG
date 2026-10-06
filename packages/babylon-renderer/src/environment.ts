@@ -1,93 +1,279 @@
 import {
   type AbstractMesh,
+  type Material,
   Matrix,
   Mesh,
   MeshBuilder,
+  MultiMaterial,
   Quaternion,
   type Scene,
   Vector3,
 } from '@babylonjs/core';
 import type { AssetLibrary } from '@rpg/asset-runtime';
-import type { ContentBundle, MapDef, MapInstance } from '@rpg/game-data';
+import type { AppearanceDef, ContentBundle, MapDef } from '@rpg/game-data';
 import { colorMaterial, createPlaceholderMesh } from './placeholder';
 
-export interface BuiltEnvironment {
-  ground: Mesh;
-  /** One source mesh per appearance, drawn with thin instances. */
-  batches: Mesh[];
-  dispose(): void;
+/** Alpha of environment pieces that stand between the camera and the player. */
+const OCCLUDED_ALPHA = 0.28;
+
+interface EnvInstance {
+  chunkId: string;
+  matrix: Float32Array;
+  x: number;
+  z: number;
+  /** Horizontal radius used for occlusion tests, metres. */
+  radius: number;
+  height: number;
+  occluded: boolean;
+}
+
+/** Every instance of one appearance in the map, drawn by two thin-instance meshes. */
+interface Batch {
+  appearanceId: string;
+  solid: Mesh;
+  faded: Mesh;
+  solidBuffer: Float32Array;
+  fadedBuffer: Float32Array;
+  instances: EnvInstance[];
+  dirty: boolean;
 }
 
 /**
- * Builds the static map: ground plane plus every chunk instance grouped by
- * appearance into thin-instance batches (tech plan §14).
+ * Static map rendering (tech plan §5–6, §14):
+ *  - one thin-instance batch per appearance; only instances in the active
+ *    chunks (streaming radius around the player) are written to its buffer,
+ *  - instances hiding the player from the camera move to a faded twin batch
+ *    (assets plan §8.3).
+ * Buffers are allocated once at full capacity and only rewritten when the
+ * active chunk set or the occluded set changes. Each mesh owns its geometry:
+ * thin-instance buffers live on the geometry, so sharing it between meshes
+ * would let one batch overwrite another's instances.
  */
-export async function buildEnvironment(
-  scene: Scene,
-  map: MapDef,
-  content: ContentBundle,
-  assets: AssetLibrary,
-): Promise<BuiltEnvironment> {
-  const width = map.bounds.max.x - map.bounds.min.x;
-  const depth = map.bounds.max.z - map.bounds.min.z;
-  const ground = MeshBuilder.CreateGround(
-    'ground',
-    { width, height: depth, subdivisions: 1 },
-    scene,
-  );
-  ground.position.set(map.bounds.min.x + width / 2, 0, map.bounds.min.z + depth / 2);
-  ground.material = colorMaterial(scene, map.ground.color);
-  ground.receiveShadows = true;
-  ground.metadata = { ground: true };
-  ground.freezeWorldMatrix();
+export class EnvironmentView {
+  readonly ground: Mesh;
+  private readonly batches: Batch[] = [];
+  private activeChunks: ReadonlySet<string> | null = null;
 
-  const groups = new Map<string, MapInstance[]>();
-  for (const chunk of map.chunks) {
-    for (const inst of chunk.instances) {
-      const list = groups.get(inst.appearanceId) ?? [];
-      list.push(inst);
-      groups.set(inst.appearanceId, list);
-    }
+  private constructor(
+    ground: Mesh,
+    readonly map: MapDef,
+  ) {
+    this.ground = ground;
   }
 
-  const batches = await Promise.all(
-    [...groups].map(async ([appearanceId, instances]) => {
-      const appearance = content.appearances.get(appearanceId);
-      if (!appearance) throw new Error(`Unknown appearance ${appearanceId}`);
-      const source =
-        (appearance.modelAssetId && (await mergedModel(assets, appearance.modelAssetId))) ||
-        createPlaceholderMesh(scene, appearance, `env_${appearanceId}`);
-      source.name = `env_${appearanceId}`;
-      source.isPickable = false;
-      source.receiveShadows = true;
+  static async build(
+    scene: Scene,
+    map: MapDef,
+    content: ContentBundle,
+    assets: AssetLibrary,
+  ): Promise<EnvironmentView> {
+    const width = map.bounds.max.x - map.bounds.min.x;
+    const depth = map.bounds.max.z - map.bounds.min.z;
+    const ground = MeshBuilder.CreateGround(
+      'ground',
+      { width, height: depth, subdivisions: 1 },
+      scene,
+    );
+    ground.position.set(map.bounds.min.x + width / 2, 0, map.bounds.min.z + depth / 2);
+    ground.material = colorMaterial(scene, map.ground.color);
+    ground.receiveShadows = true;
+    ground.metadata = { ground: true };
+    ground.freezeWorldMatrix();
+    const view = new EnvironmentView(ground, map);
 
-      const buffer = new Float32Array(instances.length * 16);
-      const m = new Matrix();
-      instances.forEach((inst, i) => {
-        const s = inst.scale * appearance.scale;
-        Matrix.ComposeToRef(
-          new Vector3(s, s, s),
-          Quaternion.RotationYawPitchRoll(inst.rotationY + appearance.yawOffset, 0, 0),
-          new Vector3(inst.position[0], inst.position[1], inst.position[2]),
-          m,
-        );
-        m.copyToArray(buffer, i * 16);
-      });
-      source.thinInstanceSetBuffer('matrix', buffer, 16, true);
-      source.thinInstanceRefreshBoundingInfo();
-      source.freezeWorldMatrix();
-      return source;
-    }),
-  );
+    const byAppearance = new Map<
+      string,
+      { chunkId: string; inst: MapDef['chunks'][number]['instances'][number] }[]
+    >();
+    for (const chunk of map.chunks) {
+      for (const inst of chunk.instances) {
+        const list = byAppearance.get(inst.appearanceId) ?? [];
+        list.push({ chunkId: chunk.id, inst });
+        byAppearance.set(inst.appearanceId, list);
+      }
+    }
 
-  return {
-    ground,
-    batches,
-    dispose() {
-      ground.dispose();
-      for (const b of batches) b.dispose();
-    },
-  };
+    await Promise.all(
+      [...byAppearance].map(async ([appearanceId, entries]) => {
+        const appearance = content.appearances.get(appearanceId) as AppearanceDef | undefined;
+        if (!appearance) throw new Error(`Unknown appearance ${appearanceId}`);
+        const solid =
+          (appearance.modelAssetId && (await mergedModel(assets, appearance.modelAssetId))) ||
+          createPlaceholderMesh(scene, appearance, `env_${appearanceId}`);
+        solid.name = `env_${appearanceId}`;
+        solid.isPickable = false;
+        solid.receiveShadows = true;
+        solid.refreshBoundingInfo();
+        const { minimum: mn, maximum: mx } = solid.getBoundingInfo().boundingBox;
+        const footprint = Math.max(Math.abs(mn.x), Math.abs(mx.x), Math.abs(mn.z), Math.abs(mx.z));
+
+        const faded = solid.clone(`env_${appearanceId}_faded`, null, true) as Mesh;
+        faded.makeGeometryUnique();
+        faded.material = fadedMaterial(solid.material);
+        faded.isPickable = false;
+        for (const m of [solid, faded]) m.freezeWorldMatrix();
+
+        const instances: EnvInstance[] = entries.map(({ chunkId, inst }) => {
+          const s = inst.scale * appearance.scale;
+          const matrix = new Float32Array(16);
+          Matrix.Compose(
+            new Vector3(s, s, s),
+            Quaternion.RotationYawPitchRoll(inst.rotationY + appearance.yawOffset, 0, 0),
+            new Vector3(inst.position[0], inst.position[1], inst.position[2]),
+          ).copyToArray(matrix);
+          return {
+            chunkId,
+            matrix,
+            x: inst.position[0],
+            z: inst.position[2],
+            // Canopies overhang colliders; ~70% of the real footprint fades only
+            // what actually covers the player.
+            radius: footprint * s * 0.7 + 0.3,
+            height: mx.y * s,
+            occluded: false,
+          };
+        });
+        const capacity = Math.max(1, instances.length) * 16;
+        const solidBuffer = new Float32Array(capacity);
+        const fadedBuffer = new Float32Array(capacity);
+        solid.thinInstanceSetBuffer('matrix', solidBuffer, 16, false);
+        faded.thinInstanceSetBuffer('matrix', fadedBuffer, 16, false);
+        view.batches.push({
+          appearanceId,
+          solid,
+          faded,
+          solidBuffer,
+          fadedBuffer,
+          instances,
+          dirty: true,
+        });
+      }),
+    );
+    view.flush();
+    return view;
+  }
+
+  /** Chunks within `radius` chunks of a world position (tech plan §6: radius 1 → ≤ 9). */
+  chunksAround(x: number, z: number, radius = 1): Set<string> {
+    const size = this.map.chunkSize;
+    const ci = Math.floor((x - this.map.bounds.min.x) / size);
+    const cj = Math.floor((z - this.map.bounds.min.z) / size);
+    const out = new Set<string>();
+    for (let i = ci - radius; i <= ci + radius; i++) {
+      for (let j = cj - radius; j <= cj + radius; j++) out.add(`chunk_${i}_${j}`);
+    }
+    return out;
+  }
+
+  /** Restricts rendering to these chunks; null shows everything. */
+  setActiveChunks(chunks: ReadonlySet<string> | null): void {
+    const prev = this.activeChunks;
+    const same =
+      chunks === prev ||
+      (!!chunks && !!prev && chunks.size === prev.size && [...chunks].every((c) => prev.has(c)));
+    if (same) return;
+    this.activeChunks = chunks;
+    for (const b of this.batches) b.dirty = true;
+    this.flush();
+  }
+
+  get stats(): { batches: number; activeChunks: number; totalChunks: number; instances: number } {
+    let instances = 0;
+    for (const b of this.batches) for (const i of b.instances) if (this.isActive(i)) instances++;
+    return {
+      batches: this.batches.length,
+      activeChunks: this.activeChunks
+        ? this.map.chunks.filter((c) => this.activeChunks?.has(c.id)).length
+        : this.map.chunks.length,
+      totalChunks: this.map.chunks.length,
+      instances,
+    };
+  }
+
+  /**
+   * Fades instances whose footprint crosses the camera→target segment and are
+   * tall enough to block it. Call once per frame; cheap when nothing changes.
+   */
+  updateOcclusion(camera: Vector3, target: Vector3): void {
+    const dx = target.x - camera.x;
+    const dz = target.z - camera.z;
+    const lenSq = dx * dx + dz * dz;
+    if (lenSq < 1e-6) return;
+    for (const batch of this.batches) {
+      for (const inst of batch.instances) {
+        if (!this.isActive(inst)) continue;
+        const t = ((inst.x - camera.x) * dx + (inst.z - camera.z) * dz) / lenSq;
+        let blocks = false;
+        if (t > 0.02 && t < 0.98) {
+          const px = camera.x + dx * t - inst.x;
+          const pz = camera.z + dz * t - inst.z;
+          const rayY = camera.y + (target.y - camera.y) * t;
+          blocks = px * px + pz * pz < inst.radius * inst.radius && inst.height > rayY - 0.3;
+        }
+        if (blocks !== inst.occluded) {
+          inst.occluded = blocks;
+          batch.dirty = true;
+        }
+      }
+    }
+    this.flush();
+  }
+
+  dispose(): void {
+    this.ground.dispose();
+    for (const b of this.batches) {
+      b.faded.dispose();
+      b.solid.dispose();
+    }
+    this.batches.length = 0;
+  }
+
+  private isActive(i: EnvInstance): boolean {
+    return !this.activeChunks || this.activeChunks.has(i.chunkId);
+  }
+
+  private flush(): void {
+    for (const b of this.batches) {
+      if (!b.dirty) continue;
+      b.dirty = false;
+      let solid = 0;
+      let faded = 0;
+      for (const inst of b.instances) {
+        if (!this.isActive(inst)) continue;
+        if (inst.occluded) b.fadedBuffer.set(inst.matrix, faded++ * 16);
+        else b.solidBuffer.set(inst.matrix, solid++ * 16);
+      }
+      commit(b.solid, solid);
+      commit(b.faded, faded);
+    }
+  }
+}
+
+function commit(mesh: Mesh, count: number): void {
+  if (count === 0) {
+    mesh.setEnabled(false);
+    return;
+  }
+  mesh.thinInstanceBufferUpdated('matrix');
+  mesh.thinInstanceCount = count;
+  mesh.thinInstanceRefreshBoundingInfo();
+  mesh.setEnabled(true);
+}
+
+function fadedMaterial(material: Material | null): Material | null {
+  if (!material) return null;
+  if (material instanceof MultiMaterial) {
+    const multi = material.clone(`${material.name}_faded`, true);
+    multi.subMaterials = multi.subMaterials.map((m) => (m ? toTransparent(m) : m));
+    return multi;
+  }
+  return toTransparent(material.clone(`${material.name}_faded`) ?? material);
+}
+
+function toTransparent(m: Material): Material {
+  m.alpha = OCCLUDED_ALPHA;
+  m.transparencyMode = 2; // ALPHABLEND
+  return m;
 }
 
 /** Bakes a static model into one mesh at the origin so thin instances can place it. */

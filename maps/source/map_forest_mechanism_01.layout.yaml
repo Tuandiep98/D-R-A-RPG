@@ -1,0 +1,85 @@
+# Rừng Cơ Quan — first real map (assets plan §8.2).
+# West → east: safe outpost → forest path → wolf/fox hills → robot ruins + elite
+# → boss arena → portal home. Run `pnpm maps:build` after editing.
+id: map_forest_mechanism_01
+name: Rừng Cơ Quan
+seed: 20261006
+bounds: { min: { x: -80, z: -48 }, max: { x: 80, z: 48 } }
+chunkSize: 32
+ground: { color: '#5b7f43' }
+playerSpawn: { x: -70, z: 0 }
+arrivals:
+  - { id: from_town, position: { x: -68, z: 2 } }
+
+paths:
+  - width: 7
+    points:
+      - { x: -76, z: 0 }
+      - { x: -48, z: 6 }
+      - { x: -26, z: -2 }
+      - { x: -4, z: 4 }
+      - { x: 18, z: -2 }
+      - { x: 44, z: 0 }
+      - { x: 76, z: 0 }
+  # Branches to the side camps
+  - width: 5
+    points: [{ x: -26, z: -2 }, { x: -24, z: -24 }]
+  - width: 5
+    points: [{ x: 18, z: -2 }, { x: 16, z: 22 }]
+  - width: 5
+    points: [{ x: 18, z: -2 }, { x: 24, z: -26 }]
+
+clearings:
+  - { center: { x: -68, z: 0 }, radius: 10 }   # outpost
+  - { center: { x: -34, z: 16 }, radius: 7 }   # wolf den
+  - { center: { x: -24, z: -24 }, radius: 7 }  # fox burrows
+  - { center: { x: 16, z: 22 }, radius: 9 }    # robot ruins
+  - { center: { x: 24, z: -26 }, radius: 8 }   # elite yard
+  - { center: { x: 60, z: 0 }, radius: 14 }    # boss arena
+
+zones:
+  - { id: outpost, name: Trạm Gác Thanh Vân, kind: safe, center: { x: -68, z: 0 }, radius: 9 }
+  - { id: wolf_hills, name: Đồi Sói, kind: combat, center: { x: -30, z: 0 }, radius: 26 }
+  - { id: ruins, name: Phế Tích Cơ Giới, kind: combat, center: { x: 18, z: 4 }, radius: 28 }
+  - { id: boss_arena, name: Đấu Trường Cơ Quan, kind: boss_arena, center: { x: 60, z: 0 }, radius: 14 }
+
+spawns:
+  - { id: wolf_den, monsterId: wolf_001, position: { x: -34, z: 16 }, count: 4, radius: 4, respawnSeconds: 12 }
+  - { id: wolf_path, monsterId: wolf_001, position: { x: -10, z: 10 }, count: 2, radius: 3, respawnSeconds: 12 }
+  - { id: fox_burrows, monsterId: fox_001, position: { x: -24, z: -24 }, count: 4, radius: 4, respawnSeconds: 10 }
+  - { id: fox_path, monsterId: fox_001, position: { x: -44, z: -10 }, count: 2, radius: 3, respawnSeconds: 10 }
+  - { id: robot_ruins, monsterId: robot_scout_001, position: { x: 16, z: 22 }, count: 4, radius: 5, respawnSeconds: 15 }
+  - { id: elite_yard, monsterId: stag_elite_001, position: { x: 24, z: -26 }, count: 1, respawnSeconds: 90 }
+  - { id: boss, monsterId: mech_golem_001, position: { x: 62, z: 0 }, count: 1, respawnSeconds: 180 }
+
+portals:
+  - { id: forest_to_town, name: Về Thôn Thanh Vân, position: { x: -77, z: 0 }, targetMapId: map_sandbox_01, targetArrival: from_forest }
+  - { id: arena_exit, name: Lối Ra Đấu Trường, position: { x: 77, z: 0 }, targetMapId: map_sandbox_01, targetArrival: from_forest }
+
+# Arena wall with entrances on the west (path in) and east (exit portal).
+rings:
+  - appearanceId: env_rock_01
+    center: { x: 60, z: 0 }
+    radius: 15
+    count: 26
+    scale: 1.4
+    colliderRadius: 1.1
+    gapAngles: [3.14159, 0]
+    gapWidth: 0.35
+
+landmarks:
+  # Ruins: rocks standing in for broken machinery until the tech kit exists.
+  - { appearanceId: env_rock_01, position: { x: 10, z: 26 }, scale: 1.6, colliderRadius: 1.3 }
+  - { appearanceId: env_rock_01, position: { x: 22, z: 28 }, rotationY: 1.2, scale: 1.3, colliderRadius: 1.1 }
+  - { appearanceId: env_rock_01, position: { x: 25, z: 17 }, rotationY: 2.4, scale: 1.2, colliderRadius: 1 }
+  - { appearanceId: env_rock_01, position: { x: 30, z: -30 }, scale: 1.5, colliderRadius: 1.2 }
+  - { appearanceId: env_rock_01, position: { x: 17, z: -31 }, rotationY: 0.8, scale: 1.3, colliderRadius: 1.1 }
+  # Outpost
+  - { appearanceId: env_tree_02, position: { x: -72, z: 7 }, scale: 1.1, colliderRadius: 0.6 }
+  - { appearanceId: env_tree_02, position: { x: -72, z: -7 }, scale: 1.1, colliderRadius: 0.6 }
+
+scatter:
+  - { appearanceId: env_tree_01, count: 34, minSpacing: 5, colliderRadius: 0.6, scale: [0.8, 1.2] }
+  - { appearanceId: env_tree_02, count: 44, minSpacing: 4.5, colliderRadius: 0.5, scale: [0.8, 1.25] }
+  - { appearanceId: env_rock_01, count: 20, minSpacing: 4, colliderRadius: 0.8, scale: [0.6, 1.1] }
+  - { appearanceId: env_bush_01, count: 50, minSpacing: 2.5, scale: [0.7, 1.2], allowOnPath: false }

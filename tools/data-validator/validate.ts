@@ -18,8 +18,10 @@ const files = (readdirSync(root, { recursive: true }) as string[])
 try {
   const bundle = buildContentBundle(files);
   console.log(
-    `game-data OK: ${bundle.characters.size} characters, ${bundle.monsters.size} monsters, ` +
-      `${bundle.maps.size} maps, ${bundle.appearances.size} appearances (${files.length} files)`,
+    `game-data OK (${files.length} files): ` +
+      Object.entries(bundle)
+        .map(([k, v]) => `${(v as Map<string, unknown>).size} ${k}`)
+        .join(', '),
   );
 } catch (err) {
   if (err instanceof ContentError) {
