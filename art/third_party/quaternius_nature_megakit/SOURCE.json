@@ -1,0 +1,33 @@
+{
+  "packId": "quaternius_nature_megakit",
+  "author": "Quaternius",
+  "pack": "Stylized Nature MegaKit (Standard)",
+  "sourceUrl": "https://quaternius.com/packs/stylizednaturemegakit.html",
+  "license": "CC0-1.0",
+  "licenseVerified": false,
+  "downloadedAt": "2026-10-06",
+  "status": "candidate",
+  "notes": "LICENSE.txt in the zip states CC0 1.0; author page also lists CC0. Only the glTF folder is extracted into originals/.",
+  "assets": [
+    {
+      "assetId": "env_tree_01",
+      "file": "originals/glTF/CommonTree_1.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_tree_02",
+      "file": "originals/glTF/Pine_1.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_rock_01",
+      "file": "originals/glTF/Rock_Medium_1.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_bush_01",
+      "file": "originals/glTF/Bush_Common.gltf",
+      "type": "environment"
+    }
+  ]
+}

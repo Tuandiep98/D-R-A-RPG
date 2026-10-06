@@ -1,15 +1,16 @@
+# Quaternius Ultimate Animated Animals — Wolf.gltf
 id: mob_wolf_01
 kind: monster
 modelAssetId: mob_wolf_01
-scale: 1
+scale: 0.4
 animations:
   idle: Idle
-  run: Run
+  run: Gallop
   attack: Attack
-  hit: HitReact
+  hit: Idle_HitReact1
   death: Death
 placeholder:
   shape: box
   color: '#8a6d4f'
-  height: 0.9
+  height: 1.05
   radius: 0.5

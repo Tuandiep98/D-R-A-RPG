@@ -1,0 +1,18 @@
+{
+  "packId": "quaternius_space_kit",
+  "author": "Quaternius",
+  "pack": "Ultimate Space Kit (March 2023)",
+  "sourceUrl": "https://quaternius.com/packs/ultimatespacekit.html",
+  "license": "CC0-1.0",
+  "licenseVerified": false,
+  "downloadedAt": "2026-10-06",
+  "status": "candidate",
+  "notes": "LICENSE.txt in the zip states CC0 1.0; author page also lists CC0. Only the glTF folder is extracted into originals/.",
+  "assets": [
+    {
+      "assetId": "mob_robot_scout_01",
+      "file": "originals/GLTF/Enemy_Large.gltf",
+      "type": "monster"
+    }
+  ]
+}

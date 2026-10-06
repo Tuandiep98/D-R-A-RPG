@@ -1,6 +1,8 @@
+# Quaternius Stylized Nature MegaKit — Bush_Common.gltf
 id: env_bush_01
 kind: environment
 modelAssetId: env_bush_01
+scale: 0.6
 placeholder:
   shape: sphere
   color: '#4c8c3c'

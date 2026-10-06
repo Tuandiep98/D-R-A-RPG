@@ -1,17 +1,17 @@
-# Quaternius character; clip names are confirmed after `pnpm assets:build` prints them.
+# Quaternius RPG Characters — Warrior.gltf
 id: char_player_default
 kind: character
 modelAssetId: char_player_default
-scale: 1
+scale: 0.55
 yawOffset: 0
 animations:
-  idle: Idle
-  run: Run
-  attack: Sword_Slash
-  hit: HitReact
+  idle: Idle_Weapon
+  run: Run_Weapon
+  attack: Sword_Attack
+  hit: RecieveHit
   death: Death
 placeholder:
   shape: capsule
   color: '#3d7bd9'
-  height: 1.6
+  height: 1.65
   radius: 0.4
