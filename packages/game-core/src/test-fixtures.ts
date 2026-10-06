@@ -11,11 +11,13 @@ import {
 } from '@rpg/game-data';
 
 /** Small in-memory content set for unit tests. Only imported by *.test.ts. */
-export function makeContent(overrides: {
-  map?: Partial<MapDef>;
-  monster?: Partial<MonsterDef>;
-  character?: Partial<CharacterDef>;
-} = {}): ContentBundle {
+export function makeContent(
+  overrides: {
+    map?: Partial<MapDef>;
+    monster?: Partial<MonsterDef>;
+    character?: Partial<CharacterDef>;
+  } = {},
+): ContentBundle {
   const appearance: AppearanceDef = AppearanceDefSchema.parse({
     id: 'look',
     kind: 'monster',

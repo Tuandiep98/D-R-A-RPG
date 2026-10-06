@@ -20,7 +20,10 @@ pnpm lint                # Biome
 pnpm depcruise           # kiểm tra ranh giới package
 pnpm validate:data       # validate game-data/*.yaml bằng Zod
 pnpm assets:build        # art/third_party → apps/game-web/public/assets + manifest
+pnpm smoke [url]         # headless Chrome smoke test against a running `pnpm dev`
 ```
+
+`?webgl` trên URL ép dùng WebGL2 thay vì WebGPU. Trong dev, `window.__rpg` có `view` và `host` để debug.
 
 ## Cấu trúc
 
@@ -36,6 +39,8 @@ packages/babylon-renderer/ engine, camera, entity views, animation, picking
 game-data/                 YAML: characters, monsters, maps
 art/third_party/<pack>/    originals/ + LICENSE.txt + SOURCE.json
 tools/asset-processor/     gltf-transform pipeline
+tools/data-validator/      pnpm validate:data
+tools/smoke/               pnpm smoke (playwright-core + Chrome đã cài)
 ```
 
 ## Quy tắc bắt buộc

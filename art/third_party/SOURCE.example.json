@@ -1,0 +1,17 @@
+{
+  "packId": "quaternius_rpg_characters",
+  "author": "Quaternius",
+  "pack": "RPG Characters",
+  "sourceUrl": "https://quaternius.com/packs/rpgcharacters.html",
+  "license": "CC0-1.0 (TO_VERIFY)",
+  "licenseVerified": false,
+  "downloadedAt": null,
+  "status": "candidate",
+  "assets": [
+    {
+      "assetId": "char_player_default",
+      "file": "originals/glTF/Warrior.gltf",
+      "type": "character"
+    }
+  ]
+}

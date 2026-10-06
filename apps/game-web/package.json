@@ -1,0 +1,31 @@
+{
+  "name": "@rpg/game-web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@babylonjs/core": "9.29.0",
+    "@rpg/asset-runtime": "workspace:*",
+    "@rpg/babylon-renderer": "workspace:*",
+    "@rpg/game-data": "workspace:*",
+    "@rpg/input": "workspace:*",
+    "@rpg/sim-host": "workspace:*",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "yaml": "^2.9.1",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@babylonjs/inspector": "9.29.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "vite": "^8.3.3"
+  }
+}

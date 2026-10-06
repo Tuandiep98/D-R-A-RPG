@@ -1,0 +1,151 @@
+:root {
+  --hud-bg: rgba(16, 22, 30, 0.72);
+  --hud-border: rgba(255, 255, 255, 0.14);
+  --hud-text: #eef2f6;
+  --hp-player: #4fbf6a;
+  --hp-enemy: #d9534f;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--hud-text);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #1b2430;
+}
+
+.game-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  outline: none;
+  touch-action: none;
+}
+
+.hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+    max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+}
+
+.frame {
+  position: absolute;
+  top: 12px;
+  width: min(260px, 42vw);
+  padding: 8px 10px;
+  background: var(--hud-bg);
+  border: 1px solid var(--hud-border);
+  border-radius: 8px;
+}
+
+.frame-player {
+  left: 12px;
+}
+
+.frame-enemy {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.frame-name {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.frame-level {
+  opacity: 0.75;
+  font-weight: 400;
+}
+
+.bar {
+  position: relative;
+  height: 16px;
+  background: rgba(0, 0, 0, 0.45);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  transition: width 120ms linear;
+}
+
+.bar-player {
+  background: var(--hp-player);
+}
+
+.bar-enemy {
+  background: var(--hp-enemy);
+}
+
+.bar-text {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.debug {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 6px 8px;
+  background: var(--hud-bg);
+  border: 1px solid var(--hud-border);
+  border-radius: 6px;
+  font:
+    12px / 1.45 ui-monospace,
+    "Cascadia Mono",
+    Consolas,
+    monospace;
+}
+
+.center-note {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 10px 16px;
+  background: var(--hud-bg);
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+.center-note.error {
+  color: #ffb4ab;
+  max-width: 80vw;
+  white-space: pre-wrap;
+}
+
+.help {
+  position: absolute;
+  bottom: max(12px, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 10px;
+  background: var(--hud-bg);
+  border-radius: 6px;
+  font-size: 12px;
+  opacity: 0.8;
+  white-space: nowrap;
+  max-width: calc(100vw - 24px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

@@ -6,7 +6,20 @@ Milestone được sắp để mỗi bước chạy được end-to-end, rồi m
 
 ---
 
-## M1 — Sandbox Slice (offline)
+## M1 — Sandbox Slice (offline) — ĐÃ DỰNG KHUNG (06/10/2026)
+
+Trạng thái: khung chạy được với placeholder; `pnpm smoke` pass trên cả WebGPU và WebGL2 (boot, click-to-move, click-to-attack, quái chết, không lỗi console). Pipeline asset đã test bằng GLB tự sinh (meshopt + thin instance).
+
+Còn lại của M1:
+- [ ] Tải Quaternius theo `art/third_party/README.md`, chạy `pnpm assets:build`, chỉnh tên clip trong `game-data/appearances/*.yaml`.
+- [ ] Kiểm tra animation thật (idle/run/attack/death) và hướng/scale model.
+- [ ] Chạy thử trên điện thoại thật (touch: tap/drag/pinch).
+
+Ghi chú kỹ thuật phát hiện khi dựng:
+- Babylon tải meshopt decoder từ CDN của Babylon; cần copy decoder về local trước khi làm PWA offline (M2).
+- Cây ở foreground có thể che player → cần fade/dither foreground (assets plan §8.3) ở M2.
+- Di chuyển thẳng + đẩy khỏi collider có thể kẹt sau vật cản lớn → NavMesh ở M2.
+- Đang import `@babylonjs/core` từ index (bundle lớn); tối ưu import theo module khi làm performance.
 
 **Mục tiêu:** khung chạy được với 1 nhân vật, ít quái, ít entity môi trường để test.
 

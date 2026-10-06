@@ -14,3 +14,6 @@ apps/game-web/public/assets/
 
 # Third-party originals are large; keep only metadata in git for now.
 art/third_party/*/originals/
+
+# Local smoke-test screenshots
+reports/smoke/

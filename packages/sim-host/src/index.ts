@@ -1,5 +1,5 @@
-import type { ContentBundle } from '@rpg/game-data';
 import { TICK_MS, TICK_RATE, World, type WorldStats } from '@rpg/game-core';
+import type { ContentBundle } from '@rpg/game-data';
 import {
   IntentSchema,
   type JoinInfo,
@@ -59,7 +59,11 @@ export class LocalSimHost implements SimHost {
 
   async connect(): Promise<JoinInfo> {
     if (this.world) throw new Error('already connected');
-    const world = new World({ content: this.opts.content, mapId: this.opts.mapId, seed: this.opts.seed });
+    const world = new World({
+      content: this.opts.content,
+      mapId: this.opts.mapId,
+      seed: this.opts.seed,
+    });
     this.world = world;
     this.playerId = world.spawnPlayer(this.opts.characterId);
     if (this.opts.autoRun !== false) this.start();

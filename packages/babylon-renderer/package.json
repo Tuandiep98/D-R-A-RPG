@@ -8,5 +8,14 @@
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@babylonjs/core": "9.29.0",
+    "@babylonjs/loaders": "9.29.0",
+    "@rpg/asset-runtime": "workspace:*",
+    "@rpg/game-data": "workspace:*",
+    "@rpg/game-protocol": "workspace:*",
+    "@rpg/input": "workspace:*",
+    "@rpg/sim-host": "workspace:*"
   }
 }

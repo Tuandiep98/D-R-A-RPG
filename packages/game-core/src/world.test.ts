@@ -105,14 +105,18 @@ describe('World', () => {
   });
 
   it('kills, then respawns the monster at its home with full HP', () => {
-    const content = makeContent({ monster: { stats: { hp: 1, attack: 0, defense: 0, critChance: 0, critMultiplier: 1.5 } } });
+    const content = makeContent({
+      monster: { stats: { hp: 1, attack: 0, defense: 0, critChance: 0, critMultiplier: 1.5 } },
+    });
     const world = new World({ content, mapId: 'test_map' });
     const id = world.spawnPlayer('hero');
     const mob = monsterOf(world);
     const home = { ...mob.life.spawnPos };
     world.enqueueIntent(id, { type: 'ATTACK_TARGET', targetId: mob.id });
     const events = run(world, TICK_RATE * 6);
-    expect(events.some((e) => e.type === 'DEATH' && e.id === mob.id && e.killerId === id)).toBe(true);
+    expect(events.some((e) => e.type === 'DEATH' && e.id === mob.id && e.killerId === id)).toBe(
+      true,
+    );
     expect(mob.life.alive).toBe(false);
     expect(mob.action).toBe('dead');
     expect(get(world, id).combat.targetId).toBeNull();
@@ -175,7 +179,13 @@ describe('World', () => {
           {
             id: 'chunk_0_0',
             instances: [
-              { appearanceId: 'look', position: [5, 0, 0.3], rotationY: 0, scale: 1, colliderRadius: 1 },
+              {
+                appearanceId: 'look',
+                position: [5, 0, 0.3],
+                rotationY: 0,
+                scale: 1,
+                colliderRadius: 1,
+              },
             ],
           },
         ],

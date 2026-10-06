@@ -68,7 +68,11 @@ export class World implements SimContext {
   }
 
   get stats(): WorldStats {
-    return { tick: this.currentTick, entities: this.entityMap.size, rejectedIntents: this.rejected };
+    return {
+      tick: this.currentTick,
+      entities: this.entityMap.size,
+      rejectedIntents: this.rejected,
+    };
   }
 
   emit(event: SimEvent): void {
@@ -87,7 +91,12 @@ export class World implements SimContext {
       faction: 'players',
       pos,
       yaw: 0,
-      movement: { speed: def.movement.speed, radius: def.movement.radius, goal: null, moved: false },
+      movement: {
+        speed: def.movement.speed,
+        radius: def.movement.radius,
+        goal: null,
+        moved: false,
+      },
       stats: { ...def.stats, maxHp: def.stats.hp },
       combat: {
         range: def.combat.range,
@@ -170,7 +179,12 @@ export class World implements SimContext {
           faction: 'monsters',
           pos: { ...home },
           yaw: this.rng.range(-Math.PI, Math.PI),
-          movement: { speed: def.movement.speed, radius: def.movement.radius, goal: null, moved: false },
+          movement: {
+            speed: def.movement.speed,
+            radius: def.movement.radius,
+            goal: null,
+            moved: false,
+          },
           stats: { ...def.stats, maxHp: def.stats.hp },
           combat: {
             range: def.combat.range,

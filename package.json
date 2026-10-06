@@ -16,12 +16,14 @@
     "lint:fix": "biome check --write .",
     "depcruise": "depcruise apps packages tools --config .dependency-cruiser.cjs",
     "validate:data": "tsx tools/data-validator/validate.ts",
-    "assets:build": "tsx tools/asset-processor/build.ts"
+    "assets:build": "tsx tools/asset-processor/build.ts",
+    "smoke": "tsx tools/smoke/smoke.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
     "@types/node": "^24.19.1",
     "dependency-cruiser": "^18.5.0",
+    "playwright-core": "^1.63.0",
     "tsx": "^4.23.15",
     "turbo": "^2.11.7",
     "typescript": "~5.9.3",

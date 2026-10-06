@@ -1,9 +1,7 @@
 import { z } from 'zod';
 
 /** Stable content id: lowercase snake_case. */
-export const IdSchema = z
-  .string()
-  .regex(/^[a-z][a-z0-9_]*$/, 'id must be lowercase snake_case');
+export const IdSchema = z.string().regex(/^[a-z][a-z0-9_]*$/, 'id must be lowercase snake_case');
 
 const Vec2 = z.strictObject({ x: z.number().finite(), z: z.number().finite() });
 const Vec3Tuple = z.tuple([z.number().finite(), z.number().finite(), z.number().finite()]);
@@ -106,7 +104,10 @@ export const MapDefSchema = z
     schemaVersion: z.literal(1),
     seed: z.number().int(),
     bounds: z.strictObject({ min: Vec2, max: Vec2 }),
-    ground: z.strictObject({ appearanceId: IdSchema.optional(), color: z.string().default('#5f8a4a') }),
+    ground: z.strictObject({
+      appearanceId: IdSchema.optional(),
+      color: z.string().default('#5f8a4a'),
+    }),
     playerSpawn: Vec2,
     chunks: z.array(MapChunkSchema).min(1),
     spawns: z.array(MapSpawnSchema).default([]),

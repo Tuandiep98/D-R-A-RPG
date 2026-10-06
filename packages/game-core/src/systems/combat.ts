@@ -1,7 +1,7 @@
 import { inAttackRange, isAlive, type SimContext } from '../context';
 import type { Entity } from '../entity';
-import type { Rng } from '../rng';
 import { sub, yawOf } from '../math';
+import type { Rng } from '../rng';
 
 /** Damage roll before mitigation varies by ±10%. */
 const VARIANCE = 0.1;
@@ -14,7 +14,11 @@ export interface DamageRoll {
 }
 
 /** Pure damage formula; exported for tests and future server-side tooling. */
-export function rollDamage(rng: Rng, attacker: Entity['stats'], defender: Entity['stats']): DamageRoll {
+export function rollDamage(
+  rng: Rng,
+  attacker: Entity['stats'],
+  defender: Entity['stats'],
+): DamageRoll {
   const mitigation = 100 / (100 + defender.defense * DEFENSE_WEIGHT);
   const variance = 1 + rng.range(-VARIANCE, VARIANCE);
   const crit = rng.chance(attacker.critChance);
@@ -75,4 +79,3 @@ function kill(ctx: SimContext, target: Entity, killer: Entity | null): void {
   target.combat.targetId = null;
   ctx.emit({ type: 'DEATH', id: target.id, killerId: killer?.id ?? null });
 }
-

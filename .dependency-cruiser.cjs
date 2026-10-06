@@ -9,11 +9,12 @@ module.exports = {
       severity: 'error',
       from: { path: PURE },
       to: {
+        // Match both resolved (node_modules/.pnpm/@babylonjs+core@x) and
+        // unresolved (bare "@babylonjs/core") specifiers.
         path: [
-          'node_modules/@babylonjs/',
-          'node_modules/react',
-          'node_modules/react-dom',
-          'node_modules/zustand',
+          '(^|/)@babylonjs[/+]',
+          '(^|/)react(-dom)?([/@+]|$)',
+          '(^|/)zustand([/@+]|$)',
           '^packages/(babylon-renderer|input|asset-runtime)/',
           '^apps/',
         ],

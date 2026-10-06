@@ -1,7 +1,7 @@
-import { buildContentBundle } from '@rpg/game-data';
-import type { Snapshot } from '@rpg/game-protocol';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { buildContentBundle } from '@rpg/game-data';
+import type { Snapshot } from '@rpg/game-protocol';
 import { describe, expect, it } from 'vitest';
 import { LocalSimHost } from './index';
 

@@ -116,7 +116,10 @@ function checkReferences(bundle: ContentBundle, issues: ContentIssue[]): void {
   for (const m of bundle.monsters.values()) {
     needAppearance(`monsters/${m.id}`, m.appearanceId);
     if (m.ai.leashRadius < m.ai.aggroRadius) {
-      issues.push({ path: `monsters/${m.id}`, message: 'ai.leashRadius must be >= ai.aggroRadius' });
+      issues.push({
+        path: `monsters/${m.id}`,
+        message: 'ai.leashRadius must be >= ai.aggroRadius',
+      });
     }
   }
   for (const map of bundle.maps.values()) {
@@ -135,10 +138,16 @@ function checkReferences(bundle: ContentBundle, issues: ContentIssue[]): void {
       if (spawnIds.has(s.id)) issues.push({ path: owner, message: `duplicate spawn id "${s.id}"` });
       spawnIds.add(s.id);
       if (!bundle.monsters.has(s.monsterId)) {
-        issues.push({ path: `${owner}#spawns.${s.id}`, message: `unknown monsterId "${s.monsterId}"` });
+        issues.push({
+          path: `${owner}#spawns.${s.id}`,
+          message: `unknown monsterId "${s.monsterId}"`,
+        });
       }
       if (!inBounds(s.position)) {
-        issues.push({ path: `${owner}#spawns.${s.id}`, message: 'spawn position is outside bounds' });
+        issues.push({
+          path: `${owner}#spawns.${s.id}`,
+          message: 'spawn position is outside bounds',
+        });
       }
     }
     for (const chunk of map.chunks) {
