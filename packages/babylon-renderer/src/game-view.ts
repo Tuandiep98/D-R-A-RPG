@@ -561,6 +561,7 @@ export class GameView {
         this.environment.setActiveChunks(
           this.environment.chunksAround(me.x, me.z, this.preset.chunkRadius),
         );
+        this.environment.updateLod(me.x, me.z);
         this.environment.updateOcclusion(this.rig.camera.position, new Vector3(me.x, 1.1, me.z));
       }
     }

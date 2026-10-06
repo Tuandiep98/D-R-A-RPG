@@ -25,6 +25,7 @@ import { dirname, join, resolve } from 'node:path';
 import { type Document, NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import {
+  cloneDocument,
   dedup,
   meshopt,
   prune,
@@ -46,6 +47,8 @@ const processTextures = !process.argv.includes('--no-textures');
 
 interface ManifestEntry {
   url: string;
+  /** Simplified far-distance version (static meshes only). */
+  lod1?: { url: string; bytes: number; tris: number };
   hash: string;
   bytes: number;
   type: string;
@@ -161,6 +164,24 @@ for (const dir of packs) {
           }),
         );
       }
+      // LOD1 (tech plan §10): ~35% of the triangles for instances far from the camera.
+      let lod1: ManifestEntry['lod1'];
+      if (asset.type === 'environment' || asset.type === 'prop') {
+        const far = cloneDocument(doc);
+        await far.transform(
+          weld(),
+          simplify({ simplifier: MeshoptSimplifier, ratio: 0.35, error: 0.08 }),
+        );
+        if (compress) await far.transform(meshopt({ encoder: MeshoptEncoder, level: 'medium' }));
+        const farBytes = await io.writeBinary(far);
+        const farTris = countTriangles(far);
+        if (farTris < finalTris * 0.8) {
+          const farHash = createHash('sha256').update(farBytes).digest('hex').slice(0, 10);
+          const farName = `${asset.assetId}_lod1.${farHash}.glb`;
+          writeFileSync(join(outDir, farName), farBytes);
+          lod1 = { url: farName, bytes: farBytes.byteLength, tris: farTris };
+        }
+      }
       if (compress) await doc.transform(meshopt({ encoder: MeshoptEncoder, level: 'medium' }));
       const bytes = await io.writeBinary(doc);
       const hash = createHash('sha256').update(bytes).digest('hex').slice(0, 10);
@@ -174,6 +195,7 @@ for (const dir of packs) {
         animations,
         license: pack.license,
         licenseVerified: pack.licenseVerified,
+        ...(lod1 ? { lod1 } : {}),
       };
       const textures = doc
         .getRoot()

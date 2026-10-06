@@ -21,6 +21,9 @@ export const AssetManifestSchema = z.object({
       animations: z.array(z.string()).default([]),
       license: z.string(),
       licenseVerified: z.boolean(),
+      lod1: z
+        .object({ url: z.string(), bytes: z.number().int(), tris: z.number().int() })
+        .optional(),
     }),
   ),
 });
@@ -93,6 +96,18 @@ export class AssetLibrary {
     await Promise.all(
       [...new Set(assetIds)].filter((id) => this.has(id)).map((id) => this.loadContainer(id)),
     );
+  }
+
+  /** Far LOD of a static asset, or null when the build did not produce one. */
+  loadLod1(assetId: string): Promise<AssetContainer | null> {
+    const lod = this.manifest.assets[assetId]?.lod1;
+    if (!lod) return Promise.resolve(null);
+    const key = `${assetId}#lod1`;
+    const cached = this.containers.get(key);
+    if (cached) return cached;
+    const promise = this.loadWithRetry(key, new URL(lod.url, this.baseUrl).href);
+    this.containers.set(key, promise);
+    return promise;
   }
 
   /** Resolves to null when the asset is missing or fails to load. */

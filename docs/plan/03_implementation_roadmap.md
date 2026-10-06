@@ -26,7 +26,7 @@ Ký hiệu: ✅ xong · 🟡 có nền tảng/placeholder, cần hoàn thiện �
 | 3 Monster/AI | Spawn, patrol (wander), aggro, chase, attack, leash, elite, boss | ✅ | Boss 3 phase + telegraph né được; elite có phase |
 | 4 RPG systems | Inventory, equipment, item stats, loot, XP, level, skill, quest | ✅ | Quest kill/collect/talk, chuỗi 6 nhiệm vụ, NPC |
 | 5 World | Zone, chunk, streaming, AOI, chuyển map, dungeon instance | ✅ | Phó bản solo "Cơ Quan Điện" (1 instance/nhân vật) |
-| 6 Optimization | Pool, LOD, simulation LOD, thin instances, quality runtime, nén asset, profile mobile | 🟡 | Simulation LOD ✅, bundle Babylon 7.5→4.0 MB ✅; LOD mesh ⬜, profile thiết bị ✋ |
+| 6 Optimization | Pool, LOD, simulation LOD, thin instances, quality runtime, nén asset, profile mobile | 🟡 | Simulation LOD ✅, bundle Babylon 7.5→4.0 MB ✅, LOD1 environment tự động ✅ (cây cần impostor ⬜), profile thiết bị ✋ |
 | 7 Economy | Craft, upgrade, currency ledger, shop, chuẩn bị marketplace | ✅ | Shop mua/bán, 3 công thức, cường hoá +1…+5; marketplace ⬜ |
 | 8 Social | Chat, friend, guild, party, leaderboard | ✅ | Chat, party, bạn bè, bang hội (DB + API + panel), leaderboard |
 | 9 PWA/mobile | PWA install, runtime cache, offline shell, Capacitor | 🟡 | PWA ✅; Capacitor config ✅, `cap add android/ios` ✋ |
@@ -53,7 +53,7 @@ Ký hiệu: ✅ xong · 🟡 có nền tảng/placeholder, cần hoàn thiện �
 
 1. Kênh chat bang hội / thì thầm bạn bè (cần presence qua Redis giữa các room).
 2. Marketplace (escrow, khoá item trong giao dịch — tech plan §55.2).
-3. LOD cho mesh trong pipeline (`simplify` theo ratio) và chọn LOD theo khoảng cách.
+3. Impostor/billboard cho cây ở xa (simplify không giảm được lá dạng quad); LOD cho quái skinned.
 4. Presence `online`/takeover qua Redis khi chạy nhiều game-server process.
 5. Lệnh GM trực tiếp trong game (thay cho "tặng vật phẩm" offline).
 6. Party xuyên map và party trong phó bản (hiện party chỉ trong một map).

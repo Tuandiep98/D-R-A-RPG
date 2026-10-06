@@ -15,6 +15,10 @@ import { colorMaterial, createPlaceholderMesh } from './placeholder';
 
 /** Alpha of environment pieces that stand between the camera and the player. */
 const OCCLUDED_ALPHA = 0.28;
+/** Instances farther than this from the player use LOD1 (when the asset has one). */
+const LOD_DISTANCE = 26;
+/** Re-split near/far once the player moved this far. */
+const LOD_REFRESH_DISTANCE = 4;
 
 interface EnvInstance {
   chunkId: string;
@@ -25,6 +29,7 @@ interface EnvInstance {
   radius: number;
   height: number;
   occluded: boolean;
+  far: boolean;
 }
 
 /** Every instance of one appearance in the map, drawn by two thin-instance meshes. */
@@ -32,8 +37,11 @@ interface Batch {
   appearanceId: string;
   solid: Mesh;
   faded: Mesh;
+  /** LOD1 mesh for far instances (null → LOD0 everywhere). */
+  far: Mesh | null;
   solidBuffer: Float32Array;
   fadedBuffer: Float32Array;
+  farBuffer: Float32Array | null;
   instances: EnvInstance[];
   dirty: boolean;
 }
@@ -53,6 +61,7 @@ export class EnvironmentView {
   readonly ground: Mesh;
   private readonly batches: Batch[] = [];
   private activeChunks: ReadonlySet<string> | null = null;
+  private lodCenter: { x: number; z: number } | null = null;
 
   private constructor(
     ground: Mesh,
@@ -107,6 +116,15 @@ export class EnvironmentView {
         const { minimum: mn, maximum: mx } = solid.getBoundingInfo().boundingBox;
         const footprint = Math.max(Math.abs(mn.x), Math.abs(mx.x), Math.abs(mn.z), Math.abs(mx.z));
 
+        const farModel = appearance.modelAssetId
+          ? await mergedModel(assets, appearance.modelAssetId, true)
+          : null;
+        if (farModel) {
+          farModel.name = `env_${appearanceId}_lod1`;
+          farModel.isPickable = false;
+          farModel.receiveShadows = true;
+          farModel.freezeWorldMatrix();
+        }
         const faded = solid.clone(`env_${appearanceId}_faded`, null, true) as Mesh;
         faded.makeGeometryUnique();
         faded.material = fadedMaterial(solid.material);
@@ -131,6 +149,7 @@ export class EnvironmentView {
             radius: footprint * s * 0.7 + 0.3,
             height: mx.y * s,
             occluded: false,
+            far: false,
           };
         });
         const capacity = Math.max(1, instances.length) * 16;
@@ -138,12 +157,16 @@ export class EnvironmentView {
         const fadedBuffer = new Float32Array(capacity);
         solid.thinInstanceSetBuffer('matrix', solidBuffer, 16, false);
         faded.thinInstanceSetBuffer('matrix', fadedBuffer, 16, false);
+        const farBuffer = farModel ? new Float32Array(capacity) : null;
+        if (farModel && farBuffer) farModel.thinInstanceSetBuffer('matrix', farBuffer, 16, false);
         view.batches.push({
           appearanceId,
           solid,
           faded,
+          far: farModel,
           solidBuffer,
           fadedBuffer,
+          farBuffer,
           instances,
           dirty: true,
         });
@@ -190,6 +213,28 @@ export class EnvironmentView {
     };
   }
 
+  /** Splits instances into LOD0/LOD1 around the player; cheap when the player barely moved. */
+  updateLod(x: number, z: number): void {
+    if (
+      this.lodCenter &&
+      Math.hypot(x - this.lodCenter.x, z - this.lodCenter.z) < LOD_REFRESH_DISTANCE
+    )
+      return;
+    this.lodCenter = { x, z };
+    const d2 = LOD_DISTANCE * LOD_DISTANCE;
+    for (const b of this.batches) {
+      if (!b.far) continue;
+      for (const inst of b.instances) {
+        const far = (inst.x - x) ** 2 + (inst.z - z) ** 2 > d2;
+        if (far !== inst.far) {
+          inst.far = far;
+          b.dirty = true;
+        }
+      }
+    }
+    this.flush();
+  }
+
   /**
    * Fades instances whose footprint crosses the camera→target segment and are
    * tall enough to block it. Call once per frame; cheap when nothing changes.
@@ -224,6 +269,7 @@ export class EnvironmentView {
     for (const b of this.batches) {
       b.faded.dispose();
       b.solid.dispose();
+      b.far?.dispose();
     }
     this.batches.length = 0;
   }
@@ -238,13 +284,16 @@ export class EnvironmentView {
       b.dirty = false;
       let solid = 0;
       let faded = 0;
+      let far = 0;
       for (const inst of b.instances) {
         if (!this.isActive(inst)) continue;
         if (inst.occluded) b.fadedBuffer.set(inst.matrix, faded++ * 16);
+        else if (inst.far && b.farBuffer) b.farBuffer.set(inst.matrix, far++ * 16);
         else b.solidBuffer.set(inst.matrix, solid++ * 16);
       }
       commit(b.solid, solid);
       commit(b.faded, faded);
+      if (b.far) commit(b.far, far);
     }
   }
 }
@@ -277,8 +326,12 @@ function toTransparent(m: Material): Material {
 }
 
 /** Bakes a static model into one mesh at the origin so thin instances can place it. */
-async function mergedModel(assets: AssetLibrary, assetId: string): Promise<Mesh | null> {
-  const container = await assets.loadContainer(assetId);
+async function mergedModel(
+  assets: AssetLibrary,
+  assetId: string,
+  lod1 = false,
+): Promise<Mesh | null> {
+  const container = lod1 ? await assets.loadLod1(assetId) : await assets.loadContainer(assetId);
   if (!container) return null;
   const entries = container.instantiateModelsToScene((n) => `${assetId}_${n}`, false, {
     doNotInstantiate: true,
