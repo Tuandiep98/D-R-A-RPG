@@ -1,0 +1,16 @@
+id: player_default
+name: Du Hiệp
+appearanceId: char_player_default
+stats:
+  hp: 600
+  attack: 34
+  defense: 8
+  critChance: 0.15
+  critMultiplier: 1.6
+movement:
+  speed: 5
+  radius: 0.4
+combat:
+  range: 1.4
+  attackInterval: 0.9
+respawnSeconds: 5

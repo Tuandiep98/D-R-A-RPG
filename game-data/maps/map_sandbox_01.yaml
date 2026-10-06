@@ -1,0 +1,55 @@
+# M1 test map: one 40x40m chunk, a few trees/rocks, two monster camps.
+id: map_sandbox_01
+name: Bãi Thử Nghiệm
+schemaVersion: 1
+seed: 1001
+bounds:
+  min: { x: -20, z: -20 }
+  max: { x: 20, z: 20 }
+ground:
+  color: '#5f8a4a'
+playerSpawn: { x: 0, z: -12 }
+chunks:
+  - id: chunk_0_0
+    instances:
+      # Trees along the edges
+      - { appearanceId: env_tree_01, position: [-17, 0, -16], colliderRadius: 0.6 }
+      - { appearanceId: env_tree_01, position: [-12, 0, -18], rotationY: 1.1, colliderRadius: 0.6 }
+      - { appearanceId: env_tree_02, position: [-6, 0, -17], scale: 1.2, colliderRadius: 0.5 }
+      - { appearanceId: env_tree_01, position: [7, 0, -18], rotationY: 2.3, colliderRadius: 0.6 }
+      - { appearanceId: env_tree_02, position: [13, 0, -16], colliderRadius: 0.5 }
+      - { appearanceId: env_tree_01, position: [18, 0, -10], rotationY: 0.4, colliderRadius: 0.6 }
+      - { appearanceId: env_tree_02, position: [17, 0, -2], scale: 0.9, colliderRadius: 0.5 }
+      - { appearanceId: env_tree_01, position: [18, 0, 15], colliderRadius: 0.6 }
+      - { appearanceId: env_tree_02, position: [11, 0, 18], rotationY: 1.7, colliderRadius: 0.5 }
+      - { appearanceId: env_tree_01, position: [2, 0, 18], scale: 1.3, colliderRadius: 0.7 }
+      - { appearanceId: env_tree_02, position: [-8, 0, 17], colliderRadius: 0.5 }
+      - { appearanceId: env_tree_01, position: [-17, 0, 14], rotationY: 0.9, colliderRadius: 0.6 }
+      - { appearanceId: env_tree_02, position: [-18, 0, 3], colliderRadius: 0.5 }
+      - { appearanceId: env_tree_01, position: [-16, 0, -6], scale: 1.1, colliderRadius: 0.6 }
+      # Center grove
+      - { appearanceId: env_tree_01, position: [-2, 0, 3], rotationY: 0.6, scale: 1.2, colliderRadius: 0.7 }
+      - { appearanceId: env_tree_02, position: [3, 0, 1], colliderRadius: 0.5 }
+      # Rocks
+      - { appearanceId: env_rock_01, position: [-5, 0, -6], rotationY: 0.3, colliderRadius: 0.9 }
+      - { appearanceId: env_rock_01, position: [6, 0, -5], rotationY: 2.0, scale: 1.4, colliderRadius: 1.2 }
+      - { appearanceId: env_rock_01, position: [12, 0, 4], scale: 0.8, colliderRadius: 0.7 }
+      - { appearanceId: env_rock_01, position: [-12, 0, 9], rotationY: 1.2, colliderRadius: 0.9 }
+      # Bushes (decoration, walkable)
+      - { appearanceId: env_bush_01, position: [-3, 0, -10] }
+      - { appearanceId: env_bush_01, position: [4, 0, -11], scale: 1.2 }
+      - { appearanceId: env_bush_01, position: [9, 0, 12] }
+      - { appearanceId: env_bush_01, position: [-10, 0, 4], scale: 0.8 }
+spawns:
+  - id: wolf_camp
+    monsterId: wolf_001
+    position: { x: 8, z: 9 }
+    count: 3
+    radius: 3
+    respawnSeconds: 8
+  - id: robot_camp
+    monsterId: robot_scout_001
+    position: { x: -9, z: 8 }
+    count: 2
+    radius: 2.5
+    respawnSeconds: 10

@@ -1,0 +1,21 @@
+id: robot_scout_001
+name: Cơ Giáp Trinh Sát
+level: 6
+tier: normal
+appearanceId: mob_robot_scout_01
+stats:
+  hp: 320
+  attack: 22
+  defense: 10
+  critChance: 0.02
+movement:
+  speed: 2.8
+  radius: 0.55
+combat:
+  range: 1.5
+  attackInterval: 1.6
+ai:
+  type: melee
+  aggroRadius: 6
+  leashRadius: 12
+  wanderRadius: 2

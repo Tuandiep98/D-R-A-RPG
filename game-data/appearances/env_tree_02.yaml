@@ -1,0 +1,8 @@
+id: env_tree_02
+kind: environment
+modelAssetId: env_tree_02
+placeholder:
+  shape: cone
+  color: '#3f7f2f'
+  height: 3
+  radius: 1

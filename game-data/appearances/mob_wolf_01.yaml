@@ -1,0 +1,15 @@
+id: mob_wolf_01
+kind: monster
+modelAssetId: mob_wolf_01
+scale: 1
+animations:
+  idle: Idle
+  run: Run
+  attack: Attack
+  hit: HitReact
+  death: Death
+placeholder:
+  shape: box
+  color: '#8a6d4f'
+  height: 0.9
+  radius: 0.5

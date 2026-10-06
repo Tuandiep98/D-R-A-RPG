@@ -1,0 +1,26 @@
+import { describe, expect, it } from 'vitest';
+import { IntentSchema, MAX_COORD } from './index';
+
+describe('IntentSchema', () => {
+  it('accepts valid intents', () => {
+    expect(IntentSchema.parse({ type: 'MOVE_TO', target: { x: 1, z: -2 } })).toEqual({
+      type: 'MOVE_TO',
+      target: { x: 1, z: -2 },
+    });
+    expect(IntentSchema.safeParse({ type: 'ATTACK_TARGET', targetId: 3 }).success).toBe(true);
+    expect(IntentSchema.safeParse({ type: 'STOP' }).success).toBe(true);
+  });
+
+  it('rejects unknown types, extra fields and bad numbers', () => {
+    expect(IntentSchema.safeParse({ type: 'GIVE_GOLD', amount: 1e9 }).success).toBe(false);
+    expect(IntentSchema.safeParse({ type: 'STOP', damage: 9999 }).success).toBe(false);
+    expect(IntentSchema.safeParse({ type: 'ATTACK_TARGET', targetId: -1 }).success).toBe(false);
+    expect(IntentSchema.safeParse({ type: 'ATTACK_TARGET', targetId: 1.5 }).success).toBe(false);
+    expect(
+      IntentSchema.safeParse({ type: 'MOVE_TO', target: { x: Number.NaN, z: 0 } }).success,
+    ).toBe(false);
+    expect(
+      IntentSchema.safeParse({ type: 'MOVE_TO', target: { x: MAX_COORD + 1, z: 0 } }).success,
+    ).toBe(false);
+  });
+});

@@ -1,0 +1,17 @@
+# Quaternius character; clip names are confirmed after `pnpm assets:build` prints them.
+id: char_player_default
+kind: character
+modelAssetId: char_player_default
+scale: 1
+yawOffset: 0
+animations:
+  idle: Idle
+  run: Run
+  attack: Sword_Slash
+  hit: HitReact
+  death: Death
+placeholder:
+  shape: capsule
+  color: '#3d7bd9'
+  height: 1.6
+  radius: 0.4

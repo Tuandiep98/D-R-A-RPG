@@ -1,0 +1,12 @@
+{
+  "name": "@rpg/data-validator",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@rpg/game-data": "workspace:*"
+  }
+}

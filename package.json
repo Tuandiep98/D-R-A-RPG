@@ -1,0 +1,36 @@
+{
+  "name": "d-r-a-rpg",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.34.6",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @rpg/game-web dev",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "depcruise": "depcruise apps packages tools --config .dependency-cruiser.cjs",
+    "validate:data": "tsx tools/data-validator/validate.ts",
+    "assets:build": "tsx tools/asset-processor/build.ts"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.15",
+    "@types/node": "^24.19.1",
+    "dependency-cruiser": "^18.5.0",
+    "tsx": "^4.23.15",
+    "turbo": "^2.11.7",
+    "typescript": "~5.9.3",
+    "vitest": "^5.0.3",
+    "yaml": "^2.9.1"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  }
+}

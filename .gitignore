@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.turbo/
+coverage/
+*.log
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+
+# Generated runtime assets (rebuild with `pnpm assets:build`)
+apps/game-web/public/assets/
+
+# Third-party originals are large; keep only metadata in git for now.
+art/third_party/*/originals/

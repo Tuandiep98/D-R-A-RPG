@@ -1,0 +1,8 @@
+id: env_rock_01
+kind: environment
+modelAssetId: env_rock_01
+placeholder:
+  shape: sphere
+  color: '#7d7f86'
+  height: 1.2
+  radius: 0.9
