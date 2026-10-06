@@ -13,12 +13,18 @@ art/third_party/<pack_id>/
 
 ## Milestone 1: Quaternius (CC0, cần xác minh lại license trên trang tác giả)
 
-| assetId (đã dùng trong `game-data/appearances`) | Gợi ý nguồn | Ghi chú |
-|---|---|---|
-| `char_player_default` | Quaternius **RPG Characters** — https://quaternius.com/packs/rpgcharacters.html | Chọn 1 nhân vật cầm kiếm, file glTF có animation |
-| `mob_wolf_01` | Quaternius **Ultimate Monsters** hoặc **Animated Animals** (tìm trên quaternius.com) | Cần idle/run/attack/death |
-| `mob_robot_scout_01` | Quaternius **Ultimate Space Kit** — https://quaternius.com/packs/ultimatespacekit.html | Robot có animation |
-| `env_tree_01`, `env_tree_02`, `env_rock_01`, `env_bush_01` | Quaternius **Ultimate Nature** / **Stylized Nature MegaKit** (tìm trên quaternius.com) | Static mesh |
+Đã kiểm tra trang tác giả ngày 06/10/2026: cả 4 pack đều CC0 và có bản glTF.
+
+| Thư mục (`packId`) | Pack | Link | Dùng cho assetId |
+|---|---|---|---|
+| `quaternius_rpg_characters` | RPG Characters (6 nhân vật rigged + animated) | https://quaternius.com/packs/rpgcharacters.html | `char_player_default` |
+| `quaternius_animated_animals` | Ultimate Animated Animal Pack (12 con, mỗi con 12+ animation) | https://quaternius.com/packs/ultimateanimatedanimals.html | `mob_wolf_01` |
+| `quaternius_space_kit` | Ultimate Space Kit (nhân vật/enemy animated) | https://quaternius.com/packs/ultimatespacekit.html | `mob_robot_scout_01` |
+| `quaternius_nature_megakit` | Stylized Nature MegaKit (bản Standard miễn phí) | https://quaternius.com/packs/stylizednaturemegakit.html | `env_tree_01`, `env_tree_02`, `env_rock_01`, `env_bush_01` |
+
+Không dùng **Ultimate Nature**: pack đó không có glTF. Nếu Animated Animals không có sói, dùng Husky/Fox hoặc một con trong **Ultimate Monsters** (https://quaternius.com/packs/ultimatemonsters.html).
+
+Giai đoạn sau (equipment modular, assets plan §6): **Universal Base Characters** + **Universal Animation Library**. Chưa tải ở M1.
 
 Các bước:
 
