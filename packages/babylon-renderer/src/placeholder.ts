@@ -1,12 +1,5 @@
-import {
-  Color3,
-  Matrix,
-  type Mesh,
-  MeshBuilder,
-  type Scene,
-  StandardMaterial,
-} from '@babylonjs/core';
 import type { AppearanceDef } from '@rpg/game-data';
+import { Color3, Matrix, type Mesh, MeshBuilder, type Scene, StandardMaterial } from './babylon';
 
 const materials = new WeakMap<Scene, Map<string, StandardMaterial>>();
 

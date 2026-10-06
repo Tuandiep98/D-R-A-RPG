@@ -1,3 +1,5 @@
+import type { AssetLibrary } from '@rpg/asset-runtime';
+import type { AppearanceDef, ContentBundle, MapDef } from '@rpg/game-data';
 import {
   type AbstractMesh,
   type Material,
@@ -8,9 +10,7 @@ import {
   Quaternion,
   type Scene,
   Vector3,
-} from '@babylonjs/core';
-import type { AssetLibrary } from '@rpg/asset-runtime';
-import type { AppearanceDef, ContentBundle, MapDef } from '@rpg/game-data';
+} from './babylon';
 import { colorMaterial, createPlaceholderMesh } from './placeholder';
 
 /** Alpha of environment pieces that stand between the camera and the player. */

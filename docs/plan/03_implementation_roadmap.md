@@ -24,12 +24,12 @@ Ký hiệu: ✅ xong · 🟡 có nền tảng/placeholder, cần hoàn thiện �
 | 1 Core movement | Spawn, camera xoay, click/tap move, NavMesh, player sync, other players, reconnect | ✅ | `game-core`, `navigation`, `net-client` (reconnect 15 s + takeover) |
 | 2 Combat | Chọn mục tiêu, tự tiếp cận, auto attack, HP, damage, chết/hồi sinh, skill | ✅ | 5 skill player, cooldown/MP/range server-side |
 | 3 Monster/AI | Spawn, patrol (wander), aggro, chase, attack, leash, elite, boss | ✅ | Boss 3 phase + telegraph né được; elite có phase |
-| 4 RPG systems | Inventory, equipment, item stats, loot, XP, level, skill, quest | 🟡 | Tất cả trừ **quest** ⬜ |
-| 5 World | Zone, chunk, streaming, AOI, chuyển map, dungeon instance | 🟡 | Dungeon instance riêng ⬜ (channel tự động đã có) |
-| 6 Optimization | Pool, LOD, simulation LOD, thin instances, quality runtime, nén asset, profile mobile | 🟡 | LOD mesh ⬜, simulation LOD server ⬜, profile thiết bị ✋ |
-| 7 Economy | Craft, upgrade, currency ledger, shop, chuẩn bị marketplace | 🟡 | Ledger ✅; craft/upgrade/shop ⬜ |
-| 8 Social | Chat, friend, guild, party, leaderboard | ⬜ | |
-| 9 PWA/mobile | PWA install, runtime cache, offline shell, Capacitor | 🟡 | PWA ✅; Capacitor ⬜ |
+| 4 RPG systems | Inventory, equipment, item stats, loot, XP, level, skill, quest | ✅ | Quest kill/collect/talk, chuỗi 6 nhiệm vụ, NPC |
+| 5 World | Zone, chunk, streaming, AOI, chuyển map, dungeon instance | ✅ | Phó bản solo "Cơ Quan Điện" (1 instance/nhân vật) |
+| 6 Optimization | Pool, LOD, simulation LOD, thin instances, quality runtime, nén asset, profile mobile | 🟡 | Simulation LOD ✅, bundle Babylon 7.5→4.0 MB ✅; LOD mesh ⬜, profile thiết bị ✋ |
+| 7 Economy | Craft, upgrade, currency ledger, shop, chuẩn bị marketplace | ✅ | Shop mua/bán, 3 công thức, cường hoá +1…+5; marketplace ⬜ |
+| 8 Social | Chat, friend, guild, party, leaderboard | 🟡 | Chat ✅, party ✅, leaderboard ✅; friend/guild ⬜ |
+| 9 PWA/mobile | PWA install, runtime cache, offline shell, Capacitor | 🟡 | PWA ✅; Capacitor config ✅, `cap add android/ios` ✋ |
 
 ## Assets plan — backlog P0 (mục 16)
 
@@ -44,21 +44,20 @@ Ký hiệu: ✅ xong · 🟡 có nền tảng/placeholder, cần hoàn thiện �
 | Kiếm, đại đao, gauntlet, pháp khí | 🟡 | Item + stat + gắn socket (placeholder mesh); model thật ✋ |
 | 3 quái thường (≥1 robot), 1 tinh anh, 1 boss | ✅ | Sói, hồ ly, robot; Linh Lộc tinh anh; Cơ Quan Thần Tướng |
 | Map có nav/collision/spawn/portal | ✅ | "Rừng Cơ Quan" sinh từ layout + navmesh bake |
-| Animation/events combat | 🟡 | Clip theo role ✅; event hit-window/trail/footstep ⬜ |
+| Animation/events combat | 🟡 | Clip theo role ✅, hit-delay ✅; trail/footstep ⬜ |
 | VFX/telegraph/loot/icon | 🟡 | Telegraph, impact, kiếm khí, cột sáng loot ✅; icon là emoji ✋ |
 | Asset manager, manifest, cache, fallback | ✅ | Dedupe, retry, progress theo byte, decoder local, PWA cache |
 | Profile, nghiệm thu thiết bị thật | ✋ | `pnpm dev:mobile` + `docs/performance_budget.md` |
 
 ## Việc tiếp theo (tự động được)
 
-1. Quest cơ bản (data-driven: kill/collect/talk) + NPC.
-2. Chat (kênh map, rate limit, mute từ API) — nền móng social.
-3. Shop NPC + craft/upgrade dùng ledger.
-4. LOD cho skinned/static mesh trong pipeline (`simplify` theo ratio).
-5. Simulation LOD phía server (tick thưa cho quái xa người chơi).
-6. Animation events (hit window) để số damage khớp nhát chém.
-7. Presence `online` qua Redis khi chạy nhiều game-server process.
-8. Import Babylon theo module để giảm bundle (~7.5 MB → mục tiêu < 3 MB).
+1. Friend list và guild (bảng DB + API + kênh chat guild).
+2. Marketplace (escrow, khoá item trong giao dịch — tech plan §55.2).
+3. LOD cho mesh trong pipeline (`simplify` theo ratio) và chọn LOD theo khoảng cách.
+4. Presence `online`/takeover qua Redis khi chạy nhiều game-server process.
+5. Lệnh GM trực tiếp trong game (thay cho "tặng vật phẩm" offline).
+6. Party xuyên map và party trong phó bản (hiện party chỉ trong một map).
+7. Tiếp tục giảm bundle (Babylon 4.0 MB → < 3 MB): tách inspector, lazy-load shadow/VFX.
 
 ## Việc cần người làm
 

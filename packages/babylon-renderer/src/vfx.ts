@@ -6,7 +6,7 @@ import {
   StandardMaterial,
   type TransformNode,
   Vector3,
-} from '@babylonjs/core';
+} from './babylon';
 
 /** Rarity colours shared by loot beams and the HUD (assets plan §9). */
 export const RARITY_COLORS: Record<string, string> = {

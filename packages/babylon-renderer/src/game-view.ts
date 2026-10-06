@@ -1,15 +1,3 @@
-import {
-  type AbstractEngine,
-  Color3,
-  Color4,
-  DirectionalLight,
-  HemisphericLight,
-  Matrix,
-  Scene,
-  SceneInstrumentation,
-  ShadowGenerator,
-  Vector3,
-} from '@babylonjs/core';
 import { AssetLibrary, type LoadProgress } from '@rpg/asset-runtime';
 import type { AppearanceDef, ContentBundle, EquipSlot, MonsterTier } from '@rpg/game-data';
 import type {
@@ -30,6 +18,18 @@ import {
   TouchAdapter,
 } from '@rpg/input';
 import type { SimHost } from '@rpg/sim-host';
+import {
+  type AbstractEngine,
+  Color3,
+  Color4,
+  DirectionalLight,
+  HemisphericLight,
+  Matrix,
+  Scene,
+  SceneInstrumentation,
+  ShadowGenerator,
+  Vector3,
+} from './babylon';
 import { CameraRig } from './camera-rig';
 import { DamageTextPool, MoveMarker, SelectionRing } from './effects';
 import { createEngine, type EngineKind } from './engine';
@@ -110,6 +110,7 @@ export interface UiState {
   interact: { label: string } | null;
   quests: QuestView[];
   questsDone: string[];
+  party: PlayerState['party'];
 }
 
 export interface QuestView {
@@ -151,6 +152,7 @@ export interface GameViewOptions {
   onAction?: (action: GameAction) => void;
   onNpcOpen?: (npc: { npcEntityId: EntityId; npcId: string }) => void;
   onChat?: (message: ChatMessage) => void;
+  onPartyInvite?: (invite: { fromId: EntityId; fromName: string }) => void;
   onToggleDebug?: (scene: Scene) => void;
 }
 
@@ -172,6 +174,9 @@ const NOTICE_TEXT: Record<NoticeCode, string> = {
   quest_incomplete: 'Nhiệm vụ chưa hoàn thành',
   max_level: 'Đã đạt cấp tối đa',
   not_sellable: 'Không thể bán vật phẩm này',
+  party_full: 'Nhóm đã đủ người',
+  already_in_party: 'Người này đã có nhóm',
+  no_invite: 'Lời mời đã hết hạn',
 };
 
 /**
@@ -813,6 +818,10 @@ export class GameView {
         case 'NOTICE':
           if (mine(ev.ownerId)) this.opts.onNotice?.({ text: NOTICE_TEXT[ev.code], tone: 'warn' });
           break;
+        case 'PARTY_INVITE':
+          if (mine(ev.ownerId))
+            this.opts.onPartyInvite?.({ fromId: ev.fromId, fromName: ev.fromName });
+          break;
         case 'NPC_OPEN':
           if (mine(ev.ownerId))
             this.opts.onNpcOpen?.({ npcEntityId: ev.npcEntityId, npcId: ev.npcId });
@@ -904,7 +913,7 @@ export class GameView {
     const c = this.opts.content;
     const monster = e.kind === 'monster' ? c.monsters.get(e.defId) : undefined;
     let name: string;
-    if (e.kind === 'player') name = c.characters.get(e.defId)?.name ?? e.defId;
+    if (e.kind === 'player') name = e.name ?? c.characters.get(e.defId)?.name ?? e.defId;
     else if (e.kind === 'loot') name = c.items.get(e.defId)?.name ?? e.defId;
     else if (e.kind === 'npc') name = c.npcs.get(e.defId)?.name ?? e.defId;
     else if (e.kind === 'portal')
@@ -1078,6 +1087,7 @@ export class GameView {
       equipment,
       interact: interactLabel ? { label: interactLabel } : null,
       questsDone: (ps?.quests ?? []).filter((q) => q.status === 'done').map((q) => q.questId),
+      party: ps?.party ?? null,
       quests: (ps?.quests ?? [])
         .filter((q) => q.status !== 'done')
         .map((q) => {

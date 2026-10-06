@@ -114,6 +114,7 @@ export function GameCanvas({ online = null }: { online?: OnlineChoice | null }) 
           onNotice: store.pushNotice,
           onNpcOpen: store.openNpc,
           onChat: store.pushChat,
+          onPartyInvite: store.setInvite,
           onAction: (a) => {
             if (a.type === 'TOGGLE_PANEL') useUiStore.getState().togglePanel(a.panel);
           },

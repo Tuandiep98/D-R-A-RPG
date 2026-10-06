@@ -104,6 +104,15 @@ function apply(ctx: SimContext, actor: Entity, intent: Intent): boolean {
       return craft(ctx, actor, intent.npcId, intent.recipeId);
     case 'UPGRADE':
       return upgrade(ctx, actor, intent.npcId, intent.instanceId);
+    case 'PARTY_INVITE': {
+      const target = ctx.entities.get(intent.targetId);
+      return !!target && ctx.parties.invite(ctx, actor, target);
+    }
+    case 'PARTY_ACCEPT':
+      return ctx.parties.accept(ctx, actor, intent.fromId);
+    case 'PARTY_LEAVE':
+      ctx.parties.leave(actor);
+      return true;
   }
 }
 

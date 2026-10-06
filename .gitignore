@@ -20,3 +20,4 @@ reports/smoke/
 
 # Local PGlite database (dev without Docker)
 .data/
+

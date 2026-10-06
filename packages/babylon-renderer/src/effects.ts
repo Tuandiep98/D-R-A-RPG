@@ -7,7 +7,7 @@ import {
   StandardMaterial,
   type TransformNode,
   type Vector3,
-} from '@babylonjs/core';
+} from './babylon';
 
 const DAMAGE_LIFETIME = 0.9;
 

@@ -94,3 +94,17 @@ Mỗi quyết định: ngày, bối cảnh, quyết định, hệ quả. Khi mâ
 - **Ngày:** 2026-10-06
 - **Quyết định:** argon2id; access JWT HS256 15 phút; refresh token ngẫu nhiên lưu hash, xoay vòng mỗi lần dùng, dùng lại token cũ → thu hồi cả chuỗi; GM/admin bắt buộc TOTP (RFC 6238) và mọi thao tác ghi `audit_log`.
 - **Hệ quả:** Admin "tặng vật phẩm" hiện chỉ an toàn khi nhân vật offline (game server ghi đè khi lưu). Lệnh GM trực tiếp trong game là việc sau.
+
+## D-019 — Import Babylon theo module
+- **Ngày:** 2026-10-06
+- **Quyết định:** Renderer chỉ import Babylon qua `packages/babylon-renderer/src/babylon.ts` (đường dẫn module + side-effect: ray picking, thin instance, shadow scene component, animatable, WebGPU extensions, loading screen). `asset-runtime` import trực tiếp từng module.
+- **Hệ quả:** Chunk Babylon 7.5 MB → 4.0 MB (gzip 1.64 → 0.94 MB). Khi dùng tính năng Babylon mới, thêm import vào `babylon.ts`; smoke test WebGPU + WebGL2 bắt lỗi thiếu side-effect.
+
+## D-020 — Party trong phạm vi một map
+- **Ngày:** 2026-10-06
+- **Quyết định:** Party sống trong `World` (mời/chấp nhận/rời, tối đa 5). Thành viên trong 40 m chia XP với thưởng +20%/người thêm; loot của một thành viên nhặt được cho cả nhóm. Rời map → rời nhóm.
+- **Hệ quả:** Party xuyên map/phó bản cần dịch vụ party ở tầng server (Redis) — để sau.
+
+## D-021 — NPC, quest, shop, chế tạo, cường hoá là data
+- **Ngày:** 2026-10-06
+- **Quyết định:** `game-data/{npcs,quests,shops,recipes,upgrades}`. Mọi thao tác kiểm tra khoảng cách tới NPC phía server; vàng đi qua ledger (`buy`, `sell`, `craft`, `upgrade`, `quest`). Cường hoá thất bại giữ nguyên cấp (không phá đồ ở MVP). Quest log và cấp cường hoá lưu DB (migration 0002).

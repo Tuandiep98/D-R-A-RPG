@@ -66,6 +66,8 @@ export interface QuestState {
 
 export interface PlayerData {
   characterId: string;
+  name: string;
+  partyId: number | null;
   xp: number;
   gold: number;
   inventory: InventoryItem[];

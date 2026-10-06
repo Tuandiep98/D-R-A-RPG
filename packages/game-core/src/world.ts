@@ -20,6 +20,7 @@ import { actionSystem, lifeSystem } from './systems/life';
 import { lootSystem, makeInert } from './systems/loot';
 import { movementSystem } from './systems/movement';
 import { questProgress } from './systems/npc';
+import { Parties } from './systems/party';
 import { recomputePlayerStats, xpToNext } from './systems/progression';
 import { skillSystem } from './systems/skills';
 import { secondsToTicks } from './time';
@@ -45,6 +46,8 @@ export interface SpawnPlayerOptions {
   save?: PlayerSave;
   /** Named arrival point in this map (portal destination). */
   arrival?: string | null;
+  /** Character name shown to others (online: from the DB); defaults to the class name. */
+  name?: string;
   /** Last saved position (reconnect/login); clamped to bounds and snapped to the navmesh. */
   position?: Vec2 | null;
 }
@@ -60,6 +63,7 @@ export class World implements SimContext {
   readonly map: MapDef;
   readonly content: ContentBundle;
   readonly nav: NavQuery | null;
+  readonly parties = new Parties();
   private readonly entityMap = new Map<EntityId, Entity>();
   private intents: QueuedIntent[] = [];
   private pendingEvents: SimEvent[] = [];
@@ -146,6 +150,7 @@ export class World implements SimContext {
   }
 
   removeEntity(id: EntityId): void {
+    if (this.entityMap.get(id)?.player) this.parties.remove(this, id);
     if (this.entityMap.delete(id)) this.emit({ type: 'DESPAWN', id });
   }
 
@@ -224,6 +229,8 @@ export class World implements SimContext {
       pending: null,
       player: {
         characterId: def.id,
+        name: opts.name ?? def.name,
+        partyId: null,
         xp: save?.xp ?? 0,
         gold: save?.gold ?? 0,
         inventory: save ? save.inventory.map((i) => ({ ...i })) : [],
@@ -303,11 +310,34 @@ export class World implements SimContext {
       equipment: { ...p.equipment },
       itemReadyAtTick: p.itemReadyAtTick,
       inSafeZone: this.inSafeZone(e.pos),
+      party: this.partyView(p.partyId),
       quests: p.quests.map((q) => ({
         questId: q.questId,
         status: q.status,
         progress: questProgress(this, e, q),
       })),
+    };
+  }
+
+  private partyView(partyId: number | null): PlayerState['party'] {
+    const party = partyId !== null ? this.parties.byId.get(partyId) : undefined;
+    if (!party) return null;
+    return {
+      leaderId: party.leaderId,
+      members: party.members.flatMap((id) => {
+        const m = this.entityMap.get(id);
+        return m?.player
+          ? [
+              {
+                id,
+                name: m.player.name,
+                level: m.level,
+                hp: Math.round(m.stats.hp),
+                maxHp: Math.round(m.stats.maxHp),
+              },
+            ]
+          : [];
+      }),
     };
   }
 
@@ -445,6 +475,7 @@ function toSnapshot(e: Entity): EntitySnapshot {
       ? { skillId: e.cast.skillId, startTick: e.cast.startTick, endTick: e.cast.endTick }
       : null,
     gear: e.player ? gearOf(e) : null,
+    name: e.player?.name ?? null,
   };
 }
 

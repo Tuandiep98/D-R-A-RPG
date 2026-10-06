@@ -122,9 +122,12 @@ export function lootSystem(ctx: SimContext): void {
 export function tryPickup(ctx: SimContext, player: Entity, loot: Entity): boolean {
   if (!loot.loot) return true;
   if (distance(player.pos, loot.pos) > INTERACT_RANGE) return false;
+  const owner = loot.loot.ownerId !== null ? ctx.entities.get(loot.loot.ownerId) : undefined;
+  const partyLoot = owner ? ctx.parties.sameParty(owner, player) : false;
   if (
     loot.loot.ownerId !== null &&
     loot.loot.ownerId !== player.id &&
+    !partyLoot &&
     ctx.tick < loot.loot.freeAtTick
   ) {
     ctx.notice(player.id, 'not_owner');

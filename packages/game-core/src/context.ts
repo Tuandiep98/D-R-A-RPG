@@ -15,6 +15,16 @@ export interface NavQuery {
   closest(p: Vec2): Vec2;
 }
 
+/** Party operations systems rely on (implemented by systems/party.ts). */
+export interface PartyService {
+  invite(ctx: SimContext, from: Entity, target: Entity): boolean;
+  accept(ctx: SimContext, target: Entity, fromId: EntityId): boolean;
+  leave(e: Entity): void;
+  remove(ctx: SimContext, id: EntityId): void;
+  nearbyMembers(ctx: SimContext, e: Entity, pos: Vec2): Entity[];
+  sameParty(a: Entity, b: Entity): boolean;
+}
+
 /** What systems may read and mutate during a tick. Implemented by World. */
 export interface SimContext {
   readonly tick: number;
@@ -32,6 +42,7 @@ export interface SimContext {
   newItemInstanceId(): string;
   recordLedger(entry: Omit<LedgerEntry, 'tick'>): boolean;
   inSafeZone(p: Vec2): boolean;
+  readonly parties: PartyService;
 }
 
 export const isAlive = (e: Entity | undefined): e is Entity => !!e && e.life.alive && !e.inert;

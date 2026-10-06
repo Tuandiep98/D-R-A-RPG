@@ -20,6 +20,8 @@ interface UiStore {
   panel: Panel;
   npc: { npcEntityId: number; npcId: string } | null;
   chat: ChatMessage[];
+  invite: { fromId: number; fromName: string } | null;
+  setInvite(invite: { fromId: number; fromName: string } | null): void;
   openNpc(npc: { npcEntityId: number; npcId: string }): void;
   closeNpc(): void;
   pushChat(m: ChatMessage): void;
@@ -49,6 +51,8 @@ export const useUiStore = create<UiStore>((set) => ({
   panel: null,
   npc: null,
   chat: [],
+  invite: null,
+  setInvite: (invite) => set({ invite }),
   openNpc: (npc) => set({ npc, panel: null }),
   closeNpc: () => set({ npc: null }),
   pushChat: (m) => set((s) => ({ chat: [...s.chat, m].slice(-60) })),

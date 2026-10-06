@@ -4,7 +4,7 @@ import { z } from 'zod';
  * Wire contract between client and simulation host (local or server).
  * Bump PROTOCOL_VERSION on any breaking change to these schemas.
  */
-export const PROTOCOL_VERSION = 3;
+export const PROTOCOL_VERSION = 4;
 
 /** Max world coordinate magnitude accepted from a client, in metres. */
 export const MAX_COORD = 10_000;
@@ -77,6 +77,9 @@ export const IntentSchema = z.discriminatedUnion('type', [
     npcId: EntityIdSchema,
     instanceId: ItemInstanceIdSchema,
   }),
+  z.strictObject({ type: z.literal('PARTY_INVITE'), targetId: EntityIdSchema }),
+  z.strictObject({ type: z.literal('PARTY_ACCEPT'), fromId: EntityIdSchema }),
+  z.strictObject({ type: z.literal('PARTY_LEAVE') }),
 ]);
 export type Intent = z.infer<typeof IntentSchema>;
 export type IntentType = Intent['type'];
@@ -112,6 +115,8 @@ export const EntitySnapshotSchema = z.object({
   cast: z
     .object({ skillId: z.string(), startTick: z.number().int(), endTick: z.number().int() })
     .nullable(),
+  /** Players: display name (character name online). */
+  name: z.string().nullable(),
   /** Players: visible equipment (slot → item id) so others can render it. */
   gear: z.partialRecord(EquipSlotSchema, z.string()).nullable(),
 });
@@ -141,6 +146,9 @@ export const NoticeCodeSchema = z.enum([
   'quest_incomplete',
   'max_level',
   'not_sellable',
+  'party_full',
+  'already_in_party',
+  'no_invite',
 ]);
 export type NoticeCode = z.infer<typeof NoticeCodeSchema>;
 
@@ -223,6 +231,12 @@ export const SimEventSchema = z.discriminatedUnion('type', [
     status: z.enum(['active', 'ready', 'done']),
   }),
   z.object({
+    type: z.literal('PARTY_INVITE'),
+    ownerId: EntityIdSchema,
+    fromId: EntityIdSchema,
+    fromName: z.string(),
+  }),
+  z.object({
     type: z.literal('UPGRADE_RESULT'),
     ownerId: EntityIdSchema,
     instanceId: z.string(),
@@ -268,6 +282,20 @@ export const PlayerStateSchema = z.object({
   equipment: z.partialRecord(EquipSlotSchema, ItemInstanceIdSchema),
   itemReadyAtTick: z.number().int(),
   inSafeZone: z.boolean(),
+  party: z
+    .object({
+      leaderId: EntityIdSchema,
+      members: z.array(
+        z.object({
+          id: EntityIdSchema,
+          name: z.string(),
+          level: z.number().int(),
+          hp: z.number().int(),
+          maxHp: z.number().int(),
+        }),
+      ),
+    })
+    .nullable(),
   quests: z.array(
     z.object({
       questId: z.string(),

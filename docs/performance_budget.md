@@ -75,7 +75,7 @@ Kích thước tải (bản build 2026-10-06):
 
 | Phần | Kích thước | gzip |
 |---|---|---|
-| Babylon chunk | 7.5 MB | 1.6 MB |
+| Babylon chunk | 4.0 MB (trước D-019: 7.5 MB) | 0.94 MB |
 | Recast (wasm compat) | 0.76 MB | 0.23 MB |
 | React + Zustand | 0.22 MB | 0.07 MB |
 | App code | 0.33 MB | 0.10 MB |
@@ -83,5 +83,5 @@ Kích thước tải (bản build 2026-10-06):
 
 Vấn đề đã biết trước khi đo trên iPhone:
 - ~~Texture cây 8 MB~~ → đã resize + WebP (230 KB/cây). KTX2 vẫn là bước tiếp theo để giảm VRAM.
-- Bundle đang import toàn bộ `@babylonjs/core` (7.5 MB).
+- ~~Bundle import toàn bộ `@babylonjs/core` (7.5 MB)~~ → import theo module, còn 4.0 MB (D-019).
 - ~~Meshopt decoder từ CDN~~ → đã đóng gói cùng asset.

@@ -1,4 +1,4 @@
-import { ArcRotateCamera, type Scene, Vector3 } from '@babylonjs/core';
+import { ArcRotateCamera, type Scene, Vector3 } from './babylon';
 
 const DEG = Math.PI / 180;
 

@@ -1,4 +1,4 @@
-import { type AbstractEngine, Engine, WebGPUEngine } from '@babylonjs/core';
+import { type AbstractEngine, Engine, WebGPUEngine } from './babylon';
 
 export type EngineKind = 'WebGPU' | 'WebGL2' | 'WebGL1';
 

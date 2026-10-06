@@ -1,3 +1,6 @@
+import type { AssetLibrary } from '@rpg/asset-runtime';
+import type { AppearanceDef } from '@rpg/game-data';
+import type { EntityAction, EntityId } from '@rpg/game-protocol';
 import {
   Color3,
   type Mesh,
@@ -6,10 +9,7 @@ import {
   type ShadowGenerator,
   StandardMaterial,
   TransformNode,
-} from '@babylonjs/core';
-import type { AssetLibrary } from '@rpg/asset-runtime';
-import type { AppearanceDef } from '@rpg/game-data';
-import type { EntityAction, EntityId } from '@rpg/game-protocol';
+} from './babylon';
 import {
   type GearAppearances,
   ModelVisual,

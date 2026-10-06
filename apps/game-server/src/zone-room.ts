@@ -176,6 +176,7 @@ export class ZoneRoom extends Room {
       save: played ? stored.save : undefined,
       arrival: auth.arrival,
       position: auth.position,
+      name: stored.name,
     });
     this.deps.online.set(auth.characterId, this.roomId);
     let markLeft = () => {};

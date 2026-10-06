@@ -5,6 +5,7 @@ import type { Rng } from '../rng';
 import { grantGold } from './inventory';
 import { dropLoot } from './loot';
 import { questOnKill } from './npc';
+import { sharedXp } from './party';
 import { grantXp } from './progression';
 
 /** Damage roll before mitigation varies by ±10%. */
@@ -142,15 +143,22 @@ function rewardKill(ctx: SimContext, monster: Entity): void {
   if (!def) return;
   let top: Entity | null = null;
   let topDamage = 0;
+  // Every contributor plus their nearby party members are credited exactly once.
+  const credited = new Map<number, { e: Entity; groupSize: number }>();
   for (const [id, dmg] of monster.life.damageBy) {
     const p = ctx.entities.get(id);
     if (!p?.player) continue;
-    grantXp(ctx, p, def.xp);
-    questOnKill(ctx, p, def.id);
+    const group = ctx.parties.nearbyMembers(ctx, p, monster.pos);
+    for (const m of group)
+      if (!credited.has(m.id)) credited.set(m.id, { e: m, groupSize: group.length });
     if (dmg > topDamage) {
       top = p;
       topDamage = dmg;
     }
+  }
+  for (const { e, groupSize } of credited.values()) {
+    grantXp(ctx, e, sharedXp(def.xp, groupSize));
+    questOnKill(ctx, e, def.id);
   }
   if (!top) return;
   for (const tableId of def.lootTable) {

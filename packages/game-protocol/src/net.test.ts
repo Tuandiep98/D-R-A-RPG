@@ -17,6 +17,7 @@ const ent = (id: number, x: number): EntitySnapshot => ({
   phase: 0,
   cast: null,
   gear: null,
+  name: null,
 });
 const visible = (...es: EntitySnapshot[]) =>
   new Map(es.map((e) => [e.id, { json: JSON.stringify(e), snap: e }]));

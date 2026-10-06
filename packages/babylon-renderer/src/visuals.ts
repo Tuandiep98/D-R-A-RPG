@@ -1,3 +1,4 @@
+import type { AnimationRole, AppearanceDef, EquipSlot, Socket } from '@rpg/game-data';
 import {
   type AbstractMesh,
   type AnimationGroup,
@@ -10,8 +11,7 @@ import {
   type Scene,
   StandardMaterial,
   TransformNode,
-} from '@babylonjs/core';
-import type { AnimationRole, AppearanceDef, EquipSlot, Socket } from '@rpg/game-data';
+} from './babylon';
 import { createPlaceholderMesh } from './placeholder';
 
 export type BaseRole = Extract<AnimationRole, 'idle' | 'run' | 'death'>;

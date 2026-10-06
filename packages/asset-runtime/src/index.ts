@@ -1,9 +1,7 @@
-import {
-  type AssetContainer,
-  LoadAssetContainerAsync,
-  MeshoptCompression,
-  type Scene,
-} from '@babylonjs/core';
+import type { AssetContainer } from '@babylonjs/core/assetContainer';
+import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
+import { MeshoptCompression } from '@babylonjs/core/Meshes/Compression/meshoptCompression';
+import type { Scene } from '@babylonjs/core/scene';
 import '@babylonjs/loaders/glTF';
 import { z } from 'zod';
 

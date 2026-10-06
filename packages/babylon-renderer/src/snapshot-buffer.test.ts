@@ -17,6 +17,7 @@ const ent = (x: number, yaw = 0): EntitySnapshot => ({
   phase: 0,
   cast: null,
   gear: null,
+  name: null,
 });
 const snap = (tick: number, e: EntitySnapshot): Snapshot => ({ tick, entities: [e] });
 

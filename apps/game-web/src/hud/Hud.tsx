@@ -49,6 +49,9 @@ function Bar({
 
 function UnitPanel({ unit, className }: { unit: UnitFrame; className: string }) {
   const tier = unit.tier && unit.tier !== 'normal' ? TIER_LABEL[unit.tier] : null;
+  const myId = useUiStore((s) => s.ui?.player?.id);
+  const inMyParty = useUiStore((s) => s.ui?.party?.members.some((m) => m.id === unit.id) ?? false);
+  const canInvite = unit.kind === 'player' && unit.id !== myId && !inMyParty;
   return (
     <div className={`frame ${className}`}>
       <div className="frame-name">
@@ -58,6 +61,18 @@ function UnitPanel({ unit, className }: { unit: UnitFrame; className: string }) 
         {unit.level > 0 && <span className="frame-level">Lv {unit.level}</span>}
       </div>
       {unit.maxHp > 0 && <Bar value={unit.hp} max={unit.maxHp} tone="enemy" />}
+      {canInvite && (
+        <button
+          type="button"
+          className="frame-action"
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            game()?.send({ type: 'PARTY_INVITE', targetId: unit.id });
+          }}
+        >
+          Mời vào nhóm
+        </button>
+      )}
       {unit.cast && (
         <div className="cast">
           <Bar
@@ -125,6 +140,60 @@ function SkillButton({ slot, index }: { slot: SkillSlot; index: number }) {
       )}
       <span className="skill-key">{index + 1}</span>
     </button>
+  );
+}
+
+function PartyFrames() {
+  const party = useUiStore((s) => s.ui?.party ?? null);
+  const myId = useUiStore((s) => s.ui?.player?.id);
+  if (!party) return null;
+  return (
+    <div className="party" onPointerDown={(e) => e.stopPropagation()}>
+      {party.members
+        .filter((m) => m.id !== myId)
+        .map((m) => (
+          <div key={m.id} className="party-member">
+            <span className="small">
+              {m.id === party.leaderId ? '★ ' : ''}
+              {m.name} · Lv {m.level}
+            </span>
+            <Bar value={m.hp} max={m.maxHp} tone="player" label=" " />
+          </div>
+        ))}
+      <button
+        type="button"
+        className="frame-action"
+        onClick={() => game()?.send({ type: 'PARTY_LEAVE' })}
+      >
+        Rời nhóm
+      </button>
+    </div>
+  );
+}
+
+function InvitePrompt() {
+  const invite = useUiStore((s) => s.invite);
+  const setInvite = useUiStore((s) => s.setInvite);
+  if (!invite) return null;
+  return (
+    <div className="invite" onPointerDown={(e) => e.stopPropagation()}>
+      <span>
+        <strong>{invite.fromName}</strong> mời bạn vào nhóm
+      </span>
+      <button
+        type="button"
+        className="frame-action"
+        onClick={() => {
+          game()?.send({ type: 'PARTY_ACCEPT', fromId: invite.fromId });
+          setInvite(null);
+        }}
+      >
+        Đồng ý
+      </button>
+      <button type="button" className="frame-action" onClick={() => setInvite(null)}>
+        Từ chối
+      </button>
+    </div>
   );
 }
 
@@ -423,6 +492,8 @@ export function Hud() {
       {status === 'loading' && <div className="center-note">Đang tải…</div>}
       {status === 'error' && <div className="center-note error">Lỗi: {error}</div>}
       <PlayerPanel />
+      <PartyFrames />
+      <InvitePrompt />
       {ui?.target && <UnitPanel unit={ui.target} className="frame-target" />}
       {ui?.boss && <UnitPanel unit={ui.boss} className="frame-boss" />}
       {ui?.player && !ui.player.alive && (
