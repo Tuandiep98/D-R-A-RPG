@@ -1,0 +1,7 @@
+id: r_wuxia_robe
+name: May Võ Hiệp Bào
+result: { itemId: item_wuxia_robe }
+materials:
+  - { itemId: item_fox_fur, count: 6 }
+  - { itemId: item_wolf_fang, count: 4 }
+gold: 20

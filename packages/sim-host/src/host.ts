@@ -1,4 +1,4 @@
-import type { JoinInfo, PlayerState, SimEvent, Snapshot } from '@rpg/game-protocol';
+import type { ChatMessage, JoinInfo, PlayerState, SimEvent, Snapshot } from '@rpg/game-protocol';
 
 /**
  * The only channel between the client and the authoritative simulation.
@@ -15,6 +15,9 @@ export interface SimHost {
   onPlayerState(cb: (state: PlayerState) => void): () => void;
   /** Fires after connect and after every map transfer. */
   onJoin(cb: (join: JoinInfo) => void): () => void;
+  /** Map chat. Hosts validate length, rate and mutes; the client never trusts itself. */
+  sendChat(text: string): void;
+  onChat(cb: (message: ChatMessage) => void): () => void;
   dispose(): void;
 }
 
@@ -24,6 +27,7 @@ export class HostEmitter {
   readonly events = new Set<(e: SimEvent[]) => void>();
   readonly playerState = new Set<(s: PlayerState) => void>();
   readonly join = new Set<(j: JoinInfo) => void>();
+  readonly chat = new Set<(m: ChatMessage) => void>();
 
   static add<T>(set: Set<T>, cb: T): () => void {
     set.add(cb);
@@ -35,5 +39,6 @@ export class HostEmitter {
     this.events.clear();
     this.playerState.clear();
     this.join.clear();
+    this.chat.clear();
   }
 }

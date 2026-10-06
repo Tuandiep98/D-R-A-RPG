@@ -6,8 +6,13 @@ import {
   LootTableDefSchema,
   MapDefSchema,
   MonsterDefSchema,
+  NpcDefSchema,
   ProgressionDefSchema,
+  QuestDefSchema,
+  RecipeDefSchema,
+  ShopDefSchema,
   SkillDefSchema,
+  UpgradeRulesSchema,
 } from '@rpg/game-data';
 
 type Raw = Record<string, unknown>;
@@ -73,8 +78,57 @@ export function makeContent(o: FixtureOverrides = {}): ContentBundle {
     { id: 'sword', name: 'Sword', kind: 'equipment', slot: 'main_hand', bonus: { attack: 20 } },
     { id: 'helm', name: 'Helm', kind: 'equipment', slot: 'head', level: 5, bonus: { defense: 5 } },
     { id: 'potion', name: 'Potion', kind: 'consumable', heal: 0.5, cooldown: 3, maxStack: 20 },
-    { id: 'fang', name: 'Fang', kind: 'material', maxStack: 99 },
+    { id: 'fang', name: 'Fang', kind: 'material', maxStack: 99, sellPrice: 2 },
+    { id: 'charm', name: 'Fang Charm', kind: 'equipment', slot: 'artifact', bonus: { attack: 10 } },
   ].map((i) => ItemDefSchema.parse(i));
+  const npc = NpcDefSchema.parse({
+    id: 'elder',
+    name: 'Elder',
+    appearanceId: 'look',
+    quests: ['q_wolves', 'q_fangs'],
+    shopId: 'shop',
+    recipes: ['r_charm'],
+    upgrades: true,
+  });
+  const quests = [
+    {
+      id: 'q_wolves',
+      name: 'Wolves',
+      giverNpcId: 'elder',
+      objectives: [{ type: 'kill', monsterId: 'wolf', count: 1 }],
+      rewards: { xp: 10, gold: 7, items: [{ itemId: 'potion', count: 1 }] },
+    },
+    {
+      id: 'q_fangs',
+      name: 'Fangs',
+      giverNpcId: 'elder',
+      requires: ['q_wolves'],
+      objectives: [{ type: 'collect', itemId: 'fang', count: 2 }],
+      rewards: { gold: 3 },
+    },
+  ].map((q) => QuestDefSchema.parse(q));
+  const shop = ShopDefSchema.parse({
+    id: 'shop',
+    name: 'Shop',
+    items: [{ itemId: 'potion', price: 4 }],
+    buybackRate: 0.5,
+  });
+  const recipe = RecipeDefSchema.parse({
+    id: 'r_charm',
+    name: 'Charm',
+    result: { itemId: 'charm' },
+    materials: [{ itemId: 'fang', count: 2 }],
+    gold: 1,
+  });
+  const upgrades = UpgradeRulesSchema.parse({
+    id: 'upgrade_default',
+    maxLevel: 2,
+    bonusPerLevel: 0.5,
+    steps: [
+      { gold: 1, successRate: 1 },
+      { gold: 1, successRate: 0 },
+    ],
+  });
   const loot = LootTableDefSchema.parse({
     id: 'wolf_loot',
     gold: { min: 5, max: 5 },
@@ -135,5 +189,10 @@ export function makeContent(o: FixtureOverrides = {}): ContentBundle {
     items: new Map(items.map((i) => [i.id, i])),
     loot: new Map([[loot.id, loot]]),
     progression: new Map([[progression.id, progression]]),
+    npcs: new Map([[npc.id, npc]]),
+    quests: new Map(quests.map((q) => [q.id, q])),
+    shops: new Map([[shop.id, shop]]),
+    recipes: new Map([[recipe.id, recipe]]),
+    upgrades: new Map([[upgrades.id, upgrades]]),
   };
 }

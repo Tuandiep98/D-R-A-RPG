@@ -10,6 +10,8 @@ import {
 } from '@rpg/game-core';
 import type { ContentBundle } from '@rpg/game-data';
 import {
+  type ChatMessage,
+  ChatSendSchema,
   type EntityId,
   type EntitySnapshot,
   IntentSchema,
@@ -40,6 +42,8 @@ export interface ZoneDeps {
 interface Auth {
   accountId: string;
   characterId: string;
+  characterName: string;
+  mutedUntil: number | null;
   arrival: string | null;
   /** Saved position when (re)joining the map the character was saved in. */
   position: { x: number; z: number } | null;
@@ -57,6 +61,7 @@ interface Session {
   kicked: boolean;
   /** Pending allowReconnection() while the socket is dropped. */
   reconnection: { reject(reason?: unknown): void } | null;
+  lastChatAt: number;
   /** Resolves when onLeave has saved and removed the character. */
   left: Promise<void>;
   markLeft: () => void;
@@ -107,6 +112,7 @@ export class ZoneRoom extends Room {
     });
     this.setMetadata({ mapId: this.mapId });
     this.onMessage('intent', (client, message) => this.handleIntent(client, message));
+    this.onMessage('chat', (client, message) => this.handleChat(client, message));
     this.lastStepAt = performance.now();
     this.setSimulationInterval(() => this.tick(), TICK_MS / 2);
     this.clock.setInterval(() => void this.saveAll('autosave'), this.deps.autosaveSeconds * 1000);
@@ -118,6 +124,7 @@ export class ZoneRoom extends Room {
     if (opts.protocolVersion !== PROTOCOL_VERSION)
       throw new Error('client out of date, please reload');
     if (opts.mapId !== this.mapId) throw new Error('wrong map');
+    const soloMap = this.deps.content.maps.get(this.mapId)?.instance === 'solo';
     const token = context.token ?? '';
     const claims = await this.verifyToken(token);
     if (!claims.chr) throw new Error('no character selected');
@@ -126,6 +133,10 @@ export class ZoneRoom extends Room {
     if (account.bannedUntil && account.bannedUntil > new Date()) throw new Error('account banned');
     const stored = await this.deps.repo.loadCharacter(claims.chr);
     if (!stored || stored.accountId !== claims.sub) throw new Error('character not found');
+    // Solo instances (dungeons) are keyed by character: nobody joins someone else's copy.
+    if (soloMap ? opts.instanceKey !== claims.chr : opts.instanceKey !== undefined) {
+      throw new Error('invalid instance');
+    }
 
     let arrival: string | null = null;
     if (opts.ticket) {
@@ -134,7 +145,8 @@ export class ZoneRoom extends Room {
       arrival = ticket.arr;
     } else if (stored.mapId !== this.mapId) {
       // Joining another map without a portal ticket would be a free teleport.
-      throw new Error(`character is in ${stored.mapId}`);
+      const solo = this.deps.content.maps.get(stored.mapId)?.instance === 'solo';
+      throw new Error(`character is in ${stored.mapId}${solo ? `#${claims.chr}` : ''}`);
     }
     // A new login takes over: the old session is kicked and saved before we load (no dupes).
     // Reconnects of a dropped socket use allowReconnection(), not onAuth.
@@ -146,7 +158,14 @@ export class ZoneRoom extends Room {
     const position =
       !arrival && stored.x !== null && stored.z !== null ? { x: stored.x, z: stored.z } : null;
     void client;
-    return { accountId: claims.sub, characterId: claims.chr, arrival, position };
+    return {
+      accountId: claims.sub,
+      characterId: claims.chr,
+      characterName: stored.name,
+      mutedUntil: account.mutedUntil ? account.mutedUntil.getTime() : null,
+      arrival,
+      position,
+    };
   }
 
   override async onJoin(client: Client, _options: unknown, auth: Auth): Promise<void> {
@@ -173,6 +192,7 @@ export class ZoneRoom extends Room {
       leaving: false,
       kicked: false,
       reconnection: null,
+      lastChatAt: 0,
       left,
       markLeft,
     };
@@ -320,6 +340,41 @@ export class ZoneRoom extends Room {
     this.world.enqueueIntent(s.playerId, parsed.data);
   }
 
+  /** Map chat (tech plan §55.2): length/rate limits, mutes from the DB, simple word filter. */
+  private handleChat(client: Client, message: unknown): void {
+    const s = this.sessions.get(client.sessionId);
+    if (!s || s.leaving) return;
+    const parsed = ChatSendSchema.safeParse(message);
+    if (!parsed.success) {
+      this.violation(client, s, 5);
+      return;
+    }
+    const now = Date.now();
+    if (now - s.lastChatAt < 1000) {
+      this.violation(client, s, 2);
+      return;
+    }
+    s.lastChatAt = now;
+    if (s.auth.mutedUntil && s.auth.mutedUntil > now) {
+      client.send('chat', {
+        channel: 'system',
+        fromId: null,
+        fromName: 'Hệ thống',
+        text: 'Bạn đang bị cấm chat.',
+        at: now,
+      } satisfies ChatMessage);
+      return;
+    }
+    const msg: ChatMessage = {
+      channel: 'map',
+      fromId: s.playerId,
+      fromName: s.auth.characterName,
+      text: filterText(parsed.data.text),
+      at: now,
+    };
+    this.broadcast('chat', msg);
+  }
+
   private violation(client: Client, s: Session, weight: number): void {
     s.violations += weight;
     if (s.violations >= KICK_AFTER_VIOLATIONS) {
@@ -344,7 +399,13 @@ export class ZoneRoom extends Room {
       map: mapId,
       arr: arrival,
     });
-    client.send('transfer', { mapId, arrival, ticket });
+    const solo = this.deps.content.maps.get(mapId)?.instance === 'solo';
+    client.send('transfer', {
+      mapId,
+      arrival,
+      ticket,
+      ...(solo ? { instanceKey: s.auth.characterId } : {}),
+    });
     this.world.removeEntity(s.playerId);
     if (this.deps.online.get(s.auth.characterId) === this.roomId) {
       this.deps.online.delete(s.auth.characterId);
@@ -422,4 +483,10 @@ async function devLogin(deps: ZoneDeps, rawName: string): Promise<AccessClaims> 
   }
   if (!character) throw new Error('dev character missing');
   return { sub: account.id, role: account.role, chr: character.id, typ: 'access' };
+}
+
+/** Minimal profanity mask; replace with a maintained list/service before launch. */
+const BLOCKED = [/\bđ[iị]t\b/giu, /\bđ[ụu] ?m[áa]\b/giu, /\bfuck\w*/giu, /\bshit\b/giu];
+function filterText(text: string): string {
+  return BLOCKED.reduce((t, re) => t.replace(re, (m) => '*'.repeat(m.length)), text);
 }

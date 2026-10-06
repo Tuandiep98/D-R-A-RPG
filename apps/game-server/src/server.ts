@@ -55,7 +55,7 @@ export async function startGameServer(config: Config): Promise<RunningGameServer
     gracefullyShutdown: false,
   });
   // One room per map; a full room opens another channel (tech plan §29).
-  gameServer.define('zone', ZoneRoom).filterBy(['mapId']);
+  gameServer.define('zone', ZoneRoom).filterBy(['mapId', 'instanceKey']);
 
   await gameServer.listen(config.PORT, config.HOST);
   const address = http.address();

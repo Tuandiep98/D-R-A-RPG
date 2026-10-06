@@ -10,6 +10,7 @@ ground: { color: '#5b7f43' }
 playerSpawn: { x: -70, z: 0 }
 arrivals:
   - { id: from_town, position: { x: -68, z: 2 } }
+  - { id: from_sanctum, position: { x: 22, z: 32 } }
 
 paths:
   - width: 7
@@ -36,6 +37,7 @@ clearings:
   - { center: { x: 16, z: 22 }, radius: 9 }    # robot ruins
   - { center: { x: 24, z: -26 }, radius: 8 }   # elite yard
   - { center: { x: 60, z: 0 }, radius: 14 }    # boss arena
+  - { center: { x: 22, z: 34 }, radius: 5 }    # dungeon gate
 
 zones:
   - { id: outpost, name: Trạm Gác Thanh Vân, kind: safe, center: { x: -68, z: 0 }, radius: 9 }
@@ -52,8 +54,12 @@ spawns:
   - { id: elite_yard, monsterId: stag_elite_001, position: { x: 24, z: -26 }, count: 1, respawnSeconds: 90 }
   - { id: boss, monsterId: mech_golem_001, position: { x: 62, z: 0 }, count: 1, respawnSeconds: 180 }
 
+npcs:
+  - { npcId: npc_scout, position: { x: -66, z: -4 }, rotationY: 1.2 }
+
 portals:
   - { id: forest_to_town, name: Về Thôn Thanh Vân, position: { x: -77, z: 0 }, targetMapId: map_sandbox_01, targetArrival: from_forest }
+  - { id: sanctum_gate, name: Cơ Quan Điện (phó bản), position: { x: 22, z: 35 }, targetMapId: map_golem_sanctum_01, targetArrival: entrance }
   - { id: arena_exit, name: Lối Ra Đấu Trường, position: { x: 77, z: 0 }, targetMapId: map_sandbox_01, targetArrival: from_forest }
 
 # Arena wall with entrances on the west (path in) and east (exit portal).

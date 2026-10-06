@@ -4,7 +4,7 @@ import { z } from 'zod';
  * Wire contract between client and simulation host (local or server).
  * Bump PROTOCOL_VERSION on any breaking change to these schemas.
  */
-export const PROTOCOL_VERSION = 2;
+export const PROTOCOL_VERSION = 3;
 
 /** Max world coordinate magnitude accepted from a client, in metres. */
 export const MAX_COORD = 10_000;
@@ -57,6 +57,26 @@ export const IntentSchema = z.discriminatedUnion('type', [
   z.strictObject({ type: z.literal('EQUIP'), instanceId: ItemInstanceIdSchema }),
   z.strictObject({ type: z.literal('UNEQUIP'), slot: EquipSlotSchema }),
   z.strictObject({ type: z.literal('USE_ITEM'), instanceId: ItemInstanceIdSchema }),
+  z.strictObject({ type: z.literal('QUEST_ACCEPT'), npcId: EntityIdSchema, questId: contentId }),
+  z.strictObject({ type: z.literal('QUEST_TURN_IN'), npcId: EntityIdSchema, questId: contentId }),
+  z.strictObject({
+    type: z.literal('SHOP_BUY'),
+    npcId: EntityIdSchema,
+    itemId: contentId,
+    count: z.number().int().min(1).max(99),
+  }),
+  z.strictObject({
+    type: z.literal('SHOP_SELL'),
+    npcId: EntityIdSchema,
+    instanceId: ItemInstanceIdSchema,
+    count: z.number().int().min(1).max(999),
+  }),
+  z.strictObject({ type: z.literal('CRAFT'), npcId: EntityIdSchema, recipeId: contentId }),
+  z.strictObject({
+    type: z.literal('UPGRADE'),
+    npcId: EntityIdSchema,
+    instanceId: ItemInstanceIdSchema,
+  }),
 ]);
 export type Intent = z.infer<typeof IntentSchema>;
 export type IntentType = Intent['type'];
@@ -65,7 +85,7 @@ export type IntentType = Intent['type'];
 // Host → client: public world state (everyone in the AOI sees it)
 // ---------------------------------------------------------------------------
 
-export const EntityKindSchema = z.enum(['player', 'monster', 'loot', 'portal']);
+export const EntityKindSchema = z.enum(['player', 'monster', 'loot', 'portal', 'npc']);
 export type EntityKind = z.infer<typeof EntityKindSchema>;
 
 /** Coarse action used by the client to pick a looping animation. */
@@ -114,6 +134,13 @@ export const NoticeCodeSchema = z.enum([
   'invalid',
   'dead',
   'safe_zone',
+  'too_far',
+  'not_enough_gold',
+  'missing_materials',
+  'quest_unavailable',
+  'quest_incomplete',
+  'max_level',
+  'not_sellable',
 ]);
 export type NoticeCode = z.infer<typeof NoticeCodeSchema>;
 
@@ -182,6 +209,26 @@ export const SimEventSchema = z.discriminatedUnion('type', [
     mapId: z.string(),
     arrival: z.string().nullable(),
   }),
+  /** Private: the client opens the NPC dialog (quests, shop, crafting, upgrades). */
+  z.object({
+    type: z.literal('NPC_OPEN'),
+    ownerId: EntityIdSchema,
+    npcEntityId: EntityIdSchema,
+    npcId: z.string(),
+  }),
+  z.object({
+    type: z.literal('QUEST'),
+    ownerId: EntityIdSchema,
+    questId: z.string(),
+    status: z.enum(['active', 'ready', 'done']),
+  }),
+  z.object({
+    type: z.literal('UPGRADE_RESULT'),
+    ownerId: EntityIdSchema,
+    instanceId: z.string(),
+    success: z.boolean(),
+    level: z.number().int(),
+  }),
 ]);
 export type SimEvent = z.infer<typeof SimEventSchema>;
 
@@ -193,6 +240,8 @@ export const InventoryItemSchema = z.object({
   instanceId: ItemInstanceIdSchema,
   itemId: z.string(),
   count: z.number().int().positive(),
+  /** Equipment enhancement level (+1…). */
+  enhance: z.number().int().nonnegative().optional(),
 });
 export type InventoryItem = z.infer<typeof InventoryItemSchema>;
 
@@ -219,6 +268,14 @@ export const PlayerStateSchema = z.object({
   equipment: z.partialRecord(EquipSlotSchema, ItemInstanceIdSchema),
   itemReadyAtTick: z.number().int(),
   inSafeZone: z.boolean(),
+  quests: z.array(
+    z.object({
+      questId: z.string(),
+      /** active: in progress · ready: objectives met · done: turned in */
+      status: z.enum(['active', 'ready', 'done']),
+      progress: z.array(z.number().int().nonnegative()),
+    }),
+  ),
 });
 export type PlayerState = z.infer<typeof PlayerStateSchema>;
 
@@ -230,3 +287,22 @@ export const JoinInfoSchema = z.object({
   tickRate: z.number().int().positive(),
 });
 export type JoinInfo = z.infer<typeof JoinInfoSchema>;
+
+// ---------------------------------------------------------------------------
+// Chat (not part of the simulation; relayed by the host)
+// ---------------------------------------------------------------------------
+
+export const CHAT_MAX_LENGTH = 140;
+
+export const ChatSendSchema = z.strictObject({
+  text: z.string().trim().min(1).max(CHAT_MAX_LENGTH),
+});
+
+export const ChatMessageSchema = z.object({
+  channel: z.enum(['map', 'system']),
+  fromId: EntityIdSchema.nullable(),
+  fromName: z.string(),
+  text: z.string(),
+  at: z.number(),
+});
+export type ChatMessage = z.infer<typeof ChatMessageSchema>;

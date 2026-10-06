@@ -16,6 +16,7 @@ sockets:
   head: Head
 builtIn:
   main_hand: { node: Warrior_Sword, appearanceId: equip_sword_01 }
+hitDelay: 0.25
 placeholder:
   shape: capsule
   color: '#3d7bd9'

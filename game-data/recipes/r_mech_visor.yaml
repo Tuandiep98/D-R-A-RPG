@@ -1,0 +1,7 @@
+id: r_mech_visor
+name: Rèn Mũ Cơ Giới
+result: { itemId: item_mech_visor }
+materials:
+  - { itemId: item_robot_scrap, count: 6 }
+gold: 40
+level: 3

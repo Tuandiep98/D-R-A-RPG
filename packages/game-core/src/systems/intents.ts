@@ -4,6 +4,7 @@ import type { Entity } from '../entity';
 import { clampToBounds, distance } from '../math';
 import { equip, unequip, useItem } from './inventory';
 import { tryPickup } from './loot';
+import { acceptQuest, craft, openNpc, shopBuy, shopSell, turnInQuest, upgrade } from './npc';
 import { requestCast } from './skills';
 
 export interface QueuedIntent {
@@ -76,9 +77,9 @@ function apply(ctx: SimContext, actor: Entity, intent: Intent): boolean {
     }
     case 'INTERACT': {
       const target = ctx.entities.get(intent.entityId);
-      if (!target?.portal) return false;
+      if (!target?.portal && !target?.npc) return false;
       clearActions(actor);
-      if (distance(actor.pos, target.pos) <= INTERACT_RANGE) transfer(ctx, actor, target);
+      if (distance(actor.pos, target.pos) <= INTERACT_RANGE) interactWith(ctx, actor, target);
       else {
         actor.pending = { type: 'interact', entityId: target.id };
         actor.movement.goal = { pos: { ...target.pos }, stopWithin: INTERACT_RANGE * 0.6 };
@@ -91,7 +92,24 @@ function apply(ctx: SimContext, actor: Entity, intent: Intent): boolean {
       return unequip(ctx, actor, intent.slot);
     case 'USE_ITEM':
       return useItem(ctx, actor, intent.instanceId);
+    case 'QUEST_ACCEPT':
+      return acceptQuest(ctx, actor, intent.npcId, intent.questId);
+    case 'QUEST_TURN_IN':
+      return turnInQuest(ctx, actor, intent.npcId, intent.questId);
+    case 'SHOP_BUY':
+      return shopBuy(ctx, actor, intent.npcId, intent.itemId, intent.count);
+    case 'SHOP_SELL':
+      return shopSell(ctx, actor, intent.npcId, intent.instanceId, intent.count);
+    case 'CRAFT':
+      return craft(ctx, actor, intent.npcId, intent.recipeId);
+    case 'UPGRADE':
+      return upgrade(ctx, actor, intent.npcId, intent.instanceId);
   }
+}
+
+function interactWith(ctx: SimContext, actor: Entity, target: Entity): void {
+  if (target.portal) transfer(ctx, actor, target);
+  else if (target.npc) openNpc(ctx, actor, target);
 }
 
 function transfer(ctx: SimContext, actor: Entity, portal: Entity): void {
@@ -116,10 +134,10 @@ export function pendingSystem(ctx: SimContext): void {
       else if (!e.movement.goal) e.pending = null;
     } else if (p.type === 'interact') {
       const target = ctx.entities.get(p.entityId);
-      if (!target?.portal) e.pending = null;
+      if (!target?.portal && !target?.npc) e.pending = null;
       else if (distance(e.pos, target.pos) <= INTERACT_RANGE) {
         e.pending = null;
-        transfer(ctx, e, target);
+        interactWith(ctx, e, target);
       } else if (!e.movement.goal) e.pending = null;
     }
   }

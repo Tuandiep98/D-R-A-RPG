@@ -1,0 +1,7 @@
+# Quaternius RPG Characters — Cleric.gltf
+id: npc_merchant_01
+kind: npc
+modelAssetId: npc_merchant_01
+scale: 0.55
+animations: { idle: Idle }
+placeholder: { shape: capsule, color: '#d9b86b', height: 1.65, radius: 0.4 }

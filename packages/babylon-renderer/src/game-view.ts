@@ -13,8 +13,10 @@ import {
 import { AssetLibrary, type LoadProgress } from '@rpg/asset-runtime';
 import type { AppearanceDef, ContentBundle, EquipSlot, MonsterTier } from '@rpg/game-data';
 import type {
+  ChatMessage,
   EntityId,
   EntitySnapshot,
+  Intent,
   JoinInfo,
   NoticeCode,
   PlayerState,
@@ -81,6 +83,7 @@ export interface ItemView {
   equipped: boolean;
   description: string;
   bonus: string;
+  enhance: number;
 }
 
 export interface UiState {
@@ -105,6 +108,15 @@ export interface UiState {
   inventoryCapacity: number;
   equipment: Partial<Record<EquipSlot, ItemView>>;
   interact: { label: string } | null;
+  quests: QuestView[];
+  questsDone: string[];
+}
+
+export interface QuestView {
+  questId: string;
+  name: string;
+  status: 'active' | 'ready' | 'done';
+  objectives: { text: string; current: number; required: number }[];
 }
 
 export interface Notice {
@@ -137,6 +149,8 @@ export interface GameViewOptions {
   onNotice?: (notice: Notice) => void;
   onDebug?: (stats: DebugStats) => void;
   onAction?: (action: GameAction) => void;
+  onNpcOpen?: (npc: { npcEntityId: EntityId; npcId: string }) => void;
+  onChat?: (message: ChatMessage) => void;
   onToggleDebug?: (scene: Scene) => void;
 }
 
@@ -151,6 +165,13 @@ const NOTICE_TEXT: Record<NoticeCode, string> = {
   invalid: 'Không thể thực hiện',
   dead: 'Bạn đã gục ngã',
   safe_zone: 'Không thể chiến đấu trong vùng an toàn',
+  too_far: 'Hãy lại gần hơn',
+  not_enough_gold: 'Không đủ vàng',
+  missing_materials: 'Thiếu nguyên liệu',
+  quest_unavailable: 'Chưa thể nhận nhiệm vụ này',
+  quest_incomplete: 'Nhiệm vụ chưa hoàn thành',
+  max_level: 'Đã đạt cấp tối đa',
+  not_sellable: 'Không thể bán vật phẩm này',
 };
 
 /**
@@ -174,6 +195,8 @@ export class GameView {
   private join: JoinInfo;
   private loadingMap: Promise<void> | null = null;
   private assetProgress: LoadProgress = { loadedBytes: 0, totalBytes: 0, pending: 0 };
+  /** Presentation delayed to match animation events (hit frames). */
+  private readonly delayed: { at: number; run: () => void }[] = [];
   private readonly quality: QualityManager;
   private preset: QualityPreset;
 
@@ -292,6 +315,15 @@ export class GameView {
             point: { x: target.x, z: target.z },
           },
     );
+  }
+
+  /** Generic intent passthrough for HUD panels (NPC dialogs). Validated by the host. */
+  send(intent: Intent): void {
+    this.opts.host.sendIntent(intent);
+  }
+
+  sendChat(text: string): void {
+    this.opts.host.sendChat(text);
   }
 
   useItem(instanceId: string): void {
@@ -413,6 +445,7 @@ export class GameView {
         this.playerState = s;
       }),
       host.onJoin((j) => this.handleJoin(j)),
+      host.onChat((m) => this.opts.onChat?.(m)),
       this.assets.onProgress((p) => {
         this.assetProgress = p;
       }),
@@ -468,6 +501,15 @@ export class GameView {
     this.time += dt;
     const now = performance.now();
     this.gamepad.poll(dt);
+    if (this.delayed.length > 0) {
+      for (let i = this.delayed.length - 1; i >= 0; i--) {
+        const d = this.delayed[i];
+        if (d && d.at <= now) {
+          this.delayed.splice(i, 1);
+          d.run();
+        }
+      }
+    }
     this.quality.sample(this.engine.getFps(), dt);
     this.buffer.sample(now, this.sampled);
 
@@ -602,6 +644,7 @@ export class GameView {
           this.opts.host.sendIntent({ type: 'PICKUP', lootId: hitId });
           return;
         case 'portal':
+        case 'npc':
           this.opts.host.sendIntent({ type: 'INTERACT', entityId: hitId });
           return;
         default:
@@ -651,7 +694,7 @@ export class GameView {
     let best: InterpolatedEntity | null = null;
     let bestD = INTERACT_SEARCH;
     for (const e of this.sampled.values()) {
-      if (e.state.kind !== 'loot' && e.state.kind !== 'portal') continue;
+      if (e.state.kind !== 'loot' && e.state.kind !== 'portal' && e.state.kind !== 'npc') continue;
       if (
         e.state.kind === 'loot' &&
         e.state.ownerId !== null &&
@@ -688,12 +731,22 @@ export class GameView {
         case 'DAMAGE': {
           const view = this.views.get(ev.targetId);
           if (!view) break;
+          // Auto-attacks: show the number on the clip's hit frame (appearance.hitDelay).
+          const hitDelay = ev.skillId ? 0 : (this.views.get(ev.sourceId)?.appearance.hitDelay ?? 0);
+          const delayedReplay = ev.skillId === '__delayed';
+          if (hitDelay > 0) {
+            this.delayed.push({
+              at: performance.now() + hitDelay * 1000,
+              run: () => this.handleEvents([{ ...ev, skillId: '__delayed' }]),
+            });
+            break;
+          }
           view.play('hit');
           const color = mine(ev.targetId)
             ? '#ff5a4f'
             : ev.crit
               ? '#ffd23f'
-              : ev.skillId
+              : ev.skillId && !delayedReplay
                 ? '#8fe3ff'
                 : '#ffffff';
           this.floatText(view, ev.crit ? `${ev.amount}!` : `${ev.amount}`, color);
@@ -760,6 +813,33 @@ export class GameView {
         case 'NOTICE':
           if (mine(ev.ownerId)) this.opts.onNotice?.({ text: NOTICE_TEXT[ev.code], tone: 'warn' });
           break;
+        case 'NPC_OPEN':
+          if (mine(ev.ownerId))
+            this.opts.onNpcOpen?.({ npcEntityId: ev.npcEntityId, npcId: ev.npcId });
+          break;
+        case 'QUEST':
+          if (mine(ev.ownerId)) {
+            const q = this.opts.content.quests.get(ev.questId);
+            const text = {
+              active: 'Nhận nhiệm vụ',
+              ready: 'Hoàn thành mục tiêu',
+              done: 'Đã trả nhiệm vụ',
+            }[ev.status];
+            this.opts.onNotice?.({
+              text: `${text}: ${q?.name ?? ev.questId}`,
+              tone: ev.status === 'active' ? 'info' : 'good',
+            });
+          }
+          break;
+        case 'UPGRADE_RESULT':
+          if (mine(ev.ownerId)) {
+            this.opts.onNotice?.(
+              ev.success
+                ? { text: `Cường hoá thành công: +${ev.level}`, tone: 'good', color: '#ffd23f' }
+                : { text: `Cường hoá thất bại (giữ +${ev.level})`, tone: 'warn' },
+            );
+          }
+          break;
         case 'PHASE': {
           const e = this.sampled.get(ev.id);
           const def = e ? this.opts.content.monsters.get(e.state.defId) : undefined;
@@ -798,6 +878,10 @@ export class GameView {
         return c.appearances.get('loot_bag');
       case 'portal':
         return c.appearances.get('portal_gate');
+      case 'npc': {
+        const def = c.npcs.get(e.defId);
+        return def ? c.appearances.get(def.appearanceId) : undefined;
+      }
     }
   }
 
@@ -822,6 +906,7 @@ export class GameView {
     let name: string;
     if (e.kind === 'player') name = c.characters.get(e.defId)?.name ?? e.defId;
     else if (e.kind === 'loot') name = c.items.get(e.defId)?.name ?? e.defId;
+    else if (e.kind === 'npc') name = c.npcs.get(e.defId)?.name ?? e.defId;
     else if (e.kind === 'portal')
       name = c.maps.get(this.join.mapId)?.portals.find((p) => p.id === e.defId)?.name ?? 'Cổng';
     else name = monster?.name ?? e.defId;
@@ -850,7 +935,13 @@ export class GameView {
     };
   }
 
-  private itemView(instanceId: string, itemId: string, count: number, equipped: boolean): ItemView {
+  private itemView(
+    instanceId: string,
+    itemId: string,
+    count: number,
+    equipped: boolean,
+    enhance = 0,
+  ): ItemView {
     const def = this.opts.content.items.get(itemId);
     const b = def?.bonus;
     const sign = (v: number) => (v > 0 ? `+${v}` : `${v}`);
@@ -881,6 +972,7 @@ export class GameView {
       equipped,
       description: def?.description ?? '',
       bonus: parts.join(' · '),
+      enhance,
     };
   }
 
@@ -902,7 +994,7 @@ export class GameView {
 
     const equippedIds = new Set(Object.values(ps?.equipment ?? {}));
     const inventory = (ps?.inventory ?? []).map((i) =>
-      this.itemView(i.instanceId, i.itemId, i.count, equippedIds.has(i.instanceId)),
+      this.itemView(i.instanceId, i.itemId, i.count, equippedIds.has(i.instanceId), i.enhance ?? 0),
     );
     const equipment: UiState['equipment'] = {};
     for (const [slot, instanceId] of Object.entries(ps?.equipment ?? {})) {
@@ -933,6 +1025,8 @@ export class GameView {
     let interactLabel: string | null = null;
     if (interactTarget?.state.kind === 'loot')
       interactLabel = `Nhặt ${c.items.get(interactTarget.state.defId)?.name ?? ''}`;
+    else if (interactTarget?.state.kind === 'npc')
+      interactLabel = `Nói chuyện: ${c.npcs.get(interactTarget.state.defId)?.name ?? ''}`;
     else if (interactTarget)
       interactLabel = `Vào ${this.unitFrame(interactTarget.state.id, tick)?.name ?? 'cổng'}`;
 
@@ -983,6 +1077,33 @@ export class GameView {
       inventoryCapacity: ps?.inventoryCapacity ?? 0,
       equipment,
       interact: interactLabel ? { label: interactLabel } : null,
+      questsDone: (ps?.quests ?? []).filter((q) => q.status === 'done').map((q) => q.questId),
+      quests: (ps?.quests ?? [])
+        .filter((q) => q.status !== 'done')
+        .map((q) => {
+          const def = c.quests.get(q.questId);
+          return {
+            questId: q.questId,
+            name: def?.name ?? q.questId,
+            status: q.status,
+            objectives: (def?.objectives ?? []).map((o, i) => {
+              const current = q.progress[i] ?? 0;
+              if (o.type === 'kill')
+                return {
+                  text: `Hạ ${c.monsters.get(o.monsterId)?.name ?? o.monsterId}`,
+                  current,
+                  required: o.count,
+                };
+              if (o.type === 'collect')
+                return {
+                  text: `Thu ${c.items.get(o.itemId)?.name ?? o.itemId}`,
+                  current,
+                  required: o.count,
+                };
+              return { text: `Gặp ${c.npcs.get(o.npcId)?.name ?? o.npcId}`, current, required: 1 };
+            }),
+          };
+        }),
     };
     const key = JSON.stringify(ui);
     if (key !== this.lastUi) {

@@ -1,7 +1,8 @@
 import type { DebugStats, Notice, QualityMode, UiState } from '@rpg/babylon-renderer';
+import type { ChatMessage } from '@rpg/game-protocol';
 import { create } from 'zustand';
 
-export type Panel = 'inventory' | 'character' | 'settings' | null;
+export type Panel = 'inventory' | 'character' | 'settings' | 'leaderboard' | null;
 
 export interface ToastNotice extends Notice {
   id: number;
@@ -17,6 +18,11 @@ interface UiStore {
   debug: DebugStats | null;
   notices: ToastNotice[];
   panel: Panel;
+  npc: { npcEntityId: number; npcId: string } | null;
+  chat: ChatMessage[];
+  openNpc(npc: { npcEntityId: number; npcId: string }): void;
+  closeNpc(): void;
+  pushChat(m: ChatMessage): void;
   showDebug: boolean;
   quality: QualityMode;
   hostKind: string;
@@ -41,6 +47,11 @@ export const useUiStore = create<UiStore>((set) => ({
   debug: null,
   notices: [],
   panel: null,
+  npc: null,
+  chat: [],
+  openNpc: (npc) => set({ npc, panel: null }),
+  closeNpc: () => set({ npc: null }),
+  pushChat: (m) => set((s) => ({ chat: [...s.chat, m].slice(-60) })),
   showDebug: true,
   quality: 'auto',
   hostKind: '',
@@ -64,7 +75,7 @@ export const useUiStore = create<UiStore>((set) => ({
         : s,
     ),
   togglePanel: (panel) => set((s) => ({ panel: s.panel === panel ? null : panel })),
-  closePanel: () => set({ panel: null }),
+  closePanel: () => set({ panel: null, npc: null }),
   toggleDebug: () => set((s) => ({ showDebug: !s.showDebug })),
   setQuality: (quality) => set({ quality }),
   setStatus: (status, error) => set({ status, error: error ?? null }),

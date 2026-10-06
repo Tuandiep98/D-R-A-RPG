@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import {
+  ChatMessageSchema,
   type EntityId,
   type EntitySnapshot,
   EntitySnapshotSchema,
@@ -28,7 +29,14 @@ export const ServerMessages = {
   snap: SnapshotDeltaSchema,
   events: z.array(SimEventSchema),
   player: PlayerStateSchema,
-  transfer: z.object({ mapId: z.string(), arrival: z.string().nullable(), ticket: z.string() }),
+  transfer: z.object({
+    mapId: z.string(),
+    arrival: z.string().nullable(),
+    ticket: z.string(),
+    /** Set for solo maps: the private instance to join. */
+    instanceKey: z.string().optional(),
+  }),
+  chat: ChatMessageSchema,
 } as const;
 
 /** Client → server: the only message type is an intent (validated with IntentSchema). */
@@ -40,6 +48,8 @@ export const JoinOptionsSchema = z.object({
   protocolVersion: z.number().int(),
   /** Signed by the server on portal use; grants the arrival point. */
   ticket: z.string().max(2048).optional(),
+  /** Solo maps only: must equal the character id (checked in onAuth). */
+  instanceKey: z.string().max(64).optional(),
 });
 export type JoinOptions = z.infer<typeof JoinOptionsSchema>;
 

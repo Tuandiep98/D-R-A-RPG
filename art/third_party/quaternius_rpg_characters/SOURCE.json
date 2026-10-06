@@ -13,6 +13,26 @@
       "assetId": "char_player_default",
       "file": "originals/glTF/Warrior.gltf",
       "type": "character"
+    },
+    {
+      "assetId": "npc_elder_01",
+      "file": "originals/glTF/Wizard.gltf",
+      "type": "character"
+    },
+    {
+      "assetId": "npc_merchant_01",
+      "file": "originals/glTF/Cleric.gltf",
+      "type": "character"
+    },
+    {
+      "assetId": "npc_smith_01",
+      "file": "originals/glTF/Monk.gltf",
+      "type": "character"
+    },
+    {
+      "assetId": "npc_scout_01",
+      "file": "originals/glTF/Rogue.gltf",
+      "type": "character"
     }
   ]
 }

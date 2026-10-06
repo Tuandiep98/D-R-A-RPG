@@ -1,0 +1,7 @@
+# Quaternius RPG Characters — Monk.gltf
+id: npc_smith_01
+kind: npc
+modelAssetId: npc_smith_01
+scale: 0.55
+animations: { idle: Idle }
+placeholder: { shape: capsule, color: '#a0522d', height: 1.65, radius: 0.4 }

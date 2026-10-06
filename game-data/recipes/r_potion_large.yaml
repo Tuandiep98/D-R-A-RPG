@@ -1,0 +1,7 @@
+id: r_potion_large
+name: Luyện Hồi Huyết Đan (lớn)
+result: { itemId: item_potion_hp_large }
+materials:
+  - { itemId: item_potion_hp_small, count: 2 }
+  - { itemId: item_wolf_fang, count: 1 }
+gold: 5

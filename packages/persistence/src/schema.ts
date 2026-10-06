@@ -74,6 +74,8 @@ export const characters = pgTable(
     hp: integer('hp').notNull().default(0),
     mp: integer('mp').notNull().default(0),
     mapId: text('map_id').notNull(),
+    /** Quest log (QuestState[]); small and always loaded with the character. */
+    questLog: jsonb('quest_log').notNull().default([]),
     x: real('x'),
     z: real('z'),
     /** Optimistic concurrency: bumped on every save. */
@@ -98,6 +100,8 @@ export const itemInstances = pgTable(
     itemId: text('item_id').notNull(),
     count: integer('count').notNull(),
     equippedSlot: text('equipped_slot'),
+    /** Enhancement level (+N). */
+    enhance: integer('enhance').notNull().default(0),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [

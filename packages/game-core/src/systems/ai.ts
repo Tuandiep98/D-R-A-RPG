@@ -11,10 +11,27 @@ const HOME_ARRIVE = 0.3;
  * system closes in and attacks, skills fire when ready) → return when leashed
  * or the target is lost → idle with full HP. Players in safe zones are ignored.
  */
+/** Simulation LOD (tech plan §11): idle monsters this far from every player think every N ticks. */
+const FAR_DISTANCE = 45;
+const FAR_THINK_EVERY = 10;
+
 export function aiSystem(ctx: SimContext): void {
+  const players: Entity[] = [];
+  for (const e of ctx.entities.values()) if (e.player && e.life.alive) players.push(e);
   for (const e of ctx.entities.values()) {
     if (!e.ai || !e.life.alive) continue;
     const ai = e.ai;
+    if (
+      ai.state === 'idle' &&
+      e.life.lastAttackerId === null &&
+      (ctx.tick + e.id) % FAR_THINK_EVERY !== 0
+    ) {
+      const near = players.some(
+        (p) =>
+          Math.abs(p.pos.x - e.pos.x) < FAR_DISTANCE && Math.abs(p.pos.z - e.pos.z) < FAR_DISTANCE,
+      );
+      if (!near) continue;
+    }
 
     switch (ai.state) {
       case 'idle': {

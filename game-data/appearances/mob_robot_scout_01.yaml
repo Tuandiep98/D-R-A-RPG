@@ -9,6 +9,7 @@ animations:
   attack: Punch
   hit: HitReact
   death: Death
+hitDelay: 0.3
 placeholder:
   shape: cylinder
   color: '#9aa4b1'

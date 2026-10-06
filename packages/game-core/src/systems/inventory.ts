@@ -110,3 +110,54 @@ export function useItem(ctx: SimContext, e: Entity, instanceId: ItemInstanceId):
   }
   return true;
 }
+
+export function countItem(e: Entity, itemId: string): number {
+  return (e.player?.inventory ?? []).reduce((n, i) => (i.itemId === itemId ? n + i.count : n), 0);
+}
+
+/** Removes `count` items, unequipped stacks first. Caller checks countItem beforehand. */
+export function removeItems(ctx: SimContext, e: Entity, itemId: string, count: number): void {
+  const p = e.player;
+  if (!p) return;
+  const equipped = new Set(Object.values(p.equipment));
+  let left = count;
+  const stacks = p.inventory
+    .filter((i) => i.itemId === itemId)
+    .sort((a, b) => Number(equipped.has(a.instanceId)) - Number(equipped.has(b.instanceId)));
+  for (const slot of stacks) {
+    if (left === 0) break;
+    const take = Math.min(left, slot.count);
+    slot.count -= take;
+    left -= take;
+  }
+  p.inventory = p.inventory.filter((i) => i.count > 0);
+  for (const [slot, id] of Object.entries(p.equipment)) {
+    if (!p.inventory.some((i) => i.instanceId === id)) delete p.equipment[slot as EquipSlot];
+  }
+  if (equipped.size !== Object.keys(p.equipment).length) recomputePlayerStats(ctx, e);
+}
+
+/** True if every item would fit (stacking into existing stacks first). */
+export function canAdd(
+  ctx: SimContext,
+  e: Entity,
+  items: readonly { itemId: string; count: number }[],
+): boolean {
+  const p = e.player;
+  if (!p) return false;
+  let freeSlots = INVENTORY_CAPACITY - p.inventory.length;
+  for (const { itemId, count } of items) {
+    const def = ctx.content.items.get(itemId);
+    if (!def) return false;
+    let left = count;
+    for (const slot of p.inventory) {
+      if (slot.itemId === itemId) left -= Math.max(0, def.maxStack - slot.count);
+    }
+    while (left > 0) {
+      if (freeSlots <= 0) return false;
+      freeSlots--;
+      left -= def.maxStack;
+    }
+  }
+  return true;
+}

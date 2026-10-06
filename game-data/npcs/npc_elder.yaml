@@ -1,0 +1,6 @@
+id: npc_elder
+name: Trưởng Lão Vân Hạc
+title: Trưởng lão Thôn Thanh Vân
+appearanceId: npc_elder_01
+greeting: Rừng Cơ Quan lại có động. Thiếu hiệp giúp lão một tay chứ?
+quests: [q_wolf_cull, q_fox_fur, q_meet_scout, q_robot_scrap, q_elite_stag, q_boss_golem]

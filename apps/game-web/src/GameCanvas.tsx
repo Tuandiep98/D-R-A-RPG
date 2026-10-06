@@ -112,6 +112,8 @@ export function GameCanvas({ online = null }: { online?: OnlineChoice | null }) 
           onUi: store.setUi,
           onDebug: store.setDebug,
           onNotice: store.pushNotice,
+          onNpcOpen: store.openNpc,
+          onChat: store.pushChat,
           onAction: (a) => {
             if (a.type === 'TOGGLE_PANEL') useUiStore.getState().togglePanel(a.panel);
           },

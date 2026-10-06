@@ -1,0 +1,9 @@
+id: shop_village
+name: Tạp Hoá Thôn Thanh Vân
+buybackRate: 1
+items:
+  - { itemId: item_potion_hp_small, price: 8 }
+  - { itemId: item_potion_hp_large, price: 30 }
+  - { itemId: item_boots_leather, price: 45 }
+  - { itemId: item_wuxia_headband, price: 35 }
+  - { itemId: item_sword_iron, price: 40 }

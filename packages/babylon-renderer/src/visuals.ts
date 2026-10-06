@@ -133,7 +133,11 @@ export class PlaceholderVisual implements Visual {
     this.flashMat.emissiveColor = new Color3(0.9, 0.3, 0.3);
 
     const { height, radius } = appearance.placeholder;
-    if (appearance.kind === 'character' || appearance.kind === 'monster') {
+    if (
+      appearance.kind === 'character' ||
+      appearance.kind === 'monster' ||
+      appearance.kind === 'npc'
+    ) {
       // Small nose so facing is readable before real models exist.
       const nose = MeshBuilder.CreateBox(`${name}_nose`, { size: radius * 0.45 }, scene);
       nose.position.set(0, height * 0.7, radius * 0.95);

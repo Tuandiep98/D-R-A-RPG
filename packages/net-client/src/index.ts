@@ -1,5 +1,7 @@
 import { Client, type Room } from '@colyseus/sdk';
 import {
+  type ChatMessage,
+  ChatSendSchema,
   IntentSchema,
   type JoinInfo,
   type PlayerState,
@@ -20,7 +22,7 @@ export interface ColyseusSimHostOptions {
   onDisconnect?: (code: number) => void;
 }
 
-const WRONG_MAP = /character is in ([a-z0-9_]+)/;
+const WRONG_MAP = /character is in ([a-z0-9_]+)(?:#([A-Za-z0-9-]+))?/;
 
 /**
  * SimHost backed by the authoritative game server (M3). Same contract as
@@ -40,7 +42,7 @@ export class ColyseusSimHost implements SimHost {
   }
 
   async connect(): Promise<JoinInfo> {
-    return this.joinMap(this.mapId, undefined, true);
+    return this.joinMap(this.mapId, undefined, true, undefined);
   }
 
   sendIntent(intent: unknown): void {
@@ -65,6 +67,15 @@ export class ColyseusSimHost implements SimHost {
     return HostEmitter.add(this.emitter.join, cb);
   }
 
+  sendChat(text: string): void {
+    const parsed = ChatSendSchema.safeParse({ text });
+    if (parsed.success) this.room?.send('chat', parsed.data);
+  }
+
+  onChat(cb: (message: ChatMessage) => void): () => void {
+    return HostEmitter.add(this.emitter.chat, cb);
+  }
+
   dispose(): void {
     this.disposed = true;
     void this.room?.leave(true);
@@ -76,6 +87,7 @@ export class ColyseusSimHost implements SimHost {
     mapId: string,
     ticket: string | undefined,
     allowRedirect: boolean,
+    instanceKey: string | undefined,
   ): Promise<JoinInfo> {
     this.client.auth.token = await this.opts.getToken();
     let room: Room;
@@ -84,10 +96,12 @@ export class ColyseusSimHost implements SimHost {
         mapId,
         protocolVersion: PROTOCOL_VERSION,
         ticket,
+        instanceKey,
       });
     } catch (err) {
       const redirect = WRONG_MAP.exec(err instanceof Error ? err.message : String(err));
-      if (allowRedirect && redirect?.[1]) return this.joinMap(redirect[1], undefined, false);
+      if (allowRedirect && redirect?.[1])
+        return this.joinMap(redirect[1], undefined, false, redirect[2]);
       throw err;
     }
     this.room = room;
@@ -110,8 +124,11 @@ export class ColyseusSimHost implements SimHost {
     room.onMessage('player', (state: PlayerState) => {
       for (const cb of this.emitter.playerState) cb(state);
     });
-    room.onMessage('transfer', (msg: { mapId: string; ticket: string }) => {
-      void this.switchMap(room, msg.mapId, msg.ticket);
+    room.onMessage('transfer', (msg: { mapId: string; ticket: string; instanceKey?: string }) => {
+      void this.switchMap(room, msg.mapId, msg.ticket, msg.instanceKey);
+    });
+    room.onMessage('chat', (msg: ChatMessage) => {
+      for (const cb of this.emitter.chat) cb(msg);
     });
     room.onLeave((code: number) => {
       if (this.room === room && !this.disposed) this.opts.onDisconnect?.(code);
@@ -119,9 +136,14 @@ export class ColyseusSimHost implements SimHost {
     return joined;
   }
 
-  private async switchMap(from: Room, mapId: string, ticket: string): Promise<void> {
+  private async switchMap(
+    from: Room,
+    mapId: string,
+    ticket: string,
+    instanceKey?: string,
+  ): Promise<void> {
     this.room = null;
     await from.leave(true);
-    if (!this.disposed) await this.joinMap(mapId, ticket, false);
+    if (!this.disposed) await this.joinMap(mapId, ticket, false, instanceKey);
   }
 }

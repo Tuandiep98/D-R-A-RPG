@@ -1,0 +1,46 @@
+# Cơ Quan Điện — solo dungeon (tech plan §29: one private instance per character).
+# Corridor of robot guards → sanctum with a copy of the boss → exit portal.
+id: map_golem_sanctum_01
+name: Cơ Quan Điện
+seed: 777
+instance: solo
+bounds: { min: { x: -24, z: -40 }, max: { x: 24, z: 40 } }
+chunkSize: 32
+ground: { color: '#4a4f57' }
+playerSpawn: { x: 0, z: -35 }
+arrivals:
+  - { id: entrance, position: { x: 0, z: -34 } }
+
+paths:
+  - width: 8
+    points: [{ x: 0, z: -38 }, { x: 0, z: 38 }]
+
+clearings:
+  - { center: { x: 0, z: -34 }, radius: 5 }
+  - { center: { x: 0, z: 20 }, radius: 13 }
+
+zones:
+  - { id: sanctum_gate, name: Cổng Điện, kind: safe, center: { x: 0, z: -35 }, radius: 4 }
+  - { id: sanctum, name: Chính Điện, kind: boss_arena, center: { x: 0, z: 20 }, radius: 13 }
+
+spawns:
+  - { id: guards_a, monsterId: robot_scout_001, position: { x: 0, z: -18 }, count: 3, radius: 3, respawnSeconds: 600 }
+  - { id: guards_b, monsterId: robot_scout_001, position: { x: 0, z: -4 }, count: 3, radius: 3, respawnSeconds: 600 }
+  - { id: sanctum_boss, monsterId: mech_golem_001, position: { x: 0, z: 22 }, count: 1, respawnSeconds: 900 }
+
+portals:
+  - { id: sanctum_exit, name: Rời Cơ Quan Điện, position: { x: 0, z: 36 }, targetMapId: map_forest_mechanism_01, targetArrival: from_sanctum }
+
+rings:
+  - appearanceId: env_rock_01
+    center: { x: 0, z: 20 }
+    radius: 14
+    count: 22
+    scale: 1.5
+    colliderRadius: 1.1
+    gapAngles: [-1.5708, 1.5708]
+    gapWidth: 0.3
+
+scatter:
+  - { appearanceId: env_rock_01, count: 18, minSpacing: 3.5, colliderRadius: 0.8, scale: [0.7, 1.3] }
+  - { appearanceId: env_tree_02, count: 6, minSpacing: 6, colliderRadius: 0.5, scale: [0.7, 0.9] }

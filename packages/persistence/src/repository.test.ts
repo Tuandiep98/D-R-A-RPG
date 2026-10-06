@@ -37,10 +37,11 @@ describe('GameRepository', () => {
       hp: 500,
       mp: 80,
       inventory: [
-        { instanceId: 'i-sword', itemId: 'item_sword_iron', count: 1 },
+        { instanceId: 'i-sword', itemId: 'item_sword_iron', count: 1, enhance: 2 },
         { instanceId: 'i-pot', itemId: 'item_potion_hp_small', count: 4 },
       ],
       equipment: { main_hand: 'i-sword' },
+      quests: [{ questId: 'q_wolf_cull', status: 'active' as const, progress: [2] }],
     };
     const ledger = [
       {

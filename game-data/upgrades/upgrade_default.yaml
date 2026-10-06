@@ -1,0 +1,10 @@
+id: upgrade_default
+maxLevel: 5
+# Each level adds 10% of the item's base bonus.
+bonusPerLevel: 0.1
+steps:
+  - { gold: 20, successRate: 1 }
+  - { gold: 40, successRate: 0.9, materials: [{ itemId: item_robot_scrap, count: 1 }] }
+  - { gold: 80, successRate: 0.75, materials: [{ itemId: item_robot_scrap, count: 2 }] }
+  - { gold: 150, successRate: 0.6, materials: [{ itemId: item_elite_antler, count: 1 }] }
+  - { gold: 300, successRate: 0.45, materials: [{ itemId: item_golem_core, count: 1 }] }

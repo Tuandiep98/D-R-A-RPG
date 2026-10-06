@@ -100,3 +100,6 @@ export const startSession = (characterId: string) =>
   });
 
 export const hasSession = (): boolean => accessToken !== null;
+
+export const fetchLeaderboard = () =>
+  request<{ leaderboard: { name: string; level: number; xp: number }[] }>('/leaderboard');

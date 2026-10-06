@@ -13,6 +13,10 @@ arrivals:
   - { id: from_forest, position: { x: 0, z: 13 } }
 zones:
   - { id: village, name: Thôn Thanh Vân, kind: safe, center: { x: 0, z: -12 }, radius: 6 }
+npcs:
+  - { npcId: npc_elder, position: { x: -4, z: -14 }, rotationY: 0.5 }
+  - { npcId: npc_merchant, position: { x: 4, z: -14 }, rotationY: -0.5 }
+  - { npcId: npc_smith, position: { x: 0, z: -17 } }
 portals:
   - { id: town_to_forest, name: Rừng Cơ Quan, position: { x: 0, z: 17 }, targetMapId: map_forest_mechanism_01, targetArrival: from_town }
 chunks:

@@ -3,6 +3,10 @@ import type { EquipSlot } from '@rpg/game-data';
 import { useEffect, useState } from 'react';
 import { game } from '../game';
 import { useUiStore } from '../store';
+import { NpcPanel } from './NpcPanel';
+import { ChatBox, LeaderboardPanel, QuestTracker } from './Social';
+
+const ONLINE = new URLSearchParams(window.location.search).has('online');
 
 const TIER_LABEL: Record<string, string> = {
   elite: 'Tinh anh',
@@ -179,6 +183,7 @@ function ItemTile({ item, onClick }: { item: ItemView; onClick?: () => void }) {
     >
       <span>{item.icon}</span>
       {item.count > 1 && <span className="item-count">{item.count}</span>}
+      {item.enhance > 0 && <span className="item-enhance">+{item.enhance}</span>}
     </button>
   );
 }
@@ -395,6 +400,11 @@ function MenuButtons() {
       <button type="button" title="Nhân vật (C)" onClick={() => toggle('character')}>
         👤
       </button>
+      {ONLINE && (
+        <button type="button" title="Bảng xếp hạng" onClick={() => toggle('leaderboard')}>
+          🏆
+        </button>
+      )}
       <button type="button" title="Cài đặt" onClick={() => toggle('settings')}>
         ⚙
       </button>
@@ -425,9 +435,13 @@ export function Hud() {
       {panel === 'inventory' && <InventoryPanel />}
       {panel === 'character' && <CharacterPanel />}
       {panel === 'settings' && <SettingsPanel />}
+      {panel === 'leaderboard' && <LeaderboardPanel />}
+      <NpcPanel />
+      <QuestTracker />
+      <ChatBox />
       <div className="help">
-        Click: đi/đánh/nhặt · 1–5: chiêu · Q: thuốc · F: tương tác · Tab: đổi mục tiêu · I: túi đồ ·
-        Chuột phải: xoay
+        Click: đi/đánh/nhặt/nói chuyện · 1–5: chiêu · Q: thuốc · F: tương tác · Tab: đổi mục tiêu ·
+        I: túi đồ · Enter: chat · Chuột phải: xoay
       </div>
     </div>
   );

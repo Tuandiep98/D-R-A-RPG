@@ -245,6 +245,106 @@ export const MonsterDefSchema = z.strictObject({
 export type MonsterDef = z.infer<typeof MonsterDefSchema>;
 
 // ---------------------------------------------------------------------------
+// NPCs, quests, shops, crafting, upgrades
+// ---------------------------------------------------------------------------
+
+export const NpcDefSchema = z.strictObject({
+  id: IdSchema,
+  name: z.string().min(1),
+  title: z.string().default(''),
+  appearanceId: IdSchema,
+  greeting: z.string().default(''),
+  /** Quests this NPC hands out and accepts. */
+  quests: z.array(IdSchema).default([]),
+  shopId: IdSchema.optional(),
+  /** Recipes this NPC can craft. */
+  recipes: z.array(IdSchema).default([]),
+  /** Offers equipment upgrades (enhancement). */
+  upgrades: z.boolean().default(false),
+});
+export type NpcDef = z.infer<typeof NpcDefSchema>;
+
+export const QuestObjectiveSchema = z.discriminatedUnion('type', [
+  z.strictObject({
+    type: z.literal('kill'),
+    monsterId: IdSchema,
+    count: z.number().int().positive(),
+  }),
+  z.strictObject({
+    type: z.literal('collect'),
+    itemId: IdSchema,
+    count: z.number().int().positive(),
+  }),
+  z.strictObject({ type: z.literal('talk'), npcId: IdSchema }),
+]);
+export type QuestObjective = z.infer<typeof QuestObjectiveSchema>;
+
+export const QuestDefSchema = z.strictObject({
+  id: IdSchema,
+  name: z.string().min(1),
+  description: z.string().default(''),
+  giverNpcId: IdSchema,
+  /** Defaults to the giver. */
+  turnInNpcId: IdSchema.optional(),
+  level: z.number().int().positive().default(1),
+  /** Quests that must be turned in first. */
+  requires: z.array(IdSchema).default([]),
+  objectives: z.array(QuestObjectiveSchema).min(1),
+  /** Collected items are removed on turn-in. */
+  consumeItems: z.boolean().default(true),
+  rewards: z.strictObject({
+    xp: z.number().int().nonnegative().default(0),
+    gold: z.number().int().nonnegative().default(0),
+    items: z
+      .array(z.strictObject({ itemId: IdSchema, count: z.number().int().positive().default(1) }))
+      .default([]),
+  }),
+});
+export type QuestDef = z.infer<typeof QuestDefSchema>;
+
+export const ShopDefSchema = z.strictObject({
+  id: IdSchema,
+  name: z.string().min(1),
+  items: z.array(z.strictObject({ itemId: IdSchema, price: z.number().int().positive() })).min(1),
+  /** Fraction of an item's sellPrice paid when selling to this shop. */
+  buybackRate: z.number().min(0).max(1).default(1),
+});
+export type ShopDef = z.infer<typeof ShopDefSchema>;
+
+export const RecipeDefSchema = z.strictObject({
+  id: IdSchema,
+  name: z.string().min(1),
+  result: z.strictObject({ itemId: IdSchema, count: z.number().int().positive().default(1) }),
+  materials: z
+    .array(z.strictObject({ itemId: IdSchema, count: z.number().int().positive() }))
+    .min(1),
+  gold: z.number().int().nonnegative().default(0),
+  level: z.number().int().positive().default(1),
+});
+export type RecipeDef = z.infer<typeof RecipeDefSchema>;
+
+/** Equipment enhancement +1…+maxLevel (tech plan §47 "1 upgrade flow"). */
+export const UpgradeRulesSchema = z.strictObject({
+  id: IdSchema,
+  maxLevel: z.number().int().positive(),
+  /** Bonus multiplier per level: final = base × (1 + bonusPerLevel × level). */
+  bonusPerLevel: z.number().positive(),
+  /** One entry per target level (index 0 = +1). */
+  steps: z
+    .array(
+      z.strictObject({
+        gold: z.number().int().nonnegative(),
+        materials: z
+          .array(z.strictObject({ itemId: IdSchema, count: z.number().int().positive() }))
+          .default([]),
+        successRate: chance,
+      }),
+    )
+    .min(1),
+});
+export type UpgradeRules = z.infer<typeof UpgradeRulesSchema>;
+
+// ---------------------------------------------------------------------------
 // Map
 // ---------------------------------------------------------------------------
 
@@ -312,6 +412,14 @@ export const MapDefSchema = z
     spawns: z.array(MapSpawnSchema).default([]),
     portals: z.array(MapPortalSchema).default([]),
     zones: z.array(MapZoneSchema).default([]),
+    npcs: z
+      .array(z.strictObject({ npcId: IdSchema, position: Vec2, rotationY: z.number().default(0) }))
+      .default([]),
+    /**
+     * shared: one world per channel (default). solo: a private copy per
+     * character (dungeon, tech plan §29 "Instance #1234").
+     */
+    instance: z.enum(['shared', 'solo']).default('shared'),
   })
   .refine((m) => m.bounds.min.x < m.bounds.max.x && m.bounds.min.z < m.bounds.max.z, {
     message: 'bounds.min must be smaller than bounds.max',
@@ -341,7 +449,16 @@ export type Socket = z.infer<typeof SocketSchema>;
 
 export const AppearanceDefSchema = z.strictObject({
   id: IdSchema,
-  kind: z.enum(['character', 'monster', 'environment', 'ground', 'equipment', 'loot', 'portal']),
+  kind: z.enum([
+    'character',
+    'monster',
+    'environment',
+    'ground',
+    'equipment',
+    'loot',
+    'portal',
+    'npc',
+  ]),
   /** Asset id in the runtime manifest. Missing asset → placeholder. */
   modelAssetId: IdSchema.optional(),
   scale: positive.default(1),
@@ -367,6 +484,12 @@ export const AppearanceDefSchema = z.strictObject({
   builtIn: z
     .partialRecord(EquipSlotSchema, z.strictObject({ node: z.string(), appearanceId: IdSchema }))
     .default({}),
+  /**
+   * Seconds from the start of the attack clip to the visual hit (animation
+   * event, assets plan §7). The client delays damage numbers by this much;
+   * the outcome itself is already decided by the server.
+   */
+  hitDelay: nonNegative.default(0),
   /** Emissive tint used by elite/boss variants and rarity glows. */
   tint: z.string().optional(),
   placeholder: z.strictObject({

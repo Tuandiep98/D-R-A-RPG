@@ -1,4 +1,4 @@
-import type { JoinInfo, PlayerState, SimEvent, Snapshot } from '@rpg/game-protocol';
+import type { ChatMessage, JoinInfo, PlayerState, SimEvent, Snapshot } from '@rpg/game-protocol';
 import { HostEmitter, type SimHost } from './host';
 
 /**
@@ -11,12 +11,17 @@ export interface MessageEndpoint {
   removeEventListener?(type: 'message', listener: (ev: { data: unknown }) => void): void;
 }
 
-type ToWorker = { t: 'connect' } | { t: 'intent'; intent: unknown } | { t: 'dispose' };
+type ToWorker =
+  | { t: 'connect' }
+  | { t: 'intent'; intent: unknown }
+  | { t: 'chat'; text: string }
+  | { t: 'dispose' };
 type FromWorker =
   | { t: 'join'; join: JoinInfo; reply: boolean }
   | { t: 'snapshot'; snapshot: Snapshot }
   | { t: 'events'; events: SimEvent[] }
   | { t: 'player'; state: PlayerState }
+  | { t: 'chat'; message: ChatMessage }
   | { t: 'error'; message: string };
 
 /** Worker side: wire a host to the endpoint (call from the worker entry). */
@@ -27,6 +32,7 @@ export function serveSimHost(endpoint: MessageEndpoint, host: SimHost): void {
   );
   host.onEvents((events) => endpoint.postMessage({ t: 'events', events } satisfies FromWorker));
   host.onPlayerState((state) => endpoint.postMessage({ t: 'player', state } satisfies FromWorker));
+  host.onChat((message) => endpoint.postMessage({ t: 'chat', message } satisfies FromWorker));
   host.onJoin((join) => {
     if (connected) endpoint.postMessage({ t: 'join', join, reply: false } satisfies FromWorker);
   });
@@ -46,6 +52,7 @@ export function serveSimHost(endpoint: MessageEndpoint, host: SimHost): void {
           } satisfies FromWorker),
         );
     } else if (msg.t === 'intent') host.sendIntent(msg.intent);
+    else if (msg.t === 'chat') host.sendChat(msg.text);
     else if (msg.t === 'dispose') host.dispose();
   });
 }
@@ -91,6 +98,14 @@ export class WorkerSimHost implements SimHost {
     return HostEmitter.add(this.emitter.join, cb);
   }
 
+  sendChat(text: string): void {
+    this.endpoint.postMessage({ t: 'chat', text } satisfies ToWorker);
+  }
+
+  onChat(cb: (message: ChatMessage) => void): () => void {
+    return HostEmitter.add(this.emitter.chat, cb);
+  }
+
   dispose(): void {
     this.endpoint.postMessage({ t: 'dispose' } satisfies ToWorker);
     this.endpoint.removeEventListener?.('message', this.listener);
@@ -108,6 +123,9 @@ export class WorkerSimHost implements SimHost {
         break;
       case 'player':
         for (const cb of this.emitter.playerState) cb(msg.state);
+        break;
+      case 'chat':
+        for (const cb of this.emitter.chat) cb(msg.message);
         break;
       case 'join':
         for (const cb of this.emitter.join) cb(msg.join);

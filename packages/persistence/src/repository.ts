@@ -208,8 +208,14 @@ export class GameRepository {
         gold: wallet[0]?.gold ?? 0,
         hp: c.hp,
         mp: c.mp,
-        inventory: items.map((i) => ({ instanceId: i.id, itemId: i.itemId, count: i.count })),
+        inventory: items.map((i) => ({
+          instanceId: i.id,
+          itemId: i.itemId,
+          count: i.count,
+          ...(i.enhance > 0 ? { enhance: i.enhance } : {}),
+        })),
         equipment,
+        quests: (c.questLog as PlayerSave['quests']) ?? [],
       },
     };
   }
@@ -269,6 +275,7 @@ export class GameRepository {
           hp: save.hp,
           mp: save.mp,
           mapId: place.mapId,
+          questLog: save.quests ?? [],
           x: place.x,
           z: place.z,
           version: sql`${characters.version} + 1`,
@@ -290,6 +297,7 @@ export class GameRepository {
             itemId: i.itemId,
             count: i.count,
             equippedSlot: equippedBy.get(i.instanceId) ?? null,
+            enhance: i.enhance ?? 0,
           })),
         );
       }
@@ -319,6 +327,15 @@ export class GameRepository {
       .from(currencyTransactions)
       .where(eq(currencyTransactions.characterId, characterId))
       .orderBy(desc(currencyTransactions.createdAt))
+      .limit(limit);
+  }
+
+  /** Top characters by level then XP (tech plan §31: cache in Redis when traffic needs it). */
+  async leaderboard(limit = 20) {
+    return this.db
+      .select({ name: characters.name, level: characters.level, xp: characters.xp })
+      .from(characters)
+      .orderBy(desc(characters.level), desc(characters.xp), characters.createdAt)
       .limit(limit);
   }
 

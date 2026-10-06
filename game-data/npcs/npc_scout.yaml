@@ -1,0 +1,6 @@
+id: npc_scout
+name: Trinh Sát Mộc Phong
+title: Trạm gác Thanh Vân
+appearanceId: npc_scout_01
+greeting: Phế tích phía đông đầy máy móc tự vận hành. Cẩn thận!
+shopId: shop_outpost

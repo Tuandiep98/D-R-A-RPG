@@ -1,0 +1,6 @@
+id: npc_merchant
+name: Thương Nhân Lý
+title: Tạp hoá
+appearanceId: npc_merchant_01
+greeting: Thuốc men, giày dép, áo vải — giá phải chăng!
+shopId: shop_village

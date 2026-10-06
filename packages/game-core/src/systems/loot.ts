@@ -4,6 +4,7 @@ import type { Entity } from '../entity';
 import { distance } from '../math';
 import { secondsToTicks } from '../time';
 import { addItem } from './inventory';
+import { refreshQuests } from './npc';
 
 /** Loot belongs to the top damager for this long, then anyone may take it. */
 const OWNER_SECONDS = 30;
@@ -46,10 +47,10 @@ export function dropLoot(
 /** Shared factory for loot and portal entities. */
 export function makeInert(
   id: number,
-  kind: 'loot' | 'portal',
+  kind: 'loot' | 'portal' | 'npc',
   defId: string,
   pos: { x: number; z: number },
-  extra: Partial<Pick<Entity, 'loot' | 'portal'>>,
+  extra: Partial<Pick<Entity, 'loot' | 'portal' | 'npc'>>,
 ): Entity {
   return {
     id,
@@ -105,6 +106,7 @@ export function makeInert(
     player: null,
     loot: extra.loot ?? null,
     portal: extra.portal ?? null,
+    npc: extra.npc ?? null,
     action: 'idle',
   };
 }
@@ -131,5 +133,6 @@ export function tryPickup(ctx: SimContext, player: Entity, loot: Entity): boolea
   const left = addItem(ctx, player, loot.loot.itemId, loot.loot.count);
   if (left === 0) ctx.removeEntity(loot.id);
   else loot.loot.count = left;
+  refreshQuests(ctx, player);
   return true;
 }

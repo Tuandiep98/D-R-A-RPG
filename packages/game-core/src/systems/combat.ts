@@ -4,6 +4,7 @@ import { sub, yawOf } from '../math';
 import type { Rng } from '../rng';
 import { grantGold } from './inventory';
 import { dropLoot } from './loot';
+import { questOnKill } from './npc';
 import { grantXp } from './progression';
 
 /** Damage roll before mitigation varies by ±10%. */
@@ -145,6 +146,7 @@ function rewardKill(ctx: SimContext, monster: Entity): void {
     const p = ctx.entities.get(id);
     if (!p?.player) continue;
     grantXp(ctx, p, def.xp);
+    questOnKill(ctx, p, def.id);
     if (dmg > topDamage) {
       top = p;
       topDamage = dmg;

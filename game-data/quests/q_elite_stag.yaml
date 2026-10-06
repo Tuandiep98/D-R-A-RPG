@@ -1,0 +1,9 @@
+id: q_elite_stag
+name: Linh Lộc Hoá Cuồng
+description: Linh Lộc Tinh Anh ở sân phía nam phế tích đã hoá cuồng. Hạ nó.
+giverNpcId: npc_elder
+requires: [q_robot_scrap]
+level: 5
+objectives:
+  - { type: kill, monsterId: stag_elite_001, count: 1 }
+rewards: { xp: 700, gold: 150, items: [{ itemId: item_great_blade, count: 1 }] }

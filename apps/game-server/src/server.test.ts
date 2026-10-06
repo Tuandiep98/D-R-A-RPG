@@ -1,4 +1,4 @@
-import type { JoinInfo, Snapshot } from '@rpg/game-protocol';
+import { type JoinInfo, PROTOCOL_VERSION, type Snapshot } from '@rpg/game-protocol';
 import { ColyseusSimHost } from '@rpg/net-client';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { loadConfig } from './config';
@@ -118,5 +118,35 @@ describe('game server', () => {
     expect(again.join.mapId).toBe('map_forest_mechanism_01');
     again.host.dispose();
     await wait(300);
+  });
+});
+
+describe('chat and instances', () => {
+  it('relays map chat to players in the room with rate limiting', async () => {
+    const eve = await player('eve');
+    const fay = await player('fay');
+    const got: string[] = [];
+    fay.host.onChat((m) => got.push(`${m.fromName}: ${m.text}`));
+    await wait(200);
+    eve.host.sendChat('xin chào');
+    eve.host.sendChat('spam ngay lập tức'); // inside the 1 s window → dropped
+    await wait(500);
+    expect(got).toEqual(['Dev eve: xin chào']);
+    eve.host.dispose();
+    fay.host.dispose();
+    await wait(300);
+  });
+
+  it('solo dungeon rooms only accept their owner', async () => {
+    const { Client } = await import('@colyseus/sdk');
+    const client = new Client(`ws://127.0.0.1:${server.port}`);
+    client.auth.token = 'dev:gina';
+    await expect(
+      client.joinOrCreate('zone', {
+        mapId: 'map_golem_sanctum_01',
+        protocolVersion: PROTOCOL_VERSION,
+        instanceKey: 'someone-else',
+      }),
+    ).rejects.toThrow();
   });
 });

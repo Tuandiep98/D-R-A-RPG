@@ -6,6 +6,7 @@ export {
   type GameViewOptions,
   type ItemView,
   type Notice,
+  type QuestView,
   type SkillSlot,
   type UiState,
   type UnitFrame,

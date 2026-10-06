@@ -41,6 +41,8 @@ const LayoutSchema = z.strictObject({
   zones: z.array(z.unknown()).default([]),
   spawns: z.array(z.unknown()).default([]),
   portals: z.array(z.unknown()).default([]),
+  npcs: z.array(z.unknown()).default([]),
+  instance: z.enum(['shared', 'solo']).default('shared'),
   /** Explicit hand-placed instances. */
   landmarks: z
     .array(
@@ -203,6 +205,8 @@ function build(layout: Layout) {
     zones: layout.zones,
     spawns: layout.spawns,
     portals: layout.portals,
+    npcs: layout.npcs,
+    instance: layout.instance,
     chunks: [...chunks].map(([id, instances]) => ({ id, instances })),
   };
   MapDefSchema.parse(map); // fail fast; full cross-ref validation runs in pnpm validate:data
@@ -224,7 +228,7 @@ function toCompactYaml(value: unknown): string {
     const node = doc.getIn(path, true);
     if (isSeq(node)) for (const item of node.items) if (isMap(item)) item.flow = true;
   };
-  for (const key of ['spawns', 'portals', 'zones', 'arrivals']) flowItems([key]);
+  for (const key of ['spawns', 'portals', 'zones', 'arrivals', 'npcs']) flowItems([key]);
   const chunks = doc.get('chunks', true);
   if (isSeq(chunks)) {
     chunks.items.forEach((_, i) => {

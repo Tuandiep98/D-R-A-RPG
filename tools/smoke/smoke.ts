@@ -138,6 +138,36 @@ try {
   await page.screenshot({ path: resolve(outDir, '04_inventory.png') });
   await page.keyboard.press('KeyI');
 
+  // NPC dialog: talk to the elder and accept the first quest (offline only: fresh character).
+  if (!url.includes('online')) {
+    const npcs = (await entities()).filter((e) => e.kind === 'npc');
+    check(npcs.length === 3, `village has 3 NPCs (${npcs.length})`);
+    const elder = npcs.find((e) => e.defId === 'npc_elder');
+    if (elder) {
+      console.log(`  elder on screen at ${elder.x.toFixed(0)},${elder.y.toFixed(0)}`);
+      if (onScreen(elder)) await page.mouse.click(elder.x, elder.y);
+      else
+        await page.evaluate((id) => {
+          // biome-ignore lint/suspicious/noExplicitAny: debug hook
+          (window as any).__rpg.view.send({ type: 'INTERACT', entityId: id });
+        }, elder.id);
+      await page.waitForSelector('.npc-panel', { timeout: 15_000 }).catch(() => null);
+      check((await page.locator('.npc-panel').count()) === 1, 'NPC dialog opens');
+      await page
+        .locator('.npc-panel button', { hasText: 'Nhận' })
+        .first()
+        .click()
+        .catch(() => {});
+      await page.waitForTimeout(600);
+      check(
+        (await page.locator('.quest-tracker .quest').count()) >= 1,
+        'accepted quest shows in the tracker',
+      );
+      await page.screenshot({ path: resolve(outDir, '04b_npc.png') });
+      await page.keyboard.press('Escape');
+    }
+  }
+
   // Second scenario: the forest map with elite and boss (offline only; online, the server owns the map).
   if (!url.includes('online')) {
     await page.goto(`${url}${url.includes('?') ? '&' : '?'}map=map_forest_mechanism_01`, {
@@ -156,7 +186,10 @@ try {
       mobs.some((e) => e.defId === 'stag_elite_001'),
       'forest has the elite',
     );
-    check(forest.filter((e) => e.kind === 'portal').length === 2, 'forest has two portals');
+    check(
+      forest.filter((e) => e.kind === 'portal').length === 3,
+      'forest has three portals (town, dungeon, exit)',
+    );
     console.log(`  debug: ${(await debugText()).replace(/\n/g, ' | ')}`);
     await page.screenshot({ path: resolve(outDir, '05_forest.png') });
   }

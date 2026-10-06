@@ -1,0 +1,9 @@
+id: q_robot_scrap
+name: Phế Liệu Cơ Giới
+description: Thu 8 phế liệu từ Cơ Giáp Trinh Sát ở Phế Tích Cơ Giới.
+giverNpcId: npc_elder
+requires: [q_meet_scout]
+level: 3
+objectives:
+  - { type: collect, itemId: item_robot_scrap, count: 8 }
+rewards: { xp: 400, gold: 80, items: [{ itemId: item_mech_visor, count: 1 }] }

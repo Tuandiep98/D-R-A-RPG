@@ -18,6 +18,7 @@ playerSpawn:
   z: 0
 arrivals:
   - { id: from_town, position: { x: -68, z: 2 } }
+  - { id: from_sanctum, position: { x: 22, z: 32 } }
 zones:
   - { id: outpost, name: Trạm Gác Thanh Vân, kind: safe, center: { x: -68, z: 0 }, radius: 9 }
   - { id: wolf_hills, name: Đồi Sói, kind: combat, center: { x: -30, z: 0 }, radius: 26 }
@@ -33,7 +34,11 @@ spawns:
   - { id: boss, monsterId: mech_golem_001, position: { x: 62, z: 0 }, count: 1, respawnSeconds: 180 }
 portals:
   - { id: forest_to_town, name: Về Thôn Thanh Vân, position: { x: -77, z: 0 }, targetMapId: map_sandbox_01, targetArrival: from_forest }
+  - { id: sanctum_gate, name: Cơ Quan Điện (phó bản), position: { x: 22, z: 35 }, targetMapId: map_golem_sanctum_01, targetArrival: entrance }
   - { id: arena_exit, name: Lối Ra Đấu Trường, position: { x: 77, z: 0 }, targetMapId: map_sandbox_01, targetArrival: from_forest }
+npcs:
+  - { npcId: npc_scout, position: { x: -66, z: -4 }, rotationY: 1.2 }
+instance: shared
 chunks:
   - id: chunk_0_0
     instances:
@@ -55,6 +60,7 @@ chunks:
       - { appearanceId: env_bush_01, position: [ -49.52, 0, -33.19 ], rotationY: 5.76, scale: 1.09 }
       - { appearanceId: env_bush_01, position: [ -58.69, 0, -34.06 ], rotationY: 4.3, scale: 1.19 }
       - { appearanceId: env_bush_01, position: [ -64.58, 0, -26.79 ], rotationY: 2.16, scale: 0.74 }
+      - { appearanceId: env_bush_01, position: [ -49.62, 0, -27.77 ], rotationY: 3.45, scale: 1.04 }
   - id: chunk_0_1
     instances:
       - { appearanceId: env_tree_02, position: [ -72, 0, 7 ], rotationY: 0, scale: 1.1, colliderRadius: 0.6 }
@@ -75,7 +81,7 @@ chunks:
       - { appearanceId: env_tree_02, position: [ -60.3, 0, 44.95 ], rotationY: 5.72, scale: 0.89, colliderRadius: 0.5 }
       - { appearanceId: env_tree_02, position: [ -56.44, 0, 19.14 ], rotationY: 4.92, scale: 0.96, colliderRadius: 0.5 }
       - { appearanceId: env_rock_01, position: [ -65.2, 0, 34.17 ], rotationY: 2.21, scale: 0.74, colliderRadius: 0.8 }
-      - { appearanceId: env_bush_01, position: [ -72.67, 0, 28.22 ], rotationY: 0.12, scale: 1.16 }
+      - { appearanceId: env_rock_01, position: [ -72.67, 0, 28.22 ], rotationY: 0.12, scale: 1.06, colliderRadius: 0.8 }
       - { appearanceId: env_bush_01, position: [ -48.24, 0, 44.12 ], rotationY: 1.54, scale: 1.15 }
       - { appearanceId: env_bush_01, position: [ -73.93, 0, 32.3 ], rotationY: 5.84, scale: 1.17 }
       - { appearanceId: env_bush_01, position: [ -53.73, 0, 20.65 ], rotationY: 4.44, scale: 1.17 }
@@ -88,6 +94,7 @@ chunks:
       - { appearanceId: env_tree_02, position: [ -44.38, 0, -25.28 ], rotationY: 2.14, scale: 0.98, colliderRadius: 0.5 }
       - { appearanceId: env_tree_02, position: [ -43.28, 0, -30.68 ], rotationY: 4.96, scale: 1.04, colliderRadius: 0.5 }
       - { appearanceId: env_tree_02, position: [ -17.56, 0, -42.87 ], rotationY: 3.28, scale: 0.91, colliderRadius: 0.5 }
+      - { appearanceId: env_tree_02, position: [ -33.39, 0, -17.51 ], rotationY: 3.06, scale: 1.09, colliderRadius: 0.5 }
       - { appearanceId: env_tree_02, position: [ -36.22, 0, -22.6 ], rotationY: 0.54, scale: 1.18, colliderRadius: 0.5 }
       - { appearanceId: env_rock_01, position: [ -26.5, 0, -35.14 ], rotationY: 3.56, scale: 1.01, colliderRadius: 0.8 }
       - { appearanceId: env_bush_01, position: [ -47.94, 0, -23.86 ], rotationY: 1.81, scale: 1.14 }
@@ -98,7 +105,7 @@ chunks:
     instances:
       - { appearanceId: env_tree_01, position: [ -40.36, 0, -10.69 ], rotationY: 3.56, scale: 1.17, colliderRadius: 0.6 }
       - { appearanceId: env_tree_01, position: [ -45.42, 0, -5.8 ], rotationY: 1.14, scale: 1.14, colliderRadius: 0.6 }
-      - { appearanceId: env_tree_02, position: [ -30.27, 0, -14.69 ], rotationY: 1.27, scale: 1.03, colliderRadius: 0.5 }
+      - { appearanceId: env_tree_02, position: [ -29.38, 0, -10.5 ], rotationY: 3.21, scale: 0.82, colliderRadius: 0.5 }
       - { appearanceId: env_rock_01, position: [ -41.46, 0, 9.38 ], rotationY: 1.81, scale: 0.65, colliderRadius: 0.8 }
       - { appearanceId: env_bush_01, position: [ -23.35, 0, 4.25 ], rotationY: 5.85, scale: 0.96 }
       - { appearanceId: env_bush_01, position: [ -45.35, 0, -13.49 ], rotationY: 1.29, scale: 0.95 }
@@ -111,7 +118,7 @@ chunks:
       - { appearanceId: env_tree_02, position: [ -46.49, 0, 18.22 ], rotationY: 2.05, scale: 1.15, colliderRadius: 0.5 }
       - { appearanceId: env_tree_02, position: [ -16.14, 0, 19.34 ], rotationY: 6.11, scale: 1.02, colliderRadius: 0.5 }
       - { appearanceId: env_tree_02, position: [ -42.22, 0, 21.56 ], rotationY: 3.83, scale: 1.12, colliderRadius: 0.5 }
-      - { appearanceId: env_rock_01, position: [ -21.46, 0, 22.48 ], rotationY: 2.52, scale: 1.06, colliderRadius: 0.8 }
+      - { appearanceId: env_tree_02, position: [ -21.46, 0, 22.48 ], rotationY: 2.52, scale: 1.21, colliderRadius: 0.5 }
       - { appearanceId: env_rock_01, position: [ -17.7, 0, 45.6 ], rotationY: 4.7, scale: 0.88, colliderRadius: 0.8 }
       - { appearanceId: env_bush_01, position: [ -24.18, 0, 42.61 ], rotationY: 1.01, scale: 0.93 }
       - { appearanceId: env_bush_01, position: [ -18.03, 0, 16.23 ], rotationY: 1.75, scale: 1.07 }
@@ -188,8 +195,6 @@ chunks:
       - { appearanceId: env_tree_01, position: [ 44.23, 0, 22.82 ], rotationY: 2.99, scale: 0.86, colliderRadius: 0.6 }
       - { appearanceId: env_tree_02, position: [ 34.9, 0, 24.43 ], rotationY: 1.15, scale: 0.93, colliderRadius: 0.5 }
       - { appearanceId: env_tree_02, position: [ 30.12, 0, 30.69 ], rotationY: 4.68, scale: 0.92, colliderRadius: 0.5 }
-      - { appearanceId: env_tree_02, position: [ 23.29, 0, 33.75 ], rotationY: 2.43, scale: 0.94, colliderRadius: 0.5 }
-      - { appearanceId: env_tree_02, position: [ 17.47, 0, 35.4 ], rotationY: 5.89, scale: 0.89, colliderRadius: 0.5 }
       - { appearanceId: env_tree_02, position: [ 36.87, 0, 18.14 ], rotationY: 0.6, scale: 0.92, colliderRadius: 0.5 }
       - { appearanceId: env_tree_02, position: [ 37.31, 0, 33.97 ], rotationY: 0.33, scale: 1, colliderRadius: 0.5 }
       - { appearanceId: env_rock_01, position: [ 42.78, 0, 32.34 ], rotationY: 1.24, scale: 1.04, colliderRadius: 0.8 }

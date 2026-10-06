@@ -14,6 +14,10 @@
 | `mob_robot_scout_01` | monster | [Ultimate Space Kit (March 2023)](https://quaternius.com/packs/ultimatespacekit.html) | CC0-1.0 | **chưa** | candidate | 4724 | 558.0 KB → 348.6 KB | 1 × ≤512px | Death, Duck, HitReact, Idle, Jump, Jump_Idle, Jump_Land, No, Punch, Run, Walk, Wave, Weapon, Yes |
 | `mob_stag_elite_01` | monster | [Ultimate Animated Animal Pack (July 2021)](https://quaternius.com/packs/ultimateanimatedanimals.html) | CC0-1.0 | **chưa** | candidate | 3670 | 1.9 MB → 481.3 KB | — | Attack_Headbutt, Attack_Kick, Death, Eating, Gallop, Gallop_Jump, Idle, Idle_2, Idle_Headlow, Idle_HitReact1, Idle_HitReact2, Jump_toIdle, Walk |
 | `mob_wolf_01` | monster | [Ultimate Animated Animal Pack (July 2021)](https://quaternius.com/packs/ultimateanimatedanimals.html) | CC0-1.0 | **chưa** | candidate | 1962 | 1.8 MB → 541.0 KB | — | Attack, Death, Eating, Gallop, Gallop_Jump, Idle, Idle_2, Idle_2_HeadLow, Idle_HitReact1, Idle_HitReact2, Jump_ToIdle, Walk |
+| `npc_elder_01` | character | [RPG Characters (Nov 2020)](https://quaternius.com/packs/rpgcharacters.html) | CC0-1.0 | **chưa** | candidate | 5376 | 2.0 MB → 485.5 KB | 2 × ≤1024px | Death, Idle, Idle_Attacking, Idle_Weapon, PickUp, Punch, RecieveHit, RecieveHit_2, Roll, Run, Run_Weapon, Spell1, Spell2, Staff_Attack, Walk |
+| `npc_merchant_01` | character | [RPG Characters (Nov 2020)](https://quaternius.com/packs/rpgcharacters.html) | CC0-1.0 | **chưa** | candidate | 5104 | 1.8 MB → 402.9 KB | 2 × ≤1024px | Death, Idle, Idle_Weapon, PickUp, Punch, RecieveHit, RecieveHit_Attacking, Run, Spell1, Staff_Attack, Walk |
+| `npc_scout_01` | character | [RPG Characters (Nov 2020)](https://quaternius.com/packs/rpgcharacters.html) | CC0-1.0 | **chưa** | candidate | 2326 | 1.5 MB → 369.5 KB | 2 × ≤1024px | Attacking_Idle, Dagger_Attack, Dagger_Attack2, Death, Idle, PickUp, Punch, RecieveHit, RecieveHit_2, Roll, Run, Walk |
+| `npc_smith_01` | character | [RPG Characters (Nov 2020)](https://quaternius.com/packs/rpgcharacters.html) | CC0-1.0 | **chưa** | candidate | 6714 | 1.6 MB → 380.8 KB | 1 × ≤1024px | Attack, Attack2, Death, Idle, Idle_Attacking, PickUp, RecieveHit, RecieveHit_2, Roll, Run, Walk |
 
 ## Nguồn file
 
@@ -27,6 +31,10 @@
 - `mob_robot_scout_01`: `art/third_party/quaternius_space_kit/originals/GLTF/Enemy_Large.gltf`
 - `mob_stag_elite_01`: `art/third_party/quaternius_animated_animals/originals/glTF/Stag.gltf`
 - `mob_wolf_01`: `art/third_party/quaternius_animated_animals/originals/glTF/Wolf.gltf`
+- `npc_elder_01`: `art/third_party/quaternius_rpg_characters/originals/glTF/Wizard.gltf`
+- `npc_merchant_01`: `art/third_party/quaternius_rpg_characters/originals/glTF/Cleric.gltf`
+- `npc_scout_01`: `art/third_party/quaternius_rpg_characters/originals/glTF/Rogue.gltf`
+- `npc_smith_01`: `art/third_party/quaternius_rpg_characters/originals/glTF/Monk.gltf`
 
 ## Cảnh báo lần build gần nhất
 

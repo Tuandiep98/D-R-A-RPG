@@ -57,6 +57,13 @@ export type PendingAction =
   | { type: 'interact'; entityId: EntityId }
   | { type: 'cast'; skillId: string; targetId: EntityId | null; point: Vec2 | null };
 
+export interface QuestState {
+  questId: string;
+  status: 'active' | 'ready' | 'done';
+  /** Per objective (kill/talk); collect objectives are read from the inventory. */
+  progress: number[];
+}
+
 export interface PlayerData {
   characterId: string;
   xp: number;
@@ -64,6 +71,7 @@ export interface PlayerData {
   inventory: InventoryItem[];
   equipment: Partial<Record<EquipSlot, ItemInstanceId>>;
   itemReadyAtTick: number;
+  quests: QuestState[];
 }
 
 export interface LootData {
@@ -73,6 +81,10 @@ export interface LootData {
   ownerId: EntityId | null;
   freeAtTick: number;
   expiresAtTick: number;
+}
+
+export interface NpcData {
+  npcId: string;
 }
 
 export interface PortalData {
@@ -147,6 +159,7 @@ export interface Entity {
   player: PlayerData | null;
   loot: LootData | null;
   portal: PortalData | null;
+  npc: NpcData | null;
 
   action: EntityAction;
 }
@@ -166,6 +179,7 @@ export interface PlayerSave {
   mp: number;
   inventory: InventoryItem[];
   equipment: Partial<Record<EquipSlot, ItemInstanceId>>;
+  quests?: QuestState[];
 }
 
 /** One audited currency change (tech plan §33). */

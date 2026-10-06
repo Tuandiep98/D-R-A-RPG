@@ -1,0 +1,7 @@
+id: npc_smith
+name: Thợ Rèn Thiết Thủ
+title: Rèn đúc & cường hoá
+appearanceId: npc_smith_01
+greeting: Mang nguyên liệu tới đây, ta rèn cho.
+recipes: [r_wuxia_robe, r_mech_visor, r_potion_large]
+upgrades: true

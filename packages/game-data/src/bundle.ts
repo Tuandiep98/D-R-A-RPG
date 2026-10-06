@@ -13,10 +13,20 @@ import {
   MapDefSchema,
   type MonsterDef,
   MonsterDefSchema,
+  type NpcDef,
+  NpcDefSchema,
   type ProgressionDef,
   ProgressionDefSchema,
+  type QuestDef,
+  QuestDefSchema,
+  type RecipeDef,
+  RecipeDefSchema,
+  type ShopDef,
+  ShopDefSchema,
   type SkillDef,
   SkillDefSchema,
+  type UpgradeRules,
+  UpgradeRulesSchema,
 } from './schemas';
 
 export interface ContentBundle {
@@ -28,6 +38,11 @@ export interface ContentBundle {
   items: ReadonlyMap<string, ItemDef>;
   loot: ReadonlyMap<string, LootTableDef>;
   progression: ReadonlyMap<string, ProgressionDef>;
+  npcs: ReadonlyMap<string, NpcDef>;
+  quests: ReadonlyMap<string, QuestDef>;
+  shops: ReadonlyMap<string, ShopDef>;
+  recipes: ReadonlyMap<string, RecipeDef>;
+  upgrades: ReadonlyMap<string, UpgradeRules>;
 }
 
 /** A raw content file. `path` is relative to the game-data root, e.g. `monsters/wolf_001.yaml`. */
@@ -60,6 +75,11 @@ const FOLDERS = {
   items: ItemDefSchema,
   loot: LootTableDefSchema,
   progression: ProgressionDefSchema,
+  npcs: NpcDefSchema,
+  quests: QuestDefSchema,
+  shops: ShopDefSchema,
+  recipes: RecipeDefSchema,
+  upgrades: UpgradeRulesSchema,
 } as const;
 type Folder = keyof typeof FOLDERS;
 
@@ -91,6 +111,11 @@ export function buildContentBundle(files: readonly ContentFile[]): ContentBundle
     items: new Map(),
     loot: new Map(),
     progression: new Map(),
+    npcs: new Map(),
+    quests: new Map(),
+    shops: new Map(),
+    recipes: new Map(),
+    upgrades: new Map(),
   };
 
   for (const file of files) {
@@ -179,8 +204,43 @@ function checkReferences(bundle: ContentBundle, issues: ContentIssue[]): void {
       issues.push({ path: `items/${it.id}`, message: 'equipment cannot stack' });
     }
   }
+  const needNpc = need(bundle.npcs, 'npcId');
+  const needQuest = need(bundle.quests, 'questId');
+  for (const n of bundle.npcs.values()) {
+    const owner = `npcs/${n.id}`;
+    needAppearance(owner, n.appearanceId);
+    for (const q of n.quests) needQuest(owner, q);
+    for (const r of n.recipes) need(bundle.recipes, 'recipeId')(owner, r);
+    need(bundle.shops, 'shopId')(owner, n.shopId);
+  }
+  for (const q of bundle.quests.values()) {
+    const owner = `quests/${q.id}`;
+    needNpc(owner, q.giverNpcId);
+    needNpc(owner, q.turnInNpcId);
+    for (const r of q.requires) needQuest(owner, r);
+    for (const o of q.objectives) {
+      if (o.type === 'kill') need(bundle.monsters, 'monsterId')(owner, o.monsterId);
+      else if (o.type === 'collect') needItem(owner, o.itemId);
+      else needNpc(owner, o.npcId);
+    }
+    for (const it of q.rewards.items) needItem(owner, it.itemId);
+  }
+  for (const sh of bundle.shops.values()) {
+    for (const it of sh.items) needItem(`shops/${sh.id}`, it.itemId);
+  }
+  for (const r of bundle.recipes.values()) {
+    needItem(`recipes/${r.id}`, r.result.itemId);
+    for (const m of r.materials) needItem(`recipes/${r.id}`, m.itemId);
+  }
+  for (const u of bundle.upgrades.values()) {
+    if (u.steps.length !== u.maxLevel) {
+      issues.push({ path: `upgrades/${u.id}`, message: 'steps must have maxLevel entries' });
+    }
+    for (const st of u.steps) for (const m of st.materials) needItem(`upgrades/${u.id}`, m.itemId);
+  }
   for (const map of bundle.maps.values()) {
     const owner = `maps/${map.id}`;
+    for (const n of map.npcs) needNpc(`${owner}#npcs`, n.npcId);
     needAppearance(owner, map.ground.appearanceId);
     const inBounds = (p: { x: number; z: number }) =>
       p.x >= map.bounds.min.x &&

@@ -25,10 +25,13 @@ export function playerBonus(ctx: SimContext, e: Entity): StatBonus {
   const def = ctx.content.characters.get(p.characterId);
   const prog = def && ctx.content.progression.get(def.progressionId);
   if (prog) addBonus(total, prog.perLevel, e.level - 1);
+  const rules = [...ctx.content.upgrades.values()][0];
   for (const instanceId of Object.values(p.equipment)) {
     const inv = p.inventory.find((i) => i.instanceId === instanceId);
     const item = inv && ctx.content.items.get(inv.itemId);
-    addBonus(total, item?.bonus);
+    // +N enhancement scales the item's own bonus (equipment_contract.md).
+    const mult = 1 + (rules?.bonusPerLevel ?? 0) * (inv?.enhance ?? 0);
+    addBonus(total, item?.bonus, mult);
   }
   return total;
 }

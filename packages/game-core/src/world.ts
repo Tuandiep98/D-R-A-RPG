@@ -19,6 +19,7 @@ import { addItem, equip, INVENTORY_CAPACITY } from './systems/inventory';
 import { actionSystem, lifeSystem } from './systems/life';
 import { lootSystem, makeInert } from './systems/loot';
 import { movementSystem } from './systems/movement';
+import { questProgress } from './systems/npc';
 import { recomputePlayerStats, xpToNext } from './systems/progression';
 import { skillSystem } from './systems/skills';
 import { secondsToTicks } from './time';
@@ -89,6 +90,15 @@ export class World implements SimContext {
         })),
     );
     this.spawnMonsters();
+    for (const placed of map.npcs) {
+      this.addEntity((id) => {
+        const e = makeInert(id, 'npc', placed.npcId, placed.position, {
+          npc: { npcId: placed.npcId },
+        });
+        e.yaw = placed.rotationY;
+        return e;
+      });
+    }
     for (const portal of map.portals) {
       this.addEntity((id) =>
         makeInert(id, 'portal', portal.id, portal.position, {
@@ -219,9 +229,11 @@ export class World implements SimContext {
         inventory: save ? save.inventory.map((i) => ({ ...i })) : [],
         equipment: save ? { ...save.equipment } : {},
         itemReadyAtTick: 0,
+        quests: (save?.quests ?? []).map((q) => ({ ...q, progress: [...q.progress] })),
       },
       loot: null,
       portal: null,
+      npc: null,
       action: 'idle',
     }));
 
@@ -258,6 +270,7 @@ export class World implements SimContext {
       mp: e.stats.mp,
       inventory: e.player.inventory.map((i) => ({ ...i })),
       equipment: { ...e.player.equipment },
+      quests: e.player.quests.map((q) => ({ ...q, progress: [...q.progress] })),
     };
   }
 
@@ -290,6 +303,11 @@ export class World implements SimContext {
       equipment: { ...p.equipment },
       itemReadyAtTick: p.itemReadyAtTick,
       inSafeZone: this.inSafeZone(e.pos),
+      quests: p.quests.map((q) => ({
+        questId: q.questId,
+        status: q.status,
+        progress: questProgress(this, e, q),
+      })),
     };
   }
 
@@ -391,6 +409,7 @@ export class World implements SimContext {
           player: null,
           loot: null,
           portal: null,
+          npc: null,
           action: 'idle',
         }));
       }

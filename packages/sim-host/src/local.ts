@@ -9,6 +9,8 @@ import {
 } from '@rpg/game-core';
 import type { ContentBundle, MapDef } from '@rpg/game-data';
 import {
+  type ChatMessage,
+  ChatSendSchema,
   IntentSchema,
   type JoinInfo,
   type PlayerState,
@@ -54,6 +56,7 @@ export class LocalSimHost implements SimHost {
   private readonly maxIntents: number;
   private readonly ledger: LedgerEntry[] = [];
   private transferring = false;
+  private lastChatAt = 0;
   private disposed = false;
 
   constructor(private readonly opts: LocalSimHostOptions) {
@@ -97,6 +100,26 @@ export class LocalSimHost implements SimHost {
 
   onJoin(cb: (join: JoinInfo) => void): () => void {
     return HostEmitter.add(this.emitter.join, cb);
+  }
+
+  sendChat(text: string): void {
+    const parsed = ChatSendSchema.safeParse({ text });
+    const now = Date.now();
+    if (!parsed.success || now - this.lastChatAt < 1000) return;
+    this.lastChatAt = now;
+    const name = this.opts.content.characters.get(this.opts.characterId)?.name ?? 'Bạn';
+    const msg: ChatMessage = {
+      channel: 'map',
+      fromId: this.playerId,
+      fromName: name,
+      text: parsed.data.text,
+      at: now,
+    };
+    for (const cb of this.emitter.chat) cb(msg);
+  }
+
+  onChat(cb: (message: ChatMessage) => void): () => void {
+    return HostEmitter.add(this.emitter.chat, cb);
   }
 
   /** Advances exactly one tick and publishes the result. */

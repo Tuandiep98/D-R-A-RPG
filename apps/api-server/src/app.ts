@@ -337,6 +337,8 @@ export async function buildApi(deps: ApiDeps) {
 
   app.get('/admin/audit', staff, async () => ({ entries: await deps.repo.listAudit(200) }));
 
+  app.get('/leaderboard', async () => ({ leaderboard: await deps.repo.leaderboard(20) }));
+
   app.get('/content/items', async () => ({
     items: [...deps.content.items.values()].map((i) => ({
       id: i.id,

@@ -1,0 +1,8 @@
+id: q_fox_fur
+name: Lông Hồ Ly
+description: Mang về 5 tấm lông hồ ly để may áo ấm cho dân làng.
+giverNpcId: npc_elder
+requires: [q_wolf_cull]
+objectives:
+  - { type: collect, itemId: item_fox_fur, count: 5 }
+rewards: { xp: 220, gold: 40, items: [{ itemId: item_boots_leather, count: 1 }] }
