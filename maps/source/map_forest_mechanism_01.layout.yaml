@@ -6,7 +6,23 @@ name: Phế Tích Vô Danh
 seed: 20261006
 bounds: { min: { x: -80, z: -48 }, max: { x: 80, z: 48 } }
 chunkSize: 32
-ground: { color: "#5b7f43" }
+ground:
+  color: "#5b7f43"
+  # Grass varies in tone; roads and camps are painted so the route reads at a glance.
+  paint:
+    variation: ["#6f9a4a", "#476d36", "#7f8f49"]
+    noiseScale: 16
+    noiseAmount: 0.75
+    pathColor: "#8b6f4a"
+    pathWidthScale: 0.75
+    patches:
+      - { center: { x: -68, z: 0 }, radius: 9, color: "#8a7655" } # outpost
+      - { center: { x: -34, z: 16 }, radius: 6, color: "#6f6a45" } # wolf den
+      - { center: { x: -24, z: -24 }, radius: 6, color: "#7a6a45" } # fox burrows
+      - { center: { x: 16, z: 22 }, radius: 9, color: "#6e675d" } # robot ruins
+      - { center: { x: 24, z: -26 }, radius: 7, color: "#77694d" } # elite yard
+      - { center: { x: 60, z: 0 }, radius: 13, color: "#7b7466", edge: 3 } # boss arena
+      - { center: { x: 22, z: 34 }, radius: 4, color: "#6e675d" } # dungeon gate
 playerSpawn: { x: -70, z: 0 }
 arrivals:
   - { id: from_town, position: { x: -68, z: 2 } }
@@ -363,3 +379,16 @@ scatter:
       scale: [0.7, 1.2],
       allowOnPath: false,
     }
+  # Nature MegaKit variety (large → small: minSpacing checks everything already placed).
+  - { appearanceId: env_tree_03, count: 18, minSpacing: 5, colliderRadius: 0.6, scale: [0.8, 1.15] }
+  - { appearanceId: env_tree_04, count: 16, minSpacing: 5, colliderRadius: 0.6, scale: [0.8, 1.2] }
+  - { appearanceId: env_tree_dead_01, count: 6, minSpacing: 5, colliderRadius: 0.5, scale: [0.8, 1] }
+  - { appearanceId: env_rock_02, count: 12, minSpacing: 4, colliderRadius: 0.7, scale: [0.6, 1.1] }
+  - { appearanceId: env_rock_03, count: 10, minSpacing: 4.5, colliderRadius: 0.8, scale: [0.6, 1] }
+  - { appearanceId: env_bush_02, count: 20, minSpacing: 3, scale: [0.7, 1.1] }
+  - { appearanceId: env_fern_01, count: 40, minSpacing: 2.2, scale: [0.7, 1.1] }
+  - { appearanceId: env_flowers_01, count: 30, minSpacing: 2.5, scale: [0.7, 1.1] }
+  - { appearanceId: env_mushroom_01, count: 20, minSpacing: 2, scale: [0.6, 1] }
+  - { appearanceId: env_grass_02, count: 120, minSpacing: 1.6, scale: [0.7, 1.2] }
+  - { appearanceId: env_grass_01, count: 180, minSpacing: 1.4, scale: [0.7, 1.2] }
+  - { appearanceId: env_pebble_01, count: 40, minSpacing: 2, scale: [0.6, 1.2], allowOnPath: true }

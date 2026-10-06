@@ -1,0 +1,10 @@
+# Quaternius Stylized Nature MegaKit — Pine_2.gltf
+id: env_tree_04
+kind: environment
+modelAssetId: env_tree_04
+scale: 0.7
+placeholder:
+  shape: cone
+  color: '#3f7f2f'
+  height: 5
+  radius: 1.6

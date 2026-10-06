@@ -4,10 +4,10 @@
   "pack": "Ultimate Animated Animal Pack (July 2021)",
   "sourceUrl": "https://quaternius.com/packs/ultimateanimatedanimals.html",
   "license": "CC0-1.0",
-  "licenseVerified": false,
-  "downloadedAt": "2026-10-06",
-  "status": "rejected",
-  "notes": "Original files are not present in this workspace snapshot; keep gameplay placeholders until the pack is restored.",
+  "licenseVerified": true,
+  "downloadedAt": "2026-10-07",
+  "status": "approved",
+  "notes": "Ultimate Animated Animals (July 2021) glTF folder restored into originals/ on 2026-10-07. License.txt states CC0 1.0.",
   "assets": [
     {
       "assetId": "mob_wolf_01",

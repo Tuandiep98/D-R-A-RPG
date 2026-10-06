@@ -5,7 +5,17 @@ name: Tân Nguyên Trấn
 seed: 1001
 bounds: { min: { x: -20, z: -20 }, max: { x: 20, z: 20 } }
 chunkSize: 32
-ground: { color: "#5f8a4a" }
+ground:
+  color: "#5f8a4a"
+  paint:
+    variation: ["#6f9a4a", "#527a3e"]
+    noiseScale: 10
+    noiseAmount: 0.6
+    pathColor: "#8b6f4a"
+    pathWidthScale: 0.9
+    patches:
+      # Packed-earth square where the NPCs stand (replaces the old brick tiles).
+      - { center: { x: 0, z: -8 }, radius: 7, color: "#9a8467", edge: 2.5 }
 playerSpawn: { x: 0, z: -12 }
 arrivals:
   - { id: from_forest, position: { x: 0, z: 13 } }
@@ -15,17 +25,6 @@ paths:
 clearings:
   - { center: { x: 0, z: -11 }, radius: 5 }
   - { center: { x: 0, z: 12 }, radius: 4 }
-groundCovers:
-  - appearanceIds: [env_village_floor_01]
-    min: { x: -6, z: -16 }
-    max: { x: 6, z: 8 }
-    tileSize: 2
-    y: 0.01
-  - appearanceIds: [env_village_floor_redbrick_01]
-    min: { x: -2, z: -16 }
-    max: { x: 2, z: 16 }
-    tileSize: 2
-    y: 0.03
 zones:
   - {
       id: village,
@@ -178,11 +177,6 @@ prefabPlacements:
   - { prefabId: smithy, position: { x: -9, z: -5 }, rotationY: 1.5708 }
 
 landmarks:
-  - {
-      appearanceId: env_village_floor_01,
-      position: { x: 0, z: -11 },
-      scale: 1.5,
-    }
   # Preserve the navigation invariant with a real in-pack prop.
   - {
       appearanceId: prop_crate_01,
@@ -234,3 +228,10 @@ landmarks:
       rotationY: 1.5708,
       colliderRadius: 0.8,
     }
+
+scatter:
+  # Outskirts greenery (the paved square and roads stay clear).
+  - { appearanceId: env_bush_02, count: 6, minSpacing: 3, scale: [0.7, 1] }
+  - { appearanceId: env_flowers_01, count: 14, minSpacing: 2, scale: [0.6, 1] }
+  - { appearanceId: env_fern_01, count: 8, minSpacing: 2, scale: [0.6, 0.9] }
+  - { appearanceId: env_grass_01, count: 60, minSpacing: 1.3, scale: [0.6, 1.1] }

@@ -48,7 +48,33 @@ const LayoutSchema = z.strictObject({
   seed: z.number().int(),
   bounds: z.strictObject({ min: P, max: P }),
   chunkSize: z.number().positive().default(32),
-  ground: z.strictObject({ color: z.string() }),
+  ground: z.strictObject({
+    color: z.string(),
+    /**
+     * Ground painting: noise variation plus `pathColor` painted along every
+     * path and `patches` (e.g. camp floors). See GroundPaintSchema.
+     */
+    paint: z
+      .strictObject({
+        variation: z.array(z.string()).default([]),
+        noiseScale: z.number().positive().optional(),
+        noiseAmount: z.number().min(0).max(1).optional(),
+        pathColor: z.string().optional(),
+        /** Painted road width as a fraction of the path's walkable width. */
+        pathWidthScale: z.number().positive().default(0.7),
+        patches: z
+          .array(
+            z.strictObject({
+              center: P,
+              radius: z.number().positive(),
+              color: z.string(),
+              edge: z.number().nonnegative().optional(),
+            }),
+          )
+          .default([]),
+      })
+      .optional(),
+  }),
   playerSpawn: P,
   arrivals: z.array(z.strictObject({ id: z.string(), position: P })).default([]),
   /** Polylines kept clear of blocking decoration. */
@@ -161,6 +187,28 @@ function onPath(layout: Layout, p: { x: number; z: number }, margin: number): bo
 
 const inClearing = (layout: Layout, p: { x: number; z: number }, margin: number) =>
   layout.clearings.some((c) => Math.hypot(p.x - c.center.x, p.z - c.center.z) < c.radius + margin);
+
+/** Expands layout painting into the map's GroundPaint (paths become strokes). */
+function groundOf(layout: Layout) {
+  const { color, paint } = layout.ground;
+  if (!paint) return { color };
+  return {
+    color,
+    paint: {
+      variation: paint.variation,
+      ...(paint.noiseScale !== undefined ? { noiseScale: paint.noiseScale } : {}),
+      ...(paint.noiseAmount !== undefined ? { noiseAmount: paint.noiseAmount } : {}),
+      strokes: paint.pathColor
+        ? layout.paths.map((path) => ({
+            points: path.points,
+            width: path.width * paint.pathWidthScale,
+            color: paint.pathColor as string,
+          }))
+        : [],
+      patches: paint.patches,
+    },
+  };
+}
 
 function build(layout: Layout) {
   const rng = new Rng(layout.seed);
@@ -287,7 +335,7 @@ function build(layout: Layout) {
     seed: layout.seed,
     bounds: layout.bounds,
     chunkSize: layout.chunkSize,
-    ground: layout.ground,
+    ground: groundOf(layout),
     playerSpawn: layout.playerSpawn,
     arrivals: layout.arrivals,
     zones: layout.zones,

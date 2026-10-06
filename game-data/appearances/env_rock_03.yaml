@@ -1,0 +1,10 @@
+# Quaternius Stylized Nature MegaKit — Rock_Medium_3.gltf
+id: env_rock_03
+kind: environment
+modelAssetId: env_rock_03
+scale: 0.6
+placeholder:
+  shape: sphere
+  color: '#6f727a'
+  height: 1.4
+  radius: 1

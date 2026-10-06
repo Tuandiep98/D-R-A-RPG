@@ -1,0 +1,10 @@
+# Quaternius Stylized Nature MegaKit — Mushroom_Common.gltf
+id: env_mushroom_01
+kind: environment
+modelAssetId: env_mushroom_01
+scale: 0.8
+placeholder:
+  shape: sphere
+  color: '#b65a3c'
+  height: 0.4
+  radius: 0.3

@@ -1,0 +1,10 @@
+# Quaternius Stylized Nature MegaKit — Pebble_Round_1.gltf
+id: env_pebble_01
+kind: environment
+modelAssetId: env_pebble_01
+scale: 1
+placeholder:
+  shape: sphere
+  color: '#8a8c92'
+  height: 0.1
+  radius: 0.25

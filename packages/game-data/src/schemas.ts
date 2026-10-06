@@ -510,6 +510,46 @@ export const MapZoneSchema = z.strictObject({
 });
 export type MapZone = z.infer<typeof MapZoneSchema>;
 
+const HexColor = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'colour must be #rrggbb');
+
+/**
+ * Ground painting (presentation only): the flat ground is one subdivided mesh
+ * coloured per vertex, so paths and camps read clearly at the cost of zero
+ * extra draw calls. Gameplay never reads this.
+ */
+export const GroundPaintSchema = z.strictObject({
+  /** Colours blended into the base colour by low-frequency noise. */
+  variation: z.array(HexColor).default([]),
+  /** Size of one noise cell, metres. */
+  noiseScale: positive.default(14),
+  /** 0 = flat base colour, 1 = full variation. */
+  noiseAmount: z.number().min(0).max(1).default(0.6),
+  /** Polylines such as dirt roads. */
+  strokes: z
+    .array(
+      z.strictObject({
+        points: z.array(Vec2).min(2),
+        width: positive,
+        color: HexColor,
+        /** Soft edge width, metres. */
+        edge: nonNegative.default(1.5),
+      }),
+    )
+    .default([]),
+  /** Filled circles such as camp floors or arenas. */
+  patches: z
+    .array(
+      z.strictObject({
+        center: Vec2,
+        radius: positive,
+        color: HexColor,
+        edge: nonNegative.default(2),
+      }),
+    )
+    .default([]),
+});
+export type GroundPaint = z.infer<typeof GroundPaintSchema>;
+
 export const MapDefSchema = z
   .strictObject({
     id: IdSchema,
@@ -522,6 +562,7 @@ export const MapDefSchema = z
     ground: z.strictObject({
       appearanceId: IdSchema.optional(),
       color: z.string().default('#5f8a4a'),
+      paint: GroundPaintSchema.optional(),
     }),
     playerSpawn: Vec2,
     arrivals: z.array(z.strictObject({ id: IdSchema, position: Vec2 })).default([]),

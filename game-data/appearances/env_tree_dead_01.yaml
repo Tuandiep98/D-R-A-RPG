@@ -1,0 +1,10 @@
+# Quaternius Stylized Nature MegaKit — DeadTree_1.gltf
+id: env_tree_dead_01
+kind: environment
+modelAssetId: env_tree_dead_01
+scale: 0.6
+placeholder:
+  shape: cylinder
+  color: '#6b5a46'
+  height: 5.5
+  radius: 1.2

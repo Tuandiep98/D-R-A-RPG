@@ -1,10 +1,17 @@
-# Procedural fallback. Ultimate Animated Animals source is not present.
+# Quaternius Ultimate Animated Animals — Wolf.gltf
 id: mob_wolf_01
 kind: monster
+modelAssetId: mob_wolf_01
 scale: 0.4
+animations:
+  idle: Idle
+  run: Gallop
+  attack: Attack
+  hit: Idle_HitReact1
+  death: Death
 hitDelay: 0.2
 placeholder:
   shape: box
-  color: "#8a6d4f"
+  color: '#8a6d4f'
   height: 1.05
   radius: 0.5

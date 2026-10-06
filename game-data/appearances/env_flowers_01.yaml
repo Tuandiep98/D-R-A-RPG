@@ -1,0 +1,10 @@
+# Quaternius Stylized Nature MegaKit — Flower_3_Group.gltf
+id: env_flowers_01
+kind: environment
+modelAssetId: env_flowers_01
+scale: 0.5
+placeholder:
+  shape: cone
+  color: '#c9a94f'
+  height: 1
+  radius: 0.4

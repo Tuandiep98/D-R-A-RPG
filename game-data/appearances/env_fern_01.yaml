@@ -1,0 +1,10 @@
+# Quaternius Stylized Nature MegaKit — Fern_1.gltf
+id: env_fern_01
+kind: environment
+modelAssetId: env_fern_01
+scale: 0.6
+placeholder:
+  shape: cone
+  color: '#3e7a34'
+  height: 0.5
+  radius: 0.8

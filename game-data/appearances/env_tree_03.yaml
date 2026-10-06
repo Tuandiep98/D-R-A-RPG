@@ -1,0 +1,10 @@
+# Quaternius Stylized Nature MegaKit — CommonTree_3.gltf
+id: env_tree_03
+kind: environment
+modelAssetId: env_tree_03
+scale: 0.7
+placeholder:
+  shape: cone
+  color: '#2f6b3a'
+  height: 6
+  radius: 1.3

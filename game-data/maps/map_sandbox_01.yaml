@@ -13,6 +13,34 @@ bounds:
 chunkSize: 32
 ground:
   color: "#5f8a4a"
+  paint:
+    variation:
+      - "#6f9a4a"
+      - "#527a3e"
+    noiseScale: 10
+    noiseAmount: 0.6
+    strokes:
+      - points:
+          - x: 0
+            z: -18
+          - x: 0
+            z: 18
+        width: 4.5
+        color: "#8b6f4a"
+      - points:
+          - x: -17
+            z: 0
+          - x: 17
+            z: 0
+        width: 3.6
+        color: "#8b6f4a"
+    patches:
+      - center:
+          x: 0
+          z: -8
+        radius: 7
+        color: "#9a8467"
+        edge: 2.5
 playerSpawn:
   x: 0
   z: -12
@@ -33,7 +61,6 @@ instance: shared
 chunks:
   - id: chunk_0_0
     instances:
-      - { appearanceId: env_village_floor_01, position: [ 0, 0, -11 ], rotationY: 0, scale: 1.5 }
       - { appearanceId: prop_crate_01, position: [ 6, 0, -5 ], rotationY: 0, scale: 1.4, colliderRadius: 1.2 }
       - { appearanceId: env_village_vine_01, position: [ -10.9, 2.1, -11 ], rotationY: 1.57, scale: 1 }
       - { appearanceId: env_village_vine_01, position: [ 10.9, 2.1, -11 ], rotationY: -1.57, scale: 1 }
@@ -66,114 +93,79 @@ chunks:
       - { appearanceId: prop_anvil_01, position: [ -9, 0, -6.5 ], rotationY: 1.57, scale: 1, colliderRadius: 0.45 }
       - { appearanceId: prop_weapon_rack_01, position: [ -9, 0, -3.5 ], rotationY: 1.57, scale: 1, colliderRadius: 0.7 }
       - { appearanceId: prop_barrel_01, position: [ -7.6, 0, -5.7 ], rotationY: 1.57, scale: 1, colliderRadius: 0.4 }
-      - { appearanceId: env_village_floor_01, position: [ -5, 0.01, -15 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -3, 0.01, -15 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -1, 0.01, -15 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 1, 0.01, -15 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 3, 0.01, -15 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 5, 0.01, -15 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -5, 0.01, -13 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -3, 0.01, -13 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -1, 0.01, -13 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 1, 0.01, -13 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 3, 0.01, -13 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 5, 0.01, -13 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -5, 0.01, -11 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -3, 0.01, -11 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -1, 0.01, -11 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 1, 0.01, -11 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 3, 0.01, -11 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 5, 0.01, -11 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -5, 0.01, -9 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -3, 0.01, -9 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -1, 0.01, -9 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 1, 0.01, -9 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 3, 0.01, -9 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 5, 0.01, -9 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -5, 0.01, -7 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -3, 0.01, -7 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -1, 0.01, -7 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 1, 0.01, -7 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 3, 0.01, -7 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 5, 0.01, -7 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -5, 0.01, -5 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -3, 0.01, -5 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -1, 0.01, -5 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 1, 0.01, -5 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 3, 0.01, -5 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 5, 0.01, -5 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -5, 0.01, -3 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -3, 0.01, -3 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -1, 0.01, -3 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 1, 0.01, -3 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 3, 0.01, -3 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 5, 0.01, -3 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -5, 0.01, -1 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -3, 0.01, -1 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -1, 0.01, -1 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 1, 0.01, -1 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 3, 0.01, -1 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 5, 0.01, -1 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -5, 0.01, 1 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -3, 0.01, 1 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -1, 0.01, 1 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 1, 0.01, 1 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 3, 0.01, 1 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 5, 0.01, 1 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -5, 0.01, 3 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -3, 0.01, 3 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -1, 0.01, 3 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 1, 0.01, 3 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 3, 0.01, 3 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 5, 0.01, 3 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -5, 0.01, 5 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -3, 0.01, 5 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -1, 0.01, 5 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 1, 0.01, 5 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 3, 0.01, 5 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 5, 0.01, 5 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -5, 0.01, 7 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -3, 0.01, 7 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ -1, 0.01, 7 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 1, 0.01, 7 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 3, 0.01, 7 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_01, position: [ 5, 0.01, 7 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_redbrick_01, position: [ -1, 0.03, -15 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_redbrick_01, position: [ 1, 0.03, -15 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_redbrick_01, position: [ -1, 0.03, -13 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_redbrick_01, position: [ 1, 0.03, -13 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_redbrick_01, position: [ -1, 0.03, -11 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_redbrick_01, position: [ 1, 0.03, -11 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_redbrick_01, position: [ -1, 0.03, -9 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_redbrick_01, position: [ 1, 0.03, -9 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_redbrick_01, position: [ -1, 0.03, -7 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_redbrick_01, position: [ 1, 0.03, -7 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_redbrick_01, position: [ -1, 0.03, -5 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_redbrick_01, position: [ 1, 0.03, -5 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_redbrick_01, position: [ -1, 0.03, -3 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_redbrick_01, position: [ 1, 0.03, -3 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_redbrick_01, position: [ -1, 0.03, -1 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_redbrick_01, position: [ 1, 0.03, -1 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_redbrick_01, position: [ -1, 0.03, 1 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_redbrick_01, position: [ 1, 0.03, 1 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_redbrick_01, position: [ -1, 0.03, 3 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_redbrick_01, position: [ 1, 0.03, 3 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_redbrick_01, position: [ -1, 0.03, 5 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_redbrick_01, position: [ 1, 0.03, 5 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_redbrick_01, position: [ -1, 0.03, 7 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_redbrick_01, position: [ 1, 0.03, 7 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_redbrick_01, position: [ -1, 0.03, 9 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_redbrick_01, position: [ 1, 0.03, 9 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_redbrick_01, position: [ -1, 0.03, 11 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_redbrick_01, position: [ 1, 0.03, 11 ], rotationY: 0, scale: 1 }
+      - { appearanceId: env_bush_02, position: [ -8.21, 0.01, 6.85 ], rotationY: 0.42, scale: 0.85 }
+      - { appearanceId: env_bush_02, position: [ 9.57, 0.01, -15.91 ], rotationY: 2.58, scale: 0.85 }
+      - { appearanceId: env_flowers_01, position: [ -6.22, 0.01, -10.53 ], rotationY: 4.94, scale: 0.95 }
+      - { appearanceId: env_flowers_01, position: [ -11.99, 0.01, -16.21 ], rotationY: 2.54, scale: 0.7 }
+      - { appearanceId: env_flowers_01, position: [ -11.68, 0.01, -7.08 ], rotationY: 1.8, scale: 0.75 }
+      - { appearanceId: env_flowers_01, position: [ -10.42, 0.01, 8.04 ], rotationY: 5.24, scale: 0.64 }
+      - { appearanceId: env_flowers_01, position: [ -17.57, 0.01, 4.03 ], rotationY: 2.57, scale: 0.91 }
+      - { appearanceId: env_flowers_01, position: [ 3.79, 0.01, 6.81 ], rotationY: 0.63, scale: 0.99 }
+      - { appearanceId: env_flowers_01, position: [ 8.33, 0.01, -10.52 ], rotationY: 1.08, scale: 0.78 }
+      - { appearanceId: env_flowers_01, position: [ -4.12, 0.01, 7.55 ], rotationY: 1.19, scale: 0.86 }
+      - { appearanceId: env_flowers_01, position: [ -7.09, 0.01, -14.12 ], rotationY: 0.87, scale: 0.86 }
+      - { appearanceId: env_flowers_01, position: [ -18.41, 0.01, 7.06 ], rotationY: 1.64, scale: 0.68 }
+      - { appearanceId: env_fern_01, position: [ -13.53, 0.01, 5.58 ], rotationY: 1.92, scale: 0.86 }
+      - { appearanceId: env_fern_01, position: [ -14.43, 0.01, -6.22 ], rotationY: 1.74, scale: 0.86 }
+      - { appearanceId: env_fern_01, position: [ -10.37, 0.01, 2.92 ], rotationY: 4.23, scale: 0.71 }
+      - { appearanceId: env_grass_01, position: [ 9.48, 0.01, -9.1 ], rotationY: 5.72, scale: 1.02 }
+      - { appearanceId: env_grass_01, position: [ -5.61, 0.01, 9.63 ], rotationY: 1.46, scale: 1.04 }
+      - { appearanceId: env_grass_01, position: [ -4.43, 0.01, -15.02 ], rotationY: 5.95, scale: 0.69 }
+      - { appearanceId: env_grass_01, position: [ -7.23, 0.01, 4.9 ], rotationY: 1.87, scale: 1.05 }
+      - { appearanceId: env_grass_01, position: [ -6.89, 0.01, 7.99 ], rotationY: 1.88, scale: 0.92 }
+      - { appearanceId: env_grass_01, position: [ 8.77, 0.01, 10.45 ], rotationY: 3.56, scale: 0.84 }
+      - { appearanceId: env_grass_01, position: [ -17.96, 0.01, 10.38 ], rotationY: 4.49, scale: 0.8 }
+      - { appearanceId: env_grass_01, position: [ -11.14, 0.01, -4.15 ], rotationY: 2.31, scale: 0.95 }
+      - { appearanceId: env_grass_01, position: [ -7.65, 0.01, -17.98 ], rotationY: 5.88, scale: 0.87 }
+      - { appearanceId: env_grass_01, position: [ 7.57, 0.01, -6.64 ], rotationY: 5.24, scale: 0.83 }
+      - { appearanceId: env_grass_01, position: [ -3.6, 0.01, -3.1 ], rotationY: 4.92, scale: 1.04 }
+      - { appearanceId: env_grass_01, position: [ 7.3, 0.01, 11.65 ], rotationY: 2.71, scale: 0.77 }
+      - { appearanceId: env_grass_01, position: [ -10.19, 0.01, 5.07 ], rotationY: 4.03, scale: 0.76 }
+      - { appearanceId: env_grass_01, position: [ -10.57, 0.01, 9.89 ], rotationY: 0.51, scale: 0.62 }
+      - { appearanceId: env_grass_01, position: [ -4.3, 0.01, -17.36 ], rotationY: 5.25, scale: 0.89 }
+      - { appearanceId: env_grass_01, position: [ -16.82, 0.01, 7.38 ], rotationY: 5.99, scale: 0.6 }
+      - { appearanceId: env_grass_01, position: [ 9.72, 0.01, -17.78 ], rotationY: 5.9, scale: 0.61 }
+      - { appearanceId: env_grass_01, position: [ -13.76, 0.01, 11.64 ], rotationY: 4, scale: 0.77 }
+      - { appearanceId: env_grass_01, position: [ -16.21, 0.01, -4.14 ], rotationY: 4.33, scale: 0.91 }
+      - { appearanceId: env_grass_01, position: [ 6.62, 0.01, -9.37 ], rotationY: 3.93, scale: 0.71 }
+      - { appearanceId: env_grass_01, position: [ -12.33, 0.01, -17.58 ], rotationY: 0.46, scale: 0.93 }
+      - { appearanceId: env_grass_01, position: [ 4.03, 0.01, 3.59 ], rotationY: 2.97, scale: 1.09 }
+      - { appearanceId: env_grass_01, position: [ -6.4, 0.01, -16.94 ], rotationY: 0.63, scale: 1.07 }
+      - { appearanceId: env_grass_01, position: [ 8.63, 0.01, -17.02 ], rotationY: 0.2, scale: 1.03 }
+      - { appearanceId: env_grass_01, position: [ 6.41, 0.01, -18.27 ], rotationY: 1.53, scale: 1.02 }
+      - { appearanceId: env_grass_01, position: [ 7.03, 0.01, -16.9 ], rotationY: 3.99, scale: 0.88 }
+      - { appearanceId: env_grass_01, position: [ 10.12, 0.01, -3 ], rotationY: 4.31, scale: 0.86 }
+      - { appearanceId: env_grass_01, position: [ 7.26, 0.01, -11.54 ], rotationY: 3.71, scale: 0.97 }
+      - { appearanceId: env_grass_01, position: [ 6.25, 0.01, -6.29 ], rotationY: 1.89, scale: 1.02 }
+      - { appearanceId: env_grass_01, position: [ -16.93, 0.01, 9.06 ], rotationY: 3.2, scale: 0.68 }
+      - { appearanceId: env_grass_01, position: [ -15.52, 0.01, 5.26 ], rotationY: 3.26, scale: 0.88 }
+      - { appearanceId: env_grass_01, position: [ -17.41, 0.01, -11.93 ], rotationY: 5.05, scale: 0.89 }
+      - { appearanceId: env_grass_01, position: [ 9.37, 0.01, 6.46 ], rotationY: 3.05, scale: 0.77 }
+      - { appearanceId: env_grass_01, position: [ -6.55, 0.01, -15.5 ], rotationY: 2.99, scale: 0.97 }
+      - { appearanceId: env_grass_01, position: [ -7.68, 0.01, -10.99 ], rotationY: 5.39, scale: 0.64 }
+      - { appearanceId: env_grass_01, position: [ -8.54, 0.01, 10.25 ], rotationY: 0.1, scale: 0.63 }
   - id: chunk_0_1
     instances:
       - { appearanceId: prop_banner_01, position: [ -2.5, 0, 14 ], rotationY: 0, scale: 1, colliderRadius: 0.3 }
       - { appearanceId: prop_banner_01, position: [ 2.5, 0, 14 ], rotationY: 0, scale: 1, colliderRadius: 0.3 }
-      - { appearanceId: env_village_floor_redbrick_01, position: [ -1, 0.03, 13 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_redbrick_01, position: [ 1, 0.03, 13 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_redbrick_01, position: [ -1, 0.03, 15 ], rotationY: 0, scale: 1 }
-      - { appearanceId: env_village_floor_redbrick_01, position: [ 1, 0.03, 15 ], rotationY: 0, scale: 1 }
+      - { appearanceId: env_bush_02, position: [ 5.81, 0.01, 17.61 ], rotationY: 5.36, scale: 0.88 }
+      - { appearanceId: env_bush_02, position: [ 10.44, 0.01, 17.49 ], rotationY: 3.64, scale: 0.86 }
+      - { appearanceId: env_bush_02, position: [ -18.09, 0.01, 18.16 ], rotationY: 3.8, scale: 0.81 }
+      - { appearanceId: env_flowers_01, position: [ -13.66, 0.01, 14.04 ], rotationY: 0.95, scale: 0.9 }
+      - { appearanceId: env_fern_01, position: [ -16.01, 0.01, 16.12 ], rotationY: 5.49, scale: 0.9 }
+      - { appearanceId: env_fern_01, position: [ -8.35, 0.01, 17.7 ], rotationY: 4.51, scale: 0.72 }
+      - { appearanceId: env_grass_01, position: [ 3.7, 0.01, 15.31 ], rotationY: 4.96, scale: 0.75 }
+      - { appearanceId: env_grass_01, position: [ -4.81, 0.01, 18.14 ], rotationY: 2.32, scale: 0.81 }
+      - { appearanceId: env_grass_01, position: [ -9.16, 0.01, 15.38 ], rotationY: 5.85, scale: 0.74 }
+      - { appearanceId: env_grass_01, position: [ -10.38, 0.01, 13.67 ], rotationY: 5.12, scale: 0.62 }
+      - { appearanceId: env_grass_01, position: [ 8.41, 0.01, 16.8 ], rotationY: 1.95, scale: 0.62 }
+      - { appearanceId: env_grass_01, position: [ 8.77, 0.01, 18.41 ], rotationY: 2.77, scale: 0.8 }
+      - { appearanceId: env_grass_01, position: [ -11.61, 0.01, 17.98 ], rotationY: 4.49, scale: 0.91 }
+      - { appearanceId: env_grass_01, position: [ 6.43, 0.01, 14.73 ], rotationY: 2.76, scale: 0.84 }
+      - { appearanceId: env_grass_01, position: [ -7.56, 0.01, 12.78 ], rotationY: 1.89, scale: 0.83 }
+      - { appearanceId: env_grass_01, position: [ -11.83, 0.01, 16.41 ], rotationY: 5.26, scale: 0.91 }
+      - { appearanceId: env_grass_01, position: [ -13.39, 0.01, 16.92 ], rotationY: 0.03, scale: 1 }
+      - { appearanceId: env_grass_01, position: [ -7.84, 0.01, 14.76 ], rotationY: 2.74, scale: 0.98 }
   - id: chunk_1_0
     instances:
       - { appearanceId: env_village_fence_01, position: [ 15, 0, 7 ], rotationY: 1.57, scale: 1, colliderRadius: 0.8 }
@@ -193,5 +185,24 @@ chunks:
       - { appearanceId: env_village_corner_01, position: [ 14, 0, 5 ], rotationY: 0, scale: 1, colliderRadius: 0.25 }
       - { appearanceId: env_village_roof_01, position: [ 12, 0, 3 ], rotationY: -1.57, scale: 1 }
       - { appearanceId: prop_lantern_wall_01, position: [ 14.1, 0, 3.9 ], rotationY: -1.57, scale: 1 }
+      - { appearanceId: env_bush_02, position: [ 14.33, 0.01, -5.9 ], rotationY: 1.43, scale: 0.74 }
+      - { appearanceId: env_flowers_01, position: [ 12.34, 0.01, 9.48 ], rotationY: 3.26, scale: 0.99 }
+      - { appearanceId: env_flowers_01, position: [ 16.84, 0.01, -16.62 ], rotationY: 4.53, scale: 0.85 }
+      - { appearanceId: env_fern_01, position: [ 17.1, 0.01, -5.4 ], rotationY: 0.94, scale: 0.83 }
+      - { appearanceId: env_fern_01, position: [ 17.92, 0.01, -10.65 ], rotationY: 0.84, scale: 0.88 }
+      - { appearanceId: env_fern_01, position: [ 17.29, 0.01, -8.73 ], rotationY: 5.77, scale: 0.63 }
+      - { appearanceId: env_grass_01, position: [ 16.42, 0.01, -3.86 ], rotationY: 5.28, scale: 0.65 }
+      - { appearanceId: env_grass_01, position: [ 17, 0.01, 5.09 ], rotationY: 0.87, scale: 1.03 }
+      - { appearanceId: env_grass_01, position: [ 15.82, 0.01, -5.94 ], rotationY: 3.54, scale: 0.73 }
+      - { appearanceId: env_grass_01, position: [ 17.85, 0.01, -13.97 ], rotationY: 6.08, scale: 0.73 }
+      - { appearanceId: env_grass_01, position: [ 17.05, 0.01, 9.92 ], rotationY: 4.53, scale: 0.98 }
+      - { appearanceId: env_grass_01, position: [ 13.74, 0.01, 6.39 ], rotationY: 1.06, scale: 1 }
+      - { appearanceId: env_grass_01, position: [ 14.76, 0.01, -3.07 ], rotationY: 2.81, scale: 1.08 }
+      - { appearanceId: env_grass_01, position: [ 14.57, 0.01, -7.43 ], rotationY: 1.39, scale: 0.82 }
+      - { appearanceId: env_grass_01, position: [ 12.84, 0.01, -6.67 ], rotationY: 3.95, scale: 0.98 }
   - id: chunk_1_1
-    instances: []
+    instances:
+      - { appearanceId: env_flowers_01, position: [ 14.78, 0.01, 12.76 ], rotationY: 4.2, scale: 0.92 }
+      - { appearanceId: env_grass_01, position: [ 13.64, 0.01, 15.27 ], rotationY: 5.26, scale: 1.03 }
+      - { appearanceId: env_grass_01, position: [ 13.85, 0.01, 18.29 ], rotationY: 6.16, scale: 0.97 }
+      - { appearanceId: env_grass_01, position: [ 17.28, 0.01, 17.59 ], rotationY: 1.02, scale: 0.79 }

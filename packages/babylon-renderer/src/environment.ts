@@ -5,14 +5,14 @@ import {
   type Material,
   Matrix,
   Mesh,
-  MeshBuilder,
   MultiMaterial,
   Quaternion,
   type Scene,
   Vector3,
   VertexBufferDeduceStride,
 } from './babylon';
-import { colorMaterial, createPlaceholderMesh } from './placeholder';
+import { createGround } from './ground';
+import { createPlaceholderMesh } from './placeholder';
 
 /** Alpha of environment pieces that stand between the camera and the player. */
 const OCCLUDED_ALPHA = 0.28;
@@ -77,15 +77,7 @@ export class EnvironmentView {
     content: ContentBundle,
     assets: AssetLibrary,
   ): Promise<EnvironmentView> {
-    const width = map.bounds.max.x - map.bounds.min.x;
-    const depth = map.bounds.max.z - map.bounds.min.z;
-    const ground = MeshBuilder.CreateGround(
-      'ground',
-      { width, height: depth, subdivisions: 1 },
-      scene,
-    );
-    ground.position.set(map.bounds.min.x + width / 2, 0, map.bounds.min.z + depth / 2);
-    ground.material = colorMaterial(scene, map.ground.color);
+    const ground = createGround(scene, map);
     ground.receiveShadows = true;
     ground.metadata = { ground: true };
     ground.freezeWorldMatrix();
