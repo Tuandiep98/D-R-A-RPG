@@ -1,6 +1,7 @@
 import type { ItemView, QualityMode, SkillSlot, UnitFrame } from '@rpg/babylon-renderer';
 import { type EquipSlot, realmLadder } from '@rpg/game-data';
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { getSfxVolume, playSfx, setSfxVolume } from '../audio';
 import { sharedContent } from '../content';
 import {
@@ -775,18 +776,42 @@ function ControlSettings() {
   );
 }
 
+/**
+ * Fullscreen toggle. Always offered on touch screens: where the browser has no
+ * Fullscreen API (iPhone Safari) it explains "Add to Home Screen" instead.
+ * Hidden when running as the installed app, which is already fullscreen.
+ */
 function FullscreenButton() {
+  const touch = useControls((s) => effectiveScheme(s) === 'touch');
   const [full, setFull] = useState(isFullscreen);
+  const [hint, setHint] = useState(false);
   useEffect(() => onFullscreenChange(() => setFull(isFullscreen())), []);
-  if (!fullscreenSupported()) return null;
+  const supported = fullscreenSupported();
+  if (isStandalone() || (!supported && !touch)) return null;
   return (
-    <button
-      type="button"
-      title={full ? 'Thoát toàn màn hình' : 'Toàn màn hình'}
-      onClick={() => void toggleFullscreen()}
-    >
-      {full ? '🗗' : '⛶'}
-    </button>
+    <>
+      <button
+        type="button"
+        className="fullscreen-button"
+        title={full ? 'Thoát toàn màn hình' : 'Toàn màn hình'}
+        onClick={() => (supported ? void toggleFullscreen() : setHint((h) => !h))}
+      >
+        {full ? '🗗' : '⛶'}
+      </button>
+      {hint &&
+        // Outside the menu so its button layout (a row of icons on phones) does not squeeze it.
+        createPortal(
+          <button type="button" className="fullscreen-hint" onClick={() => setHint(false)}>
+            <b>Chơi toàn màn hình</b>
+            <span>
+              Trình duyệt này (Safari trên iPhone) không cho trang web tự vào toàn màn hình. Bấm nút
+              Chia sẻ → <b>Thêm vào Màn hình chính</b>, rồi mở game từ biểu tượng đó.
+            </span>
+            <span className="muted">Chạm để đóng</span>
+          </button>,
+          document.body,
+        )}
+    </>
   );
 }
 

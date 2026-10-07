@@ -316,6 +316,28 @@ kbd {
   font-size: 18px;
 }
 
+.fullscreen-hint {
+  position: fixed;
+  z-index: 50;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(320px, 86vw);
+  display: grid;
+  gap: 8px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--hud-border);
+  background: rgba(16, 20, 28, 0.97);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.45;
+  text-align: left;
+  cursor: pointer;
+}
+
 .panel {
   position: absolute;
   top: 50%;

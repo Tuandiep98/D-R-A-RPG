@@ -57,7 +57,10 @@ async function boot(page: Page, errors: string[]): Promise<void> {
 }
 
 async function desktop(browser: Browser): Promise<void> {
-  const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+  const page = await browser.newPage({
+    viewport: { width: 1280, height: 720 },
+    ignoreHTTPSErrors: true,
+  });
   const errors: string[] = [];
   await boot(page, errors);
   const scheme = await page.evaluate(() => document.documentElement.dataset.controls);
@@ -104,6 +107,7 @@ async function phone(browser: Browser, w: number, h: number, label: string): Pro
     deviceScaleFactor: 2,
     isMobile: true,
     hasTouch: true,
+    ignoreHTTPSErrors: true,
   });
   const page = await ctx.newPage();
   const errors: string[] = [];
@@ -165,6 +169,33 @@ async function phone(browser: Browser, w: number, h: number, label: string): Pro
     );
     check(Math.hypot(d.wx - c.wx, d.wz - c.wz) < 0.05, `${label}: release stops the player`);
   }
+
+  // One-finger swipe on the open world (outside the stick zone) turns the camera.
+  const alpha = () =>
+    page.evaluate(
+      () =>
+        (window as unknown as { __rpg: { view: { rig: { camera: { alpha: number } } } } }).__rpg
+          .view.rig.camera.alpha,
+    );
+  const before = await alpha();
+  const rx = w * (label === 'portrait' ? 0.6 : 0.62);
+  const ry = h * 0.3;
+  await touch('touchStart', rx, ry);
+  for (let i = 1; i <= 8; i++) {
+    await touch('touchMove', rx - i * 12, ry);
+    await page.waitForTimeout(16);
+  }
+  await touch('touchEnd', 0, 0);
+  await page.waitForTimeout(300);
+  const after = await alpha();
+  check(
+    Math.abs(after - before) > 0.1,
+    `${label}: swipe rotates the camera (Δα ${(after - before).toFixed(2)})`,
+  );
+  check(
+    await page.locator('.menu .fullscreen-button').isVisible(),
+    `${label}: fullscreen button shown`,
+  );
 
   // Attack button starts a combo swing even with no hostile selected.
   const btn = await page.locator('.attack-button').boundingBox();
