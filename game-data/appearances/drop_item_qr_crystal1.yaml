@@ -1,0 +1,7 @@
+# Generated from art/third_party/quaternius_ultimate_rpg_items/converted/OBJ/Crystal1.glb (44 tris, longest y 0.76 → 0.4 m).
+# ground drop / display model
+id: drop_item_qr_crystal1
+kind: loot
+modelAssetId: item_qr_crystal1
+scale: 0.5289
+placeholder: { shape: box, color: "#f2c14e", height: 0.4, radius: 0.121 }

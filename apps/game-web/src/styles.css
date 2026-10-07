@@ -941,3 +941,46 @@ kbd {
 .backlash {
   color: #ff9b8f;
 }
+
+/* ---- Media: painted icons and fretwork frames (pnpm media:build) ---- */
+.game-icon {
+  display: block;
+  pointer-events: none;
+  user-select: none;
+}
+
+.skill > .game-icon.skill-icon {
+  position: absolute;
+  inset: 2px;
+  width: calc(100% - 4px);
+  height: calc(100% - 4px);
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.item > .game-icon {
+  width: 100%;
+  height: 100%;
+  padding: 3px;
+  object-fit: contain;
+}
+
+.game-icon.inline-icon {
+  display: inline-block;
+  width: 1.5em;
+  height: 1.5em;
+  vertical-align: -0.4em;
+  object-fit: contain;
+}
+
+/* 9-slice gold fretwork around panels; plain CSS borders when media is missing. */
+.ui-framed .panel {
+  border: 16px solid transparent;
+  border-image: var(--ui-border) 16 / 16px round;
+  image-rendering: pixelated;
+}
+
+.ui-framed .panel-small {
+  border-width: 12px;
+  border-image-width: 12px;
+}

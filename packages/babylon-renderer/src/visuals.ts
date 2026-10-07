@@ -1,3 +1,4 @@
+import type { AssetLibrary } from '@rpg/asset-runtime';
 import type { AnimationRole, AppearanceDef, EquipSlot, Socket } from '@rpg/game-data';
 import {
   type AbstractMesh,
@@ -35,9 +36,13 @@ export interface Visual {
   dispose(): void;
 }
 
-/** Shared gear-attachment logic: one mesh per slot, rebuilt only when the appearance changes. */
+/**
+ * Shared gear-attachment logic: one holder per slot, rebuilt only when the
+ * appearance changes. The placeholder shows at once and is swapped for the
+ * real model (appearance.modelAssetId) when it has loaded.
+ */
 class GearAttachments {
-  private readonly attached = new Map<EquipSlot, { appearanceId: string; mesh: Mesh }>();
+  private readonly attached = new Map<EquipSlot, { appearanceId: string; mesh: TransformNode }>();
   private floatTime = 0;
 
   constructor(
@@ -46,6 +51,7 @@ class GearAttachments {
     private readonly socketNode: (socket: Socket) => TransformNode | null,
     private readonly builtIn: AppearanceDef['builtIn'],
     private readonly setBuiltInVisible: (slot: EquipSlot, visible: boolean) => void,
+    private readonly assets: AssetLibrary | null = null,
   ) {}
 
   apply(gear: GearAppearances): void {
@@ -62,8 +68,11 @@ class GearAttachments {
       if (!target?.attach) continue;
       const parent = this.socketNode(target.attach.socket);
       if (!parent) continue;
-      const mesh = createPlaceholderMesh(this.scene, target, `${this.name}_${slot}`);
+      const mesh = new TransformNode(`${this.name}_${slot}`, this.scene);
       mesh.parent = parent;
+      const placeholder = createPlaceholderMesh(this.scene, target, `${this.name}_${slot}_ph`);
+      placeholder.parent = mesh;
+      this.loadModel(mesh, placeholder, target);
       // Sockets inside scaled rigs: keep equipment in world metres.
       parent.computeWorldMatrix(true);
       const s = parent.absoluteScaling.x || 1;
@@ -74,6 +83,23 @@ class GearAttachments {
       mesh.rotation.set(rx, ry, rz);
       this.attached.set(slot, { appearanceId: target.id, mesh });
     }
+  }
+
+  private loadModel(holder: TransformNode, placeholder: Mesh, target: AppearanceDef): void {
+    const assets = this.assets;
+    if (!assets?.has(target.modelAssetId)) return;
+    void assets.loadContainer(target.modelAssetId).then((container) => {
+      if (!container || holder.isDisposed()) return;
+      const entries = container.instantiateModelsToScene((n) => `${holder.name}_${n}`, false);
+      const model = new TransformNode(`${holder.name}_model`, this.scene);
+      for (const node of entries.rootNodes) node.parent = model;
+      for (const m of model.getChildMeshes(false)) m.isPickable = false;
+      for (const g of entries.animationGroups) g.dispose();
+      model.scaling.setAll(target.scale);
+      model.rotation.y = target.yawOffset;
+      model.parent = holder;
+      placeholder.dispose();
+    });
   }
 
   /** Artifacts (flying swords) hover and bob next to the owner. */
@@ -109,6 +135,7 @@ export class PlaceholderVisual implements Visual {
     scene: Scene,
     private readonly appearance: AppearanceDef,
     name: string,
+    assets: AssetLibrary | null = null,
   ) {
     this.root = new TransformNode(`${name}_visual`, scene);
     this.body = createPlaceholderMesh(scene, appearance, `${name}_body`);
@@ -162,6 +189,7 @@ export class PlaceholderVisual implements Visual {
       (s) => this.sockets.get(s) ?? null,
       {},
       () => {},
+      assets,
     );
     this.shadowCasters = [this.body];
   }
@@ -235,7 +263,13 @@ export class ModelVisual implements Visual {
   private base: BaseRole | null = null;
   private oneShotActive: OneShotRole | null = null;
 
-  constructor(scene: Scene, container: AssetContainer, appearance: AppearanceDef, name: string) {
+  constructor(
+    scene: Scene,
+    container: AssetContainer,
+    appearance: AppearanceDef,
+    name: string,
+    assets: AssetLibrary | null = null,
+  ) {
     this.root = new TransformNode(`${name}_visual`, scene);
     const entries = container.instantiateModelsToScene((n) => `${name}_${n}`, !!appearance.tint, {
       doNotInstantiate: true,
@@ -286,6 +320,7 @@ export class ModelVisual implements Visual {
         const node = part ? this.nodesByName.get(part.node) : undefined;
         node?.setEnabled(visible);
       },
+      assets,
     );
     this.setBase('idle');
   }

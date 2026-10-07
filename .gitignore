@@ -11,9 +11,11 @@ Thumbs.db
 
 # Generated runtime assets (rebuild with `pnpm assets:build`)
 apps/game-web/public/assets/
+apps/game-web/public/media/
 
 # Third-party originals are large; keep only metadata in git for now.
 art/third_party/*/originals/
+art/third_party/*/converted/
 
 # Local smoke-test screenshots
 reports/smoke/

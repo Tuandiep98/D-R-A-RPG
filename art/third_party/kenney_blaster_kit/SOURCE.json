@@ -1,0 +1,59 @@
+{
+  "packId": "kenney_blaster_kit",
+  "author": "Kenney",
+  "pack": "Blaster Kit 2.1",
+  "sourceUrl": "https://kenney.nl/assets/blaster-kit",
+  "license": "CC0-1.0",
+  "licenseVerified": true,
+  "downloadedAt": "2026-10-07",
+  "status": "approved",
+  "notes": "Toy-like sci-fi blasters for robot NPCs / mech weapons. Previews/ has PNG renders. License approved by the project owner on 2026-10-07. Evidence: License.txt in the zip (CC0).",
+  "kind": "models",
+  "assets": [
+    {
+      "assetId": "weapon_kb_blaster_a",
+      "file": "originals/Models/GLB format/blaster-a.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kb_blaster_b",
+      "file": "originals/Models/GLB format/blaster-b.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kb_blaster_c",
+      "file": "originals/Models/GLB format/blaster-c.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kb_blaster_d",
+      "file": "originals/Models/GLB format/blaster-d.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kb_blaster_e",
+      "file": "originals/Models/GLB format/blaster-e.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kb_blaster_f",
+      "file": "originals/Models/GLB format/blaster-f.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kb_blaster_g",
+      "file": "originals/Models/GLB format/blaster-g.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kb_blaster_h",
+      "file": "originals/Models/GLB format/blaster-h.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kb_grenade",
+      "file": "originals/Models/GLB format/grenade-a.glb",
+      "type": "prop"
+    }
+  ]
+}

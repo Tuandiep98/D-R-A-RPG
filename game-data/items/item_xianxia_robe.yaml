@@ -4,5 +4,6 @@ kind: equipment
 slot: chest
 rarity: uncommon
 icon: "👘"
+iconImage: icon_item_armor_golden
 bonus: { defense: 4, hp: 40, mp: 40 }
 sellPrice: 90

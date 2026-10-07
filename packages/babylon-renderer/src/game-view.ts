@@ -48,6 +48,18 @@ import type { GearAppearances } from './visuals';
 
 const TICK_RATE = 20;
 const UI_INTERVAL_MS = 100;
+/** Sounds fade to silence this far (metres) from the local player. */
+const SFX_RANGE = 28;
+/** Generic sounds when an appearance/skill does not name its own (media ids). */
+const DEFAULT_SFX = {
+  attack: ['sfx_swing_01', 'sfx_swing_02'],
+  hit: ['sfx_hit_flesh_01', 'sfx_hit_flesh_02'],
+  crit: ['sfx_hit_heavy'],
+  item: ['sfx_loot_drop'],
+  gold: ['sfx_coins_small'],
+  breakthrough: ['sfx_bell'],
+  backlash: ['sfx_explosion_low'],
+} as const;
 /** Auto-target and interaction search radii (tech plan §25 "nearest target"). */
 const AUTO_TARGET_RANGE = 14;
 const INTERACT_SEARCH = 6;
@@ -70,6 +82,8 @@ export interface SkillSlot {
   skillId: string;
   name: string;
   icon: string;
+  /** Media id of the painted icon, null → emoji. */
+  iconImage: string | null;
   description: string;
   cooldown: number;
   remaining: number;
@@ -82,6 +96,7 @@ export interface ItemView {
   itemId: string;
   name: string;
   icon: string;
+  iconImage: string | null;
   rarity: string;
   rarityColor: string;
   kind: 'equipment' | 'consumable' | 'material';
@@ -114,6 +129,7 @@ export interface UiState {
   potion: {
     instanceId: string;
     icon: string;
+    iconImage: string | null;
     count: number;
     remaining: number;
   } | null;
@@ -177,6 +193,11 @@ export interface GameViewOptions {
   quality?: QualityMode;
   onUi?: (ui: UiState) => void;
   onNotice?: (notice: Notice) => void;
+  /**
+   * Presentation sound: `gain` already includes distance falloff from the
+   * local player. The host app owns the audio device (CLAUDE.md rule 1 split).
+   */
+  onSfx?: (ids: readonly string[], gain: number) => void;
   onDebug?: (stats: DebugStats) => void;
   onAction?: (action: GameAction) => void;
   onNpcOpen?: (npc: { npcEntityId: EntityId; npcId: string }) => void;
@@ -769,14 +790,27 @@ export class GameView {
 
   // ---- Events -> presentation -----------------------------------------
 
+  /** Sound at an entity, fading out over SFX_RANGE metres from the local player. */
+  private sfxAt(ids: readonly string[] | undefined, entityId: EntityId | null, gain = 1): void {
+    if (!ids?.length || !this.opts.onSfx) return;
+    const me = this.sampled.get(this.join.playerId);
+    const at = entityId !== null ? this.sampled.get(entityId) : undefined;
+    const d = me && at ? Math.hypot(at.x - me.x, at.z - me.z) : 0;
+    const falloff = Math.max(0, 1 - d / SFX_RANGE);
+    if (falloff > 0) this.opts.onSfx(ids, gain * falloff * falloff);
+  }
+
   private handleEvents(events: SimEvent[]): void {
     const tick = this.buffer.latest?.tick ?? 0;
     const mine = (id: EntityId) => id === this.join.playerId;
     for (const ev of events) {
       switch (ev.type) {
-        case 'ATTACK':
-          this.views.get(ev.sourceId)?.play('attack');
+        case 'ATTACK': {
+          const view = this.views.get(ev.sourceId);
+          view?.play('attack');
+          this.sfxAt(view?.appearance.sfx.attack ?? DEFAULT_SFX.attack, ev.sourceId, 0.7);
           break;
+        }
         case 'DAMAGE': {
           const view = this.views.get(ev.targetId);
           if (!view) break;
@@ -791,6 +825,11 @@ export class GameView {
             break;
           }
           view.play('hit');
+          this.sfxAt(
+            ev.crit ? DEFAULT_SFX.crit : (view.appearance.sfx.hit ?? DEFAULT_SFX.hit),
+            ev.targetId,
+            ev.crit ? 1 : 0.8,
+          );
           const color = mine(ev.targetId)
             ? '#ff5a4f'
             : ev.crit
@@ -808,6 +847,7 @@ export class GameView {
         }
         case 'CAST_START': {
           this.views.get(ev.sourceId)?.play('cast');
+          this.sfxAt(this.opts.content.skills.get(ev.skillId)?.sfx.cast, ev.sourceId);
           if (ev.telegraph && ev.point && ev.radius > 0) {
             const seconds = Math.max(0.1, (ev.endTick - tick) / TICK_RATE);
             this.telegraphs.show(`${ev.sourceId}`, ev.point.x, ev.point.z, ev.radius, seconds);
@@ -818,6 +858,7 @@ export class GameView {
           this.telegraphs.clear(`${ev.sourceId}`);
           const skill = this.opts.content.skills.get(ev.skillId);
           const vfx = skill?.vfx ?? 'slash';
+          this.sfxAt(skill?.sfx.impact, ev.targetId ?? ev.sourceId);
           const src = this.views.get(ev.sourceId);
           const tgt = ev.targetId !== null ? this.views.get(ev.targetId) : undefined;
           if (vfx === 'projectile' && src && tgt) {
@@ -833,12 +874,14 @@ export class GameView {
           break;
         }
         case 'DEATH':
+          this.sfxAt(this.views.get(ev.id)?.appearance.sfx.death, ev.id);
           if (ev.id === this.selectedId) this.select(null);
           this.telegraphs.clear(`${ev.id}`);
           break;
         case 'BREAKTHROUGH': {
           const view = this.views.get(ev.id);
           const realm = realmLadder(this.opts.content)[ev.realm];
+          this.sfxAt(ev.success ? DEFAULT_SFX.breakthrough : DEFAULT_SFX.backlash, ev.id);
           if (view) {
             this.floatText(
               view,
@@ -877,6 +920,7 @@ export class GameView {
           break;
         case 'ITEM_GAINED':
           if (mine(ev.ownerId)) {
+            this.sfxAt(DEFAULT_SFX.item, null, 0.8);
             const item = this.opts.content.items.get(ev.itemId);
             this.opts.onNotice?.({
               text: `Nhận ${item?.name ?? ev.itemId}${ev.count > 1 ? ` ×${ev.count}` : ''}`,
@@ -886,6 +930,7 @@ export class GameView {
           }
           break;
         case 'GOLD':
+          if (mine(ev.ownerId) && ev.amount > 0) this.sfxAt(DEFAULT_SFX.gold, null, 0.8);
           if (mine(ev.ownerId))
             this.opts.onNotice?.({
               text: `+${ev.amount} vàng`,
@@ -1065,6 +1110,7 @@ export class GameView {
       itemId,
       name: def?.name ?? itemId,
       icon: def?.icon ?? '◆',
+      iconImage: def?.iconImage ?? null,
       rarity,
       rarityColor: RARITY_COLORS[rarity] ?? '#fff',
       kind: def?.kind ?? 'material',
@@ -1179,6 +1225,7 @@ export class GameView {
           skillId: s.skillId,
           name: def?.name ?? s.skillId,
           icon: def?.icon ?? '?',
+          iconImage: def?.iconImage ?? null,
           description: def?.description ?? '',
           cooldown: def?.cooldown ?? 1,
           remaining: Math.round(remaining * 10) / 10,
@@ -1191,6 +1238,7 @@ export class GameView {
           ? {
               instanceId: potion.instanceId,
               icon: potionDef.icon,
+              iconImage: potionDef.iconImage ?? null,
               count: inventory
                 .filter((i) => i.itemId === potion.itemId)
                 .reduce((n, i) => n + i.count, 0),

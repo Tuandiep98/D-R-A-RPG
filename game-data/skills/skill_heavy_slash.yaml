@@ -3,6 +3,7 @@ id: skill_heavy_slash
 name: Trọng Kiếm Trảm
 description: Một nhát chém nặng vào mục tiêu.
 icon: "🗡"
+iconImage: icon_skill_heavy_slash
 targeting: target
 range: 1.8
 cooldown: 6
@@ -10,3 +11,4 @@ mpCost: 15
 effects:
   - { type: damage, multiplier: 2.6 }
 vfx: slash
+sfx: { cast: [sfx_draw_blade], impact: [sfx_hit_heavy] }

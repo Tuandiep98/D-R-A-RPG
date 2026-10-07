@@ -82,13 +82,13 @@ export class EntityView {
 
     if (appearance.kind === 'monster') this.hpBar = this.createHpBar(name);
 
-    this.visual = new PlaceholderVisual(scene, appearance, name);
+    this.visual = new PlaceholderVisual(scene, appearance, name, assets);
     this.attachVisual(this.visual);
 
     if (assets.has(appearance.modelAssetId)) {
       void assets.loadContainer(appearance.modelAssetId).then((container) => {
         if (!container || this.root.isDisposed()) return;
-        const model = new ModelVisual(this.scene, container, appearance, name);
+        const model = new ModelVisual(this.scene, container, appearance, name, assets);
         this.detachVisual(this.visual);
         this.visual.dispose();
         this.visual = model;

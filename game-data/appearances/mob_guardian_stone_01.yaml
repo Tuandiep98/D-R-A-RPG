@@ -10,4 +10,7 @@ animations:
   hit: HitReact
   death: Death
 hitDelay: 0.3
+sfx:
+  hit: [sfx_hit_metal_01, sfx_hit_metal_02, sfx_robot_hit]
+  death: [sfx_explosion]
 placeholder: { shape: sphere, color: "#77746e", height: 1.8, radius: 0.85 }

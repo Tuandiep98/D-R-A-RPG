@@ -1,0 +1,8 @@
+# Generated from art/third_party/kaykit_adventurers/originals/Assets/gltf/axe_2handed.gltf (508 tris, longest y 1.72 → 1.2 m).
+# grip rotation copied from equip_sword_01 — NOT fitted yet, check with pnpm smoke:gear
+id: gear_weapon_kk_axe_2h
+kind: equipment
+modelAssetId: weapon_kk_axe_2h
+scale: 0.6958
+attach: { socket: hand_r, position: [0, 0, 0], rotation: [1.5708, 0, 0] }
+placeholder: { shape: box, color: "#c9ced6", height: 1.2, radius: 0.431 }

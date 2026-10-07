@@ -8,6 +8,7 @@ import {
 import { sharedContent } from '../content';
 import { game } from '../game';
 import { useUiStore } from '../store';
+import { GameIcon } from './GameIcon';
 
 const PATHS: { id: CultivationPath; label: string; hint: string }[] = [
   { id: 'tien', label: 'Tiên Đạo', hint: 'Kinh mạch · luyện thể · công pháp' },
@@ -78,7 +79,8 @@ function Cost({
         const item = c.items.get(m.itemId);
         return (
           <span key={m.itemId} className={have >= m.count ? '' : 'lacking'}>
-            {item?.icon} {item?.name ?? m.itemId} {have}/{m.count}{' '}
+            <GameIcon className="inline-icon" icon={item?.icon} image={item?.iconImage} />{' '}
+            {item?.name ?? m.itemId} {have}/{m.count}{' '}
           </span>
         );
       })}
@@ -165,7 +167,13 @@ export function CultivationPanel() {
                       <div className="small muted">{n.description}</div>
                       {skill && (
                         <div className="small reward">
-                          Mở kỹ năng: {skill.icon} {skill.name}
+                          Mở kỹ năng:{' '}
+                          <GameIcon
+                            className="inline-icon"
+                            icon={skill.icon}
+                            image={skill.iconImage}
+                          />{' '}
+                          {skill.name}
                         </div>
                       )}
                       {!open && (

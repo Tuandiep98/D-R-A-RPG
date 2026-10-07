@@ -1,0 +1,8 @@
+# Generated from art/third_party/kaykit_adventurers/originals/Assets/gltf/spellbook_open.gltf (292 tris, longest x 0.83 → 0.35 m).
+# left-hand rotation NOT fitted yet, check with pnpm smoke:gear
+id: gear_offhand_kk_spellbook
+kind: equipment
+modelAssetId: offhand_kk_spellbook
+scale: 0.4226
+attach: { socket: hand_l, position: [0, 0, 0], rotation: [1.5708, 0, 0] }
+placeholder: { shape: box, color: "#a37b4a", height: 0.24, radius: 0.175 }

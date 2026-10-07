@@ -1,0 +1,7 @@
+# Generated from art/third_party/quaternius_ultimate_rpg_items/converted/OBJ/Coin.glb (396 tris, longest y 0.74 → 0.2 m).
+# ground drop / display model
+id: drop_item_qr_coin
+kind: loot
+modelAssetId: item_qr_coin
+scale: 0.2711
+placeholder: { shape: box, color: "#f2c14e", height: 0.2, radius: 0.1 }

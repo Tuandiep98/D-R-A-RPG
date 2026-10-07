@@ -4,5 +4,6 @@ kind: equipment
 slot: head
 rarity: uncommon
 icon: "👑"
+iconImage: icon_item_crown
 bonus: { defense: 2, mp: 20 }
 sellPrice: 70

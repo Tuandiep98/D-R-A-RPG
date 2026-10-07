@@ -1,0 +1,44 @@
+{
+  "packId": "quaternius_ultimate_guns",
+  "author": "Quaternius",
+  "pack": "Ultimate Gun Pack (July 2019)",
+  "sourceUrl": "https://quaternius.com/packs/ultimategun.html",
+  "license": "CC0-1.0",
+  "licenseVerified": true,
+  "downloadedAt": "2026-10-07",
+  "status": "approved",
+  "notes": "OBJ-only; converted with `pnpm assets:convert`. For the robot/mech line; accessories in converted/OBJ/Accessories. License approved by the project owner on 2026-10-07. Evidence: License.txt in the zip + quaternius.com page (CC0).",
+  "kind": "models",
+  "assets": [
+    {
+      "assetId": "weapon_qg_pistol_1",
+      "file": "converted/OBJ/Pistol_1.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_qg_revolver_1",
+      "file": "converted/OBJ/Revolver_1.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_qg_submachinegun_1",
+      "file": "converted/OBJ/SubmachineGun_1.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_qg_assaultrifle_1",
+      "file": "converted/OBJ/AssaultRifle_1.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_qg_shotgun_1",
+      "file": "converted/OBJ/Shotgun_1.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_qg_sniperrifle_1",
+      "file": "converted/OBJ/SniperRifle_1.glb",
+      "type": "prop"
+    }
+  ]
+}

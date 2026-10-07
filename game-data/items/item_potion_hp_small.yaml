@@ -3,6 +3,7 @@ name: Hồi Huyết Đan (nhỏ)
 kind: consumable
 rarity: common
 icon: "🧪"
+iconImage: icon_item_potion1_filled_red
 heal: 0.35
 cooldown: 5
 maxStack: 20

@@ -1,0 +1,78 @@
+{
+  "packId": "kenney_impact_sounds",
+  "author": "Kenney",
+  "pack": "Impact Sounds",
+  "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+  "license": "CC0-1.0",
+  "licenseVerified": true,
+  "downloadedAt": "2026-10-07",
+  "status": "approved",
+  "kind": "audio",
+  "media": [
+    {
+      "id": "sfx_hit_flesh_01",
+      "file": "originals/Audio/impactPunch_medium_000.ogg"
+    },
+    {
+      "id": "sfx_hit_flesh_02",
+      "file": "originals/Audio/impactPunch_medium_001.ogg"
+    },
+    {
+      "id": "sfx_hit_heavy",
+      "file": "originals/Audio/impactPunch_heavy_000.ogg"
+    },
+    {
+      "id": "sfx_hit_metal_01",
+      "file": "originals/Audio/impactMetal_medium_000.ogg"
+    },
+    {
+      "id": "sfx_hit_metal_02",
+      "file": "originals/Audio/impactMetal_medium_001.ogg"
+    },
+    {
+      "id": "sfx_hit_plate",
+      "file": "originals/Audio/impactPlate_heavy_000.ogg"
+    },
+    {
+      "id": "sfx_hit_wood",
+      "file": "originals/Audio/impactWood_medium_000.ogg"
+    },
+    {
+      "id": "sfx_hit_soft",
+      "file": "originals/Audio/impactSoft_heavy_000.ogg"
+    },
+    {
+      "id": "sfx_slam",
+      "file": "originals/Audio/impactMining_000.ogg"
+    },
+    {
+      "id": "sfx_bell",
+      "file": "originals/Audio/impactBell_heavy_000.ogg"
+    },
+    {
+      "id": "sfx_step_grass_01",
+      "file": "originals/Audio/footstep_grass_000.ogg"
+    },
+    {
+      "id": "sfx_step_grass_02",
+      "file": "originals/Audio/footstep_grass_001.ogg"
+    },
+    {
+      "id": "sfx_step_grass_03",
+      "file": "originals/Audio/footstep_grass_002.ogg"
+    },
+    {
+      "id": "sfx_step_stone_01",
+      "file": "originals/Audio/footstep_concrete_000.ogg"
+    },
+    {
+      "id": "sfx_step_stone_02",
+      "file": "originals/Audio/footstep_concrete_001.ogg"
+    },
+    {
+      "id": "sfx_step_wood_01",
+      "file": "originals/Audio/footstep_wood_000.ogg"
+    }
+  ],
+  "notes": "License approved by the project owner on 2026-10-07. Evidence: License.txt in the zip (CC0)."
+}

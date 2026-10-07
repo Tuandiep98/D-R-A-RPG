@@ -1,0 +1,7 @@
+# Generated from art/third_party/quaternius_ultimate_rpg_items/converted/OBJ/Chest_Closed.glb (1728 tris, longest x 0.95 → 0.7 m).
+# ground drop / display model
+id: drop_item_qr_chest_closed
+kind: loot
+modelAssetId: item_qr_chest_closed
+scale: 0.7372
+placeholder: { shape: box, color: "#f2c14e", height: 0.603, radius: 0.35 }

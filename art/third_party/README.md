@@ -36,3 +36,21 @@ Các bước:
 6. `pnpm validate:data`, rồi `pnpm dev` để xem.
 
 Chỉ đặt `licenseVerified: true` sau khi đã tự kiểm tra license trên trang tác giả. `status` dùng `candidate` / `approved` / `prototype_only` / `rejected` (assets plan §4.2).
+
+## Đợt 07/10/2026: vũ khí, item, âm thanh, icon, UI, VFX (đều CC0, đã duyệt — D-025)
+
+| Thư mục (`packId`)               | Loại       | Nội dung dùng                                                   | Link |
+| -------------------------------- | ---------- | --------------------------------------------------------------- | ---- |
+| `kaykit_adventurers`             | models     | 12 vũ khí/khiên/sách phép (`weapon_kk_*`, `offhand_kk_*`)       | https://kaylousberg.itch.io/kaykit-adventurers |
+| `quaternius_medieval_weapons`    | models     | 18 kiếm/đao/thương/rìu/khiên (`weapon_qm_*`) — OBJ → convert    | https://quaternius.itch.io/lowpoly-medieval-weapons |
+| `quaternius_ultimate_rpg_items`  | models+icons | 27 model vật phẩm + 47 icon render (`icon_item_*`)            | https://quaternius.com/packs/ultimaterpg.html |
+| `quaternius_rpg_asset_pack`      | models     | gậy phép, mũ, khiên (`weapon_qa_*`, `item_qa_*`) — OBJ → convert | https://quaternius.com/packs/rpg.html |
+| `quaternius_ultimate_guns`       | models     | 6 súng cho nhánh cơ giáp (`weapon_qg_*`) — OBJ → convert        | https://quaternius.com/packs/ultimategun.html |
+| `kenney_blaster_kit`             | models     | 8 blaster + lựu đạn (`weapon_kb_*`)                             | https://kenney.nl/assets/blaster-kit |
+| `quaternius_universal_animation` | animations | 43 clip rig UBC + hình nộm `char_ual_mannequin`                 | https://quaternius.com/packs/universalanimationlibrary.html |
+| `kdrn_ability_icons`             | icons      | 18 icon skill đã chọn (130 icon trong originals/)               | https://kdrn.itch.io/ability-icons |
+| `kenney_fantasy_ui_borders`      | ui         | khung 9-slice hồi văn nhuộm vàng (`ui_border*`)                 | https://kenney.nl/assets/fantasy-ui-borders |
+| `kenney_particle_pack`           | vfx        | 24 sprite chém/tia/khói/lửa (`vfx_*`)                           | https://kenney.nl/assets/particle-pack |
+| `kenney_rpg_audio`, `kenney_impact_sounds`, `kenney_scifi_sounds`, `kenney_interface_sounds` | audio | 56 âm thanh (`sfx_*`) | https://kenney.nl/assets/category:Audio |
+
+Quy trình cho pack mới loại này: giải nén vào `originals/` → (OBJ thì `pnpm assets:convert`) → khai báo `assets` / `media` trong `SOURCE.json` → `pnpm assets:build` + `pnpm media:build` → tham chiếu id trong game-data → `pnpm validate:data`. Danh sách id: `docs/asset_catalog.md`, `docs/media_catalog.md`.

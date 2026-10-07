@@ -1,0 +1,8 @@
+# Generated from art/third_party/kenney_blaster_kit/originals/Models/GLB format/blaster-g.glb (618 tris, longest z 0.79 → 0.5 m).
+# barrel along the long axis — rotation NOT fitted yet, check with pnpm smoke:gear
+id: gear_weapon_kb_blaster_g
+kind: equipment
+modelAssetId: weapon_kb_blaster_g
+scale: 0.6362
+attach: { socket: hand_r, position: [0, 0, 0], rotation: [0, 0, 0] }
+placeholder: { shape: box, color: "#c9ced6", height: 0.228, radius: 0.25 }

@@ -4,6 +4,7 @@ kind: equipment
 slot: artifact
 rarity: epic
 icon: "🗲"
+iconImage: icon_item_sword_golden
 realm: truc_co
 bonus: { attack: 10, mp: 40 }
 sellPrice: 400

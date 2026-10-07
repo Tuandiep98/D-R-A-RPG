@@ -3,5 +3,6 @@ name: Lõi Cơ Quan
 kind: material
 rarity: epic
 icon: "💠"
+iconImage: icon_item_crystal1
 maxStack: 10
 sellPrice: 120

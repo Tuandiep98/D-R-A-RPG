@@ -1,10 +1,12 @@
 import type { ItemView, QualityMode, SkillSlot, UnitFrame } from '@rpg/babylon-renderer';
 import { type EquipSlot, realmLadder } from '@rpg/game-data';
 import { useEffect, useState } from 'react';
+import { getSfxVolume, playSfx, setSfxVolume } from '../audio';
 import { sharedContent } from '../content';
 import { game } from '../game';
 import { useUiStore } from '../store';
 import { CultivationPanel } from './CultivationPanel';
+import { GameIcon } from './GameIcon';
 import { NpcPanel } from './NpcPanel';
 import { ChatBox, LeaderboardPanel, QuestTracker } from './Social';
 import { SocialPanel } from './SocialPanel';
@@ -133,7 +135,7 @@ function SkillButton({ slot, index }: { slot: SkillSlot; index: number }) {
         game()?.castSkill(index);
       }}
     >
-      <span className="skill-icon">{slot.icon}</span>
+      <GameIcon className="skill-icon" icon={slot.icon} image={slot.iconImage} />
       {sweep > 0 && (
         <span
           className="skill-cd"
@@ -234,7 +236,7 @@ function ActionBar() {
               game()?.usePotion();
             }}
           >
-            <span className="skill-icon">{ui.potion.icon}</span>
+            <GameIcon className="skill-icon" icon={ui.potion.icon} image={ui.potion.iconImage} />
             <span className="skill-count">{ui.potion.count}</span>
             {ui.potion.remaining > 0 && (
               <span className="skill-cd">{Math.ceil(ui.potion.remaining)}</span>
@@ -256,7 +258,7 @@ function ItemTile({ item, onClick }: { item: ItemView; onClick?: () => void }) {
       onClick={onClick}
       title={`${item.name}\n${item.bonus}${item.realmName ? `\nYêu cầu ${item.realmName}` : ''}${item.description ? `\n${item.description}` : ''}`}
     >
-      <span>{item.icon}</span>
+      <GameIcon icon={item.icon} image={item.iconImage} />
       {item.count > 1 && <span className="item-count">{item.count}</span>}
       {item.enhance > 0 && <span className="item-enhance">+{item.enhance}</span>}
     </button>
@@ -383,6 +385,7 @@ function SettingsPanel() {
   const quality = useUiStore((s) => s.quality);
   const setQuality = useUiStore((s) => s.setQuality);
   const toggleDebug = useUiStore((s) => s.toggleDebug);
+  const [sfxVolume, setSfxVolumeState] = useState(getSfxVolume);
   const options: { id: QualityMode; label: string }[] = [
     { id: 'auto', label: 'Tự động' },
     { id: 'low', label: 'Thấp' },
@@ -414,6 +417,21 @@ function SettingsPanel() {
             </button>
           ))}
         </div>
+      </div>
+      <div className="setting">
+        <span>Âm lượng hiệu ứng</span>
+        <input
+          type="range"
+          min={0}
+          max={1}
+          step={0.05}
+          value={sfxVolume}
+          onChange={(e) => {
+            setSfxVolumeState(Number(e.target.value));
+            setSfxVolume(Number(e.target.value));
+          }}
+          onPointerUp={() => playSfx('sfx_hit_metal_01')}
+        />
       </div>
       <button type="button" className="wide" onClick={toggleDebug}>
         Bật/tắt thông số debug

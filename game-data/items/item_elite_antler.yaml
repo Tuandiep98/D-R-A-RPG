@@ -3,5 +3,6 @@ name: Linh Giác
 kind: material
 rarity: rare
 icon: "🦌"
+iconImage: icon_item_bone
 maxStack: 20
 sellPrice: 25

@@ -1,0 +1,7 @@
+# Generated from art/third_party/quaternius_rpg_asset_pack/converted/OBJ/KnightHelmet.glb (987 tris, longest y 2.31 → 0.35 m).
+# ground drop / display model
+id: drop_item_qa_knighthelmet
+kind: loot
+modelAssetId: item_qa_knighthelmet
+scale: 0.1515
+placeholder: { shape: box, color: "#f2c14e", height: 0.35, radius: 0.137 }

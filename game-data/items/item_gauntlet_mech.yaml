@@ -4,6 +4,7 @@ kind: equipment
 slot: main_hand
 rarity: rare
 icon: "🥊"
+iconImage: icon_item_glove
 bonus: { attack: 18, critChance: 0.08, speed: 0.3 }
 sellPrice: 140
 appearanceId: equip_gauntlet_01

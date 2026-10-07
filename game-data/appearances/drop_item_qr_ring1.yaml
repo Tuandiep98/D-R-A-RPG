@@ -1,0 +1,7 @@
+# Generated from art/third_party/quaternius_ultimate_rpg_items/converted/OBJ/Ring1.glb (150 tris, longest x 0.66 → 0.18 m).
+# ground drop / display model
+id: drop_item_qr_ring1
+kind: loot
+modelAssetId: item_qr_ring1
+scale: 0.2713
+placeholder: { shape: box, color: "#f2c14e", height: 0.179, radius: 0.09 }

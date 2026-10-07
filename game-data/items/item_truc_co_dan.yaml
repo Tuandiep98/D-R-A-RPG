@@ -3,6 +3,7 @@ name: Trúc Cơ Đan
 kind: material
 rarity: rare
 icon: "💊"
+iconImage: icon_item_potion3_filled
 description: Đan dược ổn định nền móng khi đột phá Trúc Cơ.
 maxStack: 5
 sellPrice: 40

@@ -1,0 +1,7 @@
+# Generated from art/third_party/quaternius_ultimate_rpg_items/converted/OBJ/Key1.glb (284 tris, longest z 0.87 → 0.25 m).
+# ground drop / display model
+id: drop_item_qr_key1
+kind: loot
+modelAssetId: item_qr_key1
+scale: 0.2885
+placeholder: { shape: box, color: "#f2c14e", height: 0.05, radius: 0.125 }

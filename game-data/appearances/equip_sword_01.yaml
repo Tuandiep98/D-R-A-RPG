@@ -1,4 +1,9 @@
+# Quaternius LowPoly Medieval Weapons "Sword" (5.4 units → ~0.95 m).
+# rotation x=+90° turns the blade from the finger axis of hand_r (humanoid_v1)
+# to point forward; fitted on the UAL mannequin with `pnpm smoke:gear`.
 id: equip_sword_01
 kind: equipment
-attach: { socket: hand_r, position: [0, 0, 0], rotation: [0, 0, 0] }
+modelAssetId: weapon_qm_sword
+scale: 0.175
+attach: { socket: hand_r, position: [0, 0, 0], rotation: [1.5708, 0, 0] }
 placeholder: { shape: box, color: "#c9ced6", height: 1.0, radius: 0.05 }

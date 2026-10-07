@@ -1,0 +1,39 @@
+{
+  "packId": "kenney_fantasy_ui_borders",
+  "author": "Kenney",
+  "pack": "Fantasy UI Borders 1.0",
+  "sourceUrl": "https://kenney.nl/assets/fantasy-ui-borders",
+  "license": "CC0-1.0",
+  "licenseVerified": true,
+  "downloadedAt": "2026-10-07",
+  "status": "approved",
+  "notes": "White pixel fretwork (hồi văn) 9-slice frames, 48px with 16px corners, tinted gold at build time. Vector/ has the SVG source for redrawing in the game style. License approved by the project owner on 2026-10-07. Evidence: License.txt in the zip (CC0).",
+  "kind": "ui",
+  "media": [
+    {
+      "id": "ui_border",
+      "file": "originals/PNG/Default/Border/panel-border-011.png",
+      "tint": "#d9b466"
+    },
+    {
+      "id": "ui_border_ornate",
+      "file": "originals/PNG/Default/Border/panel-border-025.png",
+      "tint": "#d9b466"
+    },
+    {
+      "id": "ui_border_double",
+      "file": "originals/PNG/Double/Border/panel-border-011.png",
+      "tint": "#d9b466"
+    },
+    {
+      "id": "ui_panel",
+      "file": "originals/PNG/Default/Panel/panel-011.png",
+      "tint": "#2a2117"
+    },
+    {
+      "id": "ui_divider",
+      "file": "originals/PNG/Default/Divider/divider-002.png",
+      "tint": "#d9b466"
+    }
+  ]
+}

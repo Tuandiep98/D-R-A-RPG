@@ -1,0 +1,104 @@
+{
+  "packId": "kdrn_ability_icons",
+  "author": "KDRN",
+  "pack": "Ability Icons [CC0]",
+  "sourceUrl": "https://kdrn.itch.io/ability-icons",
+  "license": "CC0-1.0",
+  "licenseVerified": true,
+  "downloadedAt": "2026-10-07",
+  "status": "approved",
+  "notes": "130 painted spell icons in 5 colours (256px + 1024px fullSize). Picked per skill; the full set stays in originals/ for later skills. License approved by the project owner on 2026-10-07. Evidence: itch.io listing titled \"Ability Icons - [CC0]\" (page blocked automated fetch); no license file in the zip.",
+  "kind": "icons",
+  "media": [
+    {
+      "id": "icon_skill_heavy_slash",
+      "file": "originals/256x256/YellowAbility_6.png",
+      "size": 128
+    },
+    {
+      "id": "icon_skill_sword_qi",
+      "file": "originals/256x256/PurpleAbility_24.png",
+      "size": 128
+    },
+    {
+      "id": "icon_skill_whirlwind",
+      "file": "originals/256x256/GreenAbility_12.png",
+      "size": 128
+    },
+    {
+      "id": "icon_skill_ground_slam",
+      "file": "originals/256x256/YellowAbility_13.png",
+      "size": 128
+    },
+    {
+      "id": "icon_skill_qi_heal",
+      "file": "originals/256x256/GreenAbility_21.png",
+      "size": 128
+    },
+    {
+      "id": "icon_skill_shield",
+      "file": "originals/256x256/YellowAbility_17.png",
+      "size": 128
+    },
+    {
+      "id": "icon_skill_dash",
+      "file": "originals/256x256/BlueAbility_17.png",
+      "size": 128
+    },
+    {
+      "id": "icon_skill_sword_array",
+      "file": "originals/256x256/BlueAbility_23.png",
+      "size": 128
+    },
+    {
+      "id": "icon_skill_armor_break",
+      "file": "originals/256x256/PurpleAbility_18.png",
+      "size": 128
+    },
+    {
+      "id": "icon_skill_fire",
+      "file": "originals/256x256/RedAbility_12.png",
+      "size": 128
+    },
+    {
+      "id": "icon_skill_ice",
+      "file": "originals/256x256/BlueAbility_16.png",
+      "size": 128
+    },
+    {
+      "id": "icon_skill_poison",
+      "file": "originals/256x256/GreenAbility_5.png",
+      "size": 128
+    },
+    {
+      "id": "icon_skill_summon",
+      "file": "originals/256x256/GreenAbility_3.png",
+      "size": 128
+    },
+    {
+      "id": "icon_skill_berserk",
+      "file": "originals/256x256/RedAbility_9.png",
+      "size": 128
+    },
+    {
+      "id": "icon_skill_meditate",
+      "file": "originals/256x256/BlueAbility_22.png",
+      "size": 128
+    },
+    {
+      "id": "icon_skill_holy",
+      "file": "originals/256x256/YellowAbility_8.png",
+      "size": 128
+    },
+    {
+      "id": "icon_skill_robot_laser",
+      "file": "originals/256x256/BlueAbility_14.png",
+      "size": 128
+    },
+    {
+      "id": "icon_skill_boss_barrage",
+      "file": "originals/256x256/RedAbility_3.png",
+      "size": 128
+    }
+  ]
+}

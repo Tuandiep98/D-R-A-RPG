@@ -4,5 +4,6 @@ kind: equipment
 slot: chest
 rarity: common
 icon: "🥋"
+iconImage: icon_item_armor_leather
 bonus: { defense: 6, hp: 60 }
 sellPrice: 20

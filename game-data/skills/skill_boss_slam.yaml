@@ -11,3 +11,4 @@ telegraph: true
 effects:
   - { type: damage, multiplier: 3, radius: 3.5 }
 vfx: slam
+sfx: { impact: [sfx_slam] }

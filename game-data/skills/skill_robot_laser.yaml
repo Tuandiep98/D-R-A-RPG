@@ -2,6 +2,7 @@ id: skill_robot_laser
 
 name: Tia Laser
 icon: "⚡"
+iconImage: icon_skill_robot_laser
 targeting: target
 range: 7
 castTime: 0.8
@@ -9,3 +10,4 @@ cooldown: 7
 effects:
   - { type: damage, multiplier: 1.6 }
 vfx: projectile
+sfx: { cast: [sfx_laser_small] }

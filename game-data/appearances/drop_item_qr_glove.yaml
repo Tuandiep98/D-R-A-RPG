@@ -1,0 +1,7 @@
+# Generated from art/third_party/quaternius_ultimate_rpg_items/converted/OBJ/Glove.glb (456 tris, longest z 0.96 → 0.3 m).
+# ground drop / display model
+id: drop_item_qr_glove
+kind: loot
+modelAssetId: item_qr_glove
+scale: 0.3139
+placeholder: { shape: box, color: "#f2c14e", height: 0.084, radius: 0.15 }

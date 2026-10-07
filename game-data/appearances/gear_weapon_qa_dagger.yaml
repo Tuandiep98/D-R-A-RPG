@@ -1,0 +1,8 @@
+# Generated from art/third_party/quaternius_rpg_asset_pack/converted/OBJ/Dagger.glb (524 tris, longest y 3.11 → 0.45 m).
+# grip rotation copied from equip_sword_01 — NOT fitted yet, check with pnpm smoke:gear
+id: gear_weapon_qa_dagger
+kind: equipment
+modelAssetId: weapon_qa_dagger
+scale: 0.1445
+attach: { socket: hand_r, position: [0, 0, 0], rotation: [1.5708, 0, 0] }
+placeholder: { shape: box, color: "#c9ced6", height: 0.45, radius: 0.04 }

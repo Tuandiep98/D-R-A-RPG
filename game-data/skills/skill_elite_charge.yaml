@@ -9,3 +9,4 @@ cooldown: 8
 effects:
   - { type: damage, multiplier: 2.2 }
 vfx: slash
+sfx: { impact: [sfx_hit_heavy] }

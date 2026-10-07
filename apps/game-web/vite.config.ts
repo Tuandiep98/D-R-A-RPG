@@ -40,7 +40,7 @@ export default defineConfig(({ mode }) => ({
       workbox: {
         // Precache only the app shell (tech plan §19). Game content is cached at runtime.
         globPatterns: ['**/*.{js,css,html,svg,png,woff2,json}'],
-        globIgnores: ['assets/**', '**/*.navmesh.*'],
+        globIgnores: ['assets/**', 'media/**', '**/*.navmesh.*'],
         maximumFileSizeToCacheInBytes: 12 * 1024 * 1024,
         navigateFallback: 'index.html',
         runtimeCaching: [
@@ -52,6 +52,20 @@ export default defineConfig(({ mode }) => ({
               cacheName: 'game-assets',
               expiration: {
                 maxEntries: 300,
+                maxAgeSeconds: 60 * 60 * 24 * 60,
+                purgeOnQuotaError: true,
+              },
+            },
+          },
+          {
+            // Icons, UI frames and sounds (pnpm media:build), also content-hashed.
+            urlPattern: ({ url }) =>
+              /\/media\/.+\.[0-9a-f]{10}\.(webp|png|m4a|ogg)$/.test(url.pathname),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'game-media',
+              expiration: {
+                maxEntries: 400,
                 maxAgeSeconds: 60 * 60 * 24 * 60,
                 purgeOnQuotaError: true,
               },

@@ -1,0 +1,7 @@
+# Generated from art/third_party/quaternius_ultimate_rpg_items/converted/OBJ/Backpack.glb (3960 tris, longest x 1.07 → 0.5 m).
+# ground drop / display model
+id: drop_item_qr_backpack
+kind: loot
+modelAssetId: item_qr_backpack
+scale: 0.4685
+placeholder: { shape: box, color: "#f2c14e", height: 0.445, radius: 0.25 }

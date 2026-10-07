@@ -26,12 +26,17 @@ pnpm test                # Vitest toàn repo (gồm integration server/API)
 pnpm typecheck && pnpm lint && pnpm depcruise
 pnpm content:build       # maps:build → nav:build → validate:data
 pnpm assets:build        # art/third_party → apps/game-web/public/assets + docs/asset_catalog.md
+pnpm assets:convert      # pack chỉ có OBJ (Quaternius cũ) → <pack>/converted/*.glb (chạy trước assets:build)
+pnpm media:build         # icon / khung UI / âm thanh / sprite VFX → public/media + docs/media_catalog.md
+pnpm assets:inspect <f>  # kích thước, tris, clip của glTF; --json để dùng trong script
+pnpm assets:sheet <out> <dir>  # ảnh ghép có nhãn để chọn icon/khung bằng mắt
+pnpm smoke:gear [url]    # chụp cận nhân vật (hình nộm UAL) để căn socket/xoay vũ khí
 pnpm smoke [url]         # headless Chrome smoke test against a running dev/preview server
 pnpm smoke:login [url]   # đăng ký → tạo nhân vật → vào game → bang hội → chat (cần dev:stack)
 pnpm db:generate         # drizzle-kit migration sau khi sửa packages/persistence/src/schema.ts
 ```
 
-URL flags của web client: `?webgl`, `?noworker`, `?map=<id>`, `?quality=low|medium|high`, `?debug` (bật `window.__rpg` ở bản build), `?online` (đăng nhập qua API), `?online&dev=<tên>` (đăng nhập dev thẳng vào game server, cần `ALLOW_DEV_LOGIN=true`).
+URL flags của web client: `?webgl`, `?noworker`, `?map=<id>`, `?quality=low|medium|high`, `?debug` (bật `window.__rpg` ở bản build), `?mannequin` (vẽ player bằng hình nộm UAL cùng rig để căn trang bị), `?online` (đăng nhập qua API), `?online&dev=<tên>` (đăng nhập dev thẳng vào game server, cần `ALLOW_DEV_LOGIN=true`).
 
 Lưu ý môi trường: hook `rtk` có thể làm sai output của biome/grep — dùng `rtk proxy npx biome check .` và kiểm tra exit code.
 
@@ -88,4 +93,6 @@ infra/                     docker (compose, Dockerfiles), deploy (Caddyfile)
 - Vượt budget tam giác phải có `budgetException` (lý do + owner).
 - ID dạng `snake_case` ổn định.
 - Không tuyên bố animation tương thích khi chưa chạy thử.
-- Output build (`apps/game-web/public/assets/`) không commit.
+- Output build (`apps/game-web/public/assets/`, `public/media/`, `<pack>/converted/`) không commit.
+- Pack chỉ có âm thanh/icon/UI/VFX dùng `kind` + `media` trong `SOURCE.json`; game-data trỏ tới media bằng `iconImage` / `sfx` (validator kiểm tra id).
+- Vũ khí theo rig humanoid_v1: `hand_r` xoay `[1.5708, 0, 0]` (đã căn với Quaternius Medieval Weapons); appearance sinh tự động ghi rõ "NOT fitted" cho tới khi kiểm bằng `pnpm smoke:gear`.

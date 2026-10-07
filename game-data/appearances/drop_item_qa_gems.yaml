@@ -1,0 +1,7 @@
+# Generated from art/third_party/quaternius_rpg_asset_pack/converted/OBJ/Gems.glb (412 tris, longest z 5.19 → 0.35 m).
+# ground drop / display model
+id: drop_item_qa_gems
+kind: loot
+modelAssetId: item_qa_gems
+scale: 0.0675
+placeholder: { shape: box, color: "#f2c14e", height: 0.065, radius: 0.175 }

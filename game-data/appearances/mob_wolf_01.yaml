@@ -10,6 +10,8 @@ animations:
   hit: Idle_HitReact1
   death: Death
 hitDelay: 0.2
+sfx:
+  death: [sfx_hit_soft]
 placeholder:
   shape: box
   color: '#8a6d4f'

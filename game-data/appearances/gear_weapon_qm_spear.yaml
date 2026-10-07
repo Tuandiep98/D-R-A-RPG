@@ -1,0 +1,8 @@
+# Generated from art/third_party/quaternius_medieval_weapons/converted/OBJ/Spear.glb (1202 tris, longest y 9.72 → 1.9 m).
+# grip rotation copied from equip_sword_01 — NOT fitted yet, check with pnpm smoke:gear
+id: gear_weapon_qm_spear
+kind: equipment
+modelAssetId: weapon_qm_spear
+scale: 0.1955
+attach: { socket: hand_r, position: [0, 0, 0], rotation: [1.5708, 0, 0] }
+placeholder: { shape: box, color: "#c9ced6", height: 1.9, radius: 0.052 }

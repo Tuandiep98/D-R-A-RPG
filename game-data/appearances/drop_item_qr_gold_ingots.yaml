@@ -1,0 +1,7 @@
+# Generated from art/third_party/quaternius_ultimate_rpg_items/converted/OBJ/Gold_Ingots.glb (648 tris, longest x 0.72 → 0.35 m).
+# ground drop / display model
+id: drop_item_qr_gold_ingots
+kind: loot
+modelAssetId: item_qr_gold_ingots
+scale: 0.4861
+placeholder: { shape: box, color: "#f2c14e", height: 0.22, radius: 0.175 }

@@ -55,6 +55,12 @@ export const CombatDefSchema = z.strictObject({
 // Skills
 // ---------------------------------------------------------------------------
 
+/** Icon in the runtime media manifest (art/third_party/<pack>/SOURCE.json `media`). */
+export const MediaIconIdSchema = z.string().regex(/^icon_[a-z0-9_]+$/);
+/** Sound in the runtime media manifest; a list picks one at random per play. */
+export const SfxIdSchema = z.string().regex(/^sfx_[a-z0-9_]+$/);
+export const SfxListSchema = z.array(SfxIdSchema).min(1);
+
 export const SkillTargetingSchema = z.enum([
   /** Needs a hostile target entity within range. */
   'target',
@@ -85,6 +91,8 @@ export const SkillDefSchema = z.strictObject({
   name: z.string().min(1),
   description: z.string().default(''),
   icon: z.string().default('⚔'),
+  /** Runtime media id (`pnpm media:build`); the emoji `icon` stays as fallback. */
+  iconImage: MediaIconIdSchema.optional(),
   targeting: SkillTargetingSchema,
   /** Max distance to target/point, metres (ignored for `self`). */
   range: nonNegative.default(0),
@@ -98,6 +106,10 @@ export const SkillDefSchema = z.strictObject({
   telegraph: z.boolean().default(false),
   effects: z.array(SkillEffectSchema).min(1),
   vfx: z.string().default('slash'),
+  /** Presentation only: sounds when the cast starts and when it lands. */
+  sfx: z
+    .strictObject({ cast: SfxListSchema.optional(), impact: SfxListSchema.optional() })
+    .default({}),
 });
 export type SkillDef = z.infer<typeof SkillDefSchema>;
 
@@ -128,6 +140,8 @@ export const ItemDefSchema = z
     kind: z.enum(['equipment', 'consumable', 'material']),
     rarity: RaritySchema.default('common'),
     icon: z.string().default('◆'),
+    /** Runtime media id (`pnpm media:build`); the emoji `icon` stays as fallback. */
+    iconImage: MediaIconIdSchema.optional(),
     description: z.string().default(''),
     slot: EquipSlotSchema.optional(),
     /** Minimum realm to equip/use (no character level — master plan §31). */
@@ -656,6 +670,8 @@ export const AppearanceDefSchema = z.strictObject({
   hitDelay: nonNegative.default(0),
   /** Emissive tint used by elite/boss variants and rarity glows. */
   tint: z.string().optional(),
+  /** Sounds by moment (presentation only); missing → renderer defaults. */
+  sfx: z.partialRecord(z.enum(['attack', 'hit', 'death']), SfxListSchema).default({}),
   placeholder: z.strictObject({
     shape: z.enum(['capsule', 'box', 'cone', 'sphere', 'cylinder']),
     color: z.string(),

@@ -1,0 +1,7 @@
+# Generated from art/third_party/quaternius_rpg_asset_pack/converted/OBJ/Book.glb (184 tris, longest y 0.95 → 0.3 m).
+# ground drop / display model
+id: drop_item_qa_book
+kind: loot
+modelAssetId: item_qa_book
+scale: 0.3166
+placeholder: { shape: box, color: "#f2c14e", height: 0.3, radius: 0.11 }

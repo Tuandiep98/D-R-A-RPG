@@ -1,0 +1,62 @@
+{
+  "packId": "kenney_interface_sounds",
+  "author": "Kenney",
+  "pack": "Interface Sounds",
+  "sourceUrl": "https://kenney.nl/assets/interface-sounds",
+  "license": "CC0-1.0",
+  "licenseVerified": true,
+  "downloadedAt": "2026-10-07",
+  "status": "approved",
+  "kind": "audio",
+  "media": [
+    {
+      "id": "sfx_ui_click",
+      "file": "originals/Audio/click_001.ogg"
+    },
+    {
+      "id": "sfx_ui_select",
+      "file": "originals/Audio/select_001.ogg"
+    },
+    {
+      "id": "sfx_ui_open",
+      "file": "originals/Audio/open_001.ogg"
+    },
+    {
+      "id": "sfx_ui_close",
+      "file": "originals/Audio/close_001.ogg"
+    },
+    {
+      "id": "sfx_ui_confirm",
+      "file": "originals/Audio/confirmation_001.ogg"
+    },
+    {
+      "id": "sfx_ui_error",
+      "file": "originals/Audio/error_001.ogg"
+    },
+    {
+      "id": "sfx_ui_drop",
+      "file": "originals/Audio/drop_001.ogg"
+    },
+    {
+      "id": "sfx_ui_toggle",
+      "file": "originals/Audio/toggle_001.ogg"
+    },
+    {
+      "id": "sfx_ui_scroll",
+      "file": "originals/Audio/scroll_001.ogg"
+    },
+    {
+      "id": "sfx_ui_maximize",
+      "file": "originals/Audio/maximize_001.ogg"
+    },
+    {
+      "id": "sfx_ui_glass",
+      "file": "originals/Audio/glass_001.ogg"
+    },
+    {
+      "id": "sfx_ui_question",
+      "file": "originals/Audio/question_001.ogg"
+    }
+  ],
+  "notes": "License approved by the project owner on 2026-10-07. Evidence: License.txt in the zip (CC0)."
+}

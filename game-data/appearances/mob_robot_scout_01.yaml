@@ -10,6 +10,9 @@ animations:
   hit: HitRecieve_1
   death: Death
 hitDelay: 0.3
+sfx:
+  hit: [sfx_hit_metal_01, sfx_hit_metal_02, sfx_robot_hit]
+  death: [sfx_explosion]
 placeholder:
   shape: cylinder
   color: "#9aa4b1"

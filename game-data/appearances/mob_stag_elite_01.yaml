@@ -6,4 +6,6 @@ scale: 0.5
 tint: '#ffd86b'
 animations: { idle: Idle, run: Gallop, attack: Attack_Headbutt, cast: Attack_Kick, hit: Idle_HitReact1, death: Death }
 hitDelay: 0.3
+sfx:
+  death: [sfx_hit_soft]
 placeholder: { shape: box, color: '#c9a24a', height: 1.8, radius: 0.8 }

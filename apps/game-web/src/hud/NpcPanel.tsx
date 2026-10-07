@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { loadContent } from '../content';
 import { game } from '../game';
 import { useUiStore } from '../store';
+import { GameIcon } from './GameIcon';
 
 type Tab = 'quests' | 'shop' | 'craft' | 'upgrade';
 
@@ -193,7 +194,8 @@ function Shop({
           return (
             <div key={entry.itemId} className="npc-row">
               <span>
-                {item?.icon} {item?.name}
+                <GameIcon className="inline-icon" icon={item?.icon} image={item?.iconImage} />{' '}
+                {item?.name}
               </span>
               <button
                 type="button"
@@ -221,7 +223,7 @@ function Shop({
           return (
             <div key={i.instanceId} className="npc-row">
               <span style={{ color: i.rarityColor }}>
-                {i.icon} {i.name}
+                <GameIcon className="inline-icon" icon={i.icon} image={i.iconImage} /> {i.name}
                 {i.count > 1 ? ` ×${i.count}` : ''}
               </span>
               <button
@@ -307,7 +309,8 @@ function Upgrade({ ui, npcEntityId, send }: { ui: UiState; npcEntityId: number; 
           <div key={i.instanceId} className="npc-row">
             <div>
               <span style={{ color: i.rarityColor }}>
-                {i.icon} {i.name} {level > 0 && <strong>+{level}</strong>}
+                <GameIcon className="inline-icon" icon={i.icon} image={i.iconImage} /> {i.name}{' '}
+                {level > 0 && <strong>+{level}</strong>}
               </span>
               {step ? (
                 <div className="small">

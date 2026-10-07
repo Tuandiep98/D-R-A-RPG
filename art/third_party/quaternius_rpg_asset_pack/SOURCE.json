@@ -1,0 +1,64 @@
+{
+  "packId": "quaternius_rpg_asset_pack",
+  "author": "Quaternius",
+  "pack": "LowPoly RPG Pack (May 2017)",
+  "sourceUrl": "https://quaternius.com/packs/rpg.html",
+  "license": "CC0-1.0",
+  "licenseVerified": true,
+  "downloadedAt": "2026-10-07",
+  "status": "approved",
+  "notes": "OBJ-only; converted with `pnpm assets:convert`. Staffs suit the cultivator/mage line. License approved by the project owner on 2026-10-07. Evidence: quaternius.com page (CC0); no license file in the zip.",
+  "kind": "models",
+  "assets": [
+    {
+      "assetId": "weapon_qa_staff",
+      "file": "converted/OBJ/Staff.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_qa_icestaff",
+      "file": "converted/OBJ/IceStaff.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_qa_woodenstaff",
+      "file": "converted/OBJ/WoodenStaff.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_qa_sword",
+      "file": "converted/OBJ/Sword.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_qa_dagger",
+      "file": "converted/OBJ/Dagger.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_qa_knighthelmet",
+      "file": "converted/OBJ/KnightHelmet.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_qa_shield",
+      "file": "converted/OBJ/Shield.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_qa_book",
+      "file": "converted/OBJ/Book.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_qa_scroll",
+      "file": "converted/OBJ/Scroll.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_qa_gems",
+      "file": "converted/OBJ/Gems.glb",
+      "type": "prop"
+    }
+  ]
+}

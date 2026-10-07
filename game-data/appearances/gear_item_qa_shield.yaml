@@ -1,0 +1,8 @@
+# Generated from art/third_party/quaternius_rpg_asset_pack/converted/OBJ/Shield.glb (504 tris, longest y 2.00 → 0.65 m).
+# left-hand rotation NOT fitted yet, check with pnpm smoke:gear
+id: gear_item_qa_shield
+kind: equipment
+modelAssetId: item_qa_shield
+scale: 0.325
+attach: { socket: hand_l, position: [0, 0, 0], rotation: [1.5708, 0, 0] }
+placeholder: { shape: box, color: "#f2c14e", height: 0.65, radius: 0.309 }

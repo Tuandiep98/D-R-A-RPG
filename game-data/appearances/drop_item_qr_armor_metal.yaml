@@ -1,0 +1,7 @@
+# Generated from art/third_party/quaternius_ultimate_rpg_items/converted/OBJ/Armor_Metal.glb (584 tris, longest x 1.43 → 0.6 m).
+# ground drop / display model
+id: drop_item_qr_armor_metal
+kind: loot
+modelAssetId: item_qr_armor_metal
+scale: 0.4192
+placeholder: { shape: box, color: "#f2c14e", height: 0.395, radius: 0.3 }

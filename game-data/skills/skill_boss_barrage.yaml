@@ -2,6 +2,7 @@ id: skill_boss_barrage
 
 name: Pháo Năng Lượng
 icon: "☄"
+iconImage: icon_skill_boss_barrage
 targeting: point
 range: 12
 castTime: 1.0
@@ -10,3 +11,4 @@ telegraph: true
 effects:
   - { type: damage, multiplier: 2, radius: 2.5 }
 vfx: slam
+sfx: { cast: [sfx_laser_large], impact: [sfx_explosion] }

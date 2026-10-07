@@ -1,0 +1,7 @@
+# Generated from art/third_party/quaternius_ultimate_rpg_items/converted/OBJ/Mineral.glb (896 tris, longest x 0.59 → 0.35 m).
+# ground drop / display model
+id: drop_item_qr_mineral
+kind: loot
+modelAssetId: item_qr_mineral
+scale: 0.5957
+placeholder: { shape: box, color: "#f2c14e", height: 0.26, radius: 0.175 }

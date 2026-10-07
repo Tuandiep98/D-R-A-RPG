@@ -1,0 +1,8 @@
+# Generated from art/third_party/quaternius_ultimate_guns/converted/OBJ/AssaultRifle_1.glb (1244 tris, longest x 3.10 → 0.95 m).
+# barrel along the long axis — rotation NOT fitted yet, check with pnpm smoke:gear
+id: gear_weapon_qg_assaultrifle_1
+kind: equipment
+modelAssetId: weapon_qg_assaultrifle_1
+scale: 0.306
+attach: { socket: hand_r, position: [0, 0, 0], rotation: [0, 0, 0] }
+placeholder: { shape: box, color: "#c9ced6", height: 0.386, radius: 0.475 }

@@ -14,4 +14,7 @@ animations:
     death: Death,
   }
 hitDelay: 0.35
+sfx:
+  hit: [sfx_hit_metal_01, sfx_hit_metal_02, sfx_robot_hit]
+  death: [sfx_explosion]
 placeholder: { shape: cylinder, color: "#7a2e2e", height: 3.6, radius: 1.4 }

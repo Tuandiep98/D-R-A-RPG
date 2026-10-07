@@ -1,0 +1,8 @@
+# Generated from art/third_party/kaykit_adventurers/originals/Assets/gltf/sword_2handed.gltf (412 tris, longest y 2.37 → 1.3 m).
+# grip rotation copied from equip_sword_01 — NOT fitted yet, check with pnpm smoke:gear
+id: gear_weapon_kk_sword_2h
+kind: equipment
+modelAssetId: weapon_kk_sword_2h
+scale: 0.5495
+attach: { socket: hand_r, position: [0, 0, 0], rotation: [1.5708, 0, 0] }
+placeholder: { shape: box, color: "#c9ced6", height: 1.3, radius: 0.231 }

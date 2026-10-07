@@ -1,0 +1,74 @@
+{
+  "packId": "kaykit_adventurers",
+  "author": "Kay Lousberg",
+  "pack": "KayKit Character Pack: Adventurers 2.0 (Free)",
+  "sourceUrl": "https://kaylousberg.itch.io/kaykit-adventurers",
+  "license": "CC0-1.0",
+  "licenseVerified": true,
+  "downloadedAt": "2026-10-07",
+  "status": "approved",
+  "notes": "Chunky stylised weapons (one gradient atlas each). Characters use KayKit Rig_Medium, not humanoid_v1 — weapons only for now. License approved by the project owner on 2026-10-07. Evidence: License.txt in the zip (CC0).",
+  "kind": "models",
+  "assets": [
+    {
+      "assetId": "weapon_kk_sword_1h",
+      "file": "originals/Assets/gltf/sword_1handed.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kk_sword_2h",
+      "file": "originals/Assets/gltf/sword_2handed.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kk_dagger",
+      "file": "originals/Assets/gltf/dagger.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kk_axe_1h",
+      "file": "originals/Assets/gltf/axe_1handed.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kk_axe_2h",
+      "file": "originals/Assets/gltf/axe_2handed.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kk_staff",
+      "file": "originals/Assets/gltf/staff.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kk_wand",
+      "file": "originals/Assets/gltf/wand.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kk_crossbow",
+      "file": "originals/Assets/gltf/crossbow_1handed.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kk_bow",
+      "file": "originals/Assets/gltf/bow_withString.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "offhand_kk_shield_round",
+      "file": "originals/Assets/gltf/shield_round.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "offhand_kk_shield_square",
+      "file": "originals/Assets/gltf/shield_square.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "offhand_kk_spellbook",
+      "file": "originals/Assets/gltf/spellbook_open.gltf",
+      "type": "prop"
+    }
+  ]
+}

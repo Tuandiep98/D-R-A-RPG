@@ -1,0 +1,386 @@
+{
+  "packId": "quaternius_ultimate_rpg_items",
+  "author": "Quaternius",
+  "pack": "Ultimate RPG Items Pack (Aug 2019)",
+  "sourceUrl": "https://quaternius.com/packs/ultimaterpg.html",
+  "license": "CC0-1.0",
+  "licenseVerified": true,
+  "downloadedAt": "2026-10-07",
+  "status": "approved",
+  "notes": "OBJ-only; converted with `pnpm assets:convert`. Ships PNG renders of every model (used as item icons via media). License approved by the project owner on 2026-10-07. Evidence: License.txt in the zip + quaternius.com page (CC0).",
+  "kind": "models",
+  "media": [
+    {
+      "id": "icon_item_potion1_filled_red",
+      "file": "originals/Icons/Potion1_Filled_Red.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_potion1_filled_blue",
+      "file": "originals/Icons/Potion1_Filled_Blue.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_potion2_filled",
+      "file": "originals/Icons/Potion2_Filled.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_potion3_filled",
+      "file": "originals/Icons/Potion3_Filled.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_potion4_filled",
+      "file": "originals/Icons/Potion4_Filled.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_coin",
+      "file": "originals/Icons/Coin.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_gold_ingots",
+      "file": "originals/Icons/Gold_Ingots.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_bag",
+      "file": "originals/Icons/Bag.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_pouch",
+      "file": "originals/Icons/Pouch.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_chest_closed",
+      "file": "originals/Icons/Chest_Closed.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_crystal1",
+      "file": "originals/Icons/Crystal1.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_crystal2",
+      "file": "originals/Icons/Crystal2.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_crystal3",
+      "file": "originals/Icons/Crystal3.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_mineral",
+      "file": "originals/Icons/Mineral.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_bone",
+      "file": "originals/Icons/Bone.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_skull",
+      "file": "originals/Icons/Skull.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_fishbone",
+      "file": "originals/Icons/FishBone.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_key1",
+      "file": "originals/Icons/Key1.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_scroll",
+      "file": "originals/Icons/Scroll.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_parchment",
+      "file": "originals/Icons/Parchment.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_book1_closed",
+      "file": "originals/Icons/Book1_Closed.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_book2_closed",
+      "file": "originals/Icons/Book2_Closed.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_ring1",
+      "file": "originals/Icons/Ring1.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_ring2",
+      "file": "originals/Icons/Ring2.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_necklace1",
+      "file": "originals/Icons/Necklace1.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_necklace2",
+      "file": "originals/Icons/Necklace2.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_crown",
+      "file": "originals/Icons/Crown.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_crown2",
+      "file": "originals/Icons/Crown2.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_armor_leather",
+      "file": "originals/Icons/Armor_Leather.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_armor_golden",
+      "file": "originals/Icons/Armor_Golden.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_armor_metal",
+      "file": "originals/Icons/Armor_Metal.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_armor_black",
+      "file": "originals/Icons/Armor_Black.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_glove",
+      "file": "originals/Icons/Glove.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_sword",
+      "file": "originals/Icons/Sword.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_sword_big",
+      "file": "originals/Icons/Sword_big.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_sword_golden",
+      "file": "originals/Icons/Sword_Golden.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_sword_big_golden",
+      "file": "originals/Icons/Sword_big_Golden.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_dagger",
+      "file": "originals/Icons/Dagger.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_axe_small",
+      "file": "originals/Icons/Axe_small.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_hammer_double",
+      "file": "originals/Icons/Hammer_Double.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_bow_wooden",
+      "file": "originals/Icons/Bow_Wooden.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_arrow",
+      "file": "originals/Icons/Arrow.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_heart",
+      "file": "originals/Icons/Heart.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_star",
+      "file": "originals/Icons/Star.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_snowflake1",
+      "file": "originals/Icons/Snowflake1.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_chalice",
+      "file": "originals/Icons/Chalice.png",
+      "size": 128
+    },
+    {
+      "id": "icon_item_potion6_filled",
+      "file": "originals/Icons/Potion6_Filled.png",
+      "size": 128
+    }
+  ],
+  "assets": [
+    {
+      "assetId": "item_qr_potion1_filled",
+      "file": "converted/OBJ/Potion1_Filled.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_qr_potion2_filled",
+      "file": "converted/OBJ/Potion2_Filled.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_qr_potion3_filled",
+      "file": "converted/OBJ/Potion3_Filled.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_qr_coin",
+      "file": "converted/OBJ/Coin.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_qr_gold_ingots",
+      "file": "converted/OBJ/Gold_Ingots.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_qr_bag",
+      "file": "converted/OBJ/Bag.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_qr_pouch",
+      "file": "converted/OBJ/Pouch.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_qr_backpack",
+      "file": "converted/OBJ/Backpack.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_qr_chest_closed",
+      "file": "converted/OBJ/Chest_Closed.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_qr_chest_open",
+      "file": "converted/OBJ/Chest_Open.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_qr_crystal1",
+      "file": "converted/OBJ/Crystal1.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_qr_crystal3",
+      "file": "converted/OBJ/Crystal3.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_qr_mineral",
+      "file": "converted/OBJ/Mineral.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_qr_bone",
+      "file": "converted/OBJ/Bone.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_qr_skull",
+      "file": "converted/OBJ/Skull.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_qr_key1",
+      "file": "converted/OBJ/Key1.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_qr_scroll",
+      "file": "converted/OBJ/Scroll.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_qr_parchment",
+      "file": "converted/OBJ/Parchment.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_qr_book1_closed",
+      "file": "converted/OBJ/Book1_Closed.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_qr_ring1",
+      "file": "converted/OBJ/Ring1.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_qr_necklace1",
+      "file": "converted/OBJ/Necklace1.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_qr_crown",
+      "file": "converted/OBJ/Crown.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_qr_armor_leather",
+      "file": "converted/OBJ/Armor_Leather.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_qr_armor_golden",
+      "file": "converted/OBJ/Armor_Golden.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_qr_armor_metal",
+      "file": "converted/OBJ/Armor_Metal.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_qr_glove",
+      "file": "converted/OBJ/Glove.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_qr_sword_big_golden",
+      "file": "converted/OBJ/Sword_big_Golden.glb",
+      "type": "prop"
+    }
+  ]
+}

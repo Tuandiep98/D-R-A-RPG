@@ -2,6 +2,7 @@ import { GameView } from '@rpg/babylon-renderer';
 import { ColyseusSimHost } from '@rpg/net-client';
 import { LocalSimHost, type MessageEndpoint, type SimHost, WorkerSimHost } from '@rpg/sim-host';
 import { useEffect, useRef } from 'react';
+import { playSfx } from './audio';
 import { loadContent } from './content';
 import { setGame } from './game';
 import type { OnlineChoice } from './Login';
@@ -95,8 +96,15 @@ export function GameCanvas({ online = null }: { online?: OnlineChoice | null }) 
 
     (async () => {
       try {
-        const content = loadContent();
         const params = new URLSearchParams(window.location.search);
+        let content = loadContent();
+        // Dev aid: draw the player as the UAL mannequin (same rig) to fit gear.
+        const mannequin = content.appearances.get('char_ual_mannequin');
+        if (params.has('mannequin') && mannequin) {
+          const appearances = new Map(content.appearances);
+          appearances.set('char_player_default', { ...mannequin, id: 'char_player_default' });
+          content = { ...content, appearances };
+        }
         const { host, kind } = createHost(params, online);
         store.setCharacterId(online?.characterId ?? null);
         store.setHostKind(kind);
@@ -113,6 +121,7 @@ export function GameCanvas({ online = null }: { online?: OnlineChoice | null }) 
           onUi: store.setUi,
           onDebug: store.setDebug,
           onNotice: store.pushNotice,
+          onSfx: playSfx,
           onNpcOpen: store.openNpc,
           onChat: store.pushChat,
           onPartyInvite: store.setInvite,

@@ -1,0 +1,19 @@
+{
+  "packId": "quaternius_universal_animation",
+  "author": "Quaternius",
+  "pack": "Universal Animation Library (Standard)",
+  "sourceUrl": "https://quaternius.com/packs/universalanimationlibrary.html",
+  "license": "CC0-1.0",
+  "licenseVerified": true,
+  "downloadedAt": "2026-10-07",
+  "status": "approved",
+  "notes": "43 clips on the UBC humanoid rig (same rig as char_player_default). Reference as animationSource \"../quaternius_universal_animation/originals/Unreal-Godot/UAL1_Standard.glb\". Combat: Sword_Attack, Sword_Idle, Punch_Jab, Punch_Cross, Spell_Simple_*, Pistol_*, Roll, Hit_Chest, Hit_Head, Death01. char_ual_mannequin = the grey UBC mannequin with all 43 clips, for socket/weapon fitting and animation previews. License approved by the project owner on 2026-10-07. Evidence: License.txt in the zip + quaternius.com page (CC0).",
+  "kind": "animations",
+  "assets": [
+    {
+      "assetId": "char_ual_mannequin",
+      "file": "originals/Unreal-Godot/UAL1_Standard.glb",
+      "type": "character"
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "packId": "kenney_scifi_sounds",
+  "author": "Kenney",
+  "pack": "Sci-fi Sounds",
+  "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+  "license": "CC0-1.0",
+  "licenseVerified": true,
+  "downloadedAt": "2026-10-07",
+  "status": "approved",
+  "kind": "audio",
+  "media": [
+    {
+      "id": "sfx_laser_small",
+      "file": "originals/Audio/laserSmall_000.ogg"
+    },
+    {
+      "id": "sfx_laser_large",
+      "file": "originals/Audio/laserLarge_000.ogg"
+    },
+    {
+      "id": "sfx_laser_retro",
+      "file": "originals/Audio/laserRetro_000.ogg"
+    },
+    {
+      "id": "sfx_force_field",
+      "file": "originals/Audio/forceField_000.ogg"
+    },
+    {
+      "id": "sfx_explosion",
+      "file": "originals/Audio/explosionCrunch_000.ogg"
+    },
+    {
+      "id": "sfx_explosion_low",
+      "file": "originals/Audio/lowFrequency_explosion_000.ogg"
+    },
+    {
+      "id": "sfx_robot_hit",
+      "file": "originals/Audio/impactMetal_000.ogg"
+    },
+    {
+      "id": "sfx_mech_door",
+      "file": "originals/Audio/doorOpen_000.ogg"
+    },
+    {
+      "id": "sfx_computer",
+      "file": "originals/Audio/computerNoise_000.ogg"
+    }
+  ],
+  "notes": "License approved by the project owner on 2026-10-07. Evidence: License.txt in the zip (CC0)."
+}

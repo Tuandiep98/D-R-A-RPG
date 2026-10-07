@@ -1,0 +1,8 @@
+# Generated from art/third_party/quaternius_rpg_asset_pack/converted/OBJ/Sword.glb (524 tris, longest y 3.11 → 0.95 m).
+# grip rotation copied from equip_sword_01 — NOT fitted yet, check with pnpm smoke:gear
+id: gear_weapon_qa_sword
+kind: equipment
+modelAssetId: weapon_qa_sword
+scale: 0.305
+attach: { socket: hand_r, position: [0, 0, 0], rotation: [1.5708, 0, 0] }
+placeholder: { shape: box, color: "#c9ced6", height: 0.95, radius: 0.084 }

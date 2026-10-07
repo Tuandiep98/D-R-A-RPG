@@ -3,6 +3,7 @@ name: Hồi Huyết Đan (lớn)
 kind: consumable
 rarity: uncommon
 icon: "⚗"
+iconImage: icon_item_potion6_filled
 heal: 0.7
 cooldown: 10
 maxStack: 10

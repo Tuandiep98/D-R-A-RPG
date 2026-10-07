@@ -1,0 +1,134 @@
+{
+  "packId": "kenney_particle_pack",
+  "author": "Kenney",
+  "pack": "Particle Pack",
+  "sourceUrl": "https://kenney.nl/assets/particle-pack",
+  "license": "CC0-1.0",
+  "licenseVerified": true,
+  "downloadedAt": "2026-10-07",
+  "status": "approved",
+  "notes": "Transparent PNG particle sprites (512px). Picked for slash/impact/magic/heal; resized to 256. License approved by the project owner on 2026-10-07. Evidence: License.txt in the zip (CC0).",
+  "kind": "vfx",
+  "media": [
+    {
+      "id": "vfx_slash_01",
+      "file": "originals/PNG (Transparent)/slash_01.png",
+      "size": 256
+    },
+    {
+      "id": "vfx_slash_02",
+      "file": "originals/PNG (Transparent)/slash_02.png",
+      "size": 256
+    },
+    {
+      "id": "vfx_slash_03",
+      "file": "originals/PNG (Transparent)/slash_03.png",
+      "size": 256
+    },
+    {
+      "id": "vfx_spark_01",
+      "file": "originals/PNG (Transparent)/spark_01.png",
+      "size": 256
+    },
+    {
+      "id": "vfx_spark_04",
+      "file": "originals/PNG (Transparent)/spark_04.png",
+      "size": 256
+    },
+    {
+      "id": "vfx_star_01",
+      "file": "originals/PNG (Transparent)/star_01.png",
+      "size": 256
+    },
+    {
+      "id": "vfx_star_06",
+      "file": "originals/PNG (Transparent)/star_06.png",
+      "size": 256
+    },
+    {
+      "id": "vfx_magic_01",
+      "file": "originals/PNG (Transparent)/magic_01.png",
+      "size": 256
+    },
+    {
+      "id": "vfx_magic_03",
+      "file": "originals/PNG (Transparent)/magic_03.png",
+      "size": 256
+    },
+    {
+      "id": "vfx_magic_05",
+      "file": "originals/PNG (Transparent)/magic_05.png",
+      "size": 256
+    },
+    {
+      "id": "vfx_circle_01",
+      "file": "originals/PNG (Transparent)/circle_01.png",
+      "size": 256
+    },
+    {
+      "id": "vfx_circle_05",
+      "file": "originals/PNG (Transparent)/circle_05.png",
+      "size": 256
+    },
+    {
+      "id": "vfx_twirl_01",
+      "file": "originals/PNG (Transparent)/twirl_01.png",
+      "size": 256
+    },
+    {
+      "id": "vfx_twirl_02",
+      "file": "originals/PNG (Transparent)/twirl_02.png",
+      "size": 256
+    },
+    {
+      "id": "vfx_flame_01",
+      "file": "originals/PNG (Transparent)/flame_01.png",
+      "size": 256
+    },
+    {
+      "id": "vfx_fire_01",
+      "file": "originals/PNG (Transparent)/fire_01.png",
+      "size": 256
+    },
+    {
+      "id": "vfx_smoke_01",
+      "file": "originals/PNG (Transparent)/smoke_01.png",
+      "size": 256
+    },
+    {
+      "id": "vfx_smoke_07",
+      "file": "originals/PNG (Transparent)/smoke_07.png",
+      "size": 256
+    },
+    {
+      "id": "vfx_light_01",
+      "file": "originals/PNG (Transparent)/light_01.png",
+      "size": 256
+    },
+    {
+      "id": "vfx_flare_01",
+      "file": "originals/PNG (Transparent)/flare_01.png",
+      "size": 256
+    },
+    {
+      "id": "vfx_trace_01",
+      "file": "originals/PNG (Transparent)/trace_01.png",
+      "size": 256
+    },
+    {
+      "id": "vfx_symbol_01",
+      "file": "originals/PNG (Transparent)/symbol_01.png",
+      "size": 256
+    },
+    {
+      "id": "vfx_scorch_01",
+      "file": "originals/PNG (Transparent)/scorch_01.png",
+      "size": 256
+    },
+    {
+      "id": "vfx_muzzle_01",
+      "file": "originals/PNG (Transparent)/muzzle_01.png",
+      "size": 256
+    }
+  ]
+}

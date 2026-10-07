@@ -1,0 +1,104 @@
+{
+  "packId": "quaternius_medieval_weapons",
+  "author": "Quaternius",
+  "pack": "LowPoly Medieval Weapons",
+  "sourceUrl": "https://quaternius.itch.io/lowpoly-medieval-weapons",
+  "license": "CC0-1.0",
+  "licenseVerified": true,
+  "downloadedAt": "2026-10-07",
+  "status": "approved",
+  "notes": "OBJ-only download; GLB produced by `pnpm assets:convert` into converted/. Flat colours match the Quaternius outfits. Models are ~5 units long — scale in the appearance. License approved by the project owner on 2026-10-07. Evidence: itch.io listing states CC0 (page blocked automated fetch); no license file in the zip.",
+  "kind": "models",
+  "assets": [
+    {
+      "assetId": "weapon_qm_sword",
+      "file": "converted/OBJ/Sword.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_qm_sword_2",
+      "file": "converted/OBJ/Sword_2.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_qm_sword_golden",
+      "file": "converted/OBJ/Sword_Golden.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_qm_sword_big",
+      "file": "converted/OBJ/Sword_Big.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_qm_claymore",
+      "file": "converted/OBJ/Claymore.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_qm_dagger",
+      "file": "converted/OBJ/Dagger.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_qm_dagger_2",
+      "file": "converted/OBJ/Dagger_2.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_qm_spear",
+      "file": "converted/OBJ/Spear.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_qm_scythe",
+      "file": "converted/OBJ/Scythe.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_qm_axe",
+      "file": "converted/OBJ/Axe.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_qm_axe_double",
+      "file": "converted/OBJ/Axe_Double.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_qm_hammer_small",
+      "file": "converted/OBJ/Hammer_Small.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_qm_hammer_double",
+      "file": "converted/OBJ/Hammer_Double.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_qm_bow_wooden",
+      "file": "converted/OBJ/Bow_Wooden.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_qm_bow_golden",
+      "file": "converted/OBJ/Bow_Golden.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_qm_shield_round",
+      "file": "converted/OBJ/Shield_Round.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_qm_shield_heater",
+      "file": "converted/OBJ/Shield_Heater.glb",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_qm_shield_celtic_golden",
+      "file": "converted/OBJ/Shield_Celtic_Golden.glb",
+      "type": "prop"
+    }
+  ]
+}

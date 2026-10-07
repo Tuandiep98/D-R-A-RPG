@@ -1,0 +1,8 @@
+# Generated from art/third_party/quaternius_medieval_weapons/converted/OBJ/Hammer_Double.glb (1918 tris, longest y 4.97 → 1.1 m).
+# grip rotation copied from equip_sword_01 — NOT fitted yet, check with pnpm smoke:gear
+id: gear_weapon_qm_hammer_double
+kind: equipment
+modelAssetId: weapon_qm_hammer_double
+scale: 0.2213
+attach: { socket: hand_r, position: [0, 0, 0], rotation: [1.5708, 0, 0] }
+placeholder: { shape: box, color: "#c9ced6", height: 1.1, radius: 0.245 }

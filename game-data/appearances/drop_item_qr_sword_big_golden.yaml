@@ -1,0 +1,7 @@
+# Generated from art/third_party/quaternius_ultimate_rpg_items/converted/OBJ/Sword_big_Golden.glb (830 tris, longest y 2.73 → 1.2 m).
+# ground drop / display model
+id: drop_item_qr_sword_big_golden
+kind: loot
+modelAssetId: item_qr_sword_big_golden
+scale: 0.4388
+placeholder: { shape: box, color: "#f2c14e", height: 1.2, radius: 0.095 }

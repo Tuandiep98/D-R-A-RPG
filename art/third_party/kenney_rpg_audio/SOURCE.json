@@ -1,0 +1,90 @@
+{
+  "packId": "kenney_rpg_audio",
+  "author": "Kenney",
+  "pack": "RPG Audio",
+  "sourceUrl": "https://kenney.nl/assets/rpg-audio",
+  "license": "CC0-1.0",
+  "licenseVerified": true,
+  "downloadedAt": "2026-10-07",
+  "status": "approved",
+  "kind": "audio",
+  "media": [
+    {
+      "id": "sfx_swing_01",
+      "file": "originals/Audio/knifeSlice.ogg"
+    },
+    {
+      "id": "sfx_swing_02",
+      "file": "originals/Audio/knifeSlice2.ogg"
+    },
+    {
+      "id": "sfx_chop",
+      "file": "originals/Audio/chop.ogg"
+    },
+    {
+      "id": "sfx_draw_blade",
+      "file": "originals/Audio/drawKnife1.ogg"
+    },
+    {
+      "id": "sfx_coins",
+      "file": "originals/Audio/handleCoins.ogg"
+    },
+    {
+      "id": "sfx_coins_small",
+      "file": "originals/Audio/handleCoins2.ogg"
+    },
+    {
+      "id": "sfx_loot_drop",
+      "file": "originals/Audio/dropLeather.ogg"
+    },
+    {
+      "id": "sfx_equip_cloth",
+      "file": "originals/Audio/cloth1.ogg"
+    },
+    {
+      "id": "sfx_equip_belt",
+      "file": "originals/Audio/beltHandle1.ogg"
+    },
+    {
+      "id": "sfx_equip_metal",
+      "file": "originals/Audio/metalLatch.ogg"
+    },
+    {
+      "id": "sfx_book_open",
+      "file": "originals/Audio/bookOpen.ogg"
+    },
+    {
+      "id": "sfx_book_close",
+      "file": "originals/Audio/bookClose.ogg"
+    },
+    {
+      "id": "sfx_page",
+      "file": "originals/Audio/bookFlip1.ogg"
+    },
+    {
+      "id": "sfx_door_open",
+      "file": "originals/Audio/doorOpen_1.ogg"
+    },
+    {
+      "id": "sfx_door_close",
+      "file": "originals/Audio/doorClose_1.ogg"
+    },
+    {
+      "id": "sfx_footstep_01",
+      "file": "originals/Audio/footstep00.ogg"
+    },
+    {
+      "id": "sfx_footstep_02",
+      "file": "originals/Audio/footstep01.ogg"
+    },
+    {
+      "id": "sfx_footstep_03",
+      "file": "originals/Audio/footstep02.ogg"
+    },
+    {
+      "id": "sfx_anvil",
+      "file": "originals/Audio/metalPot1.ogg"
+    }
+  ],
+  "notes": "License approved by the project owner on 2026-10-07. Evidence: License.txt in the zip (CC0)."
+}

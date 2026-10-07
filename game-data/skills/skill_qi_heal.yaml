@@ -3,9 +3,11 @@ id: skill_qi_heal
 name: Hồi Khí
 description: Vận khí hồi phục 30% sinh lực.
 icon: "✚"
+iconImage: icon_skill_qi_heal
 targeting: self
 cooldown: 20
 mpCost: 30
 effects:
   - { type: heal, fraction: 0.3 }
 vfx: heal
+sfx: { cast: [sfx_force_field] }

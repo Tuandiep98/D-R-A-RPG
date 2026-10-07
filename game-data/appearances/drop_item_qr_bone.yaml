@@ -1,0 +1,7 @@
+# Generated from art/third_party/quaternius_ultimate_rpg_items/converted/OBJ/Bone.glb (304 tris, longest x 1.02 → 0.4 m).
+# ground drop / display model
+id: drop_item_qr_bone
+kind: loot
+modelAssetId: item_qr_bone
+scale: 0.3931
+placeholder: { shape: box, color: "#f2c14e", height: 0.135, radius: 0.2 }

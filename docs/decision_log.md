@@ -161,3 +161,16 @@ Mỗi quyết định: ngày, bối cảnh, quyết định, hệ quả. Khi mâ
 - **Ngày:** 2026-10-06
 - **Quyết định:** Tên hiển thị "Thiên Cơ Kỷ" (PWA, Capacitor appName, login, admin); tên repo/package `@rpg/*` giữ nguyên. Đổi tên hiển thị theo master plan, **ID giữ nguyên**: Thôn Thanh Vân → Tân Nguyên Trấn; Rừng Cơ Quan → Phế Tích Vô Danh; Cơ Quan Điện → Huyền Vũ Cổ Mộ; boss Cơ Quan Thần Tướng → Huyền Vũ · Guardian X-04; NPC: Trưởng Lão Bạch Huyền, Tô Tiểu Linh (dược sư, luyện Trúc Cơ Đan), Lục Viễn (dạy Kiếm Khí), Lão Mộc (thợ rèn). Nhân vật mặc định: Du Hành Giả.
 - **Hệ quả:** Phần stack/kiến trúc của master plan (§92–117) trùng với `01_tech_stack_plan.md` và đã được thực hiện; khi mâu thuẫn, decision log vẫn được ưu tiên.
+
+## D-024 — Pipeline media riêng cho âm thanh, icon, khung UI, sprite VFX
+- **Ngày:** 2026-10-07
+- **Quyết định:** `SOURCE.json` có thêm `kind` (models/animations/audio/icons/ui/vfx) và `media` (id `sfx_*`/`icon_*`/`ui_*`/`vfx_*`). `pnpm media:build` xuất file băm tên + `media.manifest.json`: âm thanh → AAC `.m4a` (Safari/iOS phát được, desktop cũng được), icon/VFX → WebP thu nhỏ, khung UI → PNG lossless nhuộm màu lúc build (`tint`). Thiếu media thì client lùi về emoji / CSS / im lặng.
+- **Lý do:** tách khỏi pipeline glTF; id ổn định để game-data tham chiếu; validator bắt id sai.
+
+## D-025 — Duyệt license 14 pack tải ngày 07/10/2026
+- **Ngày:** 2026-10-07
+- **Quyết định:** chủ dự án duyệt (approved + licenseVerified) 14 pack CC0: KayKit Adventurers, Quaternius Medieval Weapons / Ultimate RPG Items / RPG Pack / Ultimate Guns / Universal Animation Library, Kenney Blaster Kit / RPG Audio / Impact / Sci-fi / Interface Sounds / Fantasy UI Borders / Particle Pack, KDRN Ability Icons. Bằng chứng ghi trong `notes` từng pack; Medieval Weapons và KDRN không có file license trong zip (trang itch.io ghi CC0).
+
+## D-026 — Trang bị dùng model thật, gắn bằng socket
+- **Ngày:** 2026-10-07
+- **Quyết định:** `GearAttachments` hiện placeholder ngay rồi thay bằng model (`appearance.modelAssetId`, `scale`, `yawOffset`) khi tải xong. Góc cầm chuẩn cho `hand_r` của humanoid_v1 là xoay X +90°. Mỗi model đã duyệt có appearance `gear_*` (trang bị) hoặc `drop_*` (vật rơi) sinh tự động với scale tính từ kích thước thật.

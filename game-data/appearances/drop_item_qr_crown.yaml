@@ -1,0 +1,7 @@
+# Generated from art/third_party/quaternius_ultimate_rpg_items/converted/OBJ/Crown.glb (592 tris, longest x 0.83 → 0.3 m).
+# ground drop / display model
+id: drop_item_qr_crown
+kind: loot
+modelAssetId: item_qr_crown
+scale: 0.3608
+placeholder: { shape: box, color: "#f2c14e", height: 0.177, radius: 0.15 }

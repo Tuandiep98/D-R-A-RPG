@@ -1,0 +1,9 @@
+CC0 1.0 Universal (Public Domain Dedication)
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Ability Icons [CC0] by KDRN
+Source: https://kdrn.itch.io/ability-icons
+
+This download did not include a license file. The license above is the one
+stated on the author's page; re-check it there before setting
+licenseVerified: true in SOURCE.json.
