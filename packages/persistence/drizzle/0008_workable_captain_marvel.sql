@@ -1,0 +1,1 @@
+ALTER TABLE "characters" ADD COLUMN "cooldowns" jsonb DEFAULT '{}'::jsonb NOT NULL;

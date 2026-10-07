@@ -19,3 +19,6 @@ anim:
     impactSpeed: 1.5,
   }
 sfx: { cast: [sfx_force_field], impact: [sfx_explosion] }
+
+delivery: circle
+telegraph: true

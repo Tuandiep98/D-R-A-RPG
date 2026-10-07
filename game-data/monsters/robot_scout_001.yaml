@@ -9,3 +9,5 @@ combat: { range: 1.5, attackInterval: 1.6 }
 ai: { type: melee, aggroRadius: 8, leashRadius: 14, wanderRadius: 2 }
 skills: [skill_robot_laser]
 lootTable: [loot_robot]
+
+element: kim

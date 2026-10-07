@@ -15,6 +15,7 @@ import {
   toggleFullscreen,
   useControls,
 } from '../controls';
+import { elementName } from '../elements';
 import { game } from '../game';
 import {
   allowedInPosition,
@@ -439,6 +440,7 @@ function AmmoBadge() {
  * underneath — and the potion above it. Desktop keeps its hotkey labels.
  */
 function ActionCluster({ slots, touch }: { slots: (SkillSlot | null)[]; touch: boolean }) {
+  const ui = useUiStore((s) => s.ui);
   const gun = useUiStore((s) => !!s.ui?.ranged);
   const canReload = useUiStore((s) => (s.ui?.ranged?.magazine ?? 0) > 0);
   const weapons = useUiStore((s) => s.ui?.weaponCount ?? 0);
@@ -457,10 +459,45 @@ function ActionCluster({ slots, touch }: { slots: (SkillSlot | null)[]; touch: b
   return (
     <div className="action-cluster">
       <div className="action-rows">
+        <button
+          type="button"
+          className="skill action-farm"
+          aria-pressed={ui?.farmEnabled ?? false}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            game()?.setFarm(!ui?.farmEnabled);
+          }}
+        >
+          {' '}
+          {ui?.farmEnabled ? 'Dừng auto' : 'Auto quái'}{' '}
+        </button>
         <div className="action-row">
           {s1}
           {s2}
           {s3}
+        </div>
+        <div className="action-row action-row-mobility">
+          {(['roll', 'blink', 'jump'] as const).map((action, i) => {
+            const slot = ui?.skills.find((s) => s.skillId === `skill_${action}`);
+            return (
+              <button
+                key={action}
+                type="button"
+                className="skill"
+                title={['Lộn nhào (Shift)', 'Tốc biến (E)', 'Nhảy (V)'][i]}
+                disabled={!!slot && !slot.usable}
+                onPointerDown={(e) => {
+                  e.stopPropagation();
+                  game()?.mobility(action);
+                }}
+              >
+                <span>{['Lộn', 'Biến', 'Nhảy'][i]}</span>
+                {slot && slot.remaining > 0 && (
+                  <span className="cooldown">{Math.ceil(slot.remaining)}</span>
+                )}
+              </button>
+            );
+          })}
         </div>
         <div className="action-row action-row-utility">
           {s4}
@@ -786,6 +823,11 @@ function CharacterPanel() {
         </button>
       </div>
       <dl className="stats">
+        <dt>Bản mệnh</dt>
+        <dd>
+          {elementName(ui?.element)}
+          {ui?.expression === 'thunder' ? ' · Lôi' : ui?.expression === 'ice' ? ' · Băng' : ''}
+        </dd>
         <dt>Sinh lực</dt>
         <dd>
           {p.hp} / {p.maxHp}
@@ -905,6 +947,23 @@ function TestCharacters() {
       <span>
         Thử nghiệm <span className="muted">(offline, tải lại trang)</span>
       </span>
+      <label className="element-debug-choice">
+        Ngũ hành debug
+        <select
+          value={params.get('element') ?? 'moc'}
+          onChange={(e) => {
+            const next = new URLSearchParams(window.location.search);
+            next.set('element', e.target.value);
+            window.location.search = next.toString();
+          }}
+        >
+          <option value="kim">Kim</option>
+          <option value="moc">Mộc / Lôi</option>
+          <option value="thuy">Thủy / Băng</option>
+          <option value="hoa">Hỏa</option>
+          <option value="tho">Thổ</option>
+        </select>
+      </label>
       <div className="segmented">
         {characters.map((c) => (
           <button

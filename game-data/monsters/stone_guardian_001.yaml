@@ -9,3 +9,5 @@ combat: { range: 1.5, attackInterval: 1.5 }
 ai: { type: melee, aggroRadius: 9, leashRadius: 18, wanderRadius: 2 }
 skills: [skill_elite_charge]
 lootTable: [loot_elite]
+
+element: tho

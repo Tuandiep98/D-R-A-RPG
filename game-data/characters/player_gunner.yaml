@@ -22,6 +22,9 @@ combos: { unarmed: combo_unarmed, armed: combo_blade }
 respawnSeconds: 5
 skills:
   - skill_thunder_step
+  - skill_thunder_pierce
+  - skill_thunder_arc
+  - skill_thunder_field
 starterItems:
   - { itemId: item_gun_pistol, equip: true }
   - { itemId: item_gun_carbine }
@@ -30,3 +33,6 @@ starterItems:
   - { itemId: item_gun_sniper }
   - { itemId: item_sword_iron }
   - { itemId: item_potion_hp_small, count: 5 }
+
+element: moc
+expression: thunder

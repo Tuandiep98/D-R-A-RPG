@@ -1,0 +1,2 @@
+ALTER TABLE "characters" ADD CONSTRAINT "characters_element_valid" CHECK ("characters"."element" is null or "characters"."element" in ('kim','moc','thuy','hoa','tho'));--> statement-breakpoint
+ALTER TABLE "characters" ADD CONSTRAINT "characters_expression_valid" CHECK ("characters"."expression" = 'base' or ("characters"."element" is not null and (("characters"."element" = 'moc' and "characters"."expression" = 'thunder') or ("characters"."element" = 'thuy' and "characters"."expression" = 'ice'))));

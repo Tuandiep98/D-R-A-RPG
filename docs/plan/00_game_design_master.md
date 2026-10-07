@@ -2,6 +2,8 @@
 
 > RPG Online 2.5D Semi-Mini • Tu Tiên × Cơ Giới • Web/PWA First • Không Character Level
 
+> Bổ sung yêu cầu combat ngày 2026-10-08: [Ngũ hành và skill toàn bộ Đạo](04_combat_elements_skills_redesign.md). Nhân vật gắn một hành khi tạo và khóa đến late game; combat hướng RPG × MOBA với hitbox né được và auto farm cùng luật. Yêu cầu này thay phần combat auto-attack cũ và thời điểm chọn affinity muộn trong ví dụ progression. Kit, mapping Lôi/Băng và thông số trong plan mới là đề xuất chưa triển khai.
+
 ---
 
 ## 0. Tóm tắt định hướng đã chốt

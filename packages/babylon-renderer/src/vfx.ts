@@ -6,16 +6,16 @@ import {
   StandardMaterial,
   type TransformNode,
   Vector3,
-} from "./babylon";
+} from './babylon';
 
 /** Rarity colours shared by loot beams and the HUD (assets plan §9). */
 export const RARITY_COLORS: Record<string, string> = {
-  common: "#d8d8d8",
-  uncommon: "#5fd068",
-  rare: "#4aa3ff",
-  epic: "#b46bff",
-  legendary: "#ffb02e",
-  mythic: "#ff4f6d",
+  common: '#d8d8d8',
+  uncommon: '#5fd068',
+  rare: '#4aa3ff',
+  epic: '#b46bff',
+  legendary: '#ffb02e',
+  mythic: '#ff4f6d',
 };
 
 const VFX_COLORS: Record<string, Color3> = {
@@ -33,12 +33,7 @@ const VFX_COLORS: Record<string, Color3> = {
   thunder_ultimate: new Color3(0.65, 0.38, 1),
 };
 
-function emissive(
-  scene: Scene,
-  name: string,
-  color: Color3,
-  alpha = 1,
-): StandardMaterial {
+function emissive(scene: Scene, name: string, color: Color3, alpha = 1): StandardMaterial {
   const m = new StandardMaterial(name, scene);
   m.emissiveColor = color;
   m.diffuseColor = Color3.Black();
@@ -69,6 +64,7 @@ class Pool<T extends { active: boolean; age: number }> {
 
 interface Telegraph {
   ring: Mesh;
+  sector: ReturnType<typeof MeshBuilder.CreateLineSystem>;
   fill: Mesh;
   fillMat: StandardMaterial;
   active: boolean;
@@ -91,42 +87,36 @@ export class TelegraphPool {
         { diameter: 2, thickness: 0.08, tessellation: 48 },
         scene,
       );
-      ring.material = emissive(
-        scene,
-        `tele_ring_mat_${i}`,
-        new Color3(1, 0.2, 0.15),
-        0.9,
-      );
-      const fill = MeshBuilder.CreateDisc(
-        `tele_fill_${i}`,
-        { radius: 1, tessellation: 48 },
-        scene,
-      );
+      ring.material = emissive(scene, `tele_ring_mat_${i}`, new Color3(1, 0.2, 0.15), 0.9);
+      const fill = MeshBuilder.CreateDisc(`tele_fill_${i}`, { radius: 1, tessellation: 48 }, scene);
       fill.rotation.x = Math.PI / 2;
-      const fillMat = emissive(
-        scene,
-        `tele_fill_mat_${i}`,
-        new Color3(1, 0.15, 0.1),
-        0.35,
-      );
+      const fillMat = emissive(scene, `tele_fill_mat_${i}`, new Color3(1, 0.15, 0.1), 0.35);
       fillMat.backFaceCulling = false;
       fill.material = fillMat;
       for (const m of [ring, fill]) {
         m.isPickable = false;
         m.setEnabled(false);
       }
-      return { ring, fill, fillMat, active: false, age: 0, duration: 1 };
+      const sector = MeshBuilder.CreateLineSystem(
+        `tele_sector_${i}`,
+        {
+          lines: Array.from({ length: 26 }, () => [Vector3.Zero(), Vector3.Zero()]),
+          updatable: true,
+        },
+        scene,
+      );
+      sector.color = new Color3(1, 0.2, 0.15);
+      sector.isPickable = false;
+      sector.setEnabled(false);
+      return { ring, sector, fill, fillMat, active: false, age: 0, duration: 1 };
     }, 12);
   }
 
-  show(
-    key: string,
-    x: number,
-    z: number,
-    radius: number,
-    seconds: number,
-  ): void {
+  show(key: string, x: number, z: number, radius: number, seconds: number): void {
+    this.clear(key);
     const t = this.pool.acquire();
+    for (const [oldKey, old] of this.byKey) if (old === t) this.byKey.delete(oldKey);
+    t.sector.setEnabled(false);
     t.active = true;
     t.age = 0;
     t.duration = Math.max(0.1, seconds);
@@ -139,6 +129,34 @@ export class TelegraphPool {
     this.byKey.set(key, t);
   }
 
+  showCone(
+    key: string,
+    x: number,
+    z: number,
+    yaw: number,
+    radius: number,
+    arc: number,
+    seconds: number,
+  ): void {
+    this.show(key, x, z, radius, seconds);
+    const t = this.byKey.get(key);
+    if (!t) return;
+    t.ring.setEnabled(false);
+    t.fill.setEnabled(false);
+    const centre = new Vector3(x, 0.07, z);
+    const points = Array.from({ length: 25 }, (_, i) => {
+      const a = yaw + ((i / 24 - 0.5) * arc * Math.PI) / 180;
+      return new Vector3(x + Math.sin(a) * radius, 0.07, z + Math.cos(a) * radius);
+    });
+    const lines = [
+      [centre, points[0] ?? centre],
+      ...points.slice(1).map((p, i) => [points[i] ?? centre, p]),
+      [points[24] ?? centre, centre],
+    ];
+    MeshBuilder.CreateLineSystem('tele_sector', { lines, instance: t.sector });
+    t.sector.setEnabled(true);
+  }
+
   clear(key: string): void {
     const t = this.byKey.get(key);
     if (!t) return;
@@ -146,6 +164,7 @@ export class TelegraphPool {
     t.active = false;
     t.ring.setEnabled(false);
     t.fill.setEnabled(false);
+    t.sector.setEnabled(false);
   }
 
   update(dt: number): void {
@@ -211,18 +230,20 @@ export class ImpactPool {
     this.pool.capacity = n;
   }
 
-  spawn(x: number, z: number, radius: number, vfx: string): void {
+  spawn(x: number, z: number, radius: number, vfx: string, color?: string): void {
     const it = this.pool.acquire();
     it.active = true;
     it.age = 0;
     it.radius = Math.max(0.8, radius);
-    it.mat.emissiveColor = VFX_COLORS[vfx] ?? Color3.White();
+    it.mat.emissiveColor = color
+      ? Color3.FromHexString(color)
+      : (VFX_COLORS[vfx] ?? Color3.White());
     it.ring.position.set(x, 0.3, z);
     it.ring.setEnabled(true);
-    const lightning = vfx.startsWith("thunder_");
+    const lightning = vfx.startsWith('thunder_');
     it.bolt.position.set(x, 0, z);
     it.bolt.scaling.setAll(Math.min(2, Math.max(0.8, radius / 2)));
-    it.bolt.color = VFX_COLORS[vfx] ?? Color3.White();
+    it.bolt.color = color ? Color3.FromHexString(color) : (VFX_COLORS[vfx] ?? Color3.White());
     it.bolt.visibility = 1;
     it.bolt.setEnabled(lightning);
   }
@@ -252,6 +273,8 @@ interface Projectile {
   from: Vector3;
   to: Vector3;
   duration: number;
+  tag?: number;
+  flat?: boolean;
 }
 
 /** Cosmetic projectile; damage is already decided by the host. */
@@ -259,16 +282,8 @@ export class ProjectilePool {
   private readonly pool: Pool<Projectile>;
   constructor(scene: Scene) {
     this.pool = new Pool((i) => {
-      const orb = MeshBuilder.CreateSphere(
-        `proj_${i}`,
-        { diameter: 0.35, segments: 8 },
-        scene,
-      );
-      const mat = emissive(
-        scene,
-        `proj_mat_${i}`,
-        VFX_COLORS.projectile as Color3,
-      );
+      const orb = MeshBuilder.CreateSphere(`proj_${i}`, { diameter: 0.35, segments: 8 }, scene);
+      const mat = emissive(scene, `proj_mat_${i}`, VFX_COLORS.projectile as Color3);
       orb.material = mat;
       orb.isPickable = false;
       orb.setEnabled(false);
@@ -288,16 +303,38 @@ export class ProjectilePool {
     this.pool.capacity = n;
   }
 
-  fire(from: Vector3, to: Vector3, vfx: string): void {
+  fire(
+    from: Vector3,
+    to: Vector3,
+    vfx: string,
+    speed?: number,
+    color?: string,
+    tag?: number,
+  ): void {
     const p = this.pool.acquire();
     p.active = true;
     p.age = 0;
     p.from.copyFrom(from);
     p.to.copyFrom(to);
-    p.duration = Math.min(0.5, Math.max(0.12, Vector3.Distance(from, to) / 30));
-    p.mat.emissiveColor = VFX_COLORS[vfx] ?? Color3.White();
+    p.tag = tag;
+    p.flat = !!speed;
+    p.duration = speed
+      ? Vector3.Distance(from, to) / speed
+      : Math.min(0.5, Math.max(0.12, Vector3.Distance(from, to) / 30));
+    p.mat.emissiveColor = color ? Color3.FromHexString(color) : (VFX_COLORS[vfx] ?? Color3.White());
     p.orb.position.copyFrom(from);
     p.orb.setEnabled(true);
+  }
+
+  stopAt(tag: number | undefined, point: { x: number; z: number }): void {
+    if (tag === undefined) return;
+    for (const p of this.pool.items)
+      if (p.active && p.tag === tag) {
+        p.orb.position.x = point.x;
+        p.orb.position.z = point.z;
+        p.active = false;
+        p.orb.setEnabled(false);
+      }
   }
 
   update(dt: number): void {
@@ -306,7 +343,7 @@ export class ProjectilePool {
       p.age += dt;
       const f = Math.min(1, p.age / p.duration);
       Vector3.LerpToRef(p.from, p.to, f, p.orb.position);
-      p.orb.position.y += Math.sin(f * Math.PI) * 0.5;
+      if (!p.flat) p.orb.position.y += Math.sin(f * Math.PI) * 0.5;
       if (f >= 1) {
         p.active = false;
         p.orb.setEnabled(false);
@@ -328,12 +365,12 @@ export class LootBeams {
       mat = emissive(
         this.scene,
         `beam_${rarity}`,
-        Color3.FromHexString(RARITY_COLORS[rarity] ?? "#ffffff"),
+        Color3.FromHexString(RARITY_COLORS[rarity] ?? '#ffffff'),
         0.45,
       );
       this.mats.set(rarity, mat);
     }
-    const height = rarity === "common" ? 1.2 : 2.6;
+    const height = rarity === 'common' ? 1.2 : 2.6;
     const beam = MeshBuilder.CreateCylinder(
       `beam_${entityId}`,
       { height, diameterTop: 0.05, diameterBottom: 0.22, tessellation: 8 },

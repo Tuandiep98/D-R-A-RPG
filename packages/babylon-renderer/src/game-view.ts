@@ -1,4 +1,4 @@
-import { AssetLibrary, type LoadProgress } from "@rpg/asset-runtime";
+import { AssetLibrary, type LoadProgress } from '@rpg/asset-runtime';
 import {
   type AppearanceDef,
   type ComboVariant,
@@ -7,7 +7,7 @@ import {
   type MonsterTier,
   type RangedDef,
   realmLadder,
-} from "@rpg/game-data";
+} from '@rpg/game-data';
 import type {
   ChatMessage,
   EntityId,
@@ -17,7 +17,7 @@ import type {
   NoticeCode,
   PlayerState,
   SimEvent,
-} from "@rpg/game-protocol";
+} from '@rpg/game-protocol';
 import {
   type GameAction,
   GamepadAdapter,
@@ -25,8 +25,8 @@ import {
   InputManager,
   MouseKeyboardAdapter,
   TouchAdapter,
-} from "@rpg/input";
-import type { SimHost } from "@rpg/sim-host";
+} from '@rpg/input';
+import type { SimHost } from '@rpg/sim-host';
 import {
   type AbstractEngine,
   Color3,
@@ -34,38 +34,33 @@ import {
   DirectionalLight,
   HemisphericLight,
   Matrix,
+  type Mesh,
   Scene,
   SceneInstrumentation,
   ShadowGenerator,
   Vector3,
-} from "./babylon";
-import { CameraRig } from "./camera-rig";
-import { CombatFx } from "./combat-fx";
-import { DamageTextPool, MoveMarker, SelectionRing } from "./effects";
-import { createEngine, type EngineKind } from "./engine";
-import { EntityView, EntityViewPool, type PickMetadata } from "./entity-view";
-import { EnvironmentView } from "./environment";
-import { LightningBatch } from "./lightning";
-import {
-  QualityManager,
-  type QualityMode,
-  type QualityPreset,
-} from "./quality";
-import { GunFx } from "./ranged-fx";
-import { Snapshots } from "./snapshot";
-import { type InterpolatedEntity, SnapshotBuffer } from "./snapshot-buffer";
-import { type Feedback, isThunderStyle, ThunderFx } from "./thunder-fx";
-import {
-  ImpactPool,
-  LootBeams,
-  ProjectilePool,
-  RARITY_COLORS,
-  TelegraphPool,
-} from "./vfx";
-import type { GearAppearances } from "./visuals";
+} from './babylon';
+import { CameraRig } from './camera-rig';
+import { CombatFx } from './combat-fx';
+import { DamageTextPool, MoveMarker, SelectionRing } from './effects';
+import { elementColor } from './elements';
+import { createEngine, type EngineKind } from './engine';
+import { EntityView, EntityViewPool, type PickMetadata } from './entity-view';
+import { EnvironmentView } from './environment';
+import { LightningBatch } from './lightning';
+import { QualityManager, type QualityMode, type QualityPreset } from './quality';
+import { GunFx } from './ranged-fx';
+import { Snapshots } from './snapshot';
+import { type InterpolatedEntity, SnapshotBuffer } from './snapshot-buffer';
+import { type Feedback, isThunderStyle, ThunderFx } from './thunder-fx';
+import { ImpactPool, LootBeams, ProjectilePool, RARITY_COLORS, TelegraphPool } from './vfx';
+import type { GearAppearances } from './visuals';
 
 const TICK_RATE = 20;
 const UI_INTERVAL_MS = 100;
+/** Vertical gap between stacked selfText lines (metres). */
+const SELF_LINE = 0.34;
+const WARN_TEXT_COLOR = '#ffb3a6';
 /** Scratch vectors for placeOverhead (runs every frame). */
 const OVERHEAD_POINT = new Vector3();
 const OVERHEAD_SCREEN = new Vector3();
@@ -73,13 +68,13 @@ const OVERHEAD_SCREEN = new Vector3();
 const SFX_RANGE = 28;
 /** Generic sounds when an appearance/skill does not name its own (media ids). */
 const DEFAULT_SFX = {
-  attack: ["sfx_swing_01", "sfx_swing_02"],
-  hit: ["sfx_hit_flesh_01", "sfx_hit_flesh_02"],
-  crit: ["sfx_hit_heavy"],
-  item: ["sfx_loot_drop"],
-  gold: ["sfx_coins_small"],
-  breakthrough: ["sfx_bell"],
-  backlash: ["sfx_explosion_low"],
+  attack: ['sfx_swing_01', 'sfx_swing_02'],
+  hit: ['sfx_hit_flesh_01', 'sfx_hit_flesh_02'],
+  crit: ['sfx_hit_heavy'],
+  item: ['sfx_loot_drop'],
+  gold: ['sfx_coins_small'],
+  breakthrough: ['sfx_bell'],
+  backlash: ['sfx_explosion_low'],
 } as const;
 /** Ranged trigger (D-033): aim updates at most this often, keepalive while held. */
 const AIM_SEND_MS = 200;
@@ -98,7 +93,7 @@ const INTERACT_SEARCH = 6;
 
 export interface UnitFrame {
   id: EntityId;
-  kind: EntitySnapshot["kind"];
+  kind: EntitySnapshot['kind'];
   name: string;
   /** Realm rank and display name ('' for loot/portals/NPCs). No character level. */
   realm: number;
@@ -112,7 +107,7 @@ export interface UnitFrame {
 
 export interface SkillSlot {
   skillId: string;
-  barRole: "primary" | "utility";
+  barRole: 'primary' | 'utility';
   name: string;
   icon: string;
   /** Media id of the painted icon, null → emoji. */
@@ -132,7 +127,7 @@ export interface ItemView {
   iconImage: string | null;
   rarity: string;
   rarityColor: string;
-  kind: "equipment" | "consumable" | "material";
+  kind: 'equipment' | 'consumable' | 'material';
   slot: EquipSlot | null;
   /** Required realm name, null when any realm may use it. */
   realmName: string | null;
@@ -146,7 +141,7 @@ export interface ItemView {
 /** Equipped ranged weapon for the HUD (ammo, heat, reload). */
 export interface RangedView {
   name: string;
-  fireMode: RangedDef["fireMode"];
+  fireMode: RangedDef['fireMode'];
   ammo: number;
   magazine: number;
   /** 0…1 (warming up). */
@@ -159,6 +154,9 @@ export interface RangedView {
 
 export interface UiState {
   mapName: string;
+  element?: import('@rpg/game-protocol').Element;
+  expression?: 'base' | 'thunder' | 'ice';
+  farmEnabled?: boolean;
   /** Main-hand ranged weapon, null with a melee weapon (D-033). */
   ranged: RangedView | null;
   /** Main-hand weapons in the bag (the swap button shows from 2). */
@@ -175,7 +173,7 @@ export interface UiState {
         cultivation: CultivationView;
         gold: number;
         inSafeZone: boolean;
-        stats: PlayerState["stats"];
+        stats: PlayerState['stats'];
       })
     | null;
   target: UnitFrame | null;
@@ -199,7 +197,7 @@ export interface UiState {
   interact: { label: string; verb: string; id: EntityId } | null;
   quests: QuestView[];
   questsDone: string[];
-  party: PlayerState["party"];
+  party: PlayerState['party'];
 }
 
 export interface CultivationView {
@@ -221,13 +219,13 @@ export interface CultivationView {
 export interface QuestView {
   questId: string;
   name: string;
-  status: "active" | "ready" | "done";
+  status: 'active' | 'ready' | 'done';
   objectives: { text: string; current: number; required: number }[];
 }
 
 export interface Notice {
   text: string;
-  tone: "info" | "good" | "warn" | "boss";
+  tone: 'info' | 'good' | 'warn' | 'boss';
   color?: string;
 }
 
@@ -269,33 +267,33 @@ export interface GameViewOptions {
 }
 
 const NOTICE_TEXT: Record<NoticeCode, string> = {
-  out_of_range: "Mục tiêu ở quá xa",
-  cooldown: "Chưa hồi chiêu",
-  no_mp: "Không đủ nội lực",
-  no_target: "Chưa chọn mục tiêu",
-  inventory_full: "Túi đồ đã đầy",
-  realm_too_low: "Cảnh giới chưa đủ",
-  not_owner: "Vật phẩm thuộc về người khác",
-  invalid: "Không thể thực hiện",
-  dead: "Bạn đã gục ngã",
-  safe_zone: "Không thể chiến đấu trong vùng an toàn",
-  too_far: "Hãy lại gần hơn",
-  not_enough_gold: "Không đủ vàng",
-  missing_materials: "Thiếu nguyên liệu",
-  quest_unavailable: "Chưa thể nhận nhiệm vụ này",
-  quest_incomplete: "Nhiệm vụ chưa hoàn thành",
-  max_level: "Đã đạt cấp tối đa",
-  not_sellable: "Không thể bán vật phẩm này",
-  party_full: "Nhóm đã đủ người",
-  already_in_party: "Người này đã có nhóm",
-  no_invite: "Lời mời đã hết hạn",
-  capacity_full: "Kinh mạch / Body Load không đủ chỗ",
-  requirements_unmet: "Chưa đủ điều kiện",
-  max_realm: "Chưa thể đột phá cảnh giới tiếp theo",
-  not_in_safe_zone: "Chỉ đột phá được trong vùng an toàn",
-  backlash: "Đang bị phản phệ, chưa thể đột phá lại",
-  reloading: "Đang nạp đạn",
-  overheated: "Súng quá tải — chờ nguội",
+  out_of_range: 'Mục tiêu ở quá xa',
+  cooldown: 'Chưa hồi chiêu',
+  no_mp: 'Không đủ nội lực',
+  no_target: 'Chưa chọn mục tiêu',
+  inventory_full: 'Túi đồ đã đầy',
+  realm_too_low: 'Cảnh giới chưa đủ',
+  not_owner: 'Vật phẩm thuộc về người khác',
+  invalid: 'Không thể thực hiện',
+  dead: 'Bạn đã gục ngã',
+  safe_zone: 'Không thể chiến đấu trong vùng an toàn',
+  too_far: 'Hãy lại gần hơn',
+  not_enough_gold: 'Không đủ vàng',
+  missing_materials: 'Thiếu nguyên liệu',
+  quest_unavailable: 'Chưa thể nhận nhiệm vụ này',
+  quest_incomplete: 'Nhiệm vụ chưa hoàn thành',
+  max_level: 'Đã đạt cấp tối đa',
+  not_sellable: 'Không thể bán vật phẩm này',
+  party_full: 'Nhóm đã đủ người',
+  already_in_party: 'Người này đã có nhóm',
+  no_invite: 'Lời mời đã hết hạn',
+  capacity_full: 'Kinh mạch / Body Load không đủ chỗ',
+  requirements_unmet: 'Chưa đủ điều kiện',
+  max_realm: 'Chưa thể đột phá cảnh giới tiếp theo',
+  not_in_safe_zone: 'Chỉ đột phá được trong vùng an toàn',
+  backlash: 'Đang bị phản phệ, chưa thể đột phá lại',
+  reloading: 'Đang nạp đạn',
+  overheated: 'Súng quá tải — chờ nguội',
 };
 
 /**
@@ -318,7 +316,9 @@ export class GameView {
   private sentHeadingAt = 0;
   private releaseRepeatAt = 0;
   private playerState: PlayerState | null = null;
-  private lastUi = "";
+  private lastUi = '';
+  /** Latest selfText plane, so the next line stacks above it. */
+  private lastSelfText: Mesh | null = null;
   private snapshots: Snapshots | null = null;
   /** Portraits of other units by appearance id (null while rendering / when missing). */
   private readonly unitPortraits = new Map<string, string | null>();
@@ -326,8 +326,8 @@ export class GameView {
   private readonly overhead = new Map<EntityId, HTMLElement>();
   /** HUD renders by kind: the key they were made for and the blob URL. */
   private readonly hudShots = {
-    portrait: { key: "", url: null as string | null },
-    weapon: { key: "", url: null as string | null },
+    portrait: { key: '', url: null as string | null },
+    weapon: { key: '', url: null as string | null },
   };
   private lastUiAt = 0;
   private time = 0;
@@ -397,12 +397,8 @@ export class GameView {
     this.bolts = new LightningBatch(scene, rig.camera);
     this.thunder = new ThunderFx(this.fx, this.bolts);
     this.gun = new GunFx(this.fx);
-    this.preset = { level: "high" } as QualityPreset;
-    this.quality = new QualityManager(
-      opts.quality ?? "auto",
-      (p) => this.applyQuality(p),
-      "high",
-    );
+    this.preset = { level: 'high' } as QualityPreset;
+    this.quality = new QualityManager(opts.quality ?? 'auto', (p) => this.applyQuality(p), 'high');
   }
 
   static async create(opts: GameViewOptions): Promise<GameView> {
@@ -419,14 +415,10 @@ export class GameView {
     scene.fogEnd = 95;
 
     const rig = new CameraRig(scene);
-    const hemi = new HemisphericLight("hemi", new Vector3(0, 1, 0), scene);
+    const hemi = new HemisphericLight('hemi', new Vector3(0, 1, 0), scene);
     hemi.intensity = 0.55;
     hemi.groundColor = new Color3(0.35, 0.33, 0.3);
-    const sun = new DirectionalLight(
-      "sun",
-      new Vector3(-0.45, -1, 0.35),
-      scene,
-    );
+    const sun = new DirectionalLight('sun', new Vector3(-0.45, -1, 0.35), scene);
     sun.position = new Vector3(20, 40, -20);
     sun.intensity = 1.1;
     const shadows = new ShadowGenerator(1024, sun);
@@ -487,8 +479,7 @@ export class GameView {
   }
 
   castSkillById(skillId: string): void {
-    const index =
-      this.playerState?.skills.findIndex((s) => s.skillId === skillId) ?? -1;
+    const index = this.playerState?.skills.findIndex((s) => s.skillId === skillId) ?? -1;
     if (index >= 0) this.castSkill(index);
   }
 
@@ -497,21 +488,36 @@ export class GameView {
     if (!slot) return;
     const skill = this.opts.content.skills.get(slot.skillId);
     if (!skill) return;
-    if (skill.targeting === "self") {
-      this.opts.host.sendIntent({ type: "CAST_SKILL", skillId: skill.id });
+    if (skill.targeting === 'self') {
+      this.opts.host.sendIntent({ type: 'CAST_SKILL', skillId: skill.id });
+      return;
+    }
+    const me = this.buffer.latest?.entities.find((e) => e.id === this.join.playerId);
+    const cursor =
+      document.documentElement.dataset.controls !== 'touch' ? this.cursorPoint() : null;
+    if (me && cursor && skill.targeting === 'point') {
+      const dx = cursor.x - me.pos.x,
+        dz = cursor.z - me.pos.z,
+        len = Math.hypot(dx, dz);
+      const k = len > skill.range ? skill.range / len : 1;
+      this.opts.host.sendIntent({
+        type: 'CAST_SKILL',
+        skillId: skill.id,
+        point: { x: me.pos.x + dx * k, z: me.pos.z + dz * k },
+      });
       return;
     }
     const target = this.currentOrNearestHostile();
     if (!target) {
-      this.opts.onNotice?.({ text: NOTICE_TEXT.no_target, tone: "warn" });
+      this.selfText(NOTICE_TEXT.no_target, WARN_TEXT_COLOR);
       return;
     }
     this.select(target.state.id);
     this.opts.host.sendIntent(
-      skill.targeting === "target"
-        ? { type: "CAST_SKILL", skillId: skill.id, targetId: target.state.id }
+      skill.targeting === 'target'
+        ? { type: 'CAST_SKILL', skillId: skill.id, targetId: target.state.id }
         : {
-            type: "CAST_SKILL",
+            type: 'CAST_SKILL',
             skillId: skill.id,
             targetId: target.state.id,
             point: { x: target.x, z: target.z },
@@ -529,7 +535,7 @@ export class GameView {
   }
 
   useItem(instanceId: string): void {
-    this.opts.host.sendIntent({ type: "USE_ITEM", instanceId });
+    this.opts.host.sendIntent({ type: 'USE_ITEM', instanceId });
   }
 
   usePotion(): void {
@@ -538,20 +544,20 @@ export class GameView {
   }
 
   equip(instanceId: string): void {
-    this.opts.host.sendIntent({ type: "EQUIP", instanceId });
+    this.opts.host.sendIntent({ type: 'EQUIP', instanceId });
   }
 
   unequip(slot: EquipSlot): void {
-    this.opts.host.sendIntent({ type: "UNEQUIP", slot });
+    this.opts.host.sendIntent({ type: 'UNEQUIP', slot });
   }
 
   interact(): void {
     const near = this.nearestInteractable();
     if (!near) return;
     this.opts.host.sendIntent(
-      near.state.kind === "loot"
-        ? { type: "PICKUP", lootId: near.state.id }
-        : { type: "INTERACT", entityId: near.state.id },
+      near.state.kind === 'loot'
+        ? { type: 'PICKUP', lootId: near.state.id }
+        : { type: 'INTERACT', entityId: near.state.id },
     );
   }
 
@@ -564,25 +570,20 @@ export class GameView {
   attackDown(aim?: { x: number; z: number } | null): void {
     const def = this.gunDef();
     if (!def) {
-      if (aim) this.opts.host.sendIntent({ type: "BASIC_ATTACK", aim });
+      if (aim) this.opts.host.sendIntent({ type: 'BASIC_ATTACK', aim });
       else this.attack();
       return;
     }
-    const desktop = document.documentElement.dataset.controls !== "touch";
-    const point =
-      aim ?? (desktop ? this.cursorPoint() : null) ?? this.selectedPoint(def);
+    const desktop = document.documentElement.dataset.controls !== 'touch';
+    const point = aim ?? (desktop ? this.cursorPoint() : null) ?? this.selectedPoint(def);
     const r = this.playerState?.ranged;
     const me = this.views.get(this.join.playerId);
     const tick = this.buffer.latest?.tick ?? 0;
-    if (r && r.magazine > 0 && r.ammo === 0)
-      this.sfxAt(def.sfx.empty, null, 0.7);
-    else if (
-      me &&
-      (!r || (r.overheatEndTick <= tick && r.reloadEndTick <= tick))
-    )
+    if (r && r.magazine > 0 && r.ammo === 0) this.sfxAt(def.sfx.empty, null, 0.7);
+    else if (me && (!r || (r.overheatEndTick <= tick && r.reloadEndTick <= tick)))
       this.gun.raise(this.join.playerId, me, def);
-    if (def.fireMode !== "auto") {
-      this.opts.host.sendIntent({ type: "BASIC_ATTACK", aim: point });
+    if (def.fireMode !== 'auto') {
+      this.opts.host.sendIntent({ type: 'BASIC_ATTACK', aim: point });
       return;
     }
     if (this.trigger.held) return;
@@ -608,8 +609,14 @@ export class GameView {
   }
 
   /** Reload the equipped gun (R / reload button). */
+  mobility(action: 'roll' | 'blink' | 'jump'): void {
+    this.opts.host.sendIntent({ type: 'MOBILITY', action });
+  }
+  setFarm(enabled: boolean): void {
+    this.opts.host.sendIntent({ type: 'SET_FARM', enabled });
+  }
   reload(): void {
-    if (this.playerState?.ranged) this.opts.host.sendIntent({ type: "RELOAD" });
+    if (this.playerState?.ranged) this.opts.host.sendIntent({ type: 'RELOAD' });
   }
 
   /** Equip the next main-hand weapon in the bag (X / swap button). */
@@ -617,12 +624,10 @@ export class GameView {
     const ps = this.playerState;
     if (!ps) return;
     const weapons = ps.inventory.filter(
-      (i) => this.opts.content.items.get(i.itemId)?.slot === "main_hand",
+      (i) => this.opts.content.items.get(i.itemId)?.slot === 'main_hand',
     );
     if (weapons.length < 2) return;
-    const current = weapons.findIndex(
-      (i) => i.instanceId === ps.equipment.main_hand,
-    );
+    const current = weapons.findIndex((i) => i.instanceId === ps.equipment.main_hand);
     const next = weapons[(current + 1) % weapons.length];
     if (next) this.equip(next.instanceId);
     this.attackUp();
@@ -630,24 +635,23 @@ export class GameView {
 
   /** Basic attack button / Space: one combo swing, including when no target is selected. */
   attack(): void {
-    const target =
-      this.selectedId !== null ? this.sampled.get(this.selectedId) : undefined;
+    const target = this.selectedId !== null ? this.sampled.get(this.selectedId) : undefined;
     const me = this.sampled.get(this.join.playerId);
     const aim =
       target &&
       me &&
-      target.state.action !== "dead" &&
+      target.state.action !== 'dead' &&
       Math.hypot(target.x - me.x, target.z - me.z) < 4
         ? { x: target.x, z: target.z }
         : null;
-    this.opts.host.sendIntent({ type: "BASIC_ATTACK", aim });
+    this.opts.host.sendIntent({ type: 'BASIC_ATTACK', aim });
   }
 
   targetNext(): void {
     const me = this.sampled.get(this.join.playerId);
     if (!me) return;
     const hostiles = [...this.sampled.values()]
-      .filter((e) => e.state.kind === "monster" && e.state.action !== "dead")
+      .filter((e) => e.state.kind === 'monster' && e.state.action !== 'dead')
       .map((e) => ({ e, d: Math.hypot(e.x - me.x, e.z - me.z) }))
       .filter((h) => h.d <= 25)
       .sort((a, b) => a.d - b.d);
@@ -719,10 +723,8 @@ export class GameView {
     this.pool.dispose();
     this.damage.dispose();
     this.lootBeams.dispose();
-    for (const shot of Object.values(this.hudShots))
-      if (shot.url) URL.revokeObjectURL(shot.url);
-    for (const url of this.unitPortraits.values())
-      if (url) URL.revokeObjectURL(url);
+    for (const shot of Object.values(this.hudShots)) if (shot.url) URL.revokeObjectURL(shot.url);
+    for (const url of this.unitPortraits.values()) if (url) URL.revokeObjectURL(url);
     void this.assets.dispose();
     this.scene.dispose();
     this.engine.dispose();
@@ -746,8 +748,8 @@ export class GameView {
       this.input.on((a) => this.handleAction(a)),
     );
     const onResize = () => this.engine.resize();
-    window.addEventListener("resize", onResize);
-    this.unsubscribe.push(() => window.removeEventListener("resize", onResize));
+    window.addEventListener('resize', onResize);
+    this.unsubscribe.push(() => window.removeEventListener('resize', onResize));
     this.engine.runRenderLoop(() => this.frame());
   }
 
@@ -768,7 +770,7 @@ export class GameView {
       this.loadingMap = null;
     });
     const map = this.opts.content.maps.get(join.mapId);
-    if (map) this.opts.onNotice?.({ text: map.name, tone: "boss" });
+    if (map) this.opts.onNotice?.({ text: map.name, tone: 'boss' });
   }
 
   private async loadMap(mapId: string): Promise<void> {
@@ -776,12 +778,7 @@ export class GameView {
     if (!map) throw new Error(`unknown map ${mapId}`);
     this.environment?.dispose();
     this.environment = null;
-    const env = await EnvironmentView.build(
-      this.scene,
-      map,
-      this.opts.content,
-      this.assets,
-    );
+    const env = await EnvironmentView.build(this.scene, map, this.opts.content, this.assets);
     if (this.join.mapId !== mapId) {
       env.dispose();
       return;
@@ -790,8 +787,8 @@ export class GameView {
     // Characters likely to appear soon: warm them up so they don't pop in as placeholders.
     void this.assets.preload(
       [...this.opts.content.appearances.values()]
-        .filter((a) => a.kind === "character" || a.kind === "monster")
-        .map((a) => a.modelAssetId ?? ""),
+        .filter((a) => a.kind === 'character' || a.kind === 'monster')
+        .map((a) => a.modelAssetId ?? ''),
     );
   }
 
@@ -832,9 +829,8 @@ export class GameView {
         view.setCastShadows(this.shouldCastShadow(e.state));
         if (!e.state.gear) view.setGear(this.withDefaultGear(appearance, {}));
         this.views.set(id, view);
-        if (e.state.kind === "loot") {
-          const rarity =
-            this.opts.content.items.get(e.state.defId)?.rarity ?? "common";
+        if (e.state.kind === 'loot') {
+          const rarity = this.opts.content.items.get(e.state.defId)?.rarity ?? 'common';
           this.lootBeams.attach(id, view.root, rarity);
         }
       }
@@ -846,15 +842,22 @@ export class GameView {
         if (this.gearKeys.get(id) !== key) {
           if (this.gearKeys.has(id)) this.gun.forget(id);
           this.gearKeys.set(id, key);
-          view.setGear(
-            this.withDefaultGear(
-              view.appearance,
-              this.gearAppearances(e.state.gear),
-            ),
-          );
+          view.setGear(this.withDefaultGear(view.appearance, this.gearAppearances(e.state.gear)));
         }
       }
       view.update(dt);
+      const mobility = e.state.mobility;
+      if (mobility?.action === 'jump') {
+        const t = Math.max(
+          0,
+          Math.min(
+            1,
+            ((this.buffer.latest?.tick ?? 0) - mobility.startTick) /
+              (mobility.endTick - mobility.startTick),
+          ),
+        );
+        view.root.position.y += Math.sin(t * Math.PI) * 0.65;
+      }
     }
 
     const me = this.sampled.get(this.join.playerId);
@@ -866,10 +869,7 @@ export class GameView {
           this.environment.chunksAround(me.x, me.z, this.preset.chunkRadius),
         );
         this.environment.updateLod(me.x, me.z);
-        this.environment.updateOcclusion(
-          this.rig.camera.position,
-          new Vector3(me.x, 1.1, me.z),
-        );
+        this.environment.updateOcclusion(this.rig.camera.position, new Vector3(me.x, 1.1, me.z));
       }
     }
     this.selection.update(this.time);
@@ -891,14 +891,12 @@ export class GameView {
     this.preset = p;
     const dpr = Math.min(window.devicePixelRatio || 1, p.maxPixelRatio);
     this.engine.setHardwareScalingLevel(1 / (dpr * p.resolutionScale));
-    this.sun.shadowEnabled = p.shadows !== "off";
+    this.sun.shadowEnabled = p.shadows !== 'off';
     this.shadows.getShadowMap()?.resize(p.shadowMapSize);
     this.impacts.capacity = p.vfxCap;
     this.projectiles.capacity = p.vfxCap;
     this.fx?.setQuality(p.level);
-    if (this.bolts)
-      this.bolts.capacity =
-        p.level === "low" ? 12 : p.level === "medium" ? 24 : 40;
+    if (this.bolts) this.bolts.capacity = p.level === 'low' ? 12 : p.level === 'medium' ? 24 : 40;
     for (const [id, view] of this.views) {
       const e = this.sampled.get(id);
       if (e) view.setCastShadows(this.shouldCastShadow(e.state));
@@ -906,9 +904,9 @@ export class GameView {
   }
 
   private shouldCastShadow(e: EntitySnapshot): boolean {
-    if (this.preset.shadows === "off") return false;
-    if (e.kind === "loot" || e.kind === "portal") return false;
-    return this.preset.shadows === "all" || e.id === this.join.playerId;
+    if (this.preset.shadows === 'off') return false;
+    if (e.kind === 'loot' || e.kind === 'portal') return false;
+    return this.preset.shadows === 'all' || e.id === this.join.playerId;
   }
 
   // ---- Input ------------------------------------------------------------
@@ -920,7 +918,7 @@ export class GameView {
    */
   private steer(now: number): void {
     const me = this.sampled.get(this.join.playerId);
-    const alive = !!me && me.state.action !== "dead";
+    const alive = !!me && me.state.action !== 'dead';
     const { x, y } = this.moveAxis;
     let heading: number | null = null;
     if (alive && (x !== 0 || y !== 0)) {
@@ -931,17 +929,16 @@ export class GameView {
       const wx = fz * x + fx * y; // right = (fz, -fx)
       const wz = -fx * x + fz * y;
       const step = (Math.PI * 2) / MOVE_HEADINGS;
-      heading =
-        (Math.round(Math.atan2(wz, wx) / step) + MOVE_HEADINGS) % MOVE_HEADINGS;
+      heading = (Math.round(Math.atan2(wz, wx) / step) + MOVE_HEADINGS) % MOVE_HEADINGS;
     }
     if (heading === null) {
       // Dead players can't act; the host clears direct movement on death.
       if (this.sentHeading !== null && alive) {
-        this.opts.host.sendIntent({ type: "MOVE_DIR", dir: null });
+        this.opts.host.sendIntent({ type: 'MOVE_DIR', dir: null });
         this.releaseRepeatAt = now + 250;
       } else if (this.releaseRepeatAt > 0 && now >= this.releaseRepeatAt) {
         // Once more: a dropped (rate-limited) release would walk forever.
-        if (alive) this.opts.host.sendIntent({ type: "MOVE_DIR", dir: null });
+        if (alive) this.opts.host.sendIntent({ type: 'MOVE_DIR', dir: null });
         this.releaseRepeatAt = 0;
       }
       this.sentHeading = null;
@@ -957,7 +954,7 @@ export class GameView {
       const angle = (heading * Math.PI * 2) / MOVE_HEADINGS;
       const r = (v: number) => Math.round(v * 1000) / 1000;
       this.opts.host.sendIntent({
-        type: "MOVE_DIR",
+        type: 'MOVE_DIR',
         dir: { x: r(Math.cos(angle)), z: r(Math.sin(angle)) },
       });
       if (this.sentHeading === null) this.marker.hide();
@@ -969,60 +966,63 @@ export class GameView {
   private handleAction(action: GameAction): void {
     this.opts.onAction?.(action);
     switch (action.type) {
-      case "MOVE":
+      case 'MOVE':
         this.moveAxis = { x: action.x, y: action.y };
         break;
-      case "CAMERA_ROTATE":
+      case 'CAMERA_ROTATE':
         this.rig.rotate(action.dx, action.dy);
         break;
-      case "ZOOM":
+      case 'ZOOM':
         this.rig.zoom(action.delta);
         break;
-      case "STOP":
-        this.opts.host.sendIntent({ type: "STOP" });
+      case 'STOP':
+        this.opts.host.sendIntent({ type: 'STOP' });
         break;
-      case "SKILL":
+      case 'MOBILITY':
+        this.mobility(action.action);
+        break;
+      case 'SKILL':
         {
           const skillId = this.skillBindings[action.index];
           if (skillId) this.castSkillById(skillId);
         }
         break;
-      case "INTERACT":
+      case 'INTERACT':
         this.interact();
         break;
-      case "TARGET_NEXT":
+      case 'TARGET_NEXT':
         this.targetNext();
         break;
-      case "ATTACK":
+      case 'ATTACK':
         this.attackDown();
         break;
-      case "ATTACK_RELEASE":
+      case 'ATTACK_RELEASE':
         this.attackUp();
         break;
-      case "PRIMARY":
+      case 'PRIMARY':
         this.pointer = { x: action.x, y: action.y };
         if (action.down) this.primaryDown(action.x, action.y);
         else this.attackUp();
         break;
-      case "POINTER":
+      case 'POINTER':
         this.pointer = { x: action.x, y: action.y };
         break;
-      case "RELOAD":
+      case 'RELOAD':
         this.reload();
         break;
-      case "SWAP_WEAPON":
+      case 'SWAP_WEAPON':
         this.swapWeapon();
         break;
-      case "USE_POTION":
+      case 'USE_POTION':
         this.usePotion();
         break;
-      case "TOGGLE_DEBUG":
+      case 'TOGGLE_DEBUG':
         this.opts.onToggleDebug?.(this.scene);
         break;
-      case "SELECT":
+      case 'SELECT':
         this.handleSelect(action.x, action.y, action.source);
         break;
-      case "TOGGLE_PANEL":
+      case 'TOGGLE_PANEL':
         break;
     }
   }
@@ -1033,29 +1033,20 @@ export class GameView {
    */
   private primaryDown(x: number, y: number): void {
     this.primaryFired = false;
-    if (document.documentElement.dataset.controls === "touch" || !this.gunDef())
-      return;
+    if (document.documentElement.dataset.controls === 'touch' || !this.gunDef()) return;
     const hitId = this.pickEntity(x, y);
     const hit = hitId ? this.sampled.get(hitId) : undefined;
-    if (hit && hit.state.kind !== "monster" && hit.state.kind !== "player")
-      return;
-    if (hit?.state.kind === "monster") this.select(hit.state.id);
+    if (hit && hit.state.kind !== 'monster' && hit.state.kind !== 'player') return;
+    if (hit?.state.kind === 'monster') this.select(hit.state.id);
     this.primaryFired = true;
-    this.attackDown(
-      hit?.state.kind === "monster"
-        ? { x: hit.x, z: hit.z }
-        : this.groundAt(x, y),
-    );
+    this.attackDown(hit?.state.kind === 'monster' ? { x: hit.x, z: hit.z } : this.groundAt(x, y));
   }
 
   private pickEntity(x: number, y: number): EntityId | undefined {
     const hit = this.scene.pick(
       x,
       y,
-      (m) =>
-        !!(m.metadata as PickMetadata | null)?.entityId &&
-        m.isPickable &&
-        m.isEnabled(),
+      (m) => !!(m.metadata as PickMetadata | null)?.entityId && m.isPickable && m.isEnabled(),
     );
     const id = (hit?.pickedMesh?.metadata as PickMetadata | null)?.entityId;
     return id && id !== this.join.playerId ? id : undefined;
@@ -1078,16 +1069,9 @@ export class GameView {
 
   /** Touch aim: the selected living monster within the weapon's reach. */
   private selectedPoint(def: RangedDef): { x: number; z: number } | null {
-    const sel =
-      this.selectedId !== null ? this.sampled.get(this.selectedId) : undefined;
+    const sel = this.selectedId !== null ? this.sampled.get(this.selectedId) : undefined;
     const me = this.sampled.get(this.join.playerId);
-    if (
-      !sel ||
-      !me ||
-      sel.state.kind !== "monster" ||
-      sel.state.action === "dead"
-    )
-      return null;
+    if (!sel || !me || sel.state.kind !== 'monster' || sel.state.action === 'dead') return null;
     return Math.hypot(sel.x - me.x, sel.z - me.z) <= def.projectile.range + 1
       ? { x: sel.x, z: sel.z }
       : null;
@@ -1102,19 +1086,18 @@ export class GameView {
     const t = this.trigger;
     t.sentAt = performance.now();
     const target =
-      this.selectedId !== null &&
-      this.sampled.get(this.selectedId)?.state.kind === "monster"
+      this.selectedId !== null && this.sampled.get(this.selectedId)?.state.kind === 'monster'
         ? this.selectedId
         : undefined;
     this.opts.host.sendIntent(
       held
         ? {
-            type: "TRIGGER",
+            type: 'TRIGGER',
             held: true,
             aim: t.aim,
             ...(target && !t.aim ? { targetId: target } : {}),
           }
-        : { type: "TRIGGER", held: false },
+        : { type: 'TRIGGER', held: false },
     );
   }
 
@@ -1128,22 +1111,19 @@ export class GameView {
     if (!t.held) {
       if (t.releaseRepeatAt > 0 && now >= t.releaseRepeatAt) {
         t.releaseRepeatAt = 0;
-        this.opts.host.sendIntent({ type: "TRIGGER", held: false });
+        this.opts.host.sendIntent({ type: 'TRIGGER', held: false });
       }
       return;
     }
     const me = this.sampled.get(this.join.playerId);
-    if (!this.gunDef() || !me || me.state.action === "dead") {
+    if (!this.gunDef() || !me || me.state.action === 'dead') {
       this.attackUp();
       return;
     }
     if (t.cursor && now - t.aimAt >= AIM_SEND_MS) {
       t.aimAt = now;
       const p = this.cursorPoint();
-      if (
-        p &&
-        (!t.aim || Math.hypot(p.x - t.aim.x, p.z - t.aim.z) > AIM_EPSILON)
-      ) {
+      if (p && (!t.aim || Math.hypot(p.x - t.aim.x, p.z - t.aim.z) > AIM_EPSILON)) {
         t.aim = p;
         this.sendTrigger(true);
         return;
@@ -1152,8 +1132,8 @@ export class GameView {
     if (now - t.sentAt >= TRIGGER_KEEPALIVE_MS) this.sendTrigger(true);
   }
 
-  private handleSelect(x: number, y: number, source: "mouse" | "touch"): void {
-    if (source === "mouse" && this.primaryFired) {
+  private handleSelect(x: number, y: number, source: 'mouse' | 'touch'): void {
+    if (source === 'mouse' && this.primaryFired) {
       // The press already fired; the click only keeps its target selection.
       this.primaryFired = false;
       return;
@@ -1161,26 +1141,22 @@ export class GameView {
     const entityHit = this.scene.pick(
       x,
       y,
-      (m) =>
-        !!(m.metadata as PickMetadata | null)?.entityId &&
-        m.isPickable &&
-        m.isEnabled(),
+      (m) => !!(m.metadata as PickMetadata | null)?.entityId && m.isPickable && m.isEnabled(),
     );
-    const hitId = (entityHit?.pickedMesh?.metadata as PickMetadata | null)
-      ?.entityId;
+    const hitId = (entityHit?.pickedMesh?.metadata as PickMetadata | null)?.entityId;
     if (hitId && hitId !== this.join.playerId) {
       const target = this.sampled.get(hitId);
       switch (target?.state.kind) {
-        case "monster":
+        case 'monster':
           this.select(hitId);
-          this.opts.host.sendIntent({ type: "ATTACK_TARGET", targetId: hitId });
+          this.opts.host.sendIntent({ type: 'ATTACK_TARGET', targetId: hitId });
           return;
-        case "loot":
-          this.opts.host.sendIntent({ type: "PICKUP", lootId: hitId });
+        case 'loot':
+          this.opts.host.sendIntent({ type: 'PICKUP', lootId: hitId });
           return;
-        case "portal":
-        case "npc":
-          this.opts.host.sendIntent({ type: "INTERACT", entityId: hitId });
+        case 'portal':
+        case 'npc':
+          this.opts.host.sendIntent({ type: 'INTERACT', entityId: hitId });
           return;
         default:
           this.select(hitId);
@@ -1193,13 +1169,10 @@ export class GameView {
       (m) => (m.metadata as { ground?: boolean } | null)?.ground === true,
     );
     const p = groundHit?.pickedPoint;
-    if (
-      source === "mouse" &&
-      document.documentElement.dataset.controls !== "touch"
-    ) {
+    if (source === 'mouse' && document.documentElement.dataset.controls !== 'touch') {
       this.marker.hide();
       this.opts.host.sendIntent({
-        type: "BASIC_ATTACK",
+        type: 'BASIC_ATTACK',
         aim: p ? { x: p.x, z: p.z } : null,
       });
       return;
@@ -1208,7 +1181,7 @@ export class GameView {
     if (p && this.moveAxis.x === 0 && this.moveAxis.y === 0) {
       this.marker.show(p.x, p.z);
       this.opts.host.sendIntent({
-        type: "MOVE_TO",
+        type: 'MOVE_TO',
         target: { x: p.x, z: p.z },
       });
     }
@@ -1221,16 +1194,14 @@ export class GameView {
   }
 
   private currentOrNearestHostile(): InterpolatedEntity | null {
-    const sel =
-      this.selectedId !== null ? this.sampled.get(this.selectedId) : undefined;
-    if (sel?.state.kind === "monster" && sel.state.action !== "dead")
-      return sel;
+    const sel = this.selectedId !== null ? this.sampled.get(this.selectedId) : undefined;
+    if (sel?.state.kind === 'monster' && sel.state.action !== 'dead') return sel;
     const me = this.sampled.get(this.join.playerId);
     if (!me) return null;
     let best: InterpolatedEntity | null = null;
     let bestD = AUTO_TARGET_RANGE;
     for (const e of this.sampled.values()) {
-      if (e.state.kind !== "monster" || e.state.action === "dead") continue;
+      if (e.state.kind !== 'monster' || e.state.action === 'dead') continue;
       const d = Math.hypot(e.x - me.x, e.z - me.z);
       if (d < bestD) {
         best = e;
@@ -1246,14 +1217,9 @@ export class GameView {
     let best: InterpolatedEntity | null = null;
     let bestD = INTERACT_SEARCH;
     for (const e of this.sampled.values()) {
+      if (e.state.kind !== 'loot' && e.state.kind !== 'portal' && e.state.kind !== 'npc') continue;
       if (
-        e.state.kind !== "loot" &&
-        e.state.kind !== "portal" &&
-        e.state.kind !== "npc"
-      )
-        continue;
-      if (
-        e.state.kind === "loot" &&
+        e.state.kind === 'loot' &&
         e.state.ownerId !== null &&
         e.state.ownerId !== this.join.playerId
       )
@@ -1271,18 +1237,14 @@ export class GameView {
     const inv = this.playerState?.inventory ?? [];
     return inv
       .map((i) => ({ i, def: this.opts.content.items.get(i.itemId) }))
-      .filter((x) => x.def?.kind === "consumable")
+      .filter((x) => x.def?.kind === 'consumable')
       .sort((a, b) => (a.def?.heal ?? 0) - (b.def?.heal ?? 0))[0]?.i;
   }
 
   // ---- Events -> presentation -----------------------------------------
 
   /** Sound at an entity, fading out over SFX_RANGE metres from the local player. */
-  private sfxAt(
-    ids: readonly string[] | undefined,
-    entityId: EntityId | null,
-    gain = 1,
-  ): void {
+  private sfxAt(ids: readonly string[] | undefined, entityId: EntityId | null, gain = 1): void {
     if (!ids?.length || !this.opts.onSfx) return;
     const me = this.sampled.get(this.join.playerId);
     const at = entityId !== null ? this.sampled.get(entityId) : undefined;
@@ -1296,20 +1258,28 @@ export class GameView {
     const mine = (id: EntityId) => id === this.join.playerId;
     for (const ev of events) {
       switch (ev.type) {
-        case "ATTACK": {
+        case 'ATTACK': {
+          if (ev.windup) {
+            const w = ev.windup;
+            this.telegraphs.showCone(
+              `melee:${ev.sourceId}`,
+              w.point.x,
+              w.point.z,
+              w.yaw,
+              w.range,
+              w.arc,
+              Math.max(0.05, (w.endTick - tick) / TICK_RATE),
+            );
+          }
           const view = this.views.get(ev.sourceId);
-          const combo = ev.combo
-            ? this.opts.content.combos.get(ev.combo.comboId)
-            : undefined;
+          const combo = ev.combo ? this.opts.content.combos.get(ev.combo.comboId) : undefined;
           const variant = ev.combo
-            ? combo?.steps[ev.combo.step]?.variants.find(
-                (v) => v.id === ev.combo?.variantId,
-              )
+            ? combo?.steps[ev.combo.step]?.variants.find((v) => v.id === ev.combo?.variantId)
             : undefined;
           if (variant && view && ev.combo) {
             view.playClip(variant.clip, variant.animSpeed);
             this.presentSwing(ev.sourceId, view, variant, ev.combo.yaw);
-          } else view?.play("attack");
+          } else view?.play('attack');
           this.sfxAt(
             variant?.sfx ?? view?.appearance.sfx.attack ?? DEFAULT_SFX.attack,
             ev.sourceId,
@@ -1317,79 +1287,78 @@ export class GameView {
           );
           break;
         }
-        case "DAMAGE": {
+        case 'DAMAGE': {
           const view = this.views.get(ev.targetId);
           if (!view) break;
           // Auto-attacks: show the number on the clip's hit frame (appearance.hitDelay).
           const hitDelay =
-            ev.skillId || ev.hit
-              ? 0
-              : (this.views.get(ev.sourceId)?.appearance.hitDelay ?? 0);
-          const delayedReplay = ev.skillId === "__delayed";
+            ev.skillId || ev.hit ? 0 : (this.views.get(ev.sourceId)?.appearance.hitDelay ?? 0);
+          const delayedReplay = ev.skillId === '__delayed';
           if (hitDelay > 0) {
             this.delayed.push({
               at: performance.now() + hitDelay * 1000,
-              run: () => this.handleEvents([{ ...ev, skillId: "__delayed" }]),
+              run: () => this.handleEvents([{ ...ev, skillId: '__delayed' }]),
             });
             break;
           }
-          view.play("hit");
+          view.play('hit');
           const shotDef = ev.shot
-            ? this.opts.content.ranged.get(this.shots.get(ev.shot.id) ?? "")
+            ? this.opts.content.ranged.get(this.shots.get(ev.shot.id) ?? '')
             : undefined;
           if (ev.shot) {
-            const src =
-              this.views.get(ev.sourceId)?.root.position ?? view.root.position;
+            const src = this.views.get(ev.sourceId)?.root.position ?? view.root.position;
             this.gun.hit(
               view,
               { x: src.x, z: src.z },
-              shotDef,
+              shotDef
+                ? {
+                    ...shotDef,
+                    fx: { ...shotDef.fx, color: elementColor(ev.element, ev.expression) },
+                  }
+                : undefined,
               ev.shot,
               ev.crit,
             );
-          } else if (ev.hit)
-            this.presentMeleeHit(
-              ev.sourceId,
-              view,
-              ev.heavy === true,
-              ev.crit,
-              ev.hit,
-            );
+          } else if (ev.hit && !ev.skillId)
+            this.presentMeleeHit(ev.sourceId, view, ev.heavy === true, ev.crit, ev.hit);
           else if (ev.skillId && !delayedReplay) {
             const style = this.opts.content.skills.get(ev.skillId)?.vfx;
-            if (isThunderStyle(style)) this.thunder.hit(view, style);
+            if (isThunderStyle(style) && ev.expression === 'thunder') this.thunder.hit(view, style);
           }
           this.sfxAt(
             ev.crit
               ? DEFAULT_SFX.crit
-              : (shotDef?.sfx.hit ??
-                  view.appearance.sfx.hit ??
-                  DEFAULT_SFX.hit),
+              : (shotDef?.sfx.hit ?? view.appearance.sfx.hit ?? DEFAULT_SFX.hit),
             ev.targetId,
             ev.crit ? 1 : shotDef ? 0.5 : 0.8,
           );
           const color = mine(ev.targetId)
-            ? "#ff5a4f"
+            ? '#ff5a4f'
             : ev.crit
-              ? "#ffd23f"
+              ? '#ffd23f'
               : ev.skillId && !delayedReplay
-                ? "#8fe3ff"
-                : "#ffffff";
+                ? '#8fe3ff'
+                : '#ffffff';
           this.floatText(
             view,
-            ev.hit === "graze"
+            ev.hit === 'graze'
               ? `Sượt ${ev.amount}`
-              : ev.hit === "weak"
+              : ev.hit === 'weak'
                 ? `Yếu hại ${ev.amount}`
                 : ev.crit
                   ? `${ev.amount}!`
                   : `${ev.amount}`,
             color,
-            ev.heavy ? 1.6 : ev.crit ? 1.25 : 1,
+            // Bigger hits read bigger (log scale: 10 → 1.0, 100 → 1.2,
+            // 1000 → 1.4); crits and heavy blows on top of that.
+            (0.8 + 0.2 * Math.log10(Math.max(1, ev.amount))) *
+              (ev.crit ? 1.35 : 1) *
+              (ev.heavy ? 1.25 : 1),
+            ev.crit || !!ev.heavy,
           );
           break;
         }
-        case "SHOT": {
+        case 'SHOT': {
           this.shots.set(ev.shotId, ev.rangedId);
           if (this.shots.size > 256) {
             const oldest = this.shots.keys().next().value;
@@ -1403,264 +1372,247 @@ export class GameView {
           if (mine(ev.sourceId) && kick > 0) {
             this.rig.kick(kick);
             const yaw = ev.yaws[0] ?? 0;
-            if (kick >= 0.15)
-              this.rig.shake(kick * 0.35, 0.14, Math.sin(yaw), Math.cos(yaw));
+            if (kick >= 0.15) this.rig.shake(kick * 0.35, 0.14, Math.sin(yaw), Math.cos(yaw));
           }
           break;
         }
-        case "RELOAD": {
+        case 'RELOAD': {
           const view = this.views.get(ev.sourceId);
           const def = this.rangedOf(ev.sourceId);
           if (!view || !def) break;
-          const seconds = Math.max(
-            0,
-            (ev.endTick - Math.max(ev.startTick, tick)) / TICK_RATE,
-          );
-          this.gun.reload(
-            ev.sourceId,
-            view,
-            def,
-            ev.endTick > ev.startTick ? seconds : 0,
-          );
-          if (ev.endTick > ev.startTick)
-            this.sfxAt(def.sfx.reload, ev.sourceId, 0.7);
+          const seconds = Math.max(0, (ev.endTick - Math.max(ev.startTick, tick)) / TICK_RATE);
+          this.gun.reload(ev.sourceId, view, def, ev.endTick > ev.startTick ? seconds : 0);
+          if (ev.endTick > ev.startTick) this.sfxAt(def.sfx.reload, ev.sourceId, 0.7);
           break;
         }
-        case "OVERHEAT": {
+        case 'OVERHEAT': {
           const view = this.views.get(ev.sourceId);
           const def = this.rangedOf(ev.sourceId);
           if (!view || !def) break;
-          this.gun.overheat(
-            ev.sourceId,
-            view,
-            def,
-            Math.max(0.1, (ev.endTick - tick) / TICK_RATE),
-          );
+          this.gun.overheat(ev.sourceId, view, def, Math.max(0.1, (ev.endTick - tick) / TICK_RATE));
           this.sfxAt(def.sfx.overheat, ev.sourceId, 0.8);
-          if (mine(ev.sourceId))
-            this.floatText(view, "Quá tải!", "#ffffff", 1.2);
+          if (mine(ev.sourceId)) this.floatText(view, 'Quá tải!', '#ffffff', 1.2);
           break;
         }
-        case "MISS": {
+        case 'MISS': {
           const view = this.views.get(ev.targetId);
-          if (view) this.floatText(view, "Trượt", "#b9d2e5");
+          if (view) this.floatText(view, 'Trượt', '#b9d2e5');
           break;
         }
-        case "HEAL": {
+        case 'HEAL': {
           const view = this.views.get(ev.targetId);
-          if (view && ev.amount > 0)
-            this.floatText(view, `+${ev.amount}`, "#6dff8a");
+          if (view && ev.amount > 0) this.floatText(view, `+${ev.amount}`, '#6dff8a');
           break;
         }
-        case "CAST_START": {
+        case 'SKILL_PROJECTILE': {
+          this.projectiles.fire(
+            new Vector3(ev.origin.x, 0.8, ev.origin.z),
+            new Vector3(ev.destination.x, 0.8, ev.destination.z),
+            'projectile',
+            ev.speed,
+            elementColor(ev.element, ev.expression),
+            ev.projectileId,
+          );
+          break;
+        }
+        case 'CAST_START': {
           const source = this.views.get(ev.sourceId);
           const skill = this.opts.content.skills.get(ev.skillId);
-          if (skill?.anim?.cast)
-            source?.playClip(skill.anim.cast, skill.anim.castSpeed, "cast");
-          else source?.play("cast");
+          if (skill?.anim?.cast) source?.playClip(skill.anim.cast, skill.anim.castSpeed, 'cast');
+          else source?.play('cast');
           this.sfxAt(skill?.sfx.cast, ev.sourceId);
           // Self casts carry the caster's position at the start (a dash's origin).
-          const self = skill?.targeting === "self";
+          const self = skill?.targeting === 'self';
           const from = self ? ev.point : source ? source.root.position : null;
           if (from) this.castFrom.set(ev.sourceId, { x: from.x, z: from.z });
-          if (source && isThunderStyle(skill?.vfx)) {
+          if (source && skill?.mobility) {
+            this.fx.trail(
+              source.anchor('hand_r'),
+              null,
+              Color3.FromHexString(elementColor(ev.element, ev.expression)),
+              Math.max(0.1, (ev.endTick - tick) / TICK_RATE),
+            );
+          }
+          if (source && ev.expression === 'thunder' && isThunderStyle(skill?.vfx)) {
             const seconds = Math.max(0, (ev.endTick - tick) / TICK_RATE);
             const p = source.root.position;
             if (ev.point && !self)
-              source.faceYaw(
-                Math.atan2(ev.point.x - p.x, ev.point.z - p.z),
-                seconds + 0.2,
-              );
+              source.faceYaw(Math.atan2(ev.point.x - p.x, ev.point.z - p.z), seconds + 0.2);
             this.feedback(
               ev.sourceId,
-              this.thunder.cast(
-                skill.vfx,
-                source,
-                self ? null : ev.point,
-                ev.radius,
-                seconds,
-              ),
+              this.thunder.cast(skill.vfx, source, self ? null : ev.point, ev.radius, seconds),
             );
           }
           if (ev.telegraph && ev.point && ev.radius > 0) {
             const seconds = Math.max(0.1, (ev.endTick - tick) / TICK_RATE);
-            this.telegraphs.show(
-              `${ev.sourceId}`,
-              ev.point.x,
-              ev.point.z,
-              ev.radius,
-              seconds,
-            );
+            this.telegraphs.show(`${ev.sourceId}`, ev.point.x, ev.point.z, ev.radius, seconds);
           }
           break;
         }
-        case "SKILL_IMPACT": {
+        case 'SKILL_IMPACT': {
           this.telegraphs.clear(`${ev.sourceId}`);
           const skill = this.opts.content.skills.get(ev.skillId);
-          const vfx = skill?.vfx ?? "slash";
+          const vfx = skill?.vfx ?? 'slash';
+          if (skill?.delivery === 'projectile') this.projectiles.stopAt(ev.projectileId, ev.point);
           this.sfxAt(skill?.sfx.impact, ev.targetId ?? ev.sourceId);
           const src = this.views.get(ev.sourceId);
-          const tgt =
-            ev.targetId !== null ? this.views.get(ev.targetId) : undefined;
-          if (skill?.anim?.impact)
-            src?.playClip(skill.anim.impact, skill.anim.impactSpeed, "cast");
+          const tgt = ev.targetId !== null ? this.views.get(ev.targetId) : undefined;
+          if (skill?.anim?.impact) src?.playClip(skill.anim.impact, skill.anim.impactSpeed, 'cast');
           const from = this.castFrom.get(ev.sourceId) ?? null;
           this.castFrom.delete(ev.sourceId);
-          if (isThunderStyle(vfx)) {
+          if (skill?.mobility && ev.expression === 'thunder') {
+            this.thunder.impact('thunder_dash', src, tgt, from, ev.point, 0);
+          }
+          if (
+            ev.expression === 'thunder' &&
+            isThunderStyle(vfx) &&
+            skill?.delivery !== 'projectile'
+          ) {
             this.feedback(
               ev.sourceId,
               this.thunder.impact(vfx, src, tgt, from, ev.point, ev.radius),
               ev.point,
             );
-          } else if (vfx === "projectile" && src && tgt) {
+          } else if (skill?.delivery === 'projectile') {
+            this.impacts.spawn(
+              ev.point.x,
+              ev.point.z,
+              0.6,
+              vfx,
+              elementColor(ev.element, ev.expression),
+            );
+          } else if (vfx === 'projectile' && src && tgt) {
             this.projectiles.fire(
               src.root.position.add(new Vector3(0, src.height * 0.6, 0)),
               tgt.root.position.add(new Vector3(0, tgt.height * 0.5, 0)),
               vfx,
             );
           } else if (ev.radius > 0)
-            this.impacts.spawn(ev.point.x, ev.point.z, ev.radius, vfx);
-          else if (tgt)
             this.impacts.spawn(
-              tgt.root.position.x,
-              tgt.root.position.z,
-              0.8,
+              ev.point.x,
+              ev.point.z,
+              ev.radius,
               vfx,
+              elementColor(ev.element, ev.expression),
             );
-          else if (src && vfx === "heal")
-            this.impacts.spawn(
-              src.root.position.x,
-              src.root.position.z,
-              1.2,
-              vfx,
-            );
+          else if (tgt) this.impacts.spawn(tgt.root.position.x, tgt.root.position.z, 0.8, vfx);
+          else if (src && vfx === 'heal')
+            this.impacts.spawn(src.root.position.x, src.root.position.z, 1.2, vfx);
           break;
         }
-        case "DEATH":
+        case 'DEATH':
           this.sfxAt(this.views.get(ev.id)?.appearance.sfx.death, ev.id);
           if (ev.id === this.selectedId) this.select(null);
           this.telegraphs.clear(`${ev.id}`);
+          this.telegraphs.clear(`melee:${ev.id}`);
           break;
-        case "BREAKTHROUGH": {
+        case 'BREAKTHROUGH': {
           const view = this.views.get(ev.id);
           const realm = realmLadder(this.opts.content)[ev.realm];
-          this.sfxAt(
-            ev.success ? DEFAULT_SFX.breakthrough : DEFAULT_SFX.backlash,
-            ev.id,
-          );
+          this.sfxAt(ev.success ? DEFAULT_SFX.breakthrough : DEFAULT_SFX.backlash, ev.id);
           if (view) {
             this.floatText(
               view,
-              ev.success ? `${realm?.name ?? ""}!` : "Phản phệ!",
-              ev.success ? "#ffd23f" : "#ff6b6b",
+              ev.success ? `${realm?.name ?? ''}!` : 'Phản phệ!',
+              ev.success ? '#ffd23f' : '#ff6b6b',
             );
             this.impacts.spawn(
               view.root.position.x,
               view.root.position.z,
               ev.success ? 4 : 1.5,
-              "level",
+              'level',
             );
           }
           if (mine(ev.id))
             this.opts.onNotice?.(
               ev.success
                 ? {
-                    text: `Đột phá thành công — ${realm?.name ?? ""}!`,
-                    tone: "boss",
+                    text: `Đột phá thành công — ${realm?.name ?? ''}!`,
+                    tone: 'boss',
                   }
                 : {
-                    text: "Đột phá thất bại — phản phệ, công lực suy giảm tạm thời",
-                    tone: "warn",
+                    text: 'Đột phá thất bại — phản phệ, công lực suy giảm tạm thời',
+                    tone: 'warn',
                   },
             );
           break;
         }
-        case "NODE_OPENED":
+        case 'NODE_OPENED':
           if (mine(ev.ownerId)) {
             const node = this.opts.content.cultivation.get(ev.nodeId);
             this.opts.onNotice?.({
               text: `Khai mở: ${node?.name ?? ev.nodeId}`,
-              tone: "good",
+              tone: 'good',
             });
           }
           break;
-        case "ITEM_GAINED":
+        case 'ITEM_GAINED':
           if (mine(ev.ownerId)) {
             this.sfxAt(DEFAULT_SFX.item, null, 0.8);
             const item = this.opts.content.items.get(ev.itemId);
-            this.opts.onNotice?.({
-              text: `Nhận ${item?.name ?? ev.itemId}${ev.count > 1 ? ` ×${ev.count}` : ""}`,
-              tone: "good",
-              color: RARITY_COLORS[item?.rarity ?? "common"],
-            });
+            this.selfText(
+              `Nhận ${item?.name ?? ev.itemId}${ev.count > 1 ? ` ×${ev.count}` : ''}`,
+              RARITY_COLORS[item?.rarity ?? 'common'] ?? '#ffffff',
+            );
           }
           break;
-        case "GOLD":
-          if (mine(ev.ownerId) && ev.amount > 0)
-            this.sfxAt(DEFAULT_SFX.gold, null, 0.8);
-          if (mine(ev.ownerId))
-            this.opts.onNotice?.({
-              text: `+${ev.amount} vàng`,
-              tone: "good",
-              color: "#ffd23f",
-            });
+        case 'GOLD':
+          if (mine(ev.ownerId) && ev.amount > 0) this.sfxAt(DEFAULT_SFX.gold, null, 0.8);
+          if (mine(ev.ownerId)) this.selfText(`+${ev.amount} vàng`, '#ffd23f');
           break;
-        case "NOTICE":
-          if (mine(ev.ownerId))
-            this.opts.onNotice?.({ text: NOTICE_TEXT[ev.code], tone: "warn" });
+        case 'NOTICE':
+          if (mine(ev.ownerId)) this.selfText(NOTICE_TEXT[ev.code], WARN_TEXT_COLOR);
           break;
-        case "PARTY_INVITE":
+        case 'PARTY_INVITE':
           if (mine(ev.ownerId))
             this.opts.onPartyInvite?.({
               fromId: ev.fromId,
               fromName: ev.fromName,
             });
           break;
-        case "NPC_OPEN":
+        case 'NPC_OPEN':
           if (mine(ev.ownerId))
             this.opts.onNpcOpen?.({
               npcEntityId: ev.npcEntityId,
               npcId: ev.npcId,
             });
           break;
-        case "QUEST":
+        case 'QUEST':
           if (mine(ev.ownerId)) {
             const q = this.opts.content.quests.get(ev.questId);
             const text = {
-              active: "Nhận nhiệm vụ",
-              ready: "Hoàn thành mục tiêu",
-              done: "Đã trả nhiệm vụ",
+              active: 'Nhận nhiệm vụ',
+              ready: 'Hoàn thành mục tiêu',
+              done: 'Đã trả nhiệm vụ',
             }[ev.status];
             this.opts.onNotice?.({
               text: `${text}: ${q?.name ?? ev.questId}`,
-              tone: ev.status === "active" ? "info" : "good",
+              tone: ev.status === 'active' ? 'info' : 'good',
             });
           }
           break;
-        case "UPGRADE_RESULT":
+        case 'UPGRADE_RESULT':
           if (mine(ev.ownerId)) {
             this.opts.onNotice?.(
               ev.success
                 ? {
                     text: `Cường hoá thành công: +${ev.level}`,
-                    tone: "good",
-                    color: "#ffd23f",
+                    tone: 'good',
+                    color: '#ffd23f',
                   }
                 : {
                     text: `Cường hoá thất bại (giữ +${ev.level})`,
-                    tone: "warn",
+                    tone: 'warn',
                   },
             );
           }
           break;
-        case "PHASE": {
+        case 'PHASE': {
           const e = this.sampled.get(ev.id);
-          const def = e
-            ? this.opts.content.monsters.get(e.state.defId)
-            : undefined;
+          const def = e ? this.opts.content.monsters.get(e.state.defId) : undefined;
           this.opts.onNotice?.({
-            text: `${def?.name ?? "Boss"} — ${ev.name || `Giai đoạn ${ev.phase + 1}`}`,
-            tone: "boss",
+            text: `${def?.name ?? 'Boss'} — ${ev.name || `Giai đoạn ${ev.phase + 1}`}`,
+            tone: 'boss',
           });
           break;
         }
@@ -1670,31 +1622,41 @@ export class GameView {
     }
   }
 
-  private floatText(
-    view: EntityView,
-    text: string,
-    color: string,
-    scale = 1,
-  ): void {
+  private floatText(view: EntityView, text: string, color: string, size = 1, strong = false): void {
     const pos = view.root.position.clone();
     pos.y += view.height + 0.3;
-    this.damage.spawn(pos, text, color, scale);
+    this.damage.spawn(pos, text, color, { size, strong });
+  }
+
+  /**
+   * Short feedback for the local player (gold, loot, "reloading", "on
+   * cooldown"…) floated just over their head in the combat-text style.
+   * Lines that arrive together stack upward instead of overlapping.
+   */
+  private selfText(text: string, color: string): void {
+    const view = this.views.get(this.join.playerId);
+    if (!view) return;
+    const pos = view.root.position.clone();
+    pos.y += view.height + 0.05;
+    // Sit above the previous line where it is now (it keeps rising).
+    const prev = this.lastSelfText;
+    if (prev?.isEnabled() && prev.position.y < pos.y + SELF_LINE)
+      pos.y = prev.position.y + SELF_LINE;
+    this.lastSelfText = this.damage.spawn(pos, text, color, {
+      size: 0.72,
+      jitter: false,
+    });
   }
 
   /** Camera shake / zoom kick from a skill, strongest for the caster's own screen. */
-  private feedback(
-    sourceId: EntityId,
-    f: Feedback,
-    at?: { x: number; z: number },
-  ): void {
+  private feedback(sourceId: EntityId, f: Feedback, at?: { x: number; z: number }): void {
     if (f.shake <= 0 && f.kick <= 0) return;
     const mine = sourceId === this.join.playerId;
     const me = this.sampled.get(this.join.playerId);
     const near = me && at ? Math.hypot(me.x - at.x, me.z - at.z) : 0;
     if (!mine && near > 10) return;
     const k = mine ? 1 : 0.5;
-    if (f.shake > 0)
-      this.rig.shake(f.shake * k, Math.max(0.15, f.seconds), 0, 1);
+    if (f.shake > 0) this.rig.shake(f.shake * k, Math.max(0.15, f.seconds), 0, 1);
     if (f.kick > 0 && mine) this.rig.kick(f.kick);
   }
 
@@ -1711,12 +1673,10 @@ export class GameView {
    * the contact, charge glow for finishers, then the arc and the finisher's
    * impact signature on the contact frame.
    */
-  private presentSwing(
-    id: EntityId,
-    view: EntityView,
-    v: ComboVariant,
-    yaw: number,
-  ): void {
+  private presentSwing(id: EntityId, view: EntityView, v: ComboVariant, yaw: number): void {
+    const state = this.buffer.latest?.entities.find((e) => e.id === id);
+    v = { ...v, trail: { ...v.trail, color: elementColor(state?.element, state?.expression) } };
+    if (state?.expression === 'thunder') this.thunder.hit(view, 'thunder_strike');
     view.faceYaw(yaw, v.windup + v.recovery * 0.6);
     this.swings.set(id, { variant: v, yaw, stopped: false });
     const alive = () => view.entityId === id;
@@ -1725,36 +1685,18 @@ export class GameView {
     const lead = Math.min(0.24, v.windup * 0.6);
     this.after(v.windup - lead, () => {
       if (!alive()) return;
-      const hand = view.anchor("hand_r");
-      const tip = view.anchor("weapon_tip");
-      const trailColor = v.heavy
-        ? color
-        : Color3.Lerp(color, Color3.White(), 0.4);
+      const hand = view.anchor('hand_r');
+      const tip = view.anchor('weapon_tip');
+      const trailColor = v.heavy ? color : Color3.Lerp(color, Color3.White(), 0.4);
       if (tip && tip !== hand) this.fx.trail(hand, tip, trailColor, lead + 0.1);
       else {
-        this.fx.trail(
-          hand,
-          null,
-          trailColor,
-          lead + 0.1,
-          v.heavy ? 0.22 : 0.14,
-        );
-        this.fx.trail(
-          view.anchor("hand_l"),
-          null,
-          trailColor,
-          lead + 0.1,
-          v.heavy ? 0.22 : 0.14,
-        );
+        this.fx.trail(hand, null, trailColor, lead + 0.1, v.heavy ? 0.22 : 0.14);
+        this.fx.trail(view.anchor('hand_l'), null, trailColor, lead + 0.1, v.heavy ? 0.22 : 0.14);
       }
     });
     if (v.heavy)
       for (const socket of v.trail.glow)
-        this.fx.chargeGlow(
-          view.anchor(socket),
-          color,
-          Math.max(0.15, v.windup - 0.05),
-        );
+        this.fx.chargeGlow(view.anchor(socket), color, Math.max(0.15, v.windup - 0.05));
     if (v.heavy && mine) this.rig.kick(0.25);
     this.after(v.windup, () => {
       if (!alive()) return;
@@ -1765,11 +1707,7 @@ export class GameView {
       const me = this.sampled.get(this.join.playerId);
       const near = me ? Math.hypot(me.x - origin.x, me.z - origin.z) : 99;
       // Ground-shaking finishers shake the screen even on a miss; others only when they land.
-      if (
-        shake > 0 &&
-        (v.trail.impact === "quake" || v.trail.impact === "cyclone") &&
-        near < 8
-      ) {
+      if (shake > 0 && (v.trail.impact === 'quake' || v.trail.impact === 'cyclone') && near < 8) {
         const k = mine ? 1 : 0.5;
         this.rig.shake(shake * k, 0.35, Math.sin(yaw), Math.cos(yaw));
         if (mine) this.rig.kick(kick);
@@ -1783,7 +1721,7 @@ export class GameView {
     target: EntityView,
     heavy: boolean,
     crit: boolean,
-    hit: "solid" | "graze" | "weak",
+    hit: 'solid' | 'graze' | 'weak',
   ): void {
     const src = this.views.get(sourceId);
     const swing = this.swings.get(sourceId);
@@ -1792,17 +1730,9 @@ export class GameView {
     const dx = target.root.position.x - sx;
     const dz = target.root.position.z - sz;
     const yaw = Math.atan2(dx, dz);
-    const strength = heavy
-      ? 1
-      : crit
-        ? 0.65
-        : hit === "graze"
-          ? 0.15
-          : hit === "weak"
-            ? 0.5
-            : 0.35;
+    const strength = heavy ? 1 : crit ? 0.65 : hit === 'graze' ? 0.15 : hit === 'weak' ? 0.5 : 0.35;
     const color = Color3.FromHexString(
-      swing?.variant.trail.color ?? (crit ? "#ffd23f" : "#ffffff"),
+      swing?.variant.trail.color ?? (crit ? '#ffd23f' : '#ffffff'),
     );
     this.fx.hit(
       target.root.position.x - Math.sin(yaw) * target.radius * 0.6,
@@ -1812,9 +1742,9 @@ export class GameView {
       color,
       strength,
     );
-    target.knock(dx, dz, heavy ? 0.32 : hit === "graze" ? 0.04 : 0.12);
+    target.knock(dx, dz, heavy ? 0.32 : hit === 'graze' ? 0.04 : 0.12);
     // Hit-stop (both bodies hold the pose a beat): 50 ms light, 120 ms heavy.
-    const stop = heavy ? 0.12 : crit ? 0.08 : hit === "graze" ? 0 : 0.05;
+    const stop = heavy ? 0.12 : crit ? 0.08 : hit === 'graze' ? 0 : 0.05;
     if (stop > 0) {
       target.freeze(stop);
       if (src && swing && !swing.stopped) {
@@ -1822,11 +1752,9 @@ export class GameView {
         src.freeze(stop);
       }
     }
-    const involved =
-      sourceId === this.join.playerId || target.entityId === this.join.playerId;
-    if (involved && hit !== "graze") {
-      const side =
-        swing?.variant.trail.shape === "thrust" ? yaw : yaw + Math.PI / 2;
+    const involved = sourceId === this.join.playerId || target.entityId === this.join.playerId;
+    if (involved && hit !== 'graze') {
+      const side = swing?.variant.trail.shape === 'thrust' ? yaw : yaw + Math.PI / 2;
       this.rig.shake(
         heavy ? 0.16 : crit ? 0.08 : 0.035,
         heavy ? 0.3 : 0.15,
@@ -1854,19 +1782,19 @@ export class GameView {
   private appearanceFor(e: EntitySnapshot): AppearanceDef | undefined {
     const c = this.opts.content;
     switch (e.kind) {
-      case "player": {
+      case 'player': {
         const def = c.characters.get(e.defId);
         return def ? c.appearances.get(def.appearanceId) : undefined;
       }
-      case "monster": {
+      case 'monster': {
         const def = c.monsters.get(e.defId);
         return def ? c.appearances.get(def.appearanceId) : undefined;
       }
-      case "loot":
-        return c.appearances.get("loot_bag");
-      case "portal":
-        return c.appearances.get("portal_gate");
-      case "npc": {
+      case 'loot':
+        return c.appearances.get('loot_bag');
+      case 'portal':
+        return c.appearances.get('portal_gate');
+      case 'npc': {
         const def = c.npcs.get(e.defId);
         return def ? c.appearances.get(def.appearanceId) : undefined;
       }
@@ -1874,10 +1802,7 @@ export class GameView {
   }
 
   /** Appearance-level default gear (monster weapons) under the real equipment. */
-  private withDefaultGear(
-    appearance: AppearanceDef,
-    gear: GearAppearances,
-  ): GearAppearances {
+  private withDefaultGear(appearance: AppearanceDef, gear: GearAppearances): GearAppearances {
     const out: GearAppearances = {};
     for (const [slot, appId] of Object.entries(appearance.defaultGear)) {
       const app = appId ? this.opts.content.appearances.get(appId) : undefined;
@@ -1886,9 +1811,7 @@ export class GameView {
     return { ...out, ...gear };
   }
 
-  private gearAppearances(
-    gear: Partial<Record<EquipSlot, string>>,
-  ): GearAppearances {
+  private gearAppearances(gear: Partial<Record<EquipSlot, string>>): GearAppearances {
     const out: GearAppearances = {};
     for (const [slot, itemId] of Object.entries(gear)) {
       const item = this.opts.content.items.get(itemId);
@@ -1905,29 +1828,22 @@ export class GameView {
     const e = this.buffer.latest?.entities.find((x) => x.id === id);
     if (!e) return null;
     const c = this.opts.content;
-    const monster = e.kind === "monster" ? c.monsters.get(e.defId) : undefined;
+    const monster = e.kind === 'monster' ? c.monsters.get(e.defId) : undefined;
     let name: string;
-    if (e.kind === "player")
-      name = e.name ?? c.characters.get(e.defId)?.name ?? e.defId;
-    else if (e.kind === "loot") name = c.items.get(e.defId)?.name ?? e.defId;
-    else if (e.kind === "npc") name = c.npcs.get(e.defId)?.name ?? e.defId;
-    else if (e.kind === "portal")
-      name =
-        c.maps.get(this.join.mapId)?.portals.find((p) => p.id === e.defId)
-          ?.name ?? "Cổng";
+    if (e.kind === 'player') name = e.name ?? c.characters.get(e.defId)?.name ?? e.defId;
+    else if (e.kind === 'loot') name = c.items.get(e.defId)?.name ?? e.defId;
+    else if (e.kind === 'npc') name = c.npcs.get(e.defId)?.name ?? e.defId;
+    else if (e.kind === 'portal')
+      name = c.maps.get(this.join.mapId)?.portals.find((p) => p.id === e.defId)?.name ?? 'Cổng';
     else name = monster?.name ?? e.defId;
     const cast = e.cast
       ? {
-          name: c.skills.get(e.cast.skillId)?.name ?? "",
+          name: c.skills.get(e.cast.skillId)?.name ?? '',
           progress:
             e.cast.endTick > e.cast.startTick
               ? Math.min(
                   1,
-                  Math.max(
-                    0,
-                    (tick - e.cast.startTick) /
-                      (e.cast.endTick - e.cast.startTick),
-                  ),
+                  Math.max(0, (tick - e.cast.startTick) / (e.cast.endTick - e.cast.startTick)),
                 )
               : 1,
         }
@@ -1938,13 +1854,11 @@ export class GameView {
       name,
       realm: e.realm,
       realmName:
-        e.kind === "player" || e.kind === "monster"
-          ? (realmLadder(c)[e.realm]?.name ?? "")
-          : "",
+        e.kind === 'player' || e.kind === 'monster' ? (realmLadder(c)[e.realm]?.name ?? '') : '',
       tier: monster?.tier ?? null,
       hp: e.hp,
       maxHp: e.maxHp,
-      alive: e.action !== "dead",
+      alive: e.action !== 'dead',
       cast,
     };
   }
@@ -1971,24 +1885,22 @@ export class GameView {
       : def?.heal
         ? [`Hồi ${(def.heal * 100).toFixed(0)}% HP`]
         : [];
-    const rarity = def?.rarity ?? "common";
+    const rarity = def?.rarity ?? 'common';
     return {
       instanceId,
       itemId,
       name: def?.name ?? itemId,
-      icon: def?.icon ?? "◆",
+      icon: def?.icon ?? '◆',
       iconImage: def?.iconImage ?? null,
       rarity,
-      rarityColor: RARITY_COLORS[rarity] ?? "#fff",
-      kind: def?.kind ?? "material",
+      rarityColor: RARITY_COLORS[rarity] ?? '#fff',
+      kind: def?.kind ?? 'material',
       slot: (def?.slot as EquipSlot | undefined) ?? null,
-      realmName: def?.realm
-        ? (this.opts.content.realms.get(def.realm)?.name ?? def.realm)
-        : null,
+      realmName: def?.realm ? (this.opts.content.realms.get(def.realm)?.name ?? def.realm) : null,
       count,
       equipped,
-      description: def?.description ?? "",
-      bonus: parts.join(" · "),
+      description: def?.description ?? '',
+      bonus: parts.join(' · '),
       enhance,
     };
   }
@@ -2004,7 +1916,7 @@ export class GameView {
     return {
       realmId: ps.realm,
       realmName: realm?.name ?? ps.realm,
-      mechName: realm?.mechName ?? "",
+      mechName: realm?.mechName ?? '',
       nextRealmName: next?.breakthrough ? next.name : null,
       nodes: ps.nodes,
       meridianLoad: ps.meridianLoad,
@@ -2028,17 +1940,14 @@ export class GameView {
     // Wait for the manifest: before it loads every model looks missing.
     if (!this.assets.has(appearance.modelAssetId)) return;
     this.snapshots ??= new Snapshots(this.scene, this.assets);
-    const gear = this.withDefaultGear(
-      appearance,
-      this.gearAppearances(me.state.gear ?? {}),
-    );
+    const gear = this.withDefaultGear(appearance, this.gearAppearances(me.state.gear ?? {}));
     const weapon = gear.main_hand;
     this.updateShot(
-      "portrait",
-      `${appearance.id}|${gear.head?.id ?? ""}|${gear.back?.id ?? ""}`,
+      'portrait',
+      `${appearance.id}|${gear.head?.id ?? ''}|${gear.back?.id ?? ''}`,
       (s) => s.portrait(appearance, gear),
     );
-    this.updateShot("weapon", weapon?.id ?? "", (s) =>
+    this.updateShot('weapon', weapon?.id ?? '', (s) =>
       weapon ? s.item(weapon) : Promise.resolve(null),
     );
   }
@@ -2065,7 +1974,7 @@ export class GameView {
     for (const [id, el] of this.overhead) {
       const view = this.views.get(id);
       if (!view) {
-        el.style.visibility = "hidden";
+        el.style.visibility = 'hidden';
         continue;
       }
       const p = view.root.position;
@@ -2085,14 +1994,10 @@ export class GameView {
       if (inFront && el.dataset.clamp !== undefined) {
         const halfW = el.offsetWidth / 2 + 8;
         x = Math.min(Math.max(x, halfW), canvas.clientWidth - halfW);
-        y = Math.min(
-          Math.max(y, el.offsetHeight + 8),
-          canvas.clientHeight * 0.75,
-        );
+        y = Math.min(Math.max(y, el.offsetHeight + 8), canvas.clientHeight * 0.75);
       }
-      const onScreen =
-        x >= 0 && x <= canvas.clientWidth && y >= 0 && y <= canvas.clientHeight;
-      el.style.visibility = inFront && onScreen ? "" : "hidden";
+      const onScreen = x >= 0 && x <= canvas.clientWidth && y >= 0 && y <= canvas.clientHeight;
+      el.style.visibility = inFront && onScreen ? '' : 'hidden';
       el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
     }
   }
@@ -2102,25 +2007,22 @@ export class GameView {
     const view = id === null ? undefined : this.views.get(id);
     if (!view) return null;
     const appearance = view.appearance;
-    if (this.unitPortraits.has(appearance.id))
-      return this.unitPortraits.get(appearance.id) ?? null;
+    if (this.unitPortraits.has(appearance.id)) return this.unitPortraits.get(appearance.id) ?? null;
     if (!this.assets.has(appearance.modelAssetId)) return null;
     this.snapshots ??= new Snapshots(this.scene, this.assets);
     this.unitPortraits.set(appearance.id, null);
-    void this.snapshots
-      .portrait(appearance, this.withDefaultGear(appearance, {}))
-      .then((url) => {
-        if (this.scene.isDisposed) {
-          if (url) URL.revokeObjectURL(url);
-          return;
-        }
-        this.unitPortraits.set(appearance.id, url);
-      });
+    void this.snapshots.portrait(appearance, this.withDefaultGear(appearance, {})).then((url) => {
+      if (this.scene.isDisposed) {
+        if (url) URL.revokeObjectURL(url);
+        return;
+      }
+      this.unitPortraits.set(appearance.id, url);
+    });
     return null;
   }
 
   private updateShot(
-    kind: keyof GameView["hudShots"],
+    kind: keyof GameView['hudShots'],
     key: string,
     render: (s: Snapshots) => Promise<string | null>,
   ): void {
@@ -2151,22 +2053,15 @@ export class GameView {
     this.refreshSnapshots();
     const zone =
       me && map
-        ? (map.zones.find(
-            (z) => Math.hypot(me.x - z.center.x, me.z - z.center.z) <= z.radius,
-          )?.name ?? null)
+        ? (map.zones.find((z) => Math.hypot(me.x - z.center.x, me.z - z.center.z) <= z.radius)
+            ?.name ?? null)
         : null;
 
     const equippedIds = new Set(Object.values(ps?.equipment ?? {}));
     const inventory = (ps?.inventory ?? []).map((i) =>
-      this.itemView(
-        i.instanceId,
-        i.itemId,
-        i.count,
-        equippedIds.has(i.instanceId),
-        i.enhance ?? 0,
-      ),
+      this.itemView(i.instanceId, i.itemId, i.count, equippedIds.has(i.instanceId), i.enhance ?? 0),
     );
-    const equipment: UiState["equipment"] = {};
+    const equipment: UiState['equipment'] = {};
     for (const [slot, instanceId] of Object.entries(ps?.equipment ?? {})) {
       const v = inventory.find((i) => i.instanceId === instanceId);
       if (v) equipment[slot as EquipSlot] = v;
@@ -2175,10 +2070,7 @@ export class GameView {
     const potionDef = potion ? c.items.get(potion.itemId) : undefined;
     const r = ps?.ranged ?? null;
     const rangedDef = r ? c.ranged.get(r.rangedId) : undefined;
-    this.gun.setOwnHeat(
-      this.join.playerId,
-      r && r.overheatEndTick <= tick ? r.heat : 0,
-    );
+    this.gun.setOwnHeat(this.join.playerId, r && r.overheatEndTick <= tick ? r.heat : 0);
     const mainItem = ps?.equipment.main_hand
       ? inventory.find((i) => i.instanceId === ps.equipment.main_hand)
       : undefined;
@@ -2188,15 +2080,10 @@ export class GameView {
     if (me) {
       let bestD = 30;
       for (const e of this.sampled.values()) {
-        if (
-          e.state.kind !== "monster" ||
-          e.state.action === "dead" ||
-          e.state.targetId === null
-        )
+        if (e.state.kind !== 'monster' || e.state.action === 'dead' || e.state.targetId === null)
           continue;
         const tier = c.monsters.get(e.state.defId)?.tier;
-        if (tier !== "boss" && tier !== "world_boss" && tier !== "elite")
-          continue;
+        if (tier !== 'boss' && tier !== 'world_boss' && tier !== 'elite') continue;
         const d = Math.hypot(e.x - me.x, e.z - me.z);
         if (d < bestD) {
           bestD = d;
@@ -2206,24 +2093,24 @@ export class GameView {
     }
 
     const interactTarget = this.nearestInteractable();
-    let interact: UiState["interact"] = null;
+    let interact: UiState['interact'] = null;
     if (interactTarget) {
       const st = interactTarget.state;
       const [verb, name] =
-        st.kind === "loot"
-          ? ["Nhặt", c.items.get(st.defId)?.name ?? ""]
-          : st.kind === "npc"
-            ? ["Nói chuyện", c.npcs.get(st.defId)?.name ?? ""]
-            : ["Vào", this.unitFrame(st.id, tick)?.name ?? "cổng"];
+        st.kind === 'loot'
+          ? ['Nhặt', c.items.get(st.defId)?.name ?? '']
+          : st.kind === 'npc'
+            ? ['Nói chuyện', c.npcs.get(st.defId)?.name ?? '']
+            : ['Vào', this.unitFrame(st.id, tick)?.name ?? 'cổng'];
       interact = {
-        label: st.kind === "npc" ? `${verb}: ${name}` : `${verb} ${name}`,
-        verb: st.kind === "npc" ? verb : `${verb} ${name}`,
+        label: st.kind === 'npc' ? `${verb}: ${name}` : `${verb} ${name}`,
+        verb: st.kind === 'npc' ? verb : `${verb} ${name}`,
         id: st.id,
       };
     }
-    const npcs: UiState["npcs"] = [];
+    const npcs: UiState['npcs'] = [];
     for (const e of this.sampled.values())
-      if (e.state.kind === "npc")
+      if (e.state.kind === 'npc')
         npcs.push({
           id: e.state.id,
           name: c.npcs.get(e.state.defId)?.name ?? e.state.defId,
@@ -2231,6 +2118,9 @@ export class GameView {
 
     const ui: UiState = {
       mapName: map?.name ?? this.join.mapId,
+      element: ps?.element,
+      expression: ps?.expression,
+      farmEnabled: ps?.farmEnabled ?? false,
       ranged:
         r && rangedDef
           ? {
@@ -2239,21 +2129,16 @@ export class GameView {
               ammo: r.ammo,
               magazine: r.magazine,
               heat: r.overheatEndTick > tick ? 1 : r.heat,
-              overheat: Math.max(
-                0,
-                Math.round((r.overheatEndTick - tick) / 2) / 10,
-              ),
+              overheat: Math.max(0, Math.round((r.overheatEndTick - tick) / 2) / 10),
               reload:
                 r.reloadEndTick > tick && r.reloadEndTick > r.reloadStartTick
                   ? Math.round(
-                      ((tick - r.reloadStartTick) /
-                        (r.reloadEndTick - r.reloadStartTick)) *
-                        20,
+                      ((tick - r.reloadStartTick) / (r.reloadEndTick - r.reloadStartTick)) * 20,
                     ) / 20
                   : null,
             }
           : null,
-      weaponCount: inventory.filter((i) => i.slot === "main_hand").length,
+      weaponCount: inventory.filter((i) => i.slot === 'main_hand').length,
       zoneName: zone,
       portrait: this.hudShots.portrait.url,
       weaponImage: this.hudShots.weapon.url,
@@ -2277,11 +2162,11 @@ export class GameView {
         const remaining = Math.max(0, (s.readyAtTick - tick) / TICK_RATE);
         return {
           skillId: s.skillId,
-          barRole: def?.barRole ?? "primary",
+          barRole: def?.barRole ?? 'primary',
           name: def?.name ?? s.skillId,
-          icon: def?.icon ?? "?",
+          icon: def?.icon ?? '?',
           iconImage: def?.iconImage ?? null,
-          description: def?.description ?? "",
+          description: def?.description ?? '',
           cooldown: def?.cooldown ?? 1,
           remaining: Math.round(remaining * 10) / 10,
           mpCost: def?.mpCost ?? 0,
@@ -2297,10 +2182,7 @@ export class GameView {
               count: inventory
                 .filter((i) => i.itemId === potion.itemId)
                 .reduce((n, i) => n + i.count, 0),
-              remaining: Math.max(
-                0,
-                Math.round(((ps?.itemReadyAtTick ?? 0) - tick) / 2) / 10,
-              ),
+              remaining: Math.max(0, Math.round(((ps?.itemReadyAtTick ?? 0) - tick) / 2) / 10),
             }
           : null,
       inventory,
@@ -2308,12 +2190,10 @@ export class GameView {
       equipment,
       interact,
       npcs,
-      questsDone: (ps?.quests ?? [])
-        .filter((q) => q.status === "done")
-        .map((q) => q.questId),
+      questsDone: (ps?.quests ?? []).filter((q) => q.status === 'done').map((q) => q.questId),
       party: ps?.party ?? null,
       quests: (ps?.quests ?? [])
-        .filter((q) => q.status !== "done")
+        .filter((q) => q.status !== 'done')
         .map((q) => {
           const def = c.quests.get(q.questId);
           return {
@@ -2322,13 +2202,13 @@ export class GameView {
             status: q.status,
             objectives: (def?.objectives ?? []).map((o, i) => {
               const current = q.progress[i] ?? 0;
-              if (o.type === "kill")
+              if (o.type === 'kill')
                 return {
                   text: `Hạ ${c.monsters.get(o.monsterId)?.name ?? o.monsterId}`,
                   current,
                   required: o.count,
                 };
-              if (o.type === "collect")
+              if (o.type === 'collect')
                 return {
                   text: `Thu ${c.items.get(o.itemId)?.name ?? o.itemId}`,
                   current,
@@ -2356,10 +2236,8 @@ export class GameView {
       entities: this.views.size,
       drawCalls: this.instrumentation.drawCallsCounter.current,
       activeMeshes: this.scene.getActiveMeshes().length,
-      quality: `${this.quality.mode}${this.quality.mode === "auto" ? `→${this.preset.level}` : ""}`,
-      chunks: envStats
-        ? `${envStats.activeChunks}/${envStats.totalChunks}`
-        : "-",
+      quality: `${this.quality.mode}${this.quality.mode === 'auto' ? `→${this.preset.level}` : ''}`,
+      chunks: envStats ? `${envStats.activeChunks}/${envStats.totalChunks}` : '-',
       envInstances: envStats?.instances ?? 0,
       assets: this.assetProgress,
     });

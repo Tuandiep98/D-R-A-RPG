@@ -1,7 +1,7 @@
 # Implementation Roadmap
 
 Tài liệu nguồn: `00_game_design_master.md` (Thiên Cơ Kỷ), `01_tech_stack_plan.md`, `02_assets_models_maps_plan.md`, `../decision_log.md`.
-Cập nhật: 2026-10-06.
+Cập nhật: 2026-10-08.
 
 Ký hiệu: ✅ xong · 🟡 có nền tảng/placeholder, cần hoàn thiện · ✋ cần người làm (art, thiết bị, quyết định) · ⬜ chưa làm.
 
@@ -74,6 +74,15 @@ Ký hiệu: ✅ xong · 🟡 có nền tảng/placeholder, cần hoàn thiện �
 
 ## Việc tiếp theo (tự động được)
 
+Ưu tiên combat theo yêu cầu mới: [plan ngũ hành và skill tám Đạo](04_combat_elements_skills_redesign.md). Thiết kế đã được ghi lại; runtime mới **chưa triển khai**. Các dấu ✅ combat ở trên chỉ phản ánh nền hiện tại.
+
+1. P0: contract năm hành, action/hitbox, khóa hành nhân vật và migration save/Lôi/loadout.
+2. P1: combat slice Kiếm/Lôi + Pistol + sói/robot; đủ năm hành, hiệu ứng basic, roll/blink/jump và skill projectile né được.
+3. P2: feel/combo, cả bảy skill Lôi, năm súng và Farm cùng luật hitbox.
+4. P3–P5: kit các Đạo còn lại, Hỗn Nguyên/đổi hành late game, balance và nghiệm thu thiết bị/latency. Gate chi tiết trong plan mới.
+
+Backlog hạ tầng/social hiện có:
+
 1. Kênh chat bang hội / thì thầm bạn bè (cần presence qua Redis giữa các room).
 2. Marketplace (escrow, khoá item trong giao dịch — tech plan §55.2).
 3. Impostor/billboard cho cây ở xa (simplify không giảm được lá dạng quad); LOD cho quái skinned.
@@ -90,3 +99,7 @@ Ký hiệu: ✅ xong · 🟡 có nền tảng/placeholder, cần hoàn thiện �
 - Tự làm: kit kiến trúc Đông phương, boss Guardian X-04 hai lớp vỏ, implant/visual cảnh giới (xem `../asset_sourcing.md`).
 - Lineup/palette board, model boss riêng, kit kiến trúc di tích, icon.
 - Hạ tầng thật: domain, VPS/Fly, Postgres managed, secret thật (`.env.example`).
+
+### Combat slice ngũ hành — 2026-10-08
+
+Đã triển khai luật năm hành trong YAML, chọn/khóa hành API–DB–sim, debug chọn hành, mobility chung, VFX hành cho basic/súng, projectile thật cho Lôi Xuyên Tâm/laser/kiếm khí, windup hitbox quái và auto quái cơ bản. Chi tiết trạng thái và giới hạn trong [plan combat § Bản triển khai đầu tiên](04_combat_elements_skills_redesign.md). Chưa đánh dấu toàn bộ P0/P1 hoàn tất: DamageSpec/timeline, rollout starter và nghiệm thu thiết bị/online vẫn còn; kit tám Đạo, đổi hành late game và balance tiếp tục ở P2–P5.

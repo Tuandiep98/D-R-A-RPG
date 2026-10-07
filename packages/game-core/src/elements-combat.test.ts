@@ -1,0 +1,218 @@
+import { CombatRulesSchema, SkillDefSchema } from '@rpg/game-data';
+import { describe, expect, it } from 'vitest';
+import { Rng } from './rng';
+import { applyDamage, rollHit } from './systems/combat';
+import { requestMobility } from './systems/mobility';
+import { makeContent } from './test-fixtures';
+import { World } from './world';
+
+const combat = CombatRulesSchema.parse({
+  id: 'combat_rules',
+  counters: { kim: 'moc', moc: 'tho', tho: 'thuy', thuy: 'hoa', hoa: 'kim' },
+  advantage: 1.15,
+  disadvantage: 0.9,
+  basicShare: 0.3,
+  skillShare: 0.7,
+  bufferSeconds: 0.2,
+  lateRealm: 'hoa_than',
+  farm: { radius: 10, leash: 14, reaction: 0.3, thinkInterval: 0.2, hpStop: 0.25, mpReserve: 0.25 },
+});
+const mobility = (['roll', 'blink', 'jump'] as const).map((action) =>
+  SkillDefSchema.parse({
+    id: `skill_${action}`,
+    name: action,
+    targeting: 'self',
+    mobility: action,
+    cooldown: 5,
+    duration: action === 'jump' ? 0.45 : 0.3,
+    dodgeWindow: action === 'jump' ? [0.1, 0.35] : [0.1, 0.2],
+    effects: [{ type: 'dash', distance: 3 }],
+  }),
+);
+const shot = SkillDefSchema.parse({
+  id: 'aimed_shot',
+  name: 'Shot',
+  targeting: 'point',
+  range: 10,
+  delivery: 'projectile',
+  projectileSpeed: 10,
+  cooldown: 1,
+  effects: [{ type: 'damage', multiplier: 1 }],
+});
+function setup() {
+  const base = makeContent({
+    character: { skills: [shot.id] },
+    monster: { combat: { range: 1.5, attackInterval: 1, windup: 0.55, arc: 90 } },
+  });
+  const content = {
+    ...base,
+    combat: new Map([[combat.id, combat]]),
+    skills: new Map([...base.skills, [shot.id, shot], ...mobility.map((s) => [s.id, s] as const)]),
+  };
+  const world = new World({ content, mapId: 'test_map' });
+  const id = world.spawnPlayer('hero', { element: 'moc', expression: 'thunder' });
+  const player = world.entities.get(id);
+  if (!player) throw new Error('missing player');
+  const mob = [...world.entities.values()].find((e) => e.kind === 'monster');
+  if (!mob) throw new Error('missing monster');
+  mob.ai = null;
+  mob.pos = { x: 0, z: 4 };
+  player.pos = { x: 0, z: 0 };
+  return { world, id, player, mob };
+}
+describe('authoritative element combat', () => {
+  it('evaluates all 25 matchups on only the elemental share', () => {
+    const { world, player, mob } = setup();
+    for (const a of ['kim', 'moc', 'thuy', 'hoa', 'tho'] as const)
+      for (const b of ['kim', 'moc', 'thuy', 'hoa', 'tho'] as const) {
+        player.element = a;
+        mob.element = b;
+        const base = rollHit(
+          {
+            ...world,
+            rng: new Rng(42),
+            content: world.content,
+            realms: world.realms,
+            tick: world.tick,
+          } as typeof world,
+          { ...player, element: null },
+          mob,
+          10,
+        );
+        const actual = rollHit(
+          {
+            ...world,
+            rng: new Rng(42),
+            content: world.content,
+            realms: world.realms,
+            tick: world.tick,
+          } as typeof world,
+          player,
+          mob,
+          10,
+        );
+        const factor =
+          combat.counters[a] === b
+            ? combat.advantage
+            : combat.counters[b] === a
+              ? combat.disadvantage
+              : 1;
+        expect(actual.amount).toBe(
+          Math.max(1, Math.round(base.amount * (1 + combat.basicShare * (factor - 1)))),
+        );
+      }
+  });
+  it('emits a projectile launch without applying damage until collision', () => {
+    const { world, id, mob } = setup();
+    const hp = mob.stats.hp;
+    world.enqueueIntent(id, { type: 'CAST_SKILL', skillId: shot.id, point: { x: 0, z: 8 } });
+    expect(world.step().some((e) => e.type === 'SKILL_PROJECTILE')).toBe(true);
+    expect(mob.stats.hp).toBe(hp);
+    for (let i = 0; i < 12; i++) world.step();
+    expect(mob.stats.hp).toBeLessThan(hp);
+    expect(world.skillProjectiles).toHaveLength(0);
+  });
+  it('lets moving targets leave projectile paths', () => {
+    const { world, id, mob } = setup();
+    const hp = mob.stats.hp;
+    world.enqueueIntent(id, { type: 'CAST_SKILL', skillId: shot.id, point: { x: 0, z: 8 } });
+    world.step();
+    mob.pos.x = 3;
+    for (let i = 0; i < 25; i++) world.step();
+    expect(mob.stats.hp).toBe(hp);
+  });
+  it('rolls on ticks, shares cooldown and cannot cross a wall', () => {
+    const { world, player } = setup();
+    world.obstacles.push({ pos: { x: 1.2, z: 0 }, radius: 0.4 });
+    expect(requestMobility(world, player, 'roll', { x: 4, z: 0 })).toBe(true);
+    for (let i = 0; i < 8; i++) world.step();
+    expect(player.pos.x).toBeLessThan(1);
+    expect(player.mobility).toBeNull();
+    expect(requestMobility(world, player, 'roll')).toBe(false);
+  });
+  it('a monster windup can miss when the player exits its locked cone', () => {
+    const { world, player, mob } = setup();
+    mob.pos = { x: 0, z: 1 };
+    mob.combat.targetId = player.id;
+    const hp = player.stats.hp;
+    world.step();
+    expect(mob.monsterSwing).not.toBeNull();
+    expect(player.stats.hp).toBe(hp);
+    player.pos = { x: 4, z: 1 };
+    for (let i = 0; i < 12; i++) world.step();
+    expect(player.stats.hp).toBe(hp);
+  });
+  it('preserves affinity across map/save round trips', () => {
+    const { world, id } = setup();
+    const save = world.exportPlayer(id);
+    if (!save) throw new Error('missing save');
+    const other = new World({ content: world.content, mapId: 'test_map' });
+    const next = other.spawnPlayer('hero', { save });
+    expect(other.playerState(next)).toMatchObject({ element: 'moc', expression: 'thunder' });
+  });
+  it('manual steering disables farm on the next tick', () => {
+    const { world, id, player } = setup();
+    world.enqueueIntent(id, { type: 'SET_FARM', enabled: true });
+    world.step();
+    expect(player.player?.farm.enabled).toBe(true);
+    world.enqueueIntent(id, { type: 'MOVE_DIR', dir: { x: 1, z: 0 } });
+    world.step();
+    expect(player.player?.farm.enabled).toBe(false);
+  });
+  it('uses the roll window, and jump only avoids low ground attacks', () => {
+    const { world, player, mob } = setup();
+    const hp = player.stats.hp;
+    expect(requestMobility(world, player, 'roll')).toBe(true);
+    for (let i = 0; i < 2; i++) world.step();
+    applyDamage(world, mob, player, 10, false, null);
+    expect(player.stats.hp).toBe(hp);
+    for (let i = 0; i < 3; i++) world.step();
+    applyDamage(world, mob, player, 10, false, null);
+    expect(player.stats.hp).toBe(hp - 10);
+    player.mobility = null;
+    expect(requestMobility(world, player, 'jump')).toBe(true);
+    for (let i = 0; i < 3; i++) world.step();
+    applyDamage(world, mob, player, 10, false, null, {
+      hit: 'solid',
+      heavy: false,
+      groundLow: true,
+    });
+    expect(player.stats.hp).toBe(hp - 10);
+    applyDamage(world, mob, player, 10, false, null);
+    expect(player.stats.hp).toBe(hp - 20);
+  });
+  it('blocks a projectile at a wall before a body, but hits a body before the wall', () => {
+    for (const wall of [2, 6]) {
+      const { world, id, mob } = setup();
+      const hp = mob.stats.hp;
+      world.obstacles.push({ pos: { x: 0, z: wall }, radius: 0.3 });
+      world.enqueueIntent(id, { type: 'CAST_SKILL', skillId: shot.id, point: { x: 0, z: 8 } });
+      for (let i = 0; i < 20; i++) world.step();
+      expect(mob.stats.hp < hp).toBe(wall === 6);
+    }
+  });
+  it('auto damages monsters through normal casts and stops at low health', () => {
+    const { world, id, player, mob } = setup();
+    const hp = mob.stats.hp;
+    world.enqueueIntent(id, { type: 'SET_FARM', enabled: true });
+    for (let i = 0; i < 25; i++) world.step();
+    expect(mob.stats.hp).toBeLessThan(hp);
+    player.stats.hp = 1;
+    world.step();
+    expect(player.player?.farm.enabled).toBe(false);
+  });
+  it('keeps mobility cooldowns across a new world', () => {
+    const { world, id, player } = setup();
+    expect(requestMobility(world, player, 'roll')).toBe(true);
+    world.step();
+    const save = world.exportPlayer(id);
+    if (!save) throw new Error('missing save');
+    const other = new World({ content: world.content, mapId: 'test_map' });
+    const next = other.spawnPlayer('hero', { save });
+    const restored = other.entities.get(next);
+    if (!restored) throw new Error('missing player');
+    expect(requestMobility(other, restored, 'roll')).toBe(false);
+    for (let i = 0; i < 100; i++) other.step();
+    expect(requestMobility(other, restored, 'roll')).toBe(true);
+  });
+});

@@ -1,6 +1,6 @@
-import cors from "@fastify/cors";
-import helmet from "@fastify/helmet";
-import rateLimit from "@fastify/rate-limit";
+import cors from '@fastify/cors';
+import helmet from '@fastify/helmet';
+import rateLimit from '@fastify/rate-limit';
 import {
   ACCESS_TTL_SECONDS,
   type AccessClaims,
@@ -15,12 +15,17 @@ import {
   UsernameSchema,
   verifyPassword,
   verifyTotp,
-} from "@rpg/auth";
-import type { ContentBundle } from "@rpg/game-data";
-import type { GameRepository } from "@rpg/persistence";
-import Fastify, { type FastifyRequest } from "fastify";
-import { z } from "zod";
-import { addItemToSave } from "./items";
+} from '@rpg/auth';
+import {
+  type ContentBundle,
+  compatibleExpression,
+  ElementSchema,
+  ExpressionSchema,
+} from '@rpg/game-data';
+import type { GameRepository } from '@rpg/persistence';
+import Fastify, { type FastifyRequest } from 'fastify';
+import { z } from 'zod';
+import { addItemToSave } from './items';
 
 export interface ApiDeps {
   repo: GameRepository;
@@ -41,9 +46,9 @@ const CharacterNameSchema = z
   .trim()
   .min(2)
   .max(20)
-  .regex(/^[\p{L}\p{N} _]+$/u, "letters, digits, spaces");
+  .regex(/^[\p{L}\p{N} _]+$/u, 'letters, digits, spaces');
 
-declare module "fastify" {
+declare module 'fastify' {
   interface FastifyRequest {
     claims?: AccessClaims;
   }
@@ -63,9 +68,7 @@ function parse<T>(schema: z.ZodType<T>, value: unknown): T {
   if (!r.success)
     throw new HttpError(
       400,
-      r.error.issues
-        .map((i) => `${i.path.join(".") || "body"}: ${i.message}`)
-        .join("; "),
+      r.error.issues.map((i) => `${i.path.join('.') || 'body'}: ${i.message}`).join('; '),
     );
   return r.data;
 }
@@ -79,12 +82,8 @@ function parse<T>(schema: z.ZodType<T>, value: unknown): T {
 export async function buildApi(deps: ApiDeps) {
   const app = Fastify({
     logger: {
-      level: deps.logLevel ?? "info",
-      redact: [
-        "req.headers.authorization",
-        "body.password",
-        "body.refreshToken",
-      ],
+      level: deps.logLevel ?? 'info',
+      redact: ['req.headers.authorization', 'body.password', 'body.refreshToken'],
     },
     bodyLimit: 32 * 1024,
     trustProxy: true,
@@ -92,47 +91,43 @@ export async function buildApi(deps: ApiDeps) {
   await app.register(helmet);
   await app.register(cors, { origin: deps.corsOrigins, credentials: false });
   if (deps.rateLimit !== false) {
-    await app.register(rateLimit, { max: 120, timeWindow: "1 minute" });
+    await app.register(rateLimit, { max: 120, timeWindow: '1 minute' });
   }
   const strict =
-    deps.rateLimit !== false
-      ? { config: { rateLimit: { max: 10, timeWindow: "1 minute" } } }
-      : {};
+    deps.rateLimit !== false ? { config: { rateLimit: { max: 10, timeWindow: '1 minute' } } } : {};
 
   app.setErrorHandler((err, _req, reply) => {
-    if (err instanceof HttpError)
-      return reply.status(err.status).send({ error: err.message });
+    if (err instanceof HttpError) return reply.status(err.status).send({ error: err.message });
     const status = (err as { statusCode?: number }).statusCode ?? 500;
     if (status >= 500) app.log.error(err);
     return reply.status(status).send({
-      error: status >= 500 ? "internal error" : (err as Error).message,
+      error: status >= 500 ? 'internal error' : (err as Error).message,
     });
   });
 
   const authenticate = async (req: FastifyRequest) => {
-    const header = req.headers.authorization ?? "";
-    const token = header.startsWith("Bearer ") ? header.slice(7) : "";
+    const header = req.headers.authorization ?? '';
+    const token = header.startsWith('Bearer ') ? header.slice(7) : '';
     try {
       req.claims = await deps.tokens.verifyAccess(token);
     } catch {
-      throw new HttpError(401, "invalid or expired token");
+      throw new HttpError(401, 'invalid or expired token');
     }
   };
   const requireStaff = async (req: FastifyRequest) => {
     await authenticate(req);
     const c = req.claims;
-    if (!c || (c.role !== "gm" && c.role !== "admin"))
-      throw new HttpError(403, "staff only");
-    if (!c.mfa) throw new HttpError(403, "two-factor authentication required");
+    if (!c || (c.role !== 'gm' && c.role !== 'admin')) throw new HttpError(403, 'staff only');
+    if (!c.mfa) throw new HttpError(403, 'two-factor authentication required');
   };
   const claimsOf = (req: FastifyRequest): AccessClaims => {
-    if (!req.claims) throw new HttpError(401, "unauthenticated");
+    if (!req.claims) throw new HttpError(401, 'unauthenticated');
     return req.claims;
   };
 
   async function issueTokens(
     accountId: string,
-    role: AccessClaims["role"],
+    role: AccessClaims['role'],
     mfa: boolean,
     familyId: string = crypto.randomUUID(),
   ) {
@@ -150,25 +145,19 @@ export async function buildApi(deps: ApiDeps) {
     };
   }
 
-  app.get("/health", async () => ({ ok: true }));
+  app.get('/health', async () => ({ ok: true }));
 
   // ---- Auth -------------------------------------------------------------
 
-  app.post("/auth/register", strict, async (req, reply) => {
-    const body = parse(
-      z.object({ username: UsernameSchema, password: PasswordSchema }),
-      req.body,
-    );
+  app.post('/auth/register', strict, async (req, reply) => {
+    const body = parse(z.object({ username: UsernameSchema, password: PasswordSchema }), req.body);
     if (await deps.repo.findAccountByUsername(body.username))
-      throw new HttpError(409, "username taken");
-    const id = await deps.repo.createAccount(
-      body.username,
-      await hashPassword(body.password),
-    );
+      throw new HttpError(409, 'username taken');
+    const id = await deps.repo.createAccount(body.username, await hashPassword(body.password));
     return reply.status(201).send({ accountId: id });
   });
 
-  app.post("/auth/login", strict, async (req) => {
+  app.post('/auth/login', strict, async (req) => {
     const body = parse(
       z.object({
         username: z.string().max(64),
@@ -179,76 +168,57 @@ export async function buildApi(deps: ApiDeps) {
     );
     const account = await deps.repo.findAccountByUsername(body.username);
     // Same error for unknown user and wrong password (no account enumeration).
-    if (
-      !account ||
-      !(await verifyPassword(account.passwordHash, body.password))
-    ) {
-      throw new HttpError(401, "invalid credentials");
+    if (!account || !(await verifyPassword(account.passwordHash, body.password))) {
+      throw new HttpError(401, 'invalid credentials');
     }
     if (account.bannedUntil && account.bannedUntil > new Date())
-      throw new HttpError(403, "account banned");
+      throw new HttpError(403, 'account banned');
     let mfa = false;
     if (account.totpSecret) {
       if (!body.totp) return { mfaRequired: true };
-      if (!verifyTotp(account.totpSecret, body.totp))
-        throw new HttpError(401, "invalid code");
+      if (!verifyTotp(account.totpSecret, body.totp)) throw new HttpError(401, 'invalid code');
       mfa = true;
     }
     return issueTokens(account.id, account.role, mfa);
   });
 
-  app.post("/auth/refresh", strict, async (req) => {
-    const body = parse(
-      z.object({ refreshToken: z.string().min(10).max(200) }),
-      req.body,
-    );
-    const row = await deps.repo.findRefreshToken(
-      hashRefreshToken(body.refreshToken),
-    );
-    if (!row || row.expiresAt < new Date())
-      throw new HttpError(401, "invalid refresh token");
+  app.post('/auth/refresh', strict, async (req) => {
+    const body = parse(z.object({ refreshToken: z.string().min(10).max(200) }), req.body);
+    const row = await deps.repo.findRefreshToken(hashRefreshToken(body.refreshToken));
+    if (!row || row.expiresAt < new Date()) throw new HttpError(401, 'invalid refresh token');
     if (row.revokedAt) {
       // A rotated token was reused: assume theft, revoke the whole chain.
       await deps.repo.revokeTokenFamily(row.familyId);
-      await deps.repo.audit(
-        row.accountId,
-        "refresh_token_reuse",
-        row.accountId,
-      );
-      throw new HttpError(401, "refresh token reused; please log in again");
+      await deps.repo.audit(row.accountId, 'refresh_token_reuse', row.accountId);
+      throw new HttpError(401, 'refresh token reused; please log in again');
     }
     const account = await deps.repo.getAccount(row.accountId);
     if (!account || (account.bannedUntil && account.bannedUntil > new Date()))
-      throw new HttpError(401, "account unavailable");
+      throw new HttpError(401, 'account unavailable');
     await deps.repo.revokeRefreshToken(row.id);
     // MFA is not carried over: staff re-enter a code after the access token expires.
     return issueTokens(account.id, account.role, false, row.familyId);
   });
 
-  app.post("/auth/logout", async (req, reply) => {
-    const body = parse(
-      z.object({ refreshToken: z.string().max(200) }),
-      req.body,
-    );
-    const row = await deps.repo.findRefreshToken(
-      hashRefreshToken(body.refreshToken),
-    );
+  app.post('/auth/logout', async (req, reply) => {
+    const body = parse(z.object({ refreshToken: z.string().max(200) }), req.body);
+    const row = await deps.repo.findRefreshToken(hashRefreshToken(body.refreshToken));
     if (row) await deps.repo.revokeTokenFamily(row.familyId);
     return reply.status(204).send();
   });
 
-  app.post("/auth/mfa/setup", { preHandler: authenticate }, async (req) => {
+  app.post('/auth/mfa/setup', { preHandler: authenticate }, async (req) => {
     const c = claimsOf(req);
     const account = await deps.repo.getAccount(c.sub);
-    if (!account) throw new HttpError(404, "account not found");
-    if (account.totpSecret) throw new HttpError(409, "already enabled");
+    if (!account) throw new HttpError(404, 'account not found');
+    if (account.totpSecret) throw new HttpError(409, 'already enabled');
     const secret = newTotpSecret();
     // Stored as pending: becomes active only after the first valid code (enable).
-    await deps.repo.audit(c.sub, "mfa_setup", c.sub);
+    await deps.repo.audit(c.sub, 'mfa_setup', c.sub);
     return { secret, uri: totpUri(secret, account.username) };
   });
 
-  app.post("/auth/mfa/enable", { preHandler: authenticate }, async (req) => {
+  app.post('/auth/mfa/enable', { preHandler: authenticate }, async (req) => {
     const c = claimsOf(req);
     const body = parse(
       z.object({
@@ -257,78 +227,96 @@ export async function buildApi(deps: ApiDeps) {
       }),
       req.body,
     );
-    if (!verifyTotp(body.secret, body.code))
-      throw new HttpError(400, "invalid code");
+    if (!verifyTotp(body.secret, body.code)) throw new HttpError(400, 'invalid code');
     await deps.repo.setTotpSecret(c.sub, body.secret);
-    await deps.repo.audit(c.sub, "mfa_enabled", c.sub);
+    await deps.repo.audit(c.sub, 'mfa_enabled', c.sub);
     return { enabled: true };
   });
 
   // ---- Characters -------------------------------------------------------
 
-  app.get("/characters", { preHandler: authenticate }, async (req) => {
+  app.get('/characters', { preHandler: authenticate }, async (req) => {
     return { characters: await deps.repo.listCharacters(claimsOf(req).sub) };
   });
 
-  app.post("/characters", { preHandler: authenticate }, async (req, reply) => {
+  app.post('/characters', { preHandler: authenticate }, async (req, reply) => {
     const c = claimsOf(req);
     const body = parse(
       z.object({
         name: CharacterNameSchema,
         characterDefId: z.string().optional(),
+        element: ElementSchema.default('moc'),
+        expression: ExpressionSchema.default('base'),
       }),
       req.body,
     );
+    if (!compatibleExpression(body.element, body.expression))
+      throw new HttpError(400, 'expression does not match element');
     const existing = await deps.repo.listCharacters(c.sub);
     if (existing.length >= MAX_CHARACTERS)
       throw new HttpError(409, `at most ${MAX_CHARACTERS} characters`);
     // Default class: player_default when present (test kits like player_gunner sort after it anyway).
     const defId =
       body.characterDefId ??
-      (deps.content.characters.has("player_default")
-        ? "player_default"
+      (deps.content.characters.has('player_default')
+        ? 'player_default'
         : [...deps.content.characters.keys()][0]);
     if (!defId || !deps.content.characters.has(defId))
-      throw new HttpError(400, "unknown character type");
-    const startMap = deps.content.maps.has("map_sandbox_01")
-      ? "map_sandbox_01"
+      throw new HttpError(400, 'unknown character type');
+    const startMap = deps.content.maps.has('map_sandbox_01')
+      ? 'map_sandbox_01'
       : [...deps.content.maps.keys()][0];
     try {
       const id = await deps.repo.createCharacter({
         accountId: c.sub,
         name: body.name,
         characterDefId: defId,
+        element: body.element,
+        expression: body.expression,
         mapId: startMap as string,
       });
       return reply.status(201).send({ id });
     } catch {
-      throw new HttpError(409, "name taken");
+      throw new HttpError(409, 'name taken');
     }
   });
 
+  app.post('/characters/:id/element', { preHandler: authenticate }, async (req, reply) => {
+    const { id } = parse(z.object({ id: z.string().uuid() }), req.params);
+    const body = parse(
+      z.strictObject({ element: ElementSchema, expression: ExpressionSchema.default('base') }),
+      req.body,
+    );
+    if (!compatibleExpression(body.element, body.expression))
+      throw new HttpError(400, 'expression does not match element');
+    if (
+      !(await deps.repo.chooseLegacyElement(id, claimsOf(req).sub, body.element, body.expression))
+    )
+      throw new HttpError(409, 'element already chosen or character unavailable');
+    return reply.status(204).send();
+  });
+
   /** Exchanges an account token for a game-session token bound to one character. */
-  app.post(
-    "/characters/:id/session",
-    { preHandler: authenticate },
-    async (req) => {
-      const c = claimsOf(req);
-      const { id } = parse(z.object({ id: z.string().uuid() }), req.params);
-      const character = await deps.repo.loadCharacter(id);
-      if (!character || character.accountId !== c.sub)
-        throw new HttpError(404, "character not found");
-      const accessToken = await deps.tokens.signAccess({
-        sub: c.sub,
-        role: c.role,
-        chr: id,
-      });
-      return {
-        accessToken,
-        mapId: character.mapId,
-        gameServerUrl: deps.gameServerUrl,
-        expiresIn: ACCESS_TTL_SECONDS,
-      };
-    },
-  );
+  app.post('/characters/:id/session', { preHandler: authenticate }, async (req) => {
+    const c = claimsOf(req);
+    const { id } = parse(z.object({ id: z.string().uuid() }), req.params);
+    const character = await deps.repo.loadCharacter(id);
+    if (!character || character.accountId !== c.sub)
+      throw new HttpError(404, 'character not found');
+    if (!character.element)
+      throw new HttpError(409, 'choose your element before entering the world');
+    const accessToken = await deps.tokens.signAccess({
+      sub: c.sub,
+      role: c.role,
+      chr: id,
+    });
+    return {
+      accessToken,
+      mapId: character.mapId,
+      gameServerUrl: deps.gameServerUrl,
+      expiresIn: ACCESS_TTL_SECONDS,
+    };
+  });
 
   // ---- Social: friends and guilds (tech plan Phase 8) -----------------------
 
@@ -338,7 +326,7 @@ export async function buildApi(deps: ApiDeps) {
     const { id } = parse(z.object({ id: z.string().uuid() }), req.params);
     const character = await deps.repo.loadCharacter(id);
     if (!character || character.accountId !== c.sub)
-      throw new HttpError(404, "character not found");
+      throw new HttpError(404, 'character not found');
     return id;
   };
   const GuildNameSchema = z
@@ -346,121 +334,80 @@ export async function buildApi(deps: ApiDeps) {
     .trim()
     .min(3)
     .max(24)
-    .regex(/^[\p{L}\p{N} ]+$/u, "letters, digits, spaces");
+    .regex(/^[\p{L}\p{N} ]+$/u, 'letters, digits, spaces');
 
-  app.get("/characters/:id/social", { preHandler: authenticate }, async (req) =>
+  app.get('/characters/:id/social', { preHandler: authenticate }, async (req) =>
     deps.repo.socialOf(await ownCharacter(req)),
   );
 
-  app.post(
-    "/characters/:id/friends",
-    { preHandler: authenticate },
-    async (req) => {
-      const me = await ownCharacter(req);
-      const { name } = parse(
-        z.object({ name: z.string().min(2).max(20) }),
-        req.body,
+  app.post('/characters/:id/friends', { preHandler: authenticate }, async (req) => {
+    const me = await ownCharacter(req);
+    const { name } = parse(z.object({ name: z.string().min(2).max(20) }), req.body);
+    const other = await deps.repo.findCharacterByName(name);
+    if (!other) throw new HttpError(404, 'character not found');
+    if (other.id === me) throw new HttpError(400, 'cannot befriend yourself');
+    return { status: await deps.repo.requestFriend(me, other.id) };
+  });
+
+  app.post('/characters/:id/friends/:otherId/accept', { preHandler: authenticate }, async (req) => {
+    const me = await ownCharacter(req);
+    const { otherId } = parse(z.object({ otherId: z.string().uuid() }), req.params);
+    if (!(await deps.repo.acceptFriend(me, otherId))) throw new HttpError(404, 'no such request');
+    return { ok: true };
+  });
+
+  app.delete('/characters/:id/friends/:otherId', { preHandler: authenticate }, async (req) => {
+    const me = await ownCharacter(req);
+    const { otherId } = parse(z.object({ otherId: z.string().uuid() }), req.params);
+    await deps.repo.removeFriend(me, otherId);
+    return { ok: true };
+  });
+
+  app.post('/characters/:id/guild', { preHandler: authenticate }, async (req, reply) => {
+    const me = await ownCharacter(req);
+    const { name } = parse(z.object({ name: GuildNameSchema }), req.body);
+    try {
+      return reply.status(201).send({ guildId: await deps.repo.createGuild(me, name) });
+    } catch (err) {
+      throw new HttpError(
+        409,
+        /already/.test((err as Error).message) ? 'already in a guild' : 'guild name taken',
       );
-      const other = await deps.repo.findCharacterByName(name);
-      if (!other) throw new HttpError(404, "character not found");
-      if (other.id === me) throw new HttpError(400, "cannot befriend yourself");
-      return { status: await deps.repo.requestFriend(me, other.id) };
-    },
-  );
+    }
+  });
 
-  app.post(
-    "/characters/:id/friends/:otherId/accept",
-    { preHandler: authenticate },
-    async (req) => {
-      const me = await ownCharacter(req);
-      const { otherId } = parse(
-        z.object({ otherId: z.string().uuid() }),
-        req.params,
-      );
-      if (!(await deps.repo.acceptFriend(me, otherId)))
-        throw new HttpError(404, "no such request");
-      return { ok: true };
-    },
-  );
+  app.post('/characters/:id/guild/join', { preHandler: authenticate }, async (req) => {
+    const me = await ownCharacter(req);
+    const { name } = parse(z.object({ name: GuildNameSchema }), req.body);
+    try {
+      return { guildId: await deps.repo.joinGuild(me, name) };
+    } catch (err) {
+      throw new HttpError(409, (err as Error).message);
+    }
+  });
 
-  app.delete(
-    "/characters/:id/friends/:otherId",
-    { preHandler: authenticate },
-    async (req) => {
-      const me = await ownCharacter(req);
-      const { otherId } = parse(
-        z.object({ otherId: z.string().uuid() }),
-        req.params,
-      );
-      await deps.repo.removeFriend(me, otherId);
-      return { ok: true };
-    },
-  );
-
-  app.post(
-    "/characters/:id/guild",
-    { preHandler: authenticate },
-    async (req, reply) => {
-      const me = await ownCharacter(req);
-      const { name } = parse(z.object({ name: GuildNameSchema }), req.body);
-      try {
-        return reply
-          .status(201)
-          .send({ guildId: await deps.repo.createGuild(me, name) });
-      } catch (err) {
-        throw new HttpError(
-          409,
-          /already/.test((err as Error).message)
-            ? "already in a guild"
-            : "guild name taken",
-        );
-      }
-    },
-  );
-
-  app.post(
-    "/characters/:id/guild/join",
-    { preHandler: authenticate },
-    async (req) => {
-      const me = await ownCharacter(req);
-      const { name } = parse(z.object({ name: GuildNameSchema }), req.body);
-      try {
-        return { guildId: await deps.repo.joinGuild(me, name) };
-      } catch (err) {
-        throw new HttpError(409, (err as Error).message);
-      }
-    },
-  );
-
-  app.post(
-    "/characters/:id/guild/leave",
-    { preHandler: authenticate },
-    async (req) => {
-      await deps.repo.leaveGuild(await ownCharacter(req));
-      return { ok: true };
-    },
-  );
+  app.post('/characters/:id/guild/leave', { preHandler: authenticate }, async (req) => {
+    await deps.repo.leaveGuild(await ownCharacter(req));
+    return { ok: true };
+  });
 
   // ---- Admin (tech plan §40) ---------------------------------------------
 
   const staff = { preHandler: requireStaff };
 
-  app.get("/admin/characters", staff, async (req) => {
-    const { q } = parse(
-      z.object({ q: z.string().max(40).default("") }),
-      req.query,
-    );
+  app.get('/admin/characters', staff, async (req) => {
+    const { q } = parse(z.object({ q: z.string().max(40).default('') }), req.query);
     return { characters: await deps.repo.searchCharacters(q) };
   });
 
-  app.get("/admin/characters/:id", staff, async (req) => {
+  app.get('/admin/characters/:id', staff, async (req) => {
     const { id } = parse(z.object({ id: z.string().uuid() }), req.params);
     const character = await deps.repo.loadCharacter(id);
-    if (!character) throw new HttpError(404, "character not found");
+    if (!character) throw new HttpError(404, 'character not found');
     return { character, ledger: await deps.repo.ledgerFor(id) };
   });
 
-  app.post("/admin/characters/:id/give-item", staff, async (req) => {
+  app.post('/admin/characters/:id/give-item', staff, async (req) => {
     const c = claimsOf(req);
     const { id } = parse(z.object({ id: z.string().uuid() }), req.params);
     const body = parse(
@@ -472,25 +419,25 @@ export async function buildApi(deps: ApiDeps) {
       req.body,
     );
     const item = deps.content.items.get(body.itemId);
-    if (!item) throw new HttpError(400, "unknown item");
+    if (!item) throw new HttpError(400, 'unknown item');
     const character = await deps.repo.loadCharacter(id);
-    if (!character) throw new HttpError(404, "character not found");
+    if (!character) throw new HttpError(404, 'character not found');
     const save = addItemToSave(character.save, item, body.count);
     await deps.repo.saveCharacter(id, save, {
       mapId: character.mapId,
       x: character.x,
       z: character.z,
     });
-    await deps.repo.audit(c.sub, "give_item", id, body);
+    await deps.repo.audit(c.sub, 'give_item', id, body);
     return { ok: true, inventory: save.inventory };
   });
 
-  app.post("/admin/accounts/:id/sanction", staff, async (req) => {
+  app.post('/admin/accounts/:id/sanction', staff, async (req) => {
     const c = claimsOf(req);
     const { id } = parse(z.object({ id: z.string().uuid() }), req.params);
     const body = parse(
       z.object({
-        kind: z.enum(["ban", "mute"]),
+        kind: z.enum(['ban', 'mute']),
         hours: z
           .number()
           .min(0)
@@ -499,22 +446,21 @@ export async function buildApi(deps: ApiDeps) {
       }),
       req.body,
     );
-    const until =
-      body.hours === 0 ? null : new Date(Date.now() + body.hours * 3_600_000);
+    const until = body.hours === 0 ? null : new Date(Date.now() + body.hours * 3_600_000);
     await deps.repo.setSanction(id, body.kind, until);
     await deps.repo.audit(c.sub, body.kind, id, body);
     return { ok: true, until };
   });
 
-  app.get("/admin/audit", staff, async () => ({
+  app.get('/admin/audit', staff, async () => ({
     entries: await deps.repo.listAudit(200),
   }));
 
-  app.get("/leaderboard", async () => ({
+  app.get('/leaderboard', async () => ({
     leaderboard: await deps.repo.leaderboard(20),
   }));
 
-  app.get("/content/items", async () => ({
+  app.get('/content/items', async () => ({
     items: [...deps.content.items.values()].map((i) => ({
       id: i.id,
       name: i.name,

@@ -1,10 +1,13 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 /**
  * Wire contract between client and simulation host (local or server).
  * Bump PROTOCOL_VERSION on any breaking change to these schemas.
  */
-export const PROTOCOL_VERSION = 8;
+export const PROTOCOL_VERSION = 9;
+export const ElementSchema = z.enum(['kim', 'moc', 'thuy', 'hoa', 'tho']);
+export type Element = z.infer<typeof ElementSchema>;
+export const ExpressionSchema = z.enum(['base', 'thunder', 'ice']);
 
 /** Max world coordinate magnitude accepted from a client, in metres. */
 export const MAX_COORD = 10_000;
@@ -27,30 +30,30 @@ export const ItemInstanceIdSchema = z.string().min(1).max(64);
 export type ItemInstanceId = z.infer<typeof ItemInstanceIdSchema>;
 
 export const EquipSlotSchema = z.enum([
-  "main_hand",
-  "off_hand",
-  "head",
-  "chest",
-  "gloves",
-  "pants",
-  "boots",
-  "back",
-  "artifact",
+  'main_hand',
+  'off_hand',
+  'head',
+  'chest',
+  'gloves',
+  'pants',
+  'boots',
+  'back',
+  'artifact',
 ]);
 
 // ---------------------------------------------------------------------------
 // Client → host. Clients send intents only (tech plan §21).
 // ---------------------------------------------------------------------------
 
-export const IntentSchema = z.discriminatedUnion("type", [
-  z.strictObject({ type: z.literal("MOVE_TO"), target: Vec2Schema }),
+export const IntentSchema = z.discriminatedUnion('type', [
+  z.strictObject({ type: z.literal('MOVE_TO'), target: Vec2Schema }),
   /**
    * Direct movement (WASD / joystick / left stick): a world-space XZ direction,
    * length ≤ 1 (the host normalises it), or null to release. Clients send it on
    * change only.
    */
   z.strictObject({
-    type: z.literal("MOVE_DIR"),
+    type: z.literal('MOVE_DIR'),
     dir: z
       .object({
         x: z.number().finite().min(-1).max(1),
@@ -64,7 +67,7 @@ export const IntentSchema = z.discriminatedUnion("type", [
    * the held direction, then aim assist, then the current facing.
    */
   z.strictObject({
-    type: z.literal("BASIC_ATTACK"),
+    type: z.literal('BASIC_ATTACK'),
     aim: Vec2Schema.nullable().optional(),
   }),
   /**
@@ -75,104 +78,108 @@ export const IntentSchema = z.discriminatedUnion("type", [
    * BASIC_ATTACK.
    */
   z.strictObject({
-    type: z.literal("TRIGGER"),
+    type: z.literal('TRIGGER'),
     held: z.boolean(),
     aim: Vec2Schema.nullable().optional(),
     /** Selected hostile to keep aiming at when there is no aim point (touch / gamepad). */
     targetId: EntityIdSchema.optional(),
   }),
   /** Reload the main-hand ranged weapon now (also starts by itself when it runs dry). */
-  z.strictObject({ type: z.literal("RELOAD") }),
+  z.strictObject({ type: z.literal('RELOAD') }),
   z.strictObject({
-    type: z.literal("ATTACK_TARGET"),
+    type: z.literal('ATTACK_TARGET'),
     targetId: EntityIdSchema,
   }),
-  z.strictObject({ type: z.literal("STOP") }),
+  z.strictObject({ type: z.literal('STOP') }),
   z.strictObject({
-    type: z.literal("CAST_SKILL"),
+    type: z.literal('MOBILITY'),
+    action: z.enum(['roll', 'blink', 'jump']),
+    point: Vec2Schema.optional(),
+  }),
+  z.strictObject({ type: z.literal('SET_FARM'), enabled: z.boolean() }),
+  z.strictObject({
+    type: z.literal('CAST_SKILL'),
     skillId: contentId,
     targetId: EntityIdSchema.optional(),
     point: Vec2Schema.optional(),
   }),
-  z.strictObject({ type: z.literal("PICKUP"), lootId: EntityIdSchema }),
-  z.strictObject({ type: z.literal("INTERACT"), entityId: EntityIdSchema }),
+  z.strictObject({ type: z.literal('PICKUP'), lootId: EntityIdSchema }),
+  z.strictObject({ type: z.literal('INTERACT'), entityId: EntityIdSchema }),
   z.strictObject({
-    type: z.literal("EQUIP"),
+    type: z.literal('EQUIP'),
     instanceId: ItemInstanceIdSchema,
   }),
-  z.strictObject({ type: z.literal("UNEQUIP"), slot: EquipSlotSchema }),
+  z.strictObject({ type: z.literal('UNEQUIP'), slot: EquipSlotSchema }),
   z.strictObject({
-    type: z.literal("USE_ITEM"),
+    type: z.literal('USE_ITEM'),
     instanceId: ItemInstanceIdSchema,
   }),
   z.strictObject({
-    type: z.literal("QUEST_ACCEPT"),
+    type: z.literal('QUEST_ACCEPT'),
     npcId: EntityIdSchema,
     questId: contentId,
   }),
   z.strictObject({
-    type: z.literal("QUEST_TURN_IN"),
+    type: z.literal('QUEST_TURN_IN'),
     npcId: EntityIdSchema,
     questId: contentId,
   }),
   z.strictObject({
-    type: z.literal("SHOP_BUY"),
+    type: z.literal('SHOP_BUY'),
     npcId: EntityIdSchema,
     itemId: contentId,
     count: z.number().int().min(1).max(99),
   }),
   z.strictObject({
-    type: z.literal("SHOP_SELL"),
+    type: z.literal('SHOP_SELL'),
     npcId: EntityIdSchema,
     instanceId: ItemInstanceIdSchema,
     count: z.number().int().min(1).max(999),
   }),
   z.strictObject({
-    type: z.literal("CRAFT"),
+    type: z.literal('CRAFT'),
     npcId: EntityIdSchema,
     recipeId: contentId,
   }),
   z.strictObject({
-    type: z.literal("UPGRADE"),
+    type: z.literal('UPGRADE'),
     npcId: EntityIdSchema,
     instanceId: ItemInstanceIdSchema,
   }),
-  z.strictObject({ type: z.literal("PARTY_INVITE"), targetId: EntityIdSchema }),
-  z.strictObject({ type: z.literal("PARTY_ACCEPT"), fromId: EntityIdSchema }),
-  z.strictObject({ type: z.literal("PARTY_LEAVE") }),
+  z.strictObject({ type: z.literal('PARTY_INVITE'), targetId: EntityIdSchema }),
+  z.strictObject({ type: z.literal('PARTY_ACCEPT'), fromId: EntityIdSchema }),
+  z.strictObject({ type: z.literal('PARTY_LEAVE') }),
   /** Open a cultivation node (no character level — master plan §31). */
-  z.strictObject({ type: z.literal("OPEN_NODE"), nodeId: contentId }),
+  z.strictObject({ type: z.literal('OPEN_NODE'), nodeId: contentId }),
   /** Attempt to break through to the next realm. */
-  z.strictObject({ type: z.literal("BREAKTHROUGH") }),
+  z.strictObject({ type: z.literal('BREAKTHROUGH') }),
 ]);
 export type Intent = z.infer<typeof IntentSchema>;
-export type IntentType = Intent["type"];
+export type IntentType = Intent['type'];
 
 // ---------------------------------------------------------------------------
 // Host → client: public world state (everyone in the AOI sees it)
 // ---------------------------------------------------------------------------
 
-export const EntityKindSchema = z.enum([
-  "player",
-  "monster",
-  "loot",
-  "portal",
-  "npc",
-]);
+export const EntityKindSchema = z.enum(['player', 'monster', 'loot', 'portal', 'npc']);
 export type EntityKind = z.infer<typeof EntityKindSchema>;
 
 /** Coarse action used by the client to pick a looping animation. */
-export const EntityActionSchema = z.enum([
-  "idle",
-  "move",
-  "combat",
-  "cast",
-  "dead",
-]);
+export const EntityActionSchema = z.enum(['idle', 'move', 'combat', 'cast', 'dead']);
 export type EntityAction = z.infer<typeof EntityActionSchema>;
 
 export const EntitySnapshotSchema = z.object({
   id: EntityIdSchema,
+  element: ElementSchema.nullable().optional(),
+  expression: ExpressionSchema.optional(),
+  mobility: z
+    .object({
+      action: z.enum(['roll', 'blink', 'jump']),
+      startTick: z.number().int(),
+      endTick: z.number().int(),
+    })
+    .nullable()
+    .optional(),
   kind: EntityKindSchema,
   /** Content id: character, monster, item (loot) or portal id. */
   defId: z.string(),
@@ -210,42 +217,53 @@ export const SnapshotSchema = z.object({
 export type Snapshot = z.infer<typeof SnapshotSchema>;
 
 export const NoticeCodeSchema = z.enum([
-  "out_of_range",
-  "cooldown",
-  "no_mp",
-  "no_target",
-  "inventory_full",
-  "realm_too_low",
-  "not_owner",
-  "invalid",
-  "dead",
-  "safe_zone",
-  "too_far",
-  "not_enough_gold",
-  "missing_materials",
-  "quest_unavailable",
-  "quest_incomplete",
-  "max_level",
-  "not_sellable",
-  "party_full",
-  "already_in_party",
-  "no_invite",
-  "capacity_full",
-  "requirements_unmet",
-  "max_realm",
-  "not_in_safe_zone",
-  "backlash",
-  "reloading",
-  "overheated",
+  'out_of_range',
+  'cooldown',
+  'no_mp',
+  'no_target',
+  'inventory_full',
+  'realm_too_low',
+  'not_owner',
+  'invalid',
+  'dead',
+  'safe_zone',
+  'too_far',
+  'not_enough_gold',
+  'missing_materials',
+  'quest_unavailable',
+  'quest_incomplete',
+  'max_level',
+  'not_sellable',
+  'party_full',
+  'already_in_party',
+  'no_invite',
+  'capacity_full',
+  'requirements_unmet',
+  'max_realm',
+  'not_in_safe_zone',
+  'backlash',
+  'reloading',
+  'overheated',
 ]);
 export type NoticeCode = z.infer<typeof NoticeCodeSchema>;
 
-export const SimEventSchema = z.discriminatedUnion("type", [
-  z.object({ type: z.literal("SPAWN"), id: EntityIdSchema }),
-  z.object({ type: z.literal("DESPAWN"), id: EntityIdSchema }),
+export const SimEventSchema = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('SPAWN'), id: EntityIdSchema }),
+  z.object({ type: z.literal('DESPAWN'), id: EntityIdSchema }),
   z.object({
-    type: z.literal("ATTACK"),
+    type: z.literal('ATTACK'),
+    element: ElementSchema.nullable().optional(),
+    expression: ExpressionSchema.optional(),
     sourceId: EntityIdSchema,
+    windup: z
+      .object({
+        point: Vec2Schema,
+        yaw: z.number().finite(),
+        range: z.number().nonnegative(),
+        arc: z.number().min(0).max(360),
+        endTick: z.number().int().nonnegative(),
+      })
+      .optional(),
     /** Null for a combo swing at nothing in particular. */
     targetId: EntityIdSchema.nullable(),
     /** Combo swings: which combo/step/variant (presentation looks up clip + trail). */
@@ -259,19 +277,19 @@ export const SimEventSchema = z.discriminatedUnion("type", [
       .optional(),
   }),
   z.object({
-    type: z.literal("DAMAGE"),
+    type: z.literal('DAMAGE'),
+    element: ElementSchema.nullable().optional(),
+    expression: ExpressionSchema.optional(),
     sourceId: EntityIdSchema,
     targetId: EntityIdSchema,
     amount: z.number().int().nonnegative(),
     crit: z.boolean(),
     skillId: z.string().nullable(),
     /** Combo hits, timed on the impact tick: solid, glancing (sượt) or weak point (yếu hại). */
-    hit: z.enum(["solid", "graze", "weak"]).optional(),
+    hit: z.enum(['solid', 'graze', 'weak']).optional(),
     heavy: z.boolean().optional(),
     /** Ranged hits: which SHOT and bullet (the client stops that tracer at the body). */
-    shot: z
-      .object({ id: z.number().int(), pellet: z.number().int().nonnegative() })
-      .optional(),
+    shot: z.object({ id: z.number().int(), pellet: z.number().int().nonnegative() }).optional(),
   }),
   /**
    * A ranged shot (D-033). One entry per bullet: heading and how far it can
@@ -279,7 +297,9 @@ export const SimEventSchema = z.discriminatedUnion("type", [
    * Bullets that hit a body end early through DAMAGE.shot.
    */
   z.object({
-    type: z.literal("SHOT"),
+    type: z.literal('SHOT'),
+    element: ElementSchema.nullable().optional(),
+    expression: ExpressionSchema.optional(),
     sourceId: EntityIdSchema,
     rangedId: z.string(),
     shotId: z.number().int(),
@@ -287,38 +307,51 @@ export const SimEventSchema = z.discriminatedUnion("type", [
     yaws: z.array(z.number().finite()),
     lens: z.array(z.number().nonnegative()),
   }),
+  z.object({
+    type: z.literal('SKILL_PROJECTILE'),
+    sourceId: EntityIdSchema,
+    skillId: z.string(),
+    projectileId: z.number().int(),
+    origin: Vec2Schema,
+    destination: Vec2Schema,
+    speed: z.number().positive(),
+    element: ElementSchema.nullable(),
+    expression: ExpressionSchema,
+  }),
   /** Reload started (ends at endTick) or stopped early (endTick <= startTick). */
   z.object({
-    type: z.literal("RELOAD"),
+    type: z.literal('RELOAD'),
     sourceId: EntityIdSchema,
     startTick: z.number().int(),
     endTick: z.number().int(),
   }),
   /** The weapon overheated (quá tải): locked until endTick. */
   z.object({
-    type: z.literal("OVERHEAT"),
+    type: z.literal('OVERHEAT'),
     sourceId: EntityIdSchema,
     endTick: z.number().int(),
   }),
   /** A combo swing whose target stood just out of reach (shown as "Trượt"). */
   z.object({
-    type: z.literal("MISS"),
+    type: z.literal('MISS'),
     sourceId: EntityIdSchema,
     targetId: EntityIdSchema,
   }),
   z.object({
-    type: z.literal("HEAL"),
+    type: z.literal('HEAL'),
     targetId: EntityIdSchema,
     amount: z.number().int().nonnegative(),
   }),
   z.object({
-    type: z.literal("DEATH"),
+    type: z.literal('DEATH'),
     id: EntityIdSchema,
     killerId: EntityIdSchema.nullable(),
   }),
-  z.object({ type: z.literal("RESPAWN"), id: EntityIdSchema }),
+  z.object({ type: z.literal('RESPAWN'), id: EntityIdSchema }),
   z.object({
-    type: z.literal("CAST_START"),
+    type: z.literal('CAST_START'),
+    element: ElementSchema.nullable().optional(),
+    expression: ExpressionSchema.optional(),
     sourceId: EntityIdSchema,
     skillId: z.string(),
     targetId: EntityIdSchema.nullable(),
@@ -329,7 +362,10 @@ export const SimEventSchema = z.discriminatedUnion("type", [
     endTick: z.number().int(),
   }),
   z.object({
-    type: z.literal("SKILL_IMPACT"),
+    type: z.literal('SKILL_IMPACT'),
+    projectileId: z.number().int().optional(),
+    element: ElementSchema.nullable().optional(),
+    expression: ExpressionSchema.optional(),
     sourceId: EntityIdSchema,
     skillId: z.string(),
     point: Vec2Schema,
@@ -337,67 +373,67 @@ export const SimEventSchema = z.discriminatedUnion("type", [
     targetId: EntityIdSchema.nullable(),
   }),
   z.object({
-    type: z.literal("PHASE"),
+    type: z.literal('PHASE'),
     id: EntityIdSchema,
     phase: z.number().int(),
     name: z.string(),
   }),
   /** Public: everyone nearby sees a breakthrough (success or backlash). */
   z.object({
-    type: z.literal("BREAKTHROUGH"),
+    type: z.literal('BREAKTHROUGH'),
     id: EntityIdSchema,
     realm: z.number().int().nonnegative(),
     success: z.boolean(),
   }),
   z.object({
-    type: z.literal("NODE_OPENED"),
+    type: z.literal('NODE_OPENED'),
     ownerId: EntityIdSchema,
     nodeId: z.string(),
   }),
   z.object({
-    type: z.literal("ITEM_GAINED"),
+    type: z.literal('ITEM_GAINED'),
     ownerId: EntityIdSchema,
     itemId: z.string(),
     count: z.number().int(),
   }),
   z.object({
-    type: z.literal("GOLD"),
+    type: z.literal('GOLD'),
     ownerId: EntityIdSchema,
     amount: z.number().int(),
     reason: z.string(),
   }),
   z.object({
-    type: z.literal("NOTICE"),
+    type: z.literal('NOTICE'),
     ownerId: EntityIdSchema,
     code: NoticeCodeSchema,
   }),
   z.object({
-    type: z.literal("TRANSFER"),
+    type: z.literal('TRANSFER'),
     id: EntityIdSchema,
     mapId: z.string(),
     arrival: z.string().nullable(),
   }),
   /** Private: the client opens the NPC dialog (quests, shop, crafting, upgrades). */
   z.object({
-    type: z.literal("NPC_OPEN"),
+    type: z.literal('NPC_OPEN'),
     ownerId: EntityIdSchema,
     npcEntityId: EntityIdSchema,
     npcId: z.string(),
   }),
   z.object({
-    type: z.literal("QUEST"),
+    type: z.literal('QUEST'),
     ownerId: EntityIdSchema,
     questId: z.string(),
-    status: z.enum(["active", "ready", "done"]),
+    status: z.enum(['active', 'ready', 'done']),
   }),
   z.object({
-    type: z.literal("PARTY_INVITE"),
+    type: z.literal('PARTY_INVITE'),
     ownerId: EntityIdSchema,
     fromId: EntityIdSchema,
     fromName: z.string(),
   }),
   z.object({
-    type: z.literal("UPGRADE_RESULT"),
+    type: z.literal('UPGRADE_RESULT'),
     ownerId: EntityIdSchema,
     instanceId: z.string(),
     success: z.boolean(),
@@ -422,6 +458,9 @@ export type InventoryItem = z.infer<typeof InventoryItemSchema>;
 export const PlayerStateSchema = z.object({
   id: EntityIdSchema,
   characterId: z.string(),
+  element: ElementSchema.optional(),
+  expression: ExpressionSchema.optional(),
+  farmEnabled: z.boolean().optional(),
   /** Realm id (game-data/realms). */
   realm: z.string(),
   /** Open cultivation nodes. */
@@ -442,9 +481,7 @@ export const PlayerStateSchema = z.object({
     critChance: z.number(),
     speed: z.number(),
   }),
-  skills: z.array(
-    z.object({ skillId: z.string(), readyAtTick: z.number().int() }),
-  ),
+  skills: z.array(z.object({ skillId: z.string(), readyAtTick: z.number().int() })),
   inventory: z.array(InventoryItemSchema),
   inventoryCapacity: z.number().int().positive(),
   equipment: z.partialRecord(EquipSlotSchema, ItemInstanceIdSchema),
@@ -482,7 +519,7 @@ export const PlayerStateSchema = z.object({
     z.object({
       questId: z.string(),
       /** active: in progress · ready: objectives met · done: turned in */
-      status: z.enum(["active", "ready", "done"]),
+      status: z.enum(['active', 'ready', 'done']),
       progress: z.array(z.number().int().nonnegative()),
     }),
   ),
@@ -509,10 +546,13 @@ export const ChatSendSchema = z.strictObject({
 });
 
 export const ChatMessageSchema = z.object({
-  channel: z.enum(["map", "system"]),
+  channel: z.enum(['map', 'system']),
   fromId: EntityIdSchema.nullable(),
   fromName: z.string(),
   text: z.string(),
   at: z.number(),
 });
 export type ChatMessage = z.infer<typeof ChatMessageSchema>;
+
+/** Saved cooldown seconds, frozen offline; never absolute ticks. */
+export const SkillCooldownsSchema = z.record(z.string(), z.number().finite().min(0).max(86400));

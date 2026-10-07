@@ -1,7 +1,7 @@
-import type { SimContext } from "../context";
-import type { Entity } from "../entity";
-import { clampToBounds, distance, type Vec2, yawOf } from "../math";
-import { TICK_DT } from "../time";
+import type { SimContext } from '../context';
+import type { Entity } from '../entity';
+import { clampToBounds, distance, type Vec2, yawOf } from '../math';
+import { TICK_DT } from '../time';
 
 const ARRIVE_EPSILON = 1e-3;
 const WAYPOINT_REACHED = 0.15;
@@ -21,6 +21,7 @@ export function movementSystem(ctx: SimContext): void {
     e.movement.moved = false;
     if (e.inert || !e.life.alive) continue;
     bodies.push(e);
+    if (e.mobility || e.monsterSwing) continue;
 
     if (e.movement.dir) {
       // Direct control wins over goals (chase, queued casts); casting roots.
@@ -83,8 +84,7 @@ const moveFactor = (e: Entity): number =>
 
 /** Swings and a raised ranged weapon (systems/ranged.ts) own the facing. */
 const faceLocked = (ctx: SimContext, e: Entity): boolean =>
-  e.swing !== null ||
-  (!!e.player?.ranged && ctx.tick < e.player.trigger.raisedUntil);
+  e.swing !== null || (!!e.player?.ranged && ctx.tick < e.player.trigger.raisedUntil);
 
 /** One tick along a held direction; on a navmesh the step slides along edges. */
 function steer(ctx: SimContext, e: Entity, dir: Vec2): void {
@@ -107,8 +107,7 @@ function updatePath(ctx: SimContext, e: Entity): void {
   const stale =
     !m.path ||
     !m.pathGoal ||
-    (distance(m.pathGoal, goal.pos) > REPATH_DISTANCE &&
-      ctx.tick - m.pathTick >= REPATH_TICKS);
+    (distance(m.pathGoal, goal.pos) > REPATH_DISTANCE && ctx.tick - m.pathTick >= REPATH_TICKS);
   if (!stale) return;
   m.pathGoal = { ...goal.pos };
   m.pathTick = ctx.tick;

@@ -1,27 +1,27 @@
-import type { ComboVariant, MonsterTier, RangedDef } from "@rpg/game-data";
+import type { ComboVariant, Element, Expression, MonsterTier, RangedDef } from '@rpg/game-data';
 import type {
   EntityAction,
   EntityId,
   EntityKind,
   InventoryItem,
   ItemInstanceId,
-} from "@rpg/game-protocol";
-import type { Vec2 } from "./math";
+} from '@rpg/game-protocol';
+import type { Vec2 } from './math';
 
-export type Faction = "players" | "monsters" | "neutral";
+export type Faction = 'players' | 'monsters' | 'neutral';
 
-export type AiState = "idle" | "chase" | "return";
+export type AiState = 'idle' | 'chase' | 'return';
 
 export type EquipSlot =
-  | "main_hand"
-  | "off_hand"
-  | "head"
-  | "chest"
-  | "gloves"
-  | "pants"
-  | "boots"
-  | "back"
-  | "artifact";
+  | 'main_hand'
+  | 'off_hand'
+  | 'head'
+  | 'chest'
+  | 'gloves'
+  | 'pants'
+  | 'boots'
+  | 'back'
+  | 'artifact';
 
 export interface Goal {
   pos: Vec2;
@@ -73,6 +73,7 @@ export interface ComboState {
   lastEndTick: number;
   /** A press during a swing: chain straight into the next step when it ends. */
   buffered: boolean;
+  bufferedUntil?: number;
   /** Aim point of the buffered press (desktop cursor). */
   aim: Vec2 | null;
 }
@@ -157,12 +158,24 @@ export interface Projectile {
   hitIds: EntityId[];
 }
 
+export interface SkillProjectile {
+  id: number;
+  ownerId: EntityId;
+  skillId: string;
+  pos: Vec2;
+  origin: Vec2;
+  dir: Vec2;
+  left: number;
+  element: Element | null;
+  expression: Expression;
+}
+
 /** Something the entity walks to and then does (pickup, portal, queued skill). */
 export type PendingAction =
-  | { type: "pickup"; lootId: EntityId }
-  | { type: "interact"; entityId: EntityId }
+  | { type: 'pickup'; lootId: EntityId }
+  | { type: 'interact'; entityId: EntityId }
   | {
-      type: "cast";
+      type: 'cast';
       skillId: string;
       targetId: EntityId | null;
       point: Vec2 | null;
@@ -170,13 +183,15 @@ export type PendingAction =
 
 export interface QuestState {
   questId: string;
-  status: "active" | "ready" | "done";
+  status: 'active' | 'ready' | 'done';
   /** Per objective (kill/talk); collect objectives are read from the inventory. */
   progress: number[];
 }
 
 export interface PlayerData {
   characterId: string;
+  mobilityReady: Map<string, number>;
+  farm: { enabled: boolean; anchor: Vec2; pausedUntil: number };
   name: string;
   partyId: number | null;
   gold: number;
@@ -219,12 +234,25 @@ export interface Entity {
   kind: EntityKind;
   defId: string;
   faction: Faction;
+  element?: Element | null;
+  expression?: Expression;
+  mobility?: {
+    action: 'roll' | 'blink' | 'jump';
+    startTick: number;
+    endTick: number;
+    distanceLeft: number;
+    dir: Vec2;
+    dodgeFrom: number;
+    dodgeTo: number;
+  } | null;
+  monsterSwing?: { impactTick: number; endTick: number; yaw: number } | null;
   /** Loot and portals: no movement, combat or AI. */
   inert: boolean;
   /** Cảnh giới rank (index in the realm ladder). There is no character level. */
   realm: number;
 
   pos: Vec2;
+  previousPos?: Vec2;
   yaw: number;
 
   movement: {
@@ -296,7 +324,11 @@ export interface CircleObstacle {
 
 /** Persisted character state (DB row in M4, carried across map transfers). */
 export interface PlayerSave {
+  /** Remaining cooldown seconds, frozen offline; absolute sim ticks are never persisted. */
+  cooldowns?: Record<string, number>;
   characterId: string;
+  element?: Element;
+  expression?: Expression;
   /** Realm id (stable across ladder changes). */
   realm: string;
   /** Realm order at save time (leaderboard sorting); derived, never read back. */
@@ -318,15 +350,15 @@ export interface LedgerEntry {
   amount: number;
   balanceAfter: number;
   reason:
-    | "monster_drop"
-    | "sell"
-    | "buy"
-    | "craft"
-    | "upgrade"
-    | "admin"
-    | "quest"
-    | "cultivation"
-    | "breakthrough";
+    | 'monster_drop'
+    | 'sell'
+    | 'buy'
+    | 'craft'
+    | 'upgrade'
+    | 'admin'
+    | 'quest'
+    | 'cultivation'
+    | 'breakthrough';
   /** Idempotency key: the same key is never applied twice. */
   key: string;
 }

@@ -43,6 +43,27 @@
       "when": 1791299520363,
       "tag": "0005_drop_character_level",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791397800500,
+      "tag": "0006_fair_dark_beast",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791398932844,
+      "tag": "0007_adorable_impossible_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791400211889,
+      "tag": "0008_workable_captain_marvel",
+      "breakpoints": true
     }
   ]
 }

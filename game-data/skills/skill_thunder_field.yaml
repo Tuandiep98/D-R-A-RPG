@@ -13,3 +13,6 @@ vfx: thunder_field
 # Clip trong model của người thi triển (presentation, D-032).
 anim: { cast: Ranged_Magic_Raise, castSpeed: 2.4 }
 sfx: { cast: [sfx_force_field], impact: [sfx_explosion_low] }
+
+delivery: circle
+telegraph: true

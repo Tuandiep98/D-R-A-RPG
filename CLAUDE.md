@@ -8,6 +8,7 @@ Tài liệu chính:
 - `docs/plan/01_tech_stack_plan.md` — tech stack, kiến trúc, security baseline (mục 54–57)
 - `docs/plan/02_assets_models_maps_plan.md` — art bible, rig, equipment, map, asset pipeline
 - `docs/plan/03_implementation_roadmap.md` — trạng thái từng phase/hạng mục, việc tiếp theo
+- `docs/plan/04_combat_elements_skills_redesign.md` — plan combat RPG × MOBA, ngũ hành, skill tám Đạo, migration Lôi/súng và auto farm (nền tảng/combat slice đã triển khai; kit tám Đạo còn trong roadmap)
 - `docs/asset_sourcing.md` — pack asset/model/map đề xuất theo lore mới, khoảng trống phải tự làm
 - `docs/game-ui-style.md` — quy tắc UI bắt buộc: Kenney Fantasy Glass, source/element, blur và fallback
 - `docs/decision_log.md` — quyết định đã chốt (ưu tiên khi mâu thuẫn với plan)
@@ -41,9 +42,9 @@ pnpm smoke:login [url]   # đăng ký → tạo nhân vật → vào game → ba
 pnpm db:generate         # drizzle-kit migration sau khi sửa packages/persistence/src/schema.ts
 ```
 
-URL flags của web client: `?webgl`, `?noworker`, `?map=<id>`, `?quality=low|medium|high`, `?debug` (bật `window.__rpg` ở bản build), `?player=<appearanceId>` (vẽ player bằng appearance khác, chỉ phía client — vd `char_kk_knight`), `?mannequin` (hình nộm KayKit Mannequin_Medium), `?online` (đăng nhập qua API), `?online&dev=<tên>` (đăng nhập dev thẳng vào game server, cần `ALLOW_DEV_LOGIN=true`).
+URL flags của web client: `?webgl`, `?noworker`, `?map=<id>`, `?quality=low|medium|high`, `?element=kim|moc|thuy|hoa|tho` (chọn bản mệnh offline), `?debug` (bật `window.__rpg` ở bản build), `?player=<appearanceId>` (vẽ player bằng appearance khác, chỉ phía client — vd `char_kk_knight`), `?mannequin` (hình nộm KayKit Mannequin_Medium), `?online` (đăng nhập qua API), `?online&dev=<tên>` (đăng nhập dev thẳng vào game server, cần `ALLOW_DEV_LOGIN=true`).
 
-Điều khiển (D-030): setting "Điều khiển" Tự động/Phím + chuột/Cảm ứng → `<html data-controls data-hand>` (CSS bố trí HUD theo đó, không khoá hướng màn hình). Di chuyển trực tiếp qua intent `MOVE_DIR` (WASD/mũi tên, joystick ảo, cần trái gamepad); click-to-move vẫn dùng được. Phím: Esc dừng, Space đánh, F tương tác.
+Điều khiển (D-030): setting "Điều khiển" Tự động/Phím + chuột/Cảm ứng → `<html data-controls data-hand>` (CSS bố trí HUD theo đó, không khoá hướng màn hình). Di chuyển trực tiếp qua intent `MOVE_DIR` (WASD/mũi tên, joystick ảo, cần trái gamepad); click-to-move vẫn dùng được. Phím: Esc dừng, Space đánh, F tương tác; Shift lộn, E tốc biến, V nhảy. Auto quái bật/tắt ở HUD, thao tác tay ngắt auto.
 
 Lưu ý môi trường: hook `rtk` có thể làm sai output của biome/grep — dùng `rtk proxy npx biome check .` và kiểm tra exit code.
 

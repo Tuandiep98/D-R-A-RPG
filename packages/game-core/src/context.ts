@@ -1,8 +1,8 @@
-import type { ContentBundle, MapDef, RealmDef } from "@rpg/game-data";
-import type { EntityId, NoticeCode, SimEvent } from "@rpg/game-protocol";
-import type { CircleObstacle, Entity, LedgerEntry, Projectile } from "./entity";
-import type { Bounds, Vec2 } from "./math";
-import type { Rng } from "./rng";
+import type { ContentBundle, MapDef, RealmDef } from '@rpg/game-data';
+import type { EntityId, NoticeCode, SimEvent } from '@rpg/game-protocol';
+import type { CircleObstacle, Entity, LedgerEntry, Projectile, SkillProjectile } from './entity';
+import type { Bounds, Vec2 } from './math';
+import type { Rng } from './rng';
 
 /**
  * Pathfinding abstraction (decision D-008). Implemented with Recast in
@@ -42,26 +42,24 @@ export interface SimContext {
   addEntity(build: (id: EntityId) => Entity): Entity;
   removeEntity(id: EntityId): void;
   newItemInstanceId(): string;
-  recordLedger(entry: Omit<LedgerEntry, "tick">): boolean;
+  recordLedger(entry: Omit<LedgerEntry, 'tick'>): boolean;
   inSafeZone(p: Vec2): boolean;
   readonly parties: PartyService;
   /** Bullets in flight (systems/ranged.ts). */
   readonly projectiles: Projectile[];
+  readonly skillProjectiles: SkillProjectile[];
   /** Unique per world: ties SHOT events to the DAMAGE of their bullets. */
   nextShotId(): number;
 }
 
-export const isAlive = (e: Entity | undefined): e is Entity =>
-  !!e && e.life.alive && !e.inert;
+export const isAlive = (e: Entity | undefined): e is Entity => !!e && e.life.alive && !e.inert;
 
 export const areHostile = (a: Entity, b: Entity): boolean =>
-  a.faction !== b.faction && a.faction !== "neutral" && b.faction !== "neutral";
+  a.faction !== b.faction && a.faction !== 'neutral' && b.faction !== 'neutral';
 
 /** Distance between body edges. */
 export const edgeDistance = (a: Entity, b: Entity): number =>
-  Math.hypot(a.pos.x - b.pos.x, a.pos.z - b.pos.z) -
-  a.movement.radius -
-  b.movement.radius;
+  Math.hypot(a.pos.x - b.pos.x, a.pos.z - b.pos.z) - a.movement.radius - b.movement.radius;
 
 /** True if `a` can hit `b` from where it stands. */
 export const inAttackRange = (a: Entity, b: Entity): boolean =>

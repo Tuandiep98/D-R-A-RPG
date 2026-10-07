@@ -1,11 +1,11 @@
-import type { RangedDef } from "@rpg/game-data";
-import type { EntityId, PlayerState } from "@rpg/game-protocol";
-import { areHostile, edgeDistance, isAlive, type SimContext } from "../context";
-import type { Entity, PlayerData, TriggerState, WeaponState } from "../entity";
-import { clamp, sub, type Vec2, yawOf } from "../math";
-import { secondsToTicks, TICK_RATE } from "../time";
-import { applyDamage, rollHit } from "./combat";
-import { facingDot } from "./melee";
+import type { RangedDef } from '@rpg/game-data';
+import type { EntityId, PlayerState } from '@rpg/game-protocol';
+import { areHostile, edgeDistance, isAlive, type SimContext } from '../context';
+import type { Entity, PlayerData, TriggerState, WeaponState } from '../entity';
+import { clamp, sub, type Vec2, yawOf } from '../math';
+import { secondsToTicks, TICK_RATE } from '../time';
+import { applyDamage, rollHit } from './combat';
+import { facingDot } from './melee';
 
 /**
  * Ranged basic attacks (đánh tầm xa, D-033). Data in game-data/ranged; the
@@ -38,7 +38,7 @@ const MAX_PROJECTILES = 300;
 /** Aim assist may keep a target this far past the weapon's range. */
 const STICKY_RANGE = 1.15;
 
-type Equipped = NonNullable<PlayerData["ranged"]>;
+type Equipped = NonNullable<PlayerData['ranged']>;
 
 const round = (v: number, k: number) => Math.round(v * k) / k;
 
@@ -62,15 +62,8 @@ export function heatAt(def: RangedDef, ws: WeaponState, tick: number): number {
   const h = def.heat;
   if (!h) return 0;
   if (tick < ws.overheatUntil)
-    return clamp(
-      (ws.overheatUntil - tick) / secondsToTicks(h.overheatSeconds),
-      0,
-      1,
-    );
-  const coolFrom = Math.max(
-    ws.heatTick,
-    ws.lastShotTick + secondsToTicks(h.coolDelay),
-  );
+    return clamp((ws.overheatUntil - tick) / secondsToTicks(h.overheatSeconds), 0, 1);
+  const coolFrom = Math.max(ws.heatTick, ws.lastShotTick + secondsToTicks(h.coolDelay));
   const cooled = (Math.max(0, tick - coolFrom) / TICK_RATE) * h.coolPerSecond;
   return Math.max(0, ws.heat - cooled);
 }
@@ -102,11 +95,7 @@ export function setTrigger(
 }
 
 /** BASIC_ATTACK with a ranged weapon: one press, as if the trigger was tapped. */
-export function tapTrigger(
-  ctx: SimContext,
-  e: Entity,
-  aim: Vec2 | null,
-): boolean {
+export function tapTrigger(ctx: SimContext, e: Entity, aim: Vec2 | null): boolean {
   const p = e.player;
   const w = p?.ranged;
   if (!p || !w) return false;
@@ -129,7 +118,7 @@ export function requestReload(ctx: SimContext, e: Entity): boolean {
   const p = e.player;
   const w = p?.ranged;
   if (!p || !w?.def.reload || w.def.magazine === 0) {
-    ctx.notice(e.id, "invalid");
+    ctx.notice(e.id, 'invalid');
     return false;
   }
   startReload(ctx, e, w, weaponOf(p, w), p.trigger);
@@ -140,9 +129,9 @@ function press(ctx: SimContext, e: Entity, w: Equipped, t: TriggerState): void {
   t.queued = true;
   const ws = weaponOf(e.player as PlayerData, w);
   // A press that cannot fire says why (never repeated while held).
-  if (ctx.tick < ws.overheatUntil) ctx.notice(e.id, "overheated");
-  else if (t.reload && (w.def.reload?.mode === "magazine" || ws.ammo === 0))
-    ctx.notice(e.id, "reloading");
+  if (ctx.tick < ws.overheatUntil) ctx.notice(e.id, 'overheated');
+  else if (t.reload && (w.def.reload?.mode === 'magazine' || ws.ammo === 0))
+    ctx.notice(e.id, 'reloading');
 }
 
 // ---- System -----------------------------------------------------------------
@@ -153,6 +142,7 @@ export function rangedSystem(ctx: SimContext): void {
     const p = e.player;
     if (!p) continue;
     const t = p.trigger;
+    if (e.mobility) continue;
     const w = p.ranged;
     if (t.instanceId !== (w?.instanceId ?? null)) swapped(ctx, e, t, w);
     if (!w) {
@@ -166,8 +156,7 @@ export function rangedSystem(ctx: SimContext): void {
       t.move = 1;
       continue;
     }
-    if (t.held && ctx.tick - t.heardTick > TRIGGER_TIMEOUT_TICKS)
-      t.held = false;
+    if (t.held && ctx.tick - t.heardTick > TRIGGER_TIMEOUT_TICKS) t.held = false;
     const ws = weaponOf(p, w);
     advanceReload(ctx, w, ws, t);
 
@@ -177,22 +166,12 @@ export function rangedSystem(ctx: SimContext): void {
       const auto = target !== null && !t.held && !t.queued && t.burstLeft === 0;
       const point = auto ? target.pos : t.aim;
       if (auto) t.assistId = target.id;
-      const wants =
-        t.queued ||
-        t.burstLeft > 0 ||
-        (t.held && def.fireMode === "auto") ||
-        auto;
+      const wants = t.queued || t.burstLeft > 0 || (t.held && def.fireMode === 'auto') || auto;
       if (wants) tryFire(ctx, e, w, ws, t, point);
-      if (ctx.tick < t.raisedUntil)
-        e.yaw = aimYaw(ctx, e, def, t, point, false);
+      if (ctx.tick < t.raisedUntil) e.yaw = aimYaw(ctx, e, def, t, point, false);
     }
-    const firing =
-      ctx.tick - t.lastShotTick <= secondsToTicks(def.fireInterval) + 2;
-    t.move = firing
-      ? def.moveMultiplier
-      : t.reload
-        ? (def.reload?.moveMultiplier ?? 1)
-        : 1;
+    const firing = ctx.tick - t.lastShotTick <= secondsToTicks(def.fireInterval) + 2;
+    t.move = firing ? def.moveMultiplier : t.reload ? (def.reload?.moveMultiplier ?? 1) : 1;
   }
   stepProjectiles(ctx);
 }
@@ -201,17 +180,11 @@ export function rangedSystem(ctx: SimContext): void {
 function autoTarget(ctx: SimContext, e: Entity): Entity | null {
   if (e.combat.targetId === null || e.pending) return null;
   const t = ctx.entities.get(e.combat.targetId);
-  if (!isAlive(t) || !areHostile(e, t) || edgeDistance(e, t) > e.combat.range)
-    return null;
+  if (!isAlive(t) || !areHostile(e, t) || edgeDistance(e, t) > e.combat.range) return null;
   return t;
 }
 
-function swapped(
-  ctx: SimContext,
-  e: Entity,
-  t: TriggerState,
-  w: Equipped | null,
-): void {
+function swapped(ctx: SimContext, e: Entity, t: TriggerState, w: Equipped | null): void {
   cancelReload(ctx, e, t);
   releaseTrigger(e);
   t.instanceId = w?.instanceId ?? null;
@@ -229,6 +202,8 @@ function tryFire(
   point: Vec2 | null,
 ): void {
   const def = w.def;
+  if (def.projectile.speed > 0 && ctx.projectiles.length + def.projectile.pellets > MAX_PROJECTILES)
+    return;
   if (ctx.tick < ws.overheatUntil) {
     t.queued = false;
     t.burstLeft = 0;
@@ -242,7 +217,7 @@ function tryFire(
   }
   if (t.reload) {
     // Shells go in one by one: shooting what is loaded stops the reload.
-    if (def.reload?.mode === "round" && ws.ammo > 0) cancelReload(ctx, e, t);
+    if (def.reload?.mode === 'round' && ws.ammo > 0) cancelReload(ctx, e, t);
     else {
       t.queued = false;
       return;
@@ -267,7 +242,7 @@ function tryFire(
       (t.burstLeft > 0
         ? secondsToTicks(def.burst?.interval ?? 0.1)
         : secondsToTicks(def.fireInterval));
-  } else if (def.fireMode === "burst" && def.burst) {
+  } else if (def.fireMode === 'burst' && def.burst) {
     // First shot of a burst (a press, or the auto-attack's next burst).
     t.burstLeft = def.burst.count - 1;
     t.nextShotTick = ctx.tick + secondsToTicks(def.burst.interval);
@@ -301,8 +276,7 @@ function fire(
   const lens: number[] = [];
   const instant: { t: Entity; d: number; pellet: number }[] = [];
   for (let i = 0; i < pr.pellets; i++) {
-    const fan =
-      pr.pellets > 1 ? (i / (pr.pellets - 1) - 0.5) * pr.spread * DEG : 0;
+    const fan = pr.pellets > 1 ? (i / (pr.pellets - 1) - 0.5) * pr.spread * DEG : 0;
     const jitter = pr.jitter > 0 ? ctx.rng.range(-1, 1) * pr.jitter * DEG : 0;
     const py = yaw + fan + jitter;
     const dir = { x: Math.sin(py), z: Math.cos(py) };
@@ -319,7 +293,6 @@ function fire(
         }
       }
     } else {
-      if (ctx.projectiles.length >= MAX_PROJECTILES) ctx.projectiles.shift();
       ctx.projectiles.push({
         shotId,
         pellet: i,
@@ -338,7 +311,9 @@ function fire(
     lens.push(round(len, 100));
   }
   ctx.emit({
-    type: "SHOT",
+    type: 'SHOT',
+    element: e.element ?? null,
+    expression: e.expression ?? 'base',
     sourceId: e.id,
     rangedId: def.id,
     shotId,
@@ -346,8 +321,7 @@ function fire(
     yaws,
     lens,
   });
-  for (const h of instant)
-    if (h.t.life.alive) hit(ctx, e, h.t, def, h.d, origin, shotId, h.pellet);
+  for (const h of instant) if (h.t.life.alive) hit(ctx, e, h.t, def, h.d, origin, shotId, h.pellet);
 
   if (def.magazine > 0) ws.ammo = Math.max(0, ws.ammo - 1);
   t.lastShotTick = ctx.tick;
@@ -362,7 +336,7 @@ function fire(
       ws.heatTick = ws.overheatUntil;
       t.burstLeft = 0;
       t.queued = false;
-      ctx.emit({ type: "OVERHEAT", sourceId: e.id, endTick: ws.overheatUntil });
+      ctx.emit({ type: 'OVERHEAT', sourceId: e.id, endTick: ws.overheatUntil });
     } else {
       ws.heat = heat;
       ws.heatTick = ctx.tick;
@@ -387,11 +361,7 @@ function aimYaw(
     return yawOf(sub(point, e.pos));
   const range = def.projectile.range;
   const sticky = t.assistId !== null ? ctx.entities.get(t.assistId) : undefined;
-  if (
-    isAlive(sticky) &&
-    areHostile(e, sticky) &&
-    edgeDistance(e, sticky) <= range * STICKY_RANGE
-  )
+  if (isAlive(sticky) && areHostile(e, sticky) && edgeDistance(e, sticky) <= range * STICKY_RANGE)
     return yawOf(sub(sticky.pos, e.pos));
   t.assistId = null;
   const around = e.movement.dir ? yawOf(e.movement.dir) : e.yaw;
@@ -427,10 +397,9 @@ function startReload(
   t: TriggerState,
 ): void {
   const r = w.def.reload;
-  if (!r || w.def.magazine === 0 || ws.ammo >= w.def.magazine || t.reload)
-    return;
+  if (!r || w.def.magazine === 0 || ws.ammo >= w.def.magazine || t.reload) return;
   const per = secondsToTicks(r.seconds);
-  const rounds = r.mode === "round" ? w.def.magazine - ws.ammo : 1;
+  const rounds = r.mode === 'round' ? w.def.magazine - ws.ammo : 1;
   t.reload = {
     instanceId: w.instanceId,
     startTick: ctx.tick,
@@ -439,7 +408,7 @@ function startReload(
   };
   t.burstLeft = 0;
   ctx.emit({
-    type: "RELOAD",
+    type: 'RELOAD',
     sourceId: e.id,
     startTick: ctx.tick,
     endTick: t.reload.endTick,
@@ -452,23 +421,18 @@ function cancelReload(ctx: SimContext, e: Entity, t: TriggerState): void {
   if (!r) return;
   t.reload = null;
   ctx.emit({
-    type: "RELOAD",
+    type: 'RELOAD',
     sourceId: e.id,
     startTick: r.startTick,
     endTick: r.startTick,
   });
 }
 
-function advanceReload(
-  ctx: SimContext,
-  w: Equipped,
-  ws: WeaponState,
-  t: TriggerState,
-): void {
+function advanceReload(ctx: SimContext, w: Equipped, ws: WeaponState, t: TriggerState): void {
   const r = t.reload;
   if (!r || ctx.tick < r.nextTick) return;
   const def = w.def;
-  if (def.reload?.mode === "round") {
+  if (def.reload?.mode === 'round') {
     ws.ammo = Math.min(def.magazine, ws.ammo + 1);
     if (ws.ammo < def.magazine) {
       r.nextTick += secondsToTicks(def.reload.seconds);
@@ -481,12 +445,7 @@ function advanceReload(
 // ---- Bullets ----------------------------------------------------------------
 
 /** Distance along a ray to the first circle obstacle or the map edge (≤ `range`). */
-function wallDistance(
-  ctx: SimContext,
-  o: Vec2,
-  dir: Vec2,
-  range: number,
-): number {
+function wallDistance(ctx: SimContext, o: Vec2, dir: Vec2, range: number): number {
   let best = range;
   for (const ob of ctx.obstacles) {
     const vx = ob.pos.x - o.x;
@@ -520,14 +479,7 @@ function bodiesOnRay(
 ): { t: Entity; d: number }[] {
   const out: { t: Entity; d: number }[] = [];
   for (const t of ctx.entities.values()) {
-    if (
-      t === e ||
-      t.inert ||
-      !t.life.alive ||
-      !areHostile(e, t) ||
-      skip.includes(t.id)
-    )
-      continue;
+    if (t === e || t.inert || !t.life.alive || !areHostile(e, t) || skip.includes(t.id)) continue;
     const vx = t.pos.x - o.x;
     const vz = t.pos.z - o.z;
     const r = t.movement.radius + radius;
@@ -595,21 +547,21 @@ function hit(
 ): void {
   const range = def.projectile.range;
   let multiplier = def.damage;
-  let kind: "solid" | "graze" | "weak" = "solid";
+  let kind: 'solid' | 'graze' | 'weak' = 'solid';
   const fall = def.falloffFrom * range;
   if (d > fall && range > fall) {
     const k = clamp((d - fall) / (range - fall), 0, 1);
     multiplier *= 1 + (def.falloffMultiplier - 1) * k;
-    if (k > 0.5) kind = "graze";
+    if (k > 0.5) kind = 'graze';
   }
   // Yếu hại: shots landing on the target's back / flank.
   const back = facingDot(t, origin);
   if (back < -0.5) {
     multiplier *= def.weakPoint.back;
-    kind = "weak";
+    kind = 'weak';
   } else if (back < 0.26) {
     multiplier *= def.weakPoint.flank;
-    if (kind === "solid") kind = "weak";
+    if (kind === 'solid') kind = 'weak';
   }
   const { amount, crit } = rollHit(ctx, e, t, multiplier, 0, def.critBonus);
   applyDamage(ctx, e, t, amount, crit, null, {
@@ -622,7 +574,7 @@ function hit(
 // ---- View -------------------------------------------------------------------
 
 /** Private HUD state of the equipped ranged weapon (PlayerState.ranged). */
-export function rangedState(ctx: SimContext, e: Entity): PlayerState["ranged"] {
+export function rangedState(ctx: SimContext, e: Entity): PlayerState['ranged'] {
   const p = e.player;
   const w = p?.ranged;
   if (!p || !w) return null;

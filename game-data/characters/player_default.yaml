@@ -30,3 +30,6 @@ skills:
 starterItems:
   - { itemId: item_sword_iron, equip: true }
   - { itemId: item_potion_hp_small, count: 5 }
+
+element: moc
+expression: thunder

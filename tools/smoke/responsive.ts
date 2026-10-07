@@ -128,6 +128,9 @@ async function audit(page: Page, touch: boolean, checkOverlap: boolean) {
           for (let j = i + 1; j < boxes.length; j++) {
             const [a, ra] = boxes[i];
             const [b, rb] = boxes[j];
+            const ae = document.querySelector(a),
+              be = document.querySelector(b);
+            if (ae?.contains(be) || be?.contains(ae)) continue;
             const w = Math.min(ra.right, rb.right) - Math.max(ra.left, rb.left);
             const h = Math.min(ra.bottom, rb.bottom) - Math.max(ra.top, rb.top);
             if (w > 2 && h > 2) overlaps.push(`${a} ∩ ${b} (${Math.round(w)}×${Math.round(h)})`);

@@ -16,3 +16,5 @@ phases:
       speedMultiplier: 1.2,
     }
 lootTable: [loot_elite]
+
+element: thuy

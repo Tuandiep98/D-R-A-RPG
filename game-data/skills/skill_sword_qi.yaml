@@ -4,7 +4,7 @@ name: Kiếm Khí
 description: Phóng kiếm khí đánh mục tiêu từ xa.
 icon: "✴"
 iconImage: icon_skill_sword_qi
-targeting: target
+targeting: point
 range: 10
 castTime: 0.4
 cooldown: 4
@@ -13,3 +13,6 @@ effects:
   - { type: damage, multiplier: 1.8 }
 vfx: projectile
 sfx: { cast: [sfx_swing_02], impact: [sfx_hit_metal_02] }
+
+delivery: projectile
+projectileSpeed: 16

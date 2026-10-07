@@ -6,8 +6,8 @@ import {
   TICK_RATE,
   World,
   type WorldStats,
-} from "@rpg/game-core";
-import type { ContentBundle, MapDef } from "@rpg/game-data";
+} from '@rpg/game-core';
+import type { ContentBundle, MapDef } from '@rpg/game-data';
 import {
   type ChatMessage,
   ChatSendSchema,
@@ -17,19 +17,19 @@ import {
   PROTOCOL_VERSION,
   type SimEvent,
   type Snapshot,
-} from "@rpg/game-protocol";
+} from '@rpg/game-protocol';
 
-import { HostEmitter, type SimHost } from "./host";
+import { HostEmitter, type SimHost } from './host';
 
-export type NavProvider = (
-  map: MapDef,
-) => Promise<NavQuery | null> | NavQuery | null;
+export type NavProvider = (map: MapDef) => Promise<NavQuery | null> | NavQuery | null;
 
 export interface LocalSimHostOptions {
   content: ContentBundle;
   mapId: string;
   characterId: string;
   seed?: number;
+  element?: import('@rpg/game-data').Element;
+  expression?: import('@rpg/game-data').Expression;
   /** Max intents accepted per second, mirroring the server rate limit. */
   maxIntentsPerSecond?: number;
   /** Pathfinding per map; omitted → straight-line movement. */
@@ -67,7 +67,7 @@ export class LocalSimHost implements SimHost {
   }
 
   async connect(): Promise<JoinInfo> {
-    if (this.world) throw new Error("already connected");
+    if (this.world) throw new Error('already connected');
     const join = await this.enterMap(this.opts.mapId, undefined, null);
     if (this.opts.autoRun !== false) this.start();
     return join;
@@ -109,10 +109,9 @@ export class LocalSimHost implements SimHost {
     const now = Date.now();
     if (!parsed.success || now - this.lastChatAt < 1000) return;
     this.lastChatAt = now;
-    const name =
-      this.opts.content.characters.get(this.opts.characterId)?.name ?? "Bạn";
+    const name = this.opts.content.characters.get(this.opts.characterId)?.name ?? 'Bạn';
     const msg: ChatMessage = {
-      channel: "map",
+      channel: 'map',
       fromId: this.playerId,
       fromName: name,
       text: parsed.data.text,
@@ -129,27 +128,18 @@ export class LocalSimHost implements SimHost {
   stepOnce(): void {
     const world = this.world;
     if (!world || this.transferring) return;
-    this.intentBudget = Math.min(
-      this.maxIntents,
-      this.intentBudget + this.maxIntents / TICK_RATE,
-    );
+    this.intentBudget = Math.min(this.maxIntents, this.intentBudget + this.maxIntents / TICK_RATE);
     const events = world.step();
     this.ledger.push(...world.drainLedger());
     if (events.length > 0) for (const cb of this.emitter.events) cb(events);
     const snapshot = world.snapshot();
     for (const cb of this.emitter.snapshot) cb(snapshot);
 
-    const ownEvent = events.some(
-      (e) => "ownerId" in e && e.ownerId === this.playerId,
-    );
-    if (ownEvent || world.tick % PLAYER_STATE_EVERY_TICKS === 0)
-      this.publishPlayerState();
+    const ownEvent = events.some((e) => 'ownerId' in e && e.ownerId === this.playerId);
+    if (ownEvent || world.tick % PLAYER_STATE_EVERY_TICKS === 0) this.publishPlayerState();
 
-    const transfer = events.find(
-      (e) => e.type === "TRANSFER" && e.id === this.playerId,
-    );
-    if (transfer?.type === "TRANSFER")
-      void this.transfer(transfer.mapId, transfer.arrival);
+    const transfer = events.find((e) => e.type === 'TRANSFER' && e.id === this.playerId);
+    if (transfer?.type === 'TRANSFER') void this.transfer(transfer.mapId, transfer.arrival);
   }
 
   get debug(): LocalSimHostDebug | null {
@@ -175,11 +165,7 @@ export class LocalSimHost implements SimHost {
     this.emitter.clear();
   }
 
-  private async enterMap(
-    mapId: string,
-    save: PlayerSave | undefined,
-    arrival: string | null,
-  ) {
+  private async enterMap(mapId: string, save: PlayerSave | undefined, arrival: string | null) {
     const map = this.opts.content.maps.get(mapId);
     if (!map) throw new Error(`unknown map ${mapId}`);
     const nav = (await this.opts.navFor?.(map)) ?? null;
@@ -189,7 +175,12 @@ export class LocalSimHost implements SimHost {
       seed: this.opts.seed,
       nav,
     });
-    this.playerId = world.spawnPlayer(this.opts.characterId, { save, arrival });
+    this.playerId = world.spawnPlayer(this.opts.characterId, {
+      save,
+      arrival,
+      element: save?.element ?? this.opts.element,
+      expression: save?.expression ?? this.opts.expression,
+    });
     this.world = world;
     const join: JoinInfo = {
       protocolVersion: PROTOCOL_VERSION,

@@ -1,11 +1,14 @@
-import { inAttackRange, isAlive, type SimContext } from "../context";
-import type { Entity, Stats } from "../entity";
-import { sub, yawOf } from "../math";
-import type { Rng } from "../rng";
-import { grantGold } from "./inventory";
-import { dropLoot } from "./loot";
-import { questOnKill } from "./npc";
-import { backlashFactor, realmGapFactor } from "./progression";
+import { inAttackRange, isAlive, type SimContext } from '../context';
+import type { Entity, Stats } from '../entity';
+import { clearLine, coneTouches } from '../geometry';
+import { sub, yawOf } from '../math';
+import type { Rng } from '../rng';
+import { TICK_RATE } from '../time';
+import { grantGold } from './inventory';
+import { dropLoot } from './loot';
+import { avoidsDamage } from './mobility';
+import { questOnKill } from './npc';
+import { backlashFactor, realmGapFactor } from './progression';
 
 /** Damage roll before mitigation varies by ±10%. */
 const VARIANCE = 0.1;
@@ -22,8 +25,8 @@ export interface DamageRoll {
 /** Pure damage formula; exported for tests and future server-side tooling. */
 export function rollDamage(
   rng: Rng,
-  attacker: Pick<Stats, "attack" | "critChance" | "critMultiplier">,
-  defender: Pick<Stats, "defense">,
+  attacker: Pick<Stats, 'attack' | 'critChance' | 'critMultiplier'>,
+  defender: Pick<Stats, 'defense'>,
   multiplier = 1,
   flat = 0,
   critBonus = 0,
@@ -50,39 +53,84 @@ export function rollHit(
   multiplier = 1,
   flat = 0,
   critBonus = 0,
+  elementalShare?: number,
 ): DamageRoll {
-  const roll = rollDamage(
-    ctx.rng,
-    attacker.stats,
-    defender.stats,
-    multiplier,
-    flat,
-    critBonus,
-  );
+  const roll = rollDamage(ctx.rng, attacker.stats, defender.stats, multiplier, flat, critBonus);
+  const rules = ctx.content.combat.get('combat_rules');
+  let elemental = 1;
+  if (rules && attacker.element && defender.element) {
+    if (rules.counters[attacker.element] === defender.element) elemental = rules.advantage;
+    else if (rules.counters[defender.element] === attacker.element) elemental = rules.disadvantage;
+  }
+  const share = elementalShare ?? rules?.basicShare ?? 0;
   const f =
-    realmGapFactor(ctx, attacker, defender) * backlashFactor(ctx, attacker);
-  return f === 1
-    ? roll
-    : { amount: Math.max(1, Math.round(roll.amount * f)), crit: roll.crit };
+    (1 + share * (elemental - 1)) *
+    realmGapFactor(ctx, attacker, defender) *
+    backlashFactor(ctx, attacker);
+  return f === 1 ? roll : { amount: Math.max(1, Math.round(roll.amount * f)), crit: roll.crit };
 }
 
 /**
  * For every entity with a combat target: close the distance, then swing on
- * cooldown. Runs before movement so a chase goal is followed in the same tick.
+ * cooldown. Evaluates hitboxes after movement for this tick.
  * Casting suspends auto-attacks. Players swing their basic-attack combo
  * instead of a single timed hit (systems/melee.ts).
  */
 export function combatSystem(ctx: SimContext): void {
   for (const e of ctx.entities.values()) {
-    if (e.inert || !e.life.alive || e.combat.targetId === null || e.cast)
+    if (e.mobility) continue;
+    if (e.monsterSwing) {
+      const swing = e.monsterSwing;
+      const def = ctx.content.monsters.get(e.defId);
+      if (!e.life.alive || e.cast || !def) {
+        e.monsterSwing = null;
+        continue;
+      }
+      e.yaw = swing.yaw;
+      e.movement.goal = null;
+      if (ctx.tick >= swing.impactTick) {
+        for (const t of ctx.entities.values()) {
+          if (
+            !isAlive(t) ||
+            t.faction === e.faction ||
+            t.faction === 'neutral' ||
+            ctx.inSafeZone(t.pos)
+          )
+            continue;
+          if (
+            !coneTouches(
+              e.pos,
+              swing.yaw,
+              def.combat.range,
+              def.combat.arc,
+              t,
+              e.movement.radius,
+            ) ||
+            !clearLine(ctx, e.pos, t.pos)
+          )
+            continue;
+          const { amount, crit } = rollHit(ctx, e, t);
+          applyDamage(ctx, e, t, amount, crit, null, {
+            hit: 'solid',
+            heavy: false,
+            groundLow: def.combat.groundLow,
+          });
+        }
+        e.monsterSwing = null;
+      }
       continue;
-    if (e.pending && e.pending.type !== "cast") continue;
+    }
+    if (e.inert || !e.life.alive || e.combat.targetId === null || e.cast) continue;
+    if (e.pending && e.pending.type !== 'cast') continue;
     const target = ctx.entities.get(e.combat.targetId);
     if (!isAlive(target)) {
       e.combat.targetId = null;
       e.movement.goal = null;
       continue;
     }
+
+    // Farm owns its positioning goal; attacks still use the same range checks.
+    if (e.player?.farm.enabled) continue;
 
     if (!inAttackRange(e, target)) {
       if (e.pending) continue; // a queued skill is driving the approach
@@ -100,10 +148,28 @@ export function combatSystem(ctx: SimContext): void {
     e.yaw = yawOf(sub(target.pos, e.pos));
     if (ctx.tick < e.combat.nextAttackTick) continue;
 
+    const def = ctx.content.monsters.get(e.defId);
+    if (!def) continue;
     e.combat.nextAttackTick = ctx.tick + e.combat.attackIntervalTicks;
-    ctx.emit({ type: "ATTACK", sourceId: e.id, targetId: target.id });
-    const { amount, crit } = rollHit(ctx, e, target);
-    applyDamage(ctx, e, target, amount, crit, null);
+    e.monsterSwing = {
+      impactTick: ctx.tick + Math.round(def.combat.windup * TICK_RATE),
+      endTick: e.combat.nextAttackTick,
+      yaw: e.yaw,
+    };
+    ctx.emit({
+      type: 'ATTACK',
+      windup: {
+        point: { ...e.pos },
+        yaw: e.yaw,
+        range: def.combat.range + e.movement.radius,
+        arc: def.combat.arc,
+        endTick: e.monsterSwing.impactTick,
+      },
+      sourceId: e.id,
+      targetId: target.id,
+      element: e.element ?? null,
+      expression: e.expression ?? 'base',
+    });
   }
 }
 
@@ -115,24 +181,24 @@ export function applyDamage(
   crit: boolean,
   skillId: string | null,
   detail?: {
-    hit: "solid" | "graze" | "weak";
+    hit: 'solid' | 'graze' | 'weak';
     heavy: boolean;
     /** Ranged hits: the SHOT and bullet that landed. */
     shot?: { id: number; pellet: number };
+    groundLow?: boolean;
   },
 ): void {
-  if (!target.life.alive) return;
+  if (!target.life.alive || avoidsDamage(ctx, target, detail?.groundLow)) return;
   const dealt = Math.min(amount, target.stats.hp);
   target.stats.hp -= dealt;
   target.life.lastAttackerId = source.id;
-  target.life.damageBy.set(
-    source.id,
-    (target.life.damageBy.get(source.id) ?? 0) + dealt,
-  );
+  target.life.damageBy.set(source.id, (target.life.damageBy.get(source.id) ?? 0) + dealt);
   source.combat.lastCombatTick = ctx.tick;
   target.combat.lastCombatTick = ctx.tick;
   ctx.emit({
-    type: "DAMAGE",
+    type: 'DAMAGE',
+    element: source.element ?? null,
+    expression: source.expression ?? 'base',
     sourceId: source.id,
     targetId: target.id,
     amount: dealt,
@@ -147,7 +213,7 @@ export function applyDamage(
 
 /** Boss/elite phases (tech plan §26): thresholds on HP fraction, never reverting. */
 function updatePhase(ctx: SimContext, e: Entity): void {
-  if (!e.ai || e.kind !== "monster") return;
+  if (!e.ai || e.kind !== 'monster') return;
   const def = ctx.content.monsters.get(e.defId);
   if (!def || def.phases.length === 0) return;
   const frac = e.stats.hp / e.stats.maxHp;
@@ -166,7 +232,7 @@ function updatePhase(ctx: SimContext, e: Entity): void {
     for (const s of p.skills) next.set(s, e.skills.get(s) ?? ctx.tick + 20);
     e.skills = next;
   }
-  ctx.emit({ type: "PHASE", id: e.id, phase, name: p.name });
+  ctx.emit({ type: 'PHASE', id: e.id, phase, name: p.name });
 }
 
 function kill(ctx: SimContext, target: Entity, killer: Entity | null): void {
@@ -177,10 +243,13 @@ function kill(ctx: SimContext, target: Entity, killer: Entity | null): void {
   target.movement.dir = null;
   target.combat.targetId = null;
   target.cast = null;
+  target.mobility = null;
+  target.monsterSwing = null;
+  if (target.player) target.player.farm.enabled = false;
   target.swing = null;
   target.pending = null;
-  ctx.emit({ type: "DEATH", id: target.id, killerId: killer?.id ?? null });
-  if (target.kind === "monster") rewardKill(ctx, target);
+  ctx.emit({ type: 'DEATH', id: target.id, killerId: killer?.id ?? null });
+  if (target.kind === 'monster') rewardKill(ctx, target);
 }
 
 /**
@@ -213,13 +282,7 @@ function rewardKill(ctx: SimContext, monster: Entity): void {
     if (table.gold) {
       const gold = ctx.rng.int(table.gold.min, table.gold.max);
       if (gold > 0) {
-        grantGold(
-          ctx,
-          top,
-          gold,
-          "monster_drop",
-          `kill:${monster.id}:${ctx.tick}:${tableId}`,
-        );
+        grantGold(ctx, top, gold, 'monster_drop', `kill:${monster.id}:${ctx.tick}:${tableId}`);
       }
     }
     dropLoot(ctx, monster, top, table);

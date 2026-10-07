@@ -1,6 +1,6 @@
-import type { ProgressionRules, RealmDef, StatBonus } from "@rpg/game-data";
-import type { SimContext } from "../context";
-import type { Entity } from "../entity";
+import type { ProgressionRules, RealmDef, StatBonus } from '@rpg/game-data';
+import type { SimContext } from '../context';
+import type { Entity } from '../entity';
 
 /**
  * Character growth without levels (master plan §31–62): realms set the stat
@@ -17,11 +17,7 @@ const ZERO: StatBonus = {
   speed: 0,
 };
 
-function addBonus(
-  into: StatBonus,
-  b: Partial<StatBonus> | undefined,
-  times = 1,
-): void {
+function addBonus(into: StatBonus, b: Partial<StatBonus> | undefined, times = 1): void {
   if (!b) return;
   into.hp += (b.hp ?? 0) * times;
   into.mp += (b.mp ?? 0) * times;
@@ -31,31 +27,21 @@ function addBonus(
   into.speed += (b.speed ?? 0) * times;
 }
 
-export const rules = (
-  ctx: Pick<SimContext, "content">,
-): ProgressionRules | undefined => [...ctx.content.progression.values()][0];
+export const rules = (ctx: Pick<SimContext, 'content'>): ProgressionRules | undefined =>
+  [...ctx.content.progression.values()][0];
 
-export const realmOf = (
-  ctx: Pick<SimContext, "realms">,
-  rank: number,
-): RealmDef | undefined => ctx.realms[rank];
+export const realmOf = (ctx: Pick<SimContext, 'realms'>, rank: number): RealmDef | undefined =>
+  ctx.realms[rank];
 
 /** Rank of a realm id; unknown ids fall back to the starting realm. */
-export const realmRank = (
-  ctx: Pick<SimContext, "realms">,
-  id: string | undefined,
-): number =>
+export const realmRank = (ctx: Pick<SimContext, 'realms'>, id: string | undefined): number =>
   Math.max(
     0,
     ctx.realms.findIndex((r) => r.id === id),
   );
 
 /** Damage multiplier for `attacker` hitting `defender` (master plan §57). */
-export function realmGapFactor(
-  ctx: SimContext,
-  attacker: Entity,
-  defender: Entity,
-): number {
+export function realmGapFactor(ctx: SimContext, attacker: Entity, defender: Entity): number {
   const gap = attacker.realm - defender.realm;
   if (gap === 0) return 1;
   const r = rules(ctx);
@@ -73,7 +59,7 @@ export function backlashFactor(ctx: SimContext, e: Entity): number {
 
 /** Capacity used by open nodes. */
 export function cultivationLoad(
-  ctx: Pick<SimContext, "content">,
+  ctx: Pick<SimContext, 'content'>,
   nodes: readonly string[],
 ): { meridian: number; body: number } {
   let meridian = 0;
@@ -92,8 +78,7 @@ export function playerBonus(ctx: SimContext, e: Entity): StatBonus {
   const p = e.player;
   if (!p) return total;
   addBonus(total, realmOf(ctx, e.realm)?.bonus);
-  for (const id of p.nodes)
-    addBonus(total, ctx.content.cultivation.get(id)?.bonus);
+  for (const id of p.nodes) addBonus(total, ctx.content.cultivation.get(id)?.bonus);
   const upgradeRules = [...ctx.content.upgrades.values()][0];
   for (const instanceId of Object.values(p.equipment)) {
     const inv = p.inventory.find((i) => i.instanceId === instanceId);
@@ -129,28 +114,21 @@ export function recomputePlayerStats(ctx: SimContext, e: Entity): void {
   // A main-hand ranged weapon replaces swings with shots (systems/ranged.ts);
   // auto-attacks then hold position inside its range instead of closing in.
   const mainId = p.equipment.main_hand;
-  const main = mainId
-    ? p.inventory.find((i) => i.instanceId === mainId)
-    : undefined;
-  const rangedId = main
-    ? ctx.content.items.get(main.itemId)?.ranged
-    : undefined;
+  const main = mainId ? p.inventory.find((i) => i.instanceId === mainId) : undefined;
+  const rangedId = main ? ctx.content.items.get(main.itemId)?.ranged : undefined;
   const ranged = rangedId ? ctx.content.ranged.get(rangedId) : undefined;
   p.ranged = mainId && ranged ? { instanceId: mainId, def: ranged } : null;
   e.combat.range = ranged ? ranged.projectile.range * 0.8 : def.combat.range;
   if (e.life.alive) {
-    e.stats.hp = Math.min(
-      e.stats.maxHp,
-      Math.max(1, Math.round(hpRatio * e.stats.maxHp)),
-    );
+    e.stats.hp = Math.min(e.stats.maxHp, Math.max(1, Math.round(hpRatio * e.stats.maxHp)));
     e.stats.mp = Math.min(e.stats.maxMp, Math.round(mpRatio * e.stats.maxMp));
   }
   const skills = new Map<string, number>();
   const learned = [
     ...def.skills,
+    ...[...ctx.content.skills.values()].filter((s) => s.mobility).map((s) => s.id),
     ...p.nodes.flatMap((id) => ctx.content.cultivation.get(id)?.skillId ?? []),
   ];
-  for (const s of learned)
-    if (!skills.has(s)) skills.set(s, e.skills.get(s) ?? 0);
+  for (const s of learned) if (!skills.has(s)) skills.set(s, e.skills.get(s) ?? 0);
   e.skills = skills;
 }

@@ -1,7 +1,14 @@
-import type { LedgerEntry, PlayerSave } from "@rpg/game-core";
-import { and, desc, eq, ilike, inArray, isNull, or, sql } from "drizzle-orm";
-import { v7 as uuidv7 } from "uuid";
-import type { Db } from "./db";
+import type { LedgerEntry, PlayerSave } from '@rpg/game-core';
+import type { Element } from '@rpg/game-protocol';
+import {
+  SkillCooldownsSchema as CooldownsSchema,
+  ElementSchema,
+  ExpressionSchema,
+} from '@rpg/game-protocol';
+import { and, desc, eq, ilike, inArray, isNull, or, sql } from 'drizzle-orm';
+import { v7 as uuidv7 } from 'uuid';
+
+import type { Db } from './db';
 import {
   accounts,
   auditLog,
@@ -13,9 +20,9 @@ import {
   itemInstances,
   refreshTokens,
   wallets,
-} from "./schema";
+} from './schema';
 
-export type Role = "player" | "gm" | "admin";
+export type Role = 'player' | 'gm' | 'admin';
 
 export interface AccountRow {
   id: string;
@@ -32,6 +39,8 @@ export interface CharacterSummary {
   accountId: string;
   name: string;
   characterDefId: string;
+  element: Element | null;
+  expression: 'base' | 'thunder' | 'ice';
   /** Realm id (game-data/realms). */
   realm: string;
   mapId: string;
@@ -64,7 +73,7 @@ export class GameRepository {
   async createAccount(
     username: string,
     passwordHash: string,
-    role: Role = "player",
+    role: Role = 'player',
   ): Promise<string> {
     const id = newId();
     await this.db.insert(accounts).values({ id, username, passwordHash, role });
@@ -81,36 +90,22 @@ export class GameRepository {
   }
 
   async getAccount(id: string): Promise<AccountRow | null> {
-    const rows = await this.db
-      .select()
-      .from(accounts)
-      .where(eq(accounts.id, id))
-      .limit(1);
+    const rows = await this.db.select().from(accounts).where(eq(accounts.id, id)).limit(1);
     return (rows[0] as AccountRow | undefined) ?? null;
   }
 
   async setRole(accountId: string, role: Role): Promise<void> {
-    await this.db
-      .update(accounts)
-      .set({ role })
-      .where(eq(accounts.id, accountId));
+    await this.db.update(accounts).set({ role }).where(eq(accounts.id, accountId));
   }
 
   async setTotpSecret(accountId: string, secret: string | null): Promise<void> {
-    await this.db
-      .update(accounts)
-      .set({ totpSecret: secret })
-      .where(eq(accounts.id, accountId));
+    await this.db.update(accounts).set({ totpSecret: secret }).where(eq(accounts.id, accountId));
   }
 
-  async setSanction(
-    accountId: string,
-    kind: "ban" | "mute",
-    until: Date | null,
-  ): Promise<void> {
+  async setSanction(accountId: string, kind: 'ban' | 'mute', until: Date | null): Promise<void> {
     await this.db
       .update(accounts)
-      .set(kind === "ban" ? { bannedUntil: until } : { mutedUntil: until })
+      .set(kind === 'ban' ? { bannedUntil: until } : { mutedUntil: until })
       .where(eq(accounts.id, accountId));
   }
 
@@ -147,12 +142,7 @@ export class GameRepository {
     await this.db
       .update(refreshTokens)
       .set({ revokedAt: new Date() })
-      .where(
-        and(
-          eq(refreshTokens.familyId, familyId),
-          isNull(refreshTokens.revokedAt),
-        ),
-      );
+      .where(and(eq(refreshTokens.familyId, familyId), isNull(refreshTokens.revokedAt)));
   }
 
   // ---- Characters --------------------------------------------------------
@@ -161,14 +151,38 @@ export class GameRepository {
     accountId: string;
     name: string;
     characterDefId: string;
+    element?: Element;
+    expression?: 'base' | 'thunder' | 'ice';
     mapId: string;
   }): Promise<string> {
     const id = newId();
     await this.db.transaction(async (tx) => {
-      await tx.insert(characters).values({ id, ...input });
+      await tx.insert(characters).values({
+        id,
+        ...input,
+        element: input.element ?? 'moc',
+        expression: input.expression ?? 'base',
+      });
       await tx.insert(wallets).values({ characterId: id, gold: 0 });
     });
     return id;
+  }
+
+  /** One-time choice for legacy saves; regular saves never write the element columns. */
+  async chooseLegacyElement(
+    id: string,
+    accountId: string,
+    element: Element,
+    expression: 'base' | 'thunder' | 'ice',
+  ): Promise<boolean> {
+    const result = await this.db
+      .update(characters)
+      .set({ element, expression })
+      .where(
+        and(eq(characters.id, id), eq(characters.accountId, accountId), isNull(characters.element)),
+      )
+      .returning({ id: characters.id });
+    return result.length === 1;
   }
 
   async listCharacters(accountId: string): Promise<CharacterSummary[]> {
@@ -178,6 +192,8 @@ export class GameRepository {
         accountId: characters.accountId,
         name: characters.name,
         characterDefId: characters.characterDefId,
+        element: characters.element,
+        expression: characters.expression,
         realm: characters.realm,
         mapId: characters.mapId,
       })
@@ -186,58 +202,55 @@ export class GameRepository {
       .orderBy(characters.createdAt);
   }
 
-  async searchCharacters(
-    query: string,
-    limit = 20,
-  ): Promise<CharacterSummary[]> {
+  async searchCharacters(query: string, limit = 20): Promise<CharacterSummary[]> {
     return this.db
       .select({
         id: characters.id,
         accountId: characters.accountId,
         name: characters.name,
         characterDefId: characters.characterDefId,
+        element: characters.element,
+        expression: characters.expression,
         realm: characters.realm,
         mapId: characters.mapId,
       })
       .from(characters)
-      .where(ilike(characters.name, `%${query.replace(/[%_]/g, "")}%`))
+      .where(ilike(characters.name, `%${query.replace(/[%_]/g, '')}%`))
       .limit(limit);
   }
 
   /** Returns null for unknown ids. A character with no items yet has an empty inventory (starter kit applies). */
   async loadCharacter(id: string): Promise<StoredCharacter | null> {
-    const rows = await this.db
-      .select()
-      .from(characters)
-      .where(eq(characters.id, id))
-      .limit(1);
+    const rows = await this.db.select().from(characters).where(eq(characters.id, id)).limit(1);
     const c = rows[0];
     if (!c) return null;
     const items = await this.db
       .select()
       .from(itemInstances)
       .where(eq(itemInstances.characterId, id));
-    const wallet = await this.db
-      .select()
-      .from(wallets)
-      .where(eq(wallets.characterId, id))
-      .limit(1);
-    const equipment: PlayerSave["equipment"] = {};
+    const wallet = await this.db.select().from(wallets).where(eq(wallets.characterId, id)).limit(1);
+    const equipment: PlayerSave['equipment'] = {};
     for (const i of items)
-      if (i.equippedSlot)
-        equipment[i.equippedSlot as keyof PlayerSave["equipment"]] = i.id;
+      if (i.equippedSlot) equipment[i.equippedSlot as keyof PlayerSave['equipment']] = i.id;
     return {
       id: c.id,
       accountId: c.accountId,
       name: c.name,
       characterDefId: c.characterDefId,
+      element: c.element ? ElementSchema.parse(c.element) : null,
+      expression: ExpressionSchema.parse(c.expression),
       realm: c.realm,
       mapId: c.mapId,
       x: c.x,
       z: c.z,
       version: c.version,
       save: {
+        ...(Object.keys(c.cooldowns).length
+          ? { cooldowns: CooldownsSchema.parse(c.cooldowns) }
+          : {}),
         characterId: c.characterDefId,
+        element: c.element ? ElementSchema.parse(c.element) : undefined,
+        expression: ExpressionSchema.parse(c.expression),
         realm: c.realm,
         nodes: (c.nodes as string[]) ?? [],
         gold: wallet[0]?.gold ?? 0,
@@ -250,7 +263,7 @@ export class GameRepository {
           ...(i.enhance > 0 ? { enhance: i.enhance } : {}),
         })),
         equipment,
-        quests: (c.questLog as PlayerSave["quests"]) ?? [],
+        quests: (c.questLog as PlayerSave['quests']) ?? [],
       },
     };
   }
@@ -308,6 +321,7 @@ export class GameRepository {
           realm: save.realm,
           realmRank: save.realmRank ?? 0,
           nodes: save.nodes,
+          cooldowns: CooldownsSchema.parse(save.cooldowns ?? {}),
           hp: save.hp,
           mp: save.mp,
           mapId: place.mapId,
@@ -348,7 +362,7 @@ export class GameRepository {
       if (anomaly) {
         await tx.insert(auditLog).values({
           id: newId(),
-          action: "ledger_mismatch",
+          action: 'ledger_mismatch',
           target: id,
           payload: { prevGold, applied, saved: save.gold },
         });
@@ -379,11 +393,7 @@ export class GameRepository {
         nodes: nodeCount,
       })
       .from(characters)
-      .orderBy(
-        desc(characters.realmRank),
-        desc(nodeCount),
-        characters.createdAt,
-      )
+      .orderBy(desc(characters.realmRank), desc(nodeCount), characters.createdAt)
       .limit(limit);
   }
 
@@ -396,6 +406,8 @@ export class GameRepository {
         accountId: characters.accountId,
         name: characters.name,
         characterDefId: characters.characterDefId,
+        element: characters.element,
+        expression: characters.expression,
         realm: characters.realm,
         mapId: characters.mapId,
       })
@@ -406,55 +418,34 @@ export class GameRepository {
   }
 
   /** Sends a request, or accepts it if the other side already asked. */
-  async requestFriend(
-    fromId: string,
-    toId: string,
-  ): Promise<"pending" | "accepted"> {
-    if (fromId === toId) throw new Error("cannot befriend yourself");
+  async requestFriend(fromId: string, toId: string): Promise<'pending' | 'accepted'> {
+    if (fromId === toId) throw new Error('cannot befriend yourself');
     return this.db.transaction(async (tx) => {
       const reverse = await tx
         .select()
         .from(friendships)
-        .where(
-          and(
-            eq(friendships.requesterId, toId),
-            eq(friendships.targetId, fromId),
-          ),
-        )
+        .where(and(eq(friendships.requesterId, toId), eq(friendships.targetId, fromId)))
         .limit(1);
       if (reverse[0]) {
         await tx
           .update(friendships)
-          .set({ status: "accepted" })
-          .where(
-            and(
-              eq(friendships.requesterId, toId),
-              eq(friendships.targetId, fromId),
-            ),
-          );
-        return "accepted" as const;
+          .set({ status: 'accepted' })
+          .where(and(eq(friendships.requesterId, toId), eq(friendships.targetId, fromId)));
+        return 'accepted' as const;
       }
       await tx
         .insert(friendships)
         .values({ requesterId: fromId, targetId: toId })
         .onConflictDoNothing();
-      return "pending" as const;
+      return 'pending' as const;
     });
   }
 
-  async acceptFriend(
-    characterId: string,
-    requesterId: string,
-  ): Promise<boolean> {
+  async acceptFriend(characterId: string, requesterId: string): Promise<boolean> {
     const rows = await this.db
       .update(friendships)
-      .set({ status: "accepted" })
-      .where(
-        and(
-          eq(friendships.requesterId, requesterId),
-          eq(friendships.targetId, characterId),
-        ),
-      )
+      .set({ status: 'accepted' })
+      .where(and(eq(friendships.requesterId, requesterId), eq(friendships.targetId, characterId)))
       .returning({ r: friendships.requesterId });
     return rows.length > 0;
   }
@@ -464,14 +455,8 @@ export class GameRepository {
       .delete(friendships)
       .where(
         or(
-          and(
-            eq(friendships.requesterId, characterId),
-            eq(friendships.targetId, otherId),
-          ),
-          and(
-            eq(friendships.requesterId, otherId),
-            eq(friendships.targetId, characterId),
-          ),
+          and(eq(friendships.requesterId, characterId), eq(friendships.targetId, otherId)),
+          and(eq(friendships.requesterId, otherId), eq(friendships.targetId, characterId)),
         ),
       );
   }
@@ -480,15 +465,8 @@ export class GameRepository {
     const rows = await this.db
       .select()
       .from(friendships)
-      .where(
-        or(
-          eq(friendships.requesterId, characterId),
-          eq(friendships.targetId, characterId),
-        ),
-      );
-    const otherIds = rows.map((r) =>
-      r.requesterId === characterId ? r.targetId : r.requesterId,
-    );
+      .where(or(eq(friendships.requesterId, characterId), eq(friendships.targetId, characterId)));
+    const otherIds = rows.map((r) => (r.requesterId === characterId ? r.targetId : r.requesterId));
     const others = otherIds.length
       ? await this.db
           .select({
@@ -501,19 +479,15 @@ export class GameRepository {
       : [];
     const byId = new Map(others.map((o) => [o.id, o]));
     const friends = rows.flatMap((r) => {
-      const other = byId.get(
-        r.requesterId === characterId ? r.targetId : r.requesterId,
-      );
+      const other = byId.get(r.requesterId === characterId ? r.targetId : r.requesterId);
       if (!other) return [];
       const direction =
-        r.status === "accepted"
-          ? "friend"
+        r.status === 'accepted'
+          ? 'friend'
           : r.requesterId === characterId
-            ? "outgoing"
-            : "incoming";
-      return [
-        { ...other, status: direction as "friend" | "outgoing" | "incoming" },
-      ];
+            ? 'outgoing'
+            : 'incoming';
+      return [{ ...other, status: direction as 'friend' | 'outgoing' | 'incoming' }];
     });
 
     const membership = await this.db
@@ -562,11 +536,9 @@ export class GameRepository {
         .from(guildMembers)
         .where(eq(guildMembers.characterId, characterId))
         .limit(1);
-      if (already[0]) throw new Error("already in a guild");
+      if (already[0]) throw new Error('already in a guild');
       await tx.insert(guilds).values({ id, name, leaderId: characterId });
-      await tx
-        .insert(guildMembers)
-        .values({ characterId, guildId: id, rank: "leader" });
+      await tx.insert(guildMembers).values({ characterId, guildId: id, rank: 'leader' });
     });
     return id;
   }
@@ -578,18 +550,18 @@ export class GameRepository {
         .from(guilds)
         .where(sql`lower(${guilds.name}) = lower(${guildName})`)
         .limit(1);
-      if (!g[0]) throw new Error("guild not found");
+      if (!g[0]) throw new Error('guild not found');
       const already = await tx
         .select()
         .from(guildMembers)
         .where(eq(guildMembers.characterId, characterId))
         .limit(1);
-      if (already[0]) throw new Error("already in a guild");
+      if (already[0]) throw new Error('already in a guild');
       const count = await tx
         .select({ n: sql<number>`count(*)::int` })
         .from(guildMembers)
         .where(eq(guildMembers.guildId, g[0].id));
-      if ((count[0]?.n ?? 0) >= 50) throw new Error("guild is full");
+      if ((count[0]?.n ?? 0) >= 50) throw new Error('guild is full');
       await tx.insert(guildMembers).values({ characterId, guildId: g[0].id });
       return g[0].id;
     });
@@ -604,10 +576,8 @@ export class GameRepository {
         .where(eq(guildMembers.characterId, characterId))
         .limit(1);
       if (!m[0]) return;
-      await tx
-        .delete(guildMembers)
-        .where(eq(guildMembers.characterId, characterId));
-      if (m[0].rank !== "leader") return;
+      await tx.delete(guildMembers).where(eq(guildMembers.characterId, characterId));
+      if (m[0].rank !== 'leader') return;
       const next = await tx
         .select()
         .from(guildMembers)
@@ -617,7 +587,7 @@ export class GameRepository {
       if (next[0]) {
         await tx
           .update(guildMembers)
-          .set({ rank: "leader" })
+          .set({ rank: 'leader' })
           .where(eq(guildMembers.characterId, next[0].characterId));
         await tx
           .update(guilds)
@@ -647,10 +617,6 @@ export class GameRepository {
   }
 
   async listAudit(limit = 100) {
-    return this.db
-      .select()
-      .from(auditLog)
-      .orderBy(desc(auditLog.createdAt))
-      .limit(limit);
+    return this.db.select().from(auditLog).orderBy(desc(auditLog.createdAt)).limit(limit);
   }
 }

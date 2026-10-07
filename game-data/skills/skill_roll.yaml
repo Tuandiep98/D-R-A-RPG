@@ -1,0 +1,12 @@
+id: skill_roll
+name: Lộn nhào
+icon: "↗"
+targeting: self
+cooldown: 5
+barRole: utility
+mobility: roll
+duration: 0.3
+dodgeWindow: [0.1, 0.2]
+effects: [{ type: dash, distance: 3 }]
+vfx: mobility
+anim: { cast: Dodge_Forward_InPlace }

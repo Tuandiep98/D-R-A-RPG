@@ -1,9 +1,10 @@
 import {
   type ContentBundle,
+  compatibleExpression,
   type MapDef,
   type RealmDef,
   realmLadder,
-} from "@rpg/game-data";
+} from '@rpg/game-data';
 import type {
   EntityId,
   EntitySnapshot,
@@ -12,8 +13,8 @@ import type {
   PlayerState,
   SimEvent,
   Snapshot,
-} from "@rpg/game-protocol";
-import type { NavQuery, SimContext } from "./context";
+} from '@rpg/game-protocol';
+import type { NavQuery, SimContext } from './context';
 import {
   type CircleObstacle,
   type Entity,
@@ -22,32 +23,27 @@ import {
   newTriggerState,
   type PlayerSave,
   type Projectile,
-} from "./entity";
-import { type Bounds, clampToBounds, type Vec2 } from "./math";
-import { Rng } from "./rng";
-import { aiSystem } from "./systems/ai";
-import { combatSystem } from "./systems/combat";
-import { breakthroughChance } from "./systems/cultivation";
-import {
-  applyIntents,
-  pendingSystem,
-  type QueuedIntent,
-} from "./systems/intents";
-import { addItem, equip, INVENTORY_CAPACITY } from "./systems/inventory";
-import { actionSystem, lifeSystem } from "./systems/life";
-import { lootSystem, makeInert } from "./systems/loot";
-import { meleeSystem } from "./systems/melee";
-import { movementSystem } from "./systems/movement";
-import { questProgress } from "./systems/npc";
-import { Parties } from "./systems/party";
-import {
-  cultivationLoad,
-  realmRank,
-  recomputePlayerStats,
-} from "./systems/progression";
-import { rangedState, rangedSystem } from "./systems/ranged";
-import { skillSystem } from "./systems/skills";
-import { secondsToTicks } from "./time";
+  type SkillProjectile,
+} from './entity';
+import { type Bounds, clampToBounds, type Vec2 } from './math';
+import { Rng } from './rng';
+import { aiSystem } from './systems/ai';
+import { combatSystem } from './systems/combat';
+import { breakthroughChance } from './systems/cultivation';
+import { farmSystem } from './systems/farm';
+import { applyIntents, pendingSystem, type QueuedIntent } from './systems/intents';
+import { addItem, equip, INVENTORY_CAPACITY } from './systems/inventory';
+import { actionSystem, lifeSystem } from './systems/life';
+import { lootSystem, makeInert } from './systems/loot';
+import { meleeSystem } from './systems/melee';
+import { mobilitySystem } from './systems/mobility';
+import { movementSystem } from './systems/movement';
+import { questProgress } from './systems/npc';
+import { Parties } from './systems/party';
+import { cultivationLoad, realmRank, recomputePlayerStats } from './systems/progression';
+import { rangedState, rangedSystem } from './systems/ranged';
+import { skillSystem } from './systems/skills';
+import { secondsToTicks, TICK_RATE } from './time';
 
 export interface WorldOptions {
   content: ContentBundle;
@@ -72,6 +68,8 @@ export interface SpawnPlayerOptions {
   arrival?: string | null;
   /** Character name shown to others (online: from the DB); defaults to the class name. */
   name?: string;
+  element?: import('@rpg/game-data').Element;
+  expression?: import('@rpg/game-data').Expression;
   /** Last saved position (reconnect/login); clamped to bounds and snapped to the navmesh. */
   position?: Vec2 | null;
 }
@@ -90,6 +88,7 @@ export class World implements SimContext {
   readonly nav: NavQuery | null;
   readonly parties = new Parties();
   readonly projectiles: Projectile[] = [];
+  readonly skillProjectiles: SkillProjectile[] = [];
   private shotCounter = 0;
   private readonly entityMap = new Map<EntityId, Entity>();
   private intents: QueuedIntent[] = [];
@@ -111,8 +110,7 @@ export class World implements SimContext {
     this.nav = opts.nav ?? null;
     this.rng = new Rng(opts.seed ?? map.seed);
     this.itemIdFactory =
-      opts.newItemInstanceId ??
-      (() => `${map.id}-${opts.seed ?? map.seed}-${this.nextItem++}`);
+      opts.newItemInstanceId ?? (() => `${map.id}-${opts.seed ?? map.seed}-${this.nextItem++}`);
     this.bounds = { min: { ...map.bounds.min }, max: { ...map.bounds.max } };
     this.obstacles = map.chunks.flatMap((c) =>
       c.instances
@@ -125,7 +123,7 @@ export class World implements SimContext {
     this.spawnMonsters();
     for (const placed of map.npcs) {
       this.addEntity((id) => {
-        const e = makeInert(id, "npc", placed.npcId, placed.position, {
+        const e = makeInert(id, 'npc', placed.npcId, placed.position, {
           npc: { npcId: placed.npcId },
         });
         e.yaw = placed.rotationY;
@@ -134,7 +132,7 @@ export class World implements SimContext {
     }
     for (const portal of map.portals) {
       this.addEntity((id) =>
-        makeInert(id, "portal", portal.id, portal.position, {
+        makeInert(id, 'portal', portal.id, portal.position, {
           portal: {
             portalId: portal.id,
             targetMapId: portal.targetMapId,
@@ -168,27 +166,26 @@ export class World implements SimContext {
   }
 
   notice(ownerId: EntityId, code: NoticeCode): void {
-    if (this.entityMap.get(ownerId)?.player)
-      this.emit({ type: "NOTICE", ownerId, code });
+    if (this.entityMap.get(ownerId)?.player) this.emit({ type: 'NOTICE', ownerId, code });
   }
 
   addEntity(build: (id: EntityId) => Entity): Entity {
     const e = build(this.nextId++);
     this.entityMap.set(e.id, e);
-    this.emit({ type: "SPAWN", id: e.id });
+    this.emit({ type: 'SPAWN', id: e.id });
     return e;
   }
 
   removeEntity(id: EntityId): void {
     if (this.entityMap.get(id)?.player) this.parties.remove(this, id);
-    if (this.entityMap.delete(id)) this.emit({ type: "DESPAWN", id });
+    if (this.entityMap.delete(id)) this.emit({ type: 'DESPAWN', id });
   }
 
   newItemInstanceId(): string {
     return this.itemIdFactory();
   }
 
-  recordLedger(entry: Omit<LedgerEntry, "tick">): boolean {
+  recordLedger(entry: Omit<LedgerEntry, 'tick'>): boolean {
     if (this.ledgerKeys.has(entry.key)) return false;
     this.ledgerKeys.add(entry.key);
     this.ledger.push({ ...entry, tick: this.currentTick });
@@ -201,9 +198,7 @@ export class World implements SimContext {
 
   inSafeZone(p: Vec2): boolean {
     return this.map.zones.some(
-      (z) =>
-        z.kind === "safe" &&
-        Math.hypot(p.x - z.center.x, p.z - z.center.z) <= z.radius,
+      (z) => z.kind === 'safe' && Math.hypot(p.x - z.center.x, p.z - z.center.z) <= z.radius,
     );
   }
 
@@ -212,24 +207,27 @@ export class World implements SimContext {
   spawnPlayer(characterId: string, opts: SpawnPlayerOptions = {}): EntityId {
     const def = this.content.characters.get(characterId);
     if (!def) throw new Error(`Unknown character "${characterId}"`);
-    const arrival = opts.arrival
-      ? this.map.arrivals.find((a) => a.id === opts.arrival)
-      : undefined;
+    const arrival = opts.arrival ? this.map.arrivals.find((a) => a.id === opts.arrival) : undefined;
     let pos: Vec2 = { ...(arrival?.position ?? this.map.playerSpawn) };
     if (!arrival && opts.position) {
-      const clamped = clampToBounds(
-        opts.position,
-        this.bounds,
-        def.movement.radius,
-      );
+      const clamped = clampToBounds(opts.position, this.bounds, def.movement.radius);
       pos = this.nav ? this.nav.closest(clamped) : clamped;
     }
     const save = opts.save;
+    const element = opts.element ?? save?.element ?? def.element;
+    const expression =
+      opts.expression ??
+      save?.expression ??
+      (compatibleExpression(element, def.expression) ? def.expression : 'base');
+    if (!compatibleExpression(element, expression))
+      throw new Error('expression does not match element');
     const e = this.addEntity((id) => ({
       id,
-      kind: "player",
+      kind: 'player',
       defId: def.id,
-      faction: "players",
+      faction: 'players',
+      element,
+      expression,
       inert: false,
       realm: realmRank(this, save?.realm),
       pos,
@@ -273,13 +271,13 @@ export class World implements SimContext {
       pending: null,
       player: {
         characterId: def.id,
+        mobilityReady: new Map(),
+        farm: { enabled: false, anchor: { ...pos }, pausedUntil: 0 },
         name: opts.name ?? def.name,
         partyId: null,
         gold: save?.gold ?? 0,
         // Nodes removed from content are dropped instead of failing the load.
-        nodes: (save?.nodes ?? []).filter((n) =>
-          this.content.cultivation.has(n),
-        ),
+        nodes: (save?.nodes ?? []).filter((n) => this.content.cultivation.has(n)),
         backlashUntilTick: 0,
         inventory: save ? save.inventory.map((i) => ({ ...i })) : [],
         equipment: save ? { ...save.equipment } : {},
@@ -301,21 +299,31 @@ export class World implements SimContext {
       loot: null,
       portal: null,
       npc: null,
-      action: "idle",
+      action: 'idle',
     }));
 
     if (!save) {
       for (const starter of def.starterItems) {
         addItem(this, e, starter.itemId, starter.count);
         if (starter.equip) {
-          const inv = e.player?.inventory.find(
-            (i) => i.itemId === starter.itemId,
-          );
+          const inv = e.player?.inventory.find((i) => i.itemId === starter.itemId);
           if (inv) equip(this, e, inv.instanceId);
         }
       }
     }
     recomputePlayerStats(this, e);
+    for (const [id, seconds] of Object.entries(save?.cooldowns ?? {})) {
+      if (!Number.isFinite(seconds) || seconds <= 0 || !e.skills.has(id)) continue;
+      const ready = this.tick + secondsToTicks(Math.min(seconds, 86400));
+      const action =
+        this.content.skills.get(id)?.mobility ?? (id === 'skill_thunder_step' ? 'roll' : null);
+      if (action)
+        e.player?.mobilityReady.set(
+          action,
+          Math.max(ready, e.player.mobilityReady.get(action) ?? 0),
+        );
+      else e.skills.set(id, ready);
+    }
     if (save) {
       e.stats.hp = Math.min(e.stats.maxHp, Math.max(1, save.hp));
       e.stats.mp = Math.min(e.stats.maxMp, save.mp);
@@ -331,8 +339,27 @@ export class World implements SimContext {
     const e = this.entityMap.get(id);
     if (!e?.player) return null;
     return {
+      cooldowns: Object.fromEntries(
+        [...e.skills]
+          .map(([id, ready]) => {
+            const action =
+              this.content.skills.get(id)?.mobility ??
+              (id === 'skill_thunder_step' ? 'roll' : null);
+            return [
+              id,
+              Math.max(
+                0,
+                ((action ? (e.player?.mobilityReady.get(action) ?? 0) : ready) - this.tick) /
+                  TICK_RATE,
+              ),
+            ] as const;
+          })
+          .filter(([, seconds]) => seconds > 0),
+      ),
       characterId: e.player.characterId,
-      realm: this.realms[e.realm]?.id ?? this.realms[0]?.id ?? "",
+      element: e.element ?? undefined,
+      expression: e.expression ?? 'base',
+      realm: this.realms[e.realm]?.id ?? this.realms[0]?.id ?? '',
       realmRank: e.realm,
       nodes: [...e.player.nodes],
       gold: e.player.gold,
@@ -352,7 +379,10 @@ export class World implements SimContext {
     return {
       id: e.id,
       characterId: p.characterId,
-      realm: this.realms[e.realm]?.id ?? "",
+      farmEnabled: p.farm.enabled,
+      element: e.element ?? undefined,
+      expression: e.expression ?? 'base',
+      realm: this.realms[e.realm]?.id ?? '',
       nodes: [...p.nodes],
       meridianLoad: load.meridian,
       bodyLoad: load.body,
@@ -369,10 +399,12 @@ export class World implements SimContext {
         critChance: e.stats.critChance,
         speed: e.movement.speed,
       },
-      skills: [...e.skills].map(([skillId, readyAtTick]) => ({
-        skillId,
-        readyAtTick,
-      })),
+      skills: [...e.skills].map(([skillId, readyAtTick]) => {
+        const action =
+          this.content.skills.get(skillId)?.mobility ??
+          (skillId === 'skill_thunder_step' ? 'roll' : null);
+        return { skillId, readyAtTick: action ? (p.mobilityReady.get(action) ?? 0) : readyAtTick };
+      }),
       inventory: p.inventory.map((i) => ({ ...i })),
       inventoryCapacity: INVENTORY_CAPACITY,
       equipment: { ...p.equipment },
@@ -388,7 +420,7 @@ export class World implements SimContext {
     };
   }
 
-  private partyView(partyId: number | null): PlayerState["party"] {
+  private partyView(partyId: number | null): PlayerState['party'] {
     const party = partyId !== null ? this.parties.byId.get(partyId) : undefined;
     if (!party) return null;
     return {
@@ -428,12 +460,15 @@ export class World implements SimContext {
     const queue = this.intents;
     this.intents = [];
     this.rejected += applyIntents(this, queue);
+    for (const e of this.entityMap.values()) e.previousPos = { ...e.pos };
+    farmSystem(this);
     aiSystem(this);
+    movementSystem(this);
+    mobilitySystem(this);
     skillSystem(this);
     combatSystem(this);
     meleeSystem(this);
     rangedSystem(this);
-    movementSystem(this);
     pendingSystem(this);
     lootSystem(this);
     lifeSystem(this);
@@ -460,9 +495,10 @@ export class World implements SimContext {
         const home = this.scatter(spawn.position, spawn.radius);
         this.addEntity((id) => ({
           id,
-          kind: "monster",
+          kind: 'monster',
           defId: def.id,
-          faction: "monsters",
+          faction: 'monsters',
+          element: def.element,
           inert: false,
           realm: realmRank(this, def.realm),
           pos: { ...home },
@@ -496,7 +532,7 @@ export class World implements SimContext {
             damageBy: new Map(),
           },
           ai: {
-            state: "idle",
+            state: 'idle',
             home: { ...home },
             aggroRadius: def.ai.aggroRadius,
             leashRadius: def.ai.leashRadius,
@@ -513,7 +549,7 @@ export class World implements SimContext {
           loot: null,
           portal: null,
           npc: null,
-          action: "idle",
+          action: 'idle',
         }));
       }
     }
@@ -537,7 +573,12 @@ function toSnapshot(e: Entity): EntitySnapshot {
   return {
     id: e.id,
     kind: e.kind,
-    defId: e.kind === "loot" && e.loot ? e.loot.itemId : e.defId,
+    mobility: e.mobility
+      ? { action: e.mobility.action, startTick: e.mobility.startTick, endTick: e.mobility.endTick }
+      : null,
+    element: e.element ?? null,
+    expression: e.expression ?? 'base',
+    defId: e.kind === 'loot' && e.loot ? e.loot.itemId : e.defId,
     pos: { x: round(e.pos.x), z: round(e.pos.z) },
     yaw: round(e.yaw),
     hp: Math.max(0, Math.round(e.stats.hp)),

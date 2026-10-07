@@ -18,3 +18,5 @@ phases:
     attackMultiplier: 1.6
     speedMultiplier: 1.4
 lootTable: [loot_boss]
+
+element: tho

@@ -1,5 +1,7 @@
 # RPG 2.5D Semi-Mini — Tech Stack & Technical Plan
 
+> Combat bổ sung ngày 2026-10-08: [Ngũ hành, skill và auto farm](04_combat_elements_skills_redesign.md). Dùng plan này cho thiết kế combat mới thay mô tả auto-attack MMORPG cũ; giữ server authoritative, TS core, tick 20 Hz và SimHost. Các contract mới là đề xuất, chưa phải API runtime hiện có.
+
 ## 1. Mục tiêu dự án
 
 Xây dựng một game RPG online góc nhìn 2.5D, phong cách đồ hoạ semi-mini, ưu tiên chạy tốt trên Web/PWA trước, nhưng kiến trúc phải đủ sạch để có thể đóng gói hoặc chuyển dần sang Android/iOS native trong tương lai.

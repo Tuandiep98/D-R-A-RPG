@@ -1,0 +1,12 @@
+id: skill_blink
+name: Tốc biến
+icon: "↗"
+targeting: self
+cooldown: 14
+barRole: utility
+mobility: blink
+duration: 0.15
+dodgeWindow: [0, 0]
+effects: [{ type: dash, distance: 4 }]
+vfx: mobility
+anim: { cast: Dodge_Forward_InPlace }

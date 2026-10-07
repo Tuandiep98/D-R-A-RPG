@@ -2,7 +2,7 @@ id: skill_thunder_execution
 name: Tử Điện Trảm
 description: Một nhát kiếm sét mạnh vào mục tiêu ở gần.
 icon: "⚔"
-targeting: target
+targeting: point
 range: 2
 castTime: 0.3
 cooldown: 10
@@ -13,3 +13,6 @@ vfx: thunder_strike
 # Clip trong model của người thi triển (presentation, D-032).
 anim: { cast: Melee_1H_Attack_Jump_Chop_InPlace, castSpeed: 2.4 }
 sfx: { cast: [sfx_draw_blade], impact: [sfx_explosion_low] }
+
+delivery: cone
+arc: 70

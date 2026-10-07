@@ -1,0 +1,12 @@
+id: skill_jump
+name: Nhảy
+icon: "↗"
+targeting: self
+cooldown: 3
+barRole: utility
+mobility: jump
+duration: 0.45
+dodgeWindow: [0.1, 0.35]
+effects: [{ type: dash, distance: 1 }]
+vfx: mobility
+anim: { cast: Dodge_Forward_InPlace }

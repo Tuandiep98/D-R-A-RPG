@@ -8,3 +8,5 @@ movement: { speed: 4.2, radius: 0.4 }
 combat: { range: 1.1, attackInterval: 1.0 }
 ai: { type: melee, aggroRadius: 6, leashRadius: 13, wanderRadius: 4 }
 lootTable: [loot_fox]
+
+element: hoa

@@ -1,13 +1,13 @@
 id: skill_thunder_step
 name: Lôi Bộ
-description: Lướt 4 mét theo hướng đang di chuyển; đứng yên thì lướt theo hướng nhìn.
+description: Lộn 3 mét theo hướng đang di chuyển; đứng yên thì lướt theo hướng nhìn.
 icon: "⚡"
 targeting: self
-cooldown: 4
-mpCost: 8
+cooldown: 5
+mpCost: 0
 barRole: utility
 effects:
-  - { type: dash, distance: 4 }
+  - { type: dash, distance: 3 }
 vfx: thunder_dash
 # Clip trong model của người thi triển (presentation, D-032).
 anim: { cast: Dodge_Forward_InPlace }

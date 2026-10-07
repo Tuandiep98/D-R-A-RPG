@@ -13,3 +13,7 @@ vfx: thunder_leap
 # Clip trong model của người thi triển (presentation, D-032).
 anim: { cast: Melee_1H_Attack_Slice_Horizontal, castSpeed: 1.6 }
 sfx: { cast: [sfx_laser_small], impact: [sfx_force_field] }
+
+delivery: cone
+range: 1.8
+arc: 110

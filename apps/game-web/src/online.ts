@@ -3,11 +3,14 @@
  * refresh token is kept in sessionStorage so a reload does not log out but
  * closing the tab does (smaller XSS blast radius than localStorage).
  */
-export const API_URL: string =
-  import.meta.env.VITE_API_URL ?? "http://localhost:3000";
-const REFRESH_KEY = "rpg.refresh";
+export const API_URL: string = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
+const REFRESH_KEY = 'rpg.refresh';
+
+import type { Element } from '@rpg/game-protocol';
 
 export interface CharacterSummary {
+  element: Element | null;
+  expression: 'base' | 'thunder' | 'ice';
   id: string;
   name: string;
   /** Realm id (game-data/realms). */
@@ -29,21 +32,17 @@ async function request<T>(
 ): Promise<T> {
   const doFetch = () =>
     fetch(`${API_URL}${path}`, {
-      method: init.method ?? (init.body ? "POST" : "GET"),
+      method: init.method ?? (init.body ? 'POST' : 'GET'),
       headers: {
-        ...(init.body ? { "content-type": "application/json" } : {}),
-        ...(init.auth && accessToken
-          ? { authorization: `Bearer ${accessToken}` }
-          : {}),
+        ...(init.body ? { 'content-type': 'application/json' } : {}),
+        ...(init.auth && accessToken ? { authorization: `Bearer ${accessToken}` } : {}),
       },
       body: init.body ? JSON.stringify(init.body) : undefined,
     });
   let res = await doFetch();
-  if (res.status === 401 && init.auth && (await refresh()))
-    res = await doFetch();
+  if (res.status === 401 && init.auth && (await refresh())) res = await doFetch();
   const data = res.status === 204 ? {} : await res.json().catch(() => ({}));
-  if (!res.ok)
-    throw new Error((data as { error?: string }).error ?? `HTTP ${res.status}`);
+  if (!res.ok) throw new Error((data as { error?: string }).error ?? `HTTP ${res.status}`);
   return data as T;
 }
 
@@ -65,12 +64,9 @@ export async function refresh(): Promise<boolean> {
   }
   if (!token) return false;
   try {
-    const t = await request<{ accessToken: string; refreshToken: string }>(
-      "/auth/refresh",
-      {
-        body: { refreshToken: token },
-      },
-    );
+    const t = await request<{ accessToken: string; refreshToken: string }>('/auth/refresh', {
+      body: { refreshToken: token },
+    });
     storeTokens(t);
     return true;
   } catch {
@@ -79,11 +75,8 @@ export async function refresh(): Promise<boolean> {
   }
 }
 
-export async function register(
-  username: string,
-  password: string,
-): Promise<void> {
-  await request("/auth/register", { body: { username, password } });
+export async function register(username: string, password: string): Promise<void> {
+  await request('/auth/register', { body: { username, password } });
 }
 
 export async function login(username: string, password: string): Promise<void> {
@@ -91,24 +84,31 @@ export async function login(username: string, password: string): Promise<void> {
     accessToken: string;
     refreshToken: string;
     mfaRequired?: boolean;
-  }>("/auth/login", {
+  }>('/auth/login', {
     body: { username, password },
   });
-  if (t.mfaRequired)
-    throw new Error("Tài khoản quản trị: hãy đăng nhập qua trang admin");
+  if (t.mfaRequired) throw new Error('Tài khoản quản trị: hãy đăng nhập qua trang admin');
   storeTokens(t);
 }
 
 export const listCharacters = () =>
-  request<{ characters: CharacterSummary[] }>("/characters", { auth: true });
+  request<{ characters: CharacterSummary[] }>('/characters', { auth: true });
 
-export const createCharacter = (name: string) =>
-  request<{ id: string }>("/characters", { body: { name }, auth: true });
+export const createCharacter = (
+  name: string,
+  element: Element = 'moc',
+  expression: 'base' | 'thunder' | 'ice' = 'base',
+) => request<{ id: string }>('/characters', { body: { name, element, expression }, auth: true });
+export const chooseLegacyElement = (
+  id: string,
+  element: Element,
+  expression: 'base' | 'thunder' | 'ice',
+) => request(`/characters/${id}/element`, { body: { element, expression }, auth: true });
 
 /** Fresh session token per (re)connect: game tokens are short-lived. */
 export const startSession = (characterId: string) =>
   request<GameSession>(`/characters/${characterId}/session`, {
-    method: "POST",
+    method: 'POST',
     body: {},
     auth: true,
   });
@@ -116,9 +116,7 @@ export const startSession = (characterId: string) =>
 export const hasSession = (): boolean => accessToken !== null;
 
 export const fetchLeaderboard = () =>
-  request<{ leaderboard: { name: string; realm: string; nodes: number }[] }>(
-    "/leaderboard",
-  );
+  request<{ leaderboard: { name: string; realm: string; nodes: number }[] }>('/leaderboard');
 
 export interface SocialState {
   friends: {
@@ -126,7 +124,7 @@ export interface SocialState {
     name: string;
     /** Realm id (game-data/realms). */
     realm: string;
-    status: "friend" | "incoming" | "outgoing";
+    status: 'friend' | 'incoming' | 'outgoing';
   }[];
   guild: {
     id: string;
@@ -142,13 +140,13 @@ export const addFriend = (characterId: string, name: string) =>
   request(`/characters/${characterId}/friends`, { body: { name }, auth: true });
 export const acceptFriend = (characterId: string, otherId: string) =>
   request(`/characters/${characterId}/friends/${otherId}/accept`, {
-    method: "POST",
+    method: 'POST',
     body: {},
     auth: true,
   });
 export const removeFriend = (characterId: string, otherId: string) =>
   request(`/characters/${characterId}/friends/${otherId}`, {
-    method: "DELETE",
+    method: 'DELETE',
     auth: true,
   });
 export const createGuild = (characterId: string, name: string) =>
@@ -160,7 +158,7 @@ export const joinGuild = (characterId: string, name: string) =>
   });
 export const leaveGuild = (characterId: string) =>
   request(`/characters/${characterId}/guild/leave`, {
-    method: "POST",
+    method: 'POST',
     body: {},
     auth: true,
   });
