@@ -1,8 +1,8 @@
 # Generated from art/third_party/kaykit_adventurers/originals/Assets/gltf/crossbow_1handed.gltf (584 tris, longest z 1.22 → 0.7 m).
-# grip rotation copied from equip_sword_01 — NOT fitted yet, check with pnpm smoke:gear
+# KayKit native: identity transform on handslot at the character scale (D-027).
 id: gear_weapon_kk_crossbow
 kind: equipment
 modelAssetId: weapon_kk_crossbow
-scale: 0.5729
-attach: { socket: hand_r, position: [0, 0, 0], rotation: [1.5708, 0, 0] }
+scale: 0.62
+attach: { socket: hand_r, position: [0, 0, 0], rotation: [0, 0, 0] }
 placeholder: { shape: box, color: "#c9ced6", height: 0.233, radius: 0.35 }

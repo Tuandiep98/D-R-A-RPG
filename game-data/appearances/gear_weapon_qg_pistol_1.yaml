@@ -1,8 +1,0 @@
-# Generated from art/third_party/quaternius_ultimate_guns/converted/OBJ/Pistol_1.glb (1040 tris, longest x 1.82 → 0.3 m).
-# barrel along the long axis — rotation NOT fitted yet, check with pnpm smoke:gear
-id: gear_weapon_qg_pistol_1
-kind: equipment
-modelAssetId: weapon_qg_pistol_1
-scale: 0.1649
-attach: { socket: hand_r, position: [0, 0, 0], rotation: [0, 0, 0] }
-placeholder: { shape: box, color: "#c9ced6", height: 0.192, radius: 0.15 }

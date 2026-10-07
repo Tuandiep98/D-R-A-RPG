@@ -174,3 +174,9 @@ Mỗi quyết định: ngày, bối cảnh, quyết định, hệ quả. Khi mâ
 ## D-026 — Trang bị dùng model thật, gắn bằng socket
 - **Ngày:** 2026-10-07
 - **Quyết định:** `GearAttachments` hiện placeholder ngay rồi thay bằng model (`appearance.modelAssetId`, `scale`, `yawOffset`) khi tải xong. Góc cầm chuẩn cho `hand_r` của humanoid_v1 là xoay X +90°. Mỗi model đã duyệt có appearance `gear_*` (trang bị) hoặc `drop_*` (vật rơi) sinh tự động với scale tính từ kích thước thật.
+
+## D-027 — Đổi chuẩn nhân vật sang KayKit (chibi ~2.2 đầu, Rig_Medium)
+- **Ngày:** 2026-10-07
+- **Bối cảnh:** chủ dự án chọn phong cách KayKit Adventurers sau khi so sánh trong game (`reports/smoke/kaykit_vs_ubc.png`): nhân vật đầu to đọc rõ ở camera 2.5D, hệ KayKit đồng bộ style (nhân vật, quái Skeletons, dungeon, rừng, 133 animation), nhẹ (~300 KB, 6–9k tris, 1 atlas).
+- **Quyết định:** `kaykit_rig_medium_v1` là rig chuẩn cho player/NPC; ghi đè mục "semi-mini ~5 đầu" của assets plan. Player = KayKit Rogue, NPC = Mage / Rogue Hooded / Knight / Barbarian (tạm, chờ mảnh Á Đông). Vũ khí KayKit gắn `handslot.*` không xoay ở scale 0.62. Modular Outfits → `rejected`; Quaternius Medieval Weapons, Ultimate Guns → `prototype_only`. Animation chiến đấu lấy từ KayKit Character Animations (FBX) qua `pnpm assets:convert` (FBX2glTF).
+- **Hệ quả:** cần mảnh trang phục Á Đông trên Rig_Medium (art); tạm dùng `Throw`/`Use_Item` cho attack/cast tới khi có gói combat; D-026 (xoay X +90°) chỉ còn đúng cho humanoid_v1.

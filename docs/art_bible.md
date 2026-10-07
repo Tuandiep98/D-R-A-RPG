@@ -4,9 +4,10 @@ Bản khởi đầu theo assets plan §3. **Cần artist duyệt và bổ sung h
 
 ## Định hướng
 
-- Stylized 3D low/mid-poly, semi-mini ~5 đầu. Đẹp nhờ style, ánh sáng, bố cục và VFX — không dựa vào polygon cao.
+- Stylized 3D low-poly **chibi ~2–2.3 đầu theo KayKit** (D-027; thay mục tiêu semi-mini ~5 đầu cũ). Đầu to để đọc rõ ở góc camera 2.5D; đẹp nhờ style, màu atlas, ánh sáng và VFX — không dựa vào polygon cao.
+- Chuẩn nhân vật: KayKit `Rig_Medium`, chia mảnh Head / Body / Arm / Leg / Cape / Hat → ghép chéo được để làm trang bị. Đổi màu bằng gradient atlas 1024 (xuống 128 được).
 - Ba hệ cùng một thế giới: **Võ hiệp** (vải, da, thép, gỗ), **Tu tiên** (ngọc, vàng, linh quang), **Cơ giới** (kim loại stylized, gốm, năng lượng).
-- Asset hiện tại (Quaternius CC0) là bộ khởi đầu: đọc rõ silhouette nhưng **chưa thống nhất style** giữa pack người/thú/robot ✎.
+- Ưu tiên asset cùng hệ KayKit (Adventurers, Skeletons, Dungeon Remastered, Forest Nature, Character Animations) để thế giới đồng bộ. Quaternius/Kenney chỉ dùng khi khối dày, tròn, đồ chơi; vũ khí mảnh và súng tỉ lệ thật để `prototype_only` ✎.
 
 ## Camera và ánh sáng (đã chốt trong code)
 
@@ -36,12 +37,14 @@ Bản khởi đầu theo assets plan §3. **Cần artist duyệt và bổ sung h
 
 | Loại              | Chiều cao mục tiêu             |
 | ----------------- | ------------------------------ |
-| Player            | 1.6 m                          |
+| Player (KayKit, scale 0.62) | 1.35–1.6 m (tuỳ mũ/tóc) |
 | Quái thường (thú) | 0.8–1.1 m                      |
 | Robot thường      | ~1.9 m                         |
 | Tinh anh          | ~1.8 m, tint vàng              |
 | Boss              | 3–4 m (1.8–4× player), tint đỏ |
 | Cây               | 4–7 m                          |
+
+Vũ khí: giữ **tỉ lệ gốc KayKit** (cùng scale 0.62 với nhân vật, gắn `handslot.*` không xoay) — vốn đã to, dày so với thân chibi. Đồ vật/prop: khối tròn, cạnh vát, chi tiết lớn; tránh chi tiết mảnh khó đọc ở khoảng cách 6–20 m.
 
 ## VFX
 
@@ -50,7 +53,7 @@ Pool có giới hạn theo preset (`vfxCap`). Telegraph boss **luôn hiện** k�
 ## Việc cần artist ✎
 
 1. Lineup 3 hệ cạnh nhau cùng camera/ánh sáng; chốt tỉ lệ đầu/thân.
-2. Base character modular + 3 outfit (rig_contract, equipment_contract).
+2. Bộ mảnh Á Đông trên `Rig_Medium` (đạo bào, áo võ, búi tóc, nón lá, giáp cơ giới) — kitbash từ mảnh KayKit hoặc làm mới trong Blender, giữ tên joint.
 3. Kit kiến trúc "di tích + cơ quan cổ" thay đá placeholder ở Phế Tích Cơ Giới.
 4. Model boss "Cơ Quan Thần Tướng" riêng (hiện dùng mech Space Kit).
-5. Icon item/skill thật (hiện là emoji).
+5. Bộ icon skill cùng style (gợi ý: SVG game-icons.net tô màu + khung chung); icon KDRN hiện tại là placeholder vẽ tay, lệch style.

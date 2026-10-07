@@ -151,13 +151,17 @@ for (const dir of packs) {
         }
         await graftParts(doc, parts);
       }
-      if (asset.animationSource) {
-        const animationFile = join(packDir, asset.animationSource);
-        if (!existsSync(animationFile)) {
-          errors.push(`${pack.packId}/${asset.assetId}: ${asset.animationSource} not found`);
-          continue;
-        }
-        const animationDoc = await readTolerant(io, animationFile, [], (message) =>
+      const animationSources =
+        typeof asset.animationSource === 'string'
+          ? [asset.animationSource]
+          : (asset.animationSource ?? []);
+      const missingAnimation = animationSources.find((f) => !existsSync(join(packDir, f)));
+      if (missingAnimation) {
+        errors.push(`${pack.packId}/${asset.assetId}: ${missingAnimation} not found`);
+        continue;
+      }
+      for (const source of animationSources) {
+        const animationDoc = await readTolerant(io, join(packDir, source), [], (message) =>
           warnings.push(`${asset.assetId}: ${message}`),
         );
         graftAnimations(doc, animationDoc, asset.animationClips);

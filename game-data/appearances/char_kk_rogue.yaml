@@ -1,6 +1,7 @@
-# KayKit Adventurers — Rogue on Rig_Medium (art standard since D-027).
-# attack/cast borrow Throw/Use_Item until KayKit Character Animations (combat) is converted.
-id: char_player_default
+# KayKit Adventurers (rogue) on Rig_Medium — chibi ~2.2 heads. Preview: /?player=char_kk_rogue
+# Free tier has no attack/cast clips: attack/cast borrow Throw/Use_Item until
+# KayKit Character Animations (combat, FBX) is converted.
+id: char_kk_rogue
 kind: character
 modelAssetId: char_kk_rogue
 scale: 0.62
@@ -18,6 +19,6 @@ sockets:
 hitDelay: 0.3
 placeholder:
   shape: capsule
-  color: "#3d7bd9"
+  color: "#d9a066"
   height: 1.5
   radius: 0.42

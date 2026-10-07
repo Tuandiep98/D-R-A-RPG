@@ -34,7 +34,8 @@
     "assets:inspect": "tsx tools/asset-processor/inspect.ts",
     "assets:sheet": "tsx tools/asset-processor/contact-sheet.ts",
     "media:build": "tsx tools/asset-processor/media.ts",
-    "smoke:gear": "tsx tools/smoke/gear-fit.ts"
+    "smoke:gear": "tsx tools/smoke/gear-fit.ts",
+    "assets:proportions": "tsx tools/asset-processor/proportions.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

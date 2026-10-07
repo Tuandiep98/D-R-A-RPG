@@ -1,8 +1,0 @@
-# Generated from art/third_party/quaternius_medieval_weapons/converted/OBJ/Hammer_Small.glb (1474 tris, longest y 4.33 → 0.7 m).
-# grip rotation copied from equip_sword_01 — NOT fitted yet, check with pnpm smoke:gear
-id: gear_weapon_qm_hammer_small
-kind: equipment
-modelAssetId: weapon_qm_hammer_small
-scale: 0.1617
-attach: { socket: hand_r, position: [0, 0, 0], rotation: [1.5708, 0, 0] }
-placeholder: { shape: box, color: "#c9ced6", height: 0.7, radius: 0.12 }

@@ -6,8 +6,8 @@
   "license": "CC0-1.0",
   "licenseVerified": true,
   "downloadedAt": "2026-10-07",
-  "status": "approved",
-  "notes": "OBJ-only download; GLB produced by `pnpm assets:convert` into converted/. Flat colours match the Quaternius outfits. Models are ~5 units long — scale in the appearance. License approved by the project owner on 2026-10-07. Evidence: itch.io listing states CC0 (page blocked automated fetch); no license file in the zip.",
+  "status": "prototype_only",
+  "notes": "Prototype only since D-027 (KayKit chibi standard): thin, realistic-proportion blades read wrong in chibi hands. Kept for reference/kitbashing. OBJ-only download; GLB produced by `pnpm assets:convert` into converted/. Flat colours match the Quaternius outfits. Models are ~5 units long — scale in the appearance. License approved by the project owner on 2026-10-07. Evidence: itch.io listing states CC0 (page blocked automated fetch); no license file in the zip.",
   "kind": "models",
   "assets": [
     {

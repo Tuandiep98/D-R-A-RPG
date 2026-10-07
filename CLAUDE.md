@@ -36,7 +36,7 @@ pnpm smoke:login [url]   # đăng ký → tạo nhân vật → vào game → ba
 pnpm db:generate         # drizzle-kit migration sau khi sửa packages/persistence/src/schema.ts
 ```
 
-URL flags của web client: `?webgl`, `?noworker`, `?map=<id>`, `?quality=low|medium|high`, `?debug` (bật `window.__rpg` ở bản build), `?mannequin` (vẽ player bằng hình nộm UAL cùng rig để căn trang bị), `?online` (đăng nhập qua API), `?online&dev=<tên>` (đăng nhập dev thẳng vào game server, cần `ALLOW_DEV_LOGIN=true`).
+URL flags của web client: `?webgl`, `?noworker`, `?map=<id>`, `?quality=low|medium|high`, `?debug` (bật `window.__rpg` ở bản build), `?player=<appearanceId>` (vẽ player bằng appearance khác, chỉ phía client — vd `char_kk_knight`), `?mannequin` (hình nộm UAL), `?online` (đăng nhập qua API), `?online&dev=<tên>` (đăng nhập dev thẳng vào game server, cần `ALLOW_DEV_LOGIN=true`).
 
 Lưu ý môi trường: hook `rtk` có thể làm sai output của biome/grep — dùng `rtk proxy npx biome check .` và kiểm tra exit code.
 
@@ -95,4 +95,5 @@ infra/                     docker (compose, Dockerfiles), deploy (Caddyfile)
 - Không tuyên bố animation tương thích khi chưa chạy thử.
 - Output build (`apps/game-web/public/assets/`, `public/media/`, `<pack>/converted/`) không commit.
 - Pack chỉ có âm thanh/icon/UI/VFX dùng `kind` + `media` trong `SOURCE.json`; game-data trỏ tới media bằng `iconImage` / `sfx` (validator kiểm tra id).
-- Vũ khí theo rig humanoid_v1: `hand_r` xoay `[1.5708, 0, 0]` (đã căn với Quaternius Medieval Weapons); appearance sinh tự động ghi rõ "NOT fitted" cho tới khi kiểm bằng `pnpm smoke:gear`.
+- Nhân vật chuẩn: KayKit `Rig_Medium` (chibi, scale 0.62, D-027). Vũ khí KayKit gắn `handslot.*` không xoay, `scale: 0.62`; vũ khí nguồn khác ghi rõ "NOT fitted" tới khi kiểm bằng `pnpm smoke:gear --player=char_kk_rogue`.
+- Pack chỉ có FBX/OBJ: thêm vào `FBX_PACKS`/`OBJ_PACKS` trong `tools/asset-processor/convert.ts`, chạy `pnpm assets:convert`, khai báo file trong `converted/`.

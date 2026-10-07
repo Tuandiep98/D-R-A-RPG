@@ -1,8 +1,0 @@
-# Generated from art/third_party/quaternius_medieval_weapons/converted/OBJ/Sword_Big.glb (830 tris, longest y 6.44 → 1.2 m).
-# grip rotation copied from equip_sword_01 — NOT fitted yet, check with pnpm smoke:gear
-id: gear_weapon_qm_sword_big
-kind: equipment
-modelAssetId: weapon_qm_sword_big
-scale: 0.1863
-attach: { socket: hand_r, position: [0, 0, 0], rotation: [1.5708, 0, 0] }
-placeholder: { shape: box, color: "#c9ced6", height: 1.2, radius: 0.095 }

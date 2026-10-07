@@ -6,8 +6,8 @@
   "license": "CC0-1.0",
   "licenseVerified": true,
   "downloadedAt": "2026-10-06",
-  "status": "approved",
-  "notes": "Male Ranger is a complete 65-joint UBC-compatible character. The build grafts selected UAL1 clips onto the shared skeleton by joint name. Outfits have no head: NPCs graft the UBC Superhero head (triangles weighted to Head/neck_01 only) and a UBC hairstyle onto the outfit skeleton (`parts`). UBC is Quaternius CC0 too; its license is kept at originals/base/LICENSE_UBC.txt.",
+  "status": "rejected",
+  "notes": "Superseded by KayKit Adventurers (Rig_Medium, chibi) as the character standard — D-027 (2026-10-07). Male Ranger is a complete 65-joint UBC-compatible character. The build grafts selected UAL1 clips onto the shared skeleton by joint name. Outfits have no head: NPCs graft the UBC Superhero head (triangles weighted to Head/neck_01 only) and a UBC hairstyle onto the outfit skeleton (`parts`). UBC is Quaternius CC0 too; its license is kept at originals/base/LICENSE_UBC.txt.",
   "assets": [
     {
       "assetId": "char_player_default",

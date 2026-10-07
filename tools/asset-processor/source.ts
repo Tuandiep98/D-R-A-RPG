@@ -48,12 +48,15 @@ export const PackSourceSchema = z
           /** Extra image lookup folders, relative to the source glTF file. */
           textureDirs: z.array(z.string()).default([]),
           /**
-           * Optional compatible rig containing animation clips. The clips are
-           * retargeted by joint name into this asset during the build.
+           * Optional compatible rig(s) containing animation clips. The clips are
+           * retargeted by joint name into this asset during the build; a list
+           * merges clips from several files (e.g. KayKit General + Movement).
            */
           animationSource: z
-            .string()
-            .regex(/\.(glb|gltf)$/i)
+            .union([
+              z.string().regex(/\.(glb|gltf)$/i),
+              z.array(z.string().regex(/\.(glb|gltf)$/i)).min(1),
+            ])
             .optional(),
           animationClips: z.array(z.string()).min(1).optional(),
           /**

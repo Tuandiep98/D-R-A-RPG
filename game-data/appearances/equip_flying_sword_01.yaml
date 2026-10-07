@@ -1,8 +1,7 @@
-# Quaternius LowPoly Medieval Weapons "Sword_Golden" (6 units → ~0.9 m), hovering.
-# Shows on characters whose appearance maps the `artifact` socket.
+# KayKit sword_2handed_color, hovering on the artifact socket (D-027).
 id: equip_flying_sword_01
 kind: equipment
-modelAssetId: weapon_qm_sword_golden
-scale: 0.15
+modelAssetId: weapon_kk_sword_2h_color
+scale: 0.45
 attach: { socket: artifact, position: [0, 0, 0], rotation: [0, 0, 3.1416] }
 placeholder: { shape: box, color: "#7ef0ff", height: 0.9, radius: 0.05 }

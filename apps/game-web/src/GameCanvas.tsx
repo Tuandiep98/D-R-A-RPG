@@ -98,11 +98,14 @@ export function GameCanvas({ online = null }: { online?: OnlineChoice | null }) 
       try {
         const params = new URLSearchParams(window.location.search);
         let content = loadContent();
-        // Dev aid: draw the player as the UAL mannequin (same rig) to fit gear.
-        const mannequin = content.appearances.get('char_ual_mannequin');
-        if (params.has('mannequin') && mannequin) {
+        // Dev aid (client-only presentation): draw the player with another
+        // appearance — `?player=char_kk_knight`, or `?mannequin` for the UAL
+        // mannequin (same rig as the default) when fitting gear.
+        const preview = params.has('mannequin') ? 'char_ual_mannequin' : params.get('player');
+        const previewDef = preview ? content.appearances.get(preview) : undefined;
+        if (previewDef) {
           const appearances = new Map(content.appearances);
-          appearances.set('char_player_default', { ...mannequin, id: 'char_player_default' });
+          appearances.set('char_player_default', { ...previewDef, id: 'char_player_default' });
           content = { ...content, appearances };
         }
         const { host, kind } = createHost(params, online);

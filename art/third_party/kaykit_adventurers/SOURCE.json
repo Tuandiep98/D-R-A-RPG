@@ -7,7 +7,7 @@
   "licenseVerified": true,
   "downloadedAt": "2026-10-07",
   "status": "approved",
-  "notes": "Chunky stylised weapons (one gradient atlas each). Characters use KayKit Rig_Medium, not humanoid_v1 — weapons only for now. License approved by the project owner on 2026-10-07. Evidence: License.txt in the zip (CC0).",
+  "notes": "Chunky stylised weapons (one gradient atlas each). Characters + weapons are the project's art standard since D-027 (chibi ~2.2 heads, Rig_Medium, weapons on handslot.l/r with identity transform at the character's scale 0.62). License approved by the project owner on 2026-10-07. Evidence: License.txt in the zip (CC0).",
   "kind": "models",
   "assets": [
     {
@@ -68,6 +68,125 @@
     {
       "assetId": "offhand_kk_spellbook",
       "file": "originals/Assets/gltf/spellbook_open.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "char_kk_knight",
+      "file": "originals/Characters/gltf/Knight.glb",
+      "animationSource": [
+        "originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb",
+        "originals/Animations/gltf/Rig_Medium/Rig_Medium_MovementBasic.glb"
+      ],
+      "animationClips": [
+        "Idle_A",
+        "Running_A",
+        "Walking_A",
+        "Hit_A",
+        "Death_A",
+        "Throw",
+        "Use_Item",
+        "Interact"
+      ],
+      "type": "character"
+    },
+    {
+      "assetId": "char_kk_mage",
+      "file": "originals/Characters/gltf/Mage.glb",
+      "animationSource": [
+        "originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb",
+        "originals/Animations/gltf/Rig_Medium/Rig_Medium_MovementBasic.glb"
+      ],
+      "animationClips": [
+        "Idle_A",
+        "Running_A",
+        "Walking_A",
+        "Hit_A",
+        "Death_A",
+        "Throw",
+        "Use_Item",
+        "Interact"
+      ],
+      "type": "character"
+    },
+    {
+      "assetId": "char_kk_rogue",
+      "file": "originals/Characters/gltf/Rogue.glb",
+      "animationSource": [
+        "originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb",
+        "originals/Animations/gltf/Rig_Medium/Rig_Medium_MovementBasic.glb"
+      ],
+      "animationClips": [
+        "Idle_A",
+        "Running_A",
+        "Walking_A",
+        "Hit_A",
+        "Death_A",
+        "Throw",
+        "Use_Item",
+        "Interact"
+      ],
+      "type": "character"
+    },
+    {
+      "assetId": "char_kk_barbarian",
+      "file": "originals/Characters/gltf/Barbarian.glb",
+      "animationSource": [
+        "originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb",
+        "originals/Animations/gltf/Rig_Medium/Rig_Medium_MovementBasic.glb"
+      ],
+      "animationClips": [
+        "Idle_A",
+        "Running_A",
+        "Walking_A",
+        "Hit_A",
+        "Death_A",
+        "Throw",
+        "Use_Item",
+        "Interact"
+      ],
+      "type": "character"
+    },
+    {
+      "assetId": "char_kk_ranger",
+      "file": "originals/Characters/gltf/Ranger.glb",
+      "animationSource": [
+        "originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb",
+        "originals/Animations/gltf/Rig_Medium/Rig_Medium_MovementBasic.glb"
+      ],
+      "animationClips": [
+        "Idle_A",
+        "Running_A",
+        "Walking_A",
+        "Hit_A",
+        "Death_A",
+        "Throw",
+        "Use_Item",
+        "Interact"
+      ],
+      "type": "character"
+    },
+    {
+      "assetId": "char_kk_rogue_hooded",
+      "file": "originals/Characters/gltf/Rogue_Hooded.glb",
+      "animationSource": [
+        "originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb",
+        "originals/Animations/gltf/Rig_Medium/Rig_Medium_MovementBasic.glb"
+      ],
+      "animationClips": [
+        "Idle_A",
+        "Running_A",
+        "Walking_A",
+        "Hit_A",
+        "Death_A",
+        "Throw",
+        "Use_Item",
+        "Interact"
+      ],
+      "type": "character"
+    },
+    {
+      "assetId": "weapon_kk_sword_2h_color",
+      "file": "originals/Assets/gltf/sword_2handed_color.gltf",
       "type": "prop"
     }
   ]

@@ -1,8 +1,0 @@
-# Generated from art/third_party/quaternius_medieval_weapons/converted/OBJ/Shield_Celtic_Golden.glb (832 tris, longest y 4.28 → 0.65 m).
-# grip rotation copied from equip_sword_01 — NOT fitted yet, check with pnpm smoke:gear
-id: gear_weapon_qm_shield_celtic_golden
-kind: equipment
-modelAssetId: weapon_qm_shield_celtic_golden
-scale: 0.1519
-attach: { socket: hand_r, position: [0, 0, 0], rotation: [1.5708, 0, 0] }
-placeholder: { shape: box, color: "#c9ced6", height: 0.65, radius: 0.159 }

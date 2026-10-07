@@ -1,8 +1,0 @@
-# Generated from art/third_party/quaternius_ultimate_guns/converted/OBJ/SubmachineGun_1.glb (1164 tris, longest x 2.77 → 0.55 m).
-# barrel along the long axis — rotation NOT fitted yet, check with pnpm smoke:gear
-id: gear_weapon_qg_submachinegun_1
-kind: equipment
-modelAssetId: weapon_qg_submachinegun_1
-scale: 0.1985
-attach: { socket: hand_r, position: [0, 0, 0], rotation: [0, 0, 0] }
-placeholder: { shape: box, color: "#c9ced6", height: 0.339, radius: 0.275 }

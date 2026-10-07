@@ -1,7 +1,7 @@
-# Quaternius Modular Outfits — Male Peasant + UAL
+# KayKit Adventurers — Barbarian: thợ rèn Lão Mộc (D-027)
 id: npc_smith_01
 kind: npc
-modelAssetId: npc_smith_01
-scale: 1.05
-animations: { idle: Idle_Loop }
-placeholder: { shape: capsule, color: "#a0522d", height: 1.65, radius: 0.4 }
+modelAssetId: char_kk_barbarian
+scale: 0.62
+animations: { idle: Idle_A }
+placeholder: { shape: capsule, color: "#d9a46b", height: 1.5, radius: 0.42 }

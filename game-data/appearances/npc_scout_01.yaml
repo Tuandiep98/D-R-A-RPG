@@ -1,7 +1,7 @@
-# Quaternius Modular Outfits — Female Ranger + UAL
+# KayKit Adventurers — Knight: kiếm khách Lục Viễn (D-027)
 id: npc_scout_01
 kind: npc
-modelAssetId: npc_scout_01
-scale: 0.9
-animations: { idle: Idle_Loop }
-placeholder: { shape: capsule, color: "#4f8f5a", height: 1.65, radius: 0.4 }
+modelAssetId: char_kk_knight
+scale: 0.62
+animations: { idle: Idle_A }
+placeholder: { shape: capsule, color: "#6bd9a6", height: 1.5, radius: 0.42 }

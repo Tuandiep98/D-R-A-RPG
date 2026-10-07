@@ -1,8 +1,8 @@
 # Generated from art/third_party/kaykit_adventurers/originals/Assets/gltf/shield_round.gltf (284 tris, longest y 0.88 → 0.65 m).
-# left-hand rotation NOT fitted yet, check with pnpm smoke:gear
+# KayKit native: identity transform on handslot at the character scale (D-027).
 id: gear_offhand_kk_shield_round
 kind: equipment
 modelAssetId: offhand_kk_shield_round
-scale: 0.7365
-attach: { socket: hand_l, position: [0, 0, 0], rotation: [1.5708, 0, 0] }
+scale: 0.62
+attach: { socket: hand_l, position: [0, 0, 0], rotation: [0, 0, 0] }
 placeholder: { shape: box, color: "#a37b4a", height: 0.65, radius: 0.325 }

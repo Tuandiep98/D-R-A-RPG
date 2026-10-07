@@ -12,7 +12,7 @@ const io = new NodeIO().registerExtensions(ALL_EXTENSIONS);
 const fmt = (v: number[]) => v.map((n) => n.toFixed(2)).join(', ');
 
 const json = process.argv.includes('--json');
-for (const file of process.argv.slice(2).filter((a) => a !== '--json')) {
+for (const file of process.argv.slice(2).filter((a) => !a.startsWith('--'))) {
   try {
     const doc = await io.read(file);
     const root = doc.getRoot();
@@ -33,6 +33,14 @@ for (const file of process.argv.slice(2).filter((a) => a !== '--json')) {
     console.log(
       `  materials ${root.listMaterials().length} · textures ${root.listTextures().length} · skins ${root.listSkins().length}`,
     );
+    if (process.argv.includes('--joints'))
+      for (const skin of root.listSkins())
+        console.log(
+          `  joints (${skin.listJoints().length}): ${skin
+            .listJoints()
+            .map((j) => j.getName())
+            .join(', ')}`,
+        );
     const clips = root.listAnimations().map((a) => a.getName());
     if (clips.length) console.log(`  clips (${clips.length}): ${clips.join(', ')}`);
   } catch (err) {

@@ -1,7 +1,7 @@
-# Quaternius Modular Outfits — Female Peasant + UAL
+# KayKit Adventurers — Rogue Hooded: dược sư Tô Tiểu Linh (D-027)
 id: npc_merchant_01
 kind: npc
-modelAssetId: npc_merchant_01
-scale: 1.05
-animations: { idle: Idle_Loop }
-placeholder: { shape: capsule, color: "#d9b86b", height: 1.65, radius: 0.4 }
+modelAssetId: char_kk_rogue_hooded
+scale: 0.62
+animations: { idle: Idle_A }
+placeholder: { shape: capsule, color: "#d96b9a", height: 1.5, radius: 0.42 }

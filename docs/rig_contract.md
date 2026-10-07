@@ -6,7 +6,7 @@
 
 | Mục               | Quy ước                                                                       |
 | ----------------- | ----------------------------------------------------------------------------- |
-| Đơn vị            | 1 unit = 1 m. Player chuẩn cao ~1.6 m sau `scale` trong appearance            |
+| Đơn vị            | 1 unit = 1 m. Player KayKit cao ~1.35–1.6 m với `scale: 0.62` trong appearance |
 | Trục              | Y-up, mặt trước +Z (sau khi glTF loader của Babylon chuyển hệ trục)           |
 | Pivot             | Humanoid/quái: mặt đất, dưới tâm nhân vật. Prop: điểm dễ snap                 |
 | Transform gốc     | Không scale âm, không scale lệch trục (pipeline cảnh báo — `checkTransforms`) |
@@ -18,11 +18,12 @@
 
 | Rig id                    | Nguồn                       | Dùng cho             | Ghi chú                                              |
 | ------------------------- | --------------------------- | -------------------- | ---------------------------------------------------- |
-| `humanoid_v1`             | UBC + Modular Outfits + UAL | player và NPC        | Skeleton 65 joint; pipeline ghép clip theo tên joint |
+| `kaykit_rig_medium_v1`    | KayKit Adventurers / Skeletons + Character Animations | **player và NPC (chuẩn, D-027)** | 23 joint (`root…handslot.l/r…toes.r`); clip ghép theo tên joint; FBX animation qua `pnpm assets:convert` |
+| `humanoid_v1` (ngừng)     | UBC + Modular Outfits + UAL | hình nộm `char_ual_mannequin` | 65 joint; không còn dùng cho nhân vật (D-027) |
 | `quaternius_quadruped_v1` | Ultimate Animated Animals   | sói, hồ ly, linh lộc | Rig thú, không ép vào humanoid                       |
 | `quaternius_spacekit_v1`  | Ultimate Space Kit          | robot, mech boss     | Rig riêng của pack                                   |
 
-`humanoid_v1` là rig chuẩn cho trang bị modular (assets plan §5.2, §6). Outfit và UAL phải giữ nguyên tên joint; pipeline chỉ ghép animation khi tìm được joint đích cùng tên.
+`kaykit_rig_medium_v1` là rig chuẩn cho trang bị modular (assets plan §5.2, §6): mọi mảnh (Head/Body/Arm/Leg/Cape/Hat) và mọi clip phải giữ đúng tên joint; pipeline chỉ ghép animation khi tìm được joint đích cùng tên. `animationSource` nhận một hoặc nhiều file (General + MovementBasic + combat).
 
 ## Sockets
 
@@ -30,13 +31,15 @@ Khai báo trong `game-data/appearances/<id>.yaml` → `sockets: { <socket>: <tê
 
 | Socket                      | Ý nghĩa                               | `char_player_default`        |
 | --------------------------- | ------------------------------------- | ---------------------------- |
-| `hand_r`                    | Vũ khí chính                          | `hand_r`                     |
-| `hand_l`                    | Tay phụ, khiên                        | `hand_l`                     |
-| `head`                      | Mũ, vương miện                        | `Head`                       |
+| `hand_r`                    | Vũ khí chính                          | `handslot.r`                 |
+| `hand_l`                    | Tay phụ, khiên                        | `handslot.l`                 |
+| `head`                      | Mũ, vương miện                        | `head`                       |
 | `back`                      | Áo choàng, kiếm đeo lưng              | —                            |
 | `shoulder_l` / `shoulder_r` | Giáp vai                              | —                            |
 | `artifact`                  | Pháp khí/phi kiếm (bay cạnh nhân vật) | — (placeholder bay cạnh vai) |
 | `vfx_origin`                | Điểm phát VFX                         | —                            |
+
+Vũ khí KayKit gắn vào `handslot.*` với transform đơn vị (`position/rotation [0,0,0]`) và `scale` bằng scale nhân vật (0.62) — đã kiểm bằng `pnpm smoke:gear --player=char_kk_rogue`. Vũ khí nguồn khác phải tự căn và ghi rõ trong appearance.
 
 ## Phần dựng sẵn (`builtIn`)
 
