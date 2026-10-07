@@ -39,35 +39,35 @@ Chỉ đặt `licenseVerified: true` sau khi đã tự kiểm tra license trên 
 
 ## Đợt 07/10/2026: vũ khí, item, âm thanh, icon, UI, VFX (đều CC0, đã duyệt — D-025)
 
-| Thư mục (`packId`)               | Loại       | Nội dung dùng                                                   | Link |
-| -------------------------------- | ---------- | --------------------------------------------------------------- | ---- |
-| `kaykit_adventurers`             | models     | 12 vũ khí/khiên/sách phép (`weapon_kk_*`, `offhand_kk_*`)       | https://kaylousberg.itch.io/kaykit-adventurers |
-| `quaternius_medieval_weapons`    | models     | 18 kiếm/đao/thương/rìu/khiên (`weapon_qm_*`) — OBJ → convert    | https://quaternius.itch.io/lowpoly-medieval-weapons |
-| `quaternius_ultimate_rpg_items`  | models+icons | 27 model vật phẩm + 47 icon render (`icon_item_*`)            | https://quaternius.com/packs/ultimaterpg.html |
-| `quaternius_rpg_asset_pack`      | models     | gậy phép, mũ, khiên (`weapon_qa_*`, `item_qa_*`) — OBJ → convert | https://quaternius.com/packs/rpg.html |
-| `quaternius_ultimate_guns`       | models     | 6 súng cho nhánh cơ giáp (`weapon_qg_*`) — OBJ → convert        | https://quaternius.com/packs/ultimategun.html |
-| `kenney_blaster_kit`             | models     | 8 blaster + lựu đạn (`weapon_kb_*`)                             | https://kenney.nl/assets/blaster-kit |
-| `quaternius_universal_animation` | animations | 43 clip rig UBC + hình nộm `char_ual_mannequin`                 | https://quaternius.com/packs/universalanimationlibrary.html |
-| `kdrn_ability_icons`             | icons      | 18 icon skill đã chọn (130 icon trong originals/)               | https://kdrn.itch.io/ability-icons |
-| `kenney_fantasy_ui_borders`      | ui         | khung 9-slice hồi văn nhuộm vàng (`ui_border*`)                 | https://kenney.nl/assets/fantasy-ui-borders |
-| `kenney_particle_pack`           | vfx        | 24 sprite chém/tia/khói/lửa (`vfx_*`)                           | https://kenney.nl/assets/particle-pack |
-| `kenney_rpg_audio`, `kenney_impact_sounds`, `kenney_scifi_sounds`, `kenney_interface_sounds` | audio | 56 âm thanh (`sfx_*`) | https://kenney.nl/assets/category:Audio |
+| Thư mục (`packId`)                                                                           | Loại         | Nội dung dùng                                                    | Link                                                        |
+| -------------------------------------------------------------------------------------------- | ------------ | ---------------------------------------------------------------- | ----------------------------------------------------------- |
+| `kaykit_adventurers`                                                                         | models       | 12 vũ khí/khiên/sách phép (`weapon_kk_*`, `offhand_kk_*`)        | https://kaylousberg.itch.io/kaykit-adventurers              |
+| `quaternius_medieval_weapons`                                                                | models       | 18 kiếm/đao/thương/rìu/khiên (`weapon_qm_*`) — OBJ → convert     | https://quaternius.itch.io/lowpoly-medieval-weapons         |
+| `quaternius_ultimate_rpg_items`                                                              | models+icons | 27 model vật phẩm + 47 icon render (`icon_item_*`)               | https://quaternius.com/packs/ultimaterpg.html               |
+| `quaternius_rpg_asset_pack`                                                                  | models       | gậy phép, mũ, khiên (`weapon_qa_*`, `item_qa_*`) — OBJ → convert | https://quaternius.com/packs/rpg.html                       |
+| `quaternius_ultimate_guns`                                                                   | models       | 6 súng cho nhánh cơ giáp (`weapon_qg_*`) — OBJ → convert         | https://quaternius.com/packs/ultimategun.html               |
+| `kenney_blaster_kit`                                                                         | models       | 8 blaster + lựu đạn (`weapon_kb_*`)                              | https://kenney.nl/assets/blaster-kit                        |
+| `quaternius_universal_animation`                                                             | animations   | 43 clip rig UBC + hình nộm `char_ual_mannequin`                  | https://quaternius.com/packs/universalanimationlibrary.html |
+| `kdrn_ability_icons`                                                                         | icons        | 18 icon skill đã chọn (130 icon trong originals/)                | https://kdrn.itch.io/ability-icons                          |
+| `kenney_fantasy_ui_borders`                                                                  | ui           | khung 9-slice hồi văn nhuộm vàng (`ui_border*`)                  | https://kenney.nl/assets/fantasy-ui-borders                 |
+| `kenney_particle_pack`                                                                       | vfx          | 24 sprite chém/tia/khói/lửa (`vfx_*`)                            | https://kenney.nl/assets/particle-pack                      |
+| `kenney_rpg_audio`, `kenney_impact_sounds`, `kenney_scifi_sounds`, `kenney_interface_sounds` | audio        | 56 âm thanh (`sfx_*`)                                            | https://kenney.nl/assets/category:Audio                     |
 
 Quy trình cho pack mới loại này: giải nén vào `originals/` → (OBJ thì `pnpm assets:convert`) → khai báo `assets` / `media` trong `SOURCE.json` → `pnpm assets:build` + `pnpm media:build` → tham chiếu id trong game-data → `pnpm validate:data`. Danh sách id: `docs/asset_catalog.md`, `docs/media_catalog.md`.
 
 ## Đợt 07/10/2026 (2): chuyển sang KayKit — D-027, D-028
 
-| Thư mục (`packId`)            | Loại      | Dùng cho |
-| ----------------------------- | --------- | -------- |
-| `kaykit_adventurers`          | models    | Player (Rogue), NPC (Mage / Rogue Hooded / Knight / Barbarian), vũ khí `weapon_kk_*` |
-| `kaykit_character_animations` | animations | 133 clip Rig_Medium (cận chiến, tầm xa, phép, né, Skeleton) + hình nộm `char_kk_mannequin` |
-| `kaykit_skeletons`            | models    | Quái `mob_skeleton_*` (chưa đặt vào map) + vũ khí `weapon_ks_*` |
-| `kaykit_fantasy_weapons`      | models    | 25 vũ khí `weapon_kf_*` → appearance `gear_weapon_kf_*` |
-| `kaykit_dungeon`              | models    | Dungeon + thay Quaternius Medieval Village / Fantasy Props (tường, sàn, mái, hàng rào, thùng, bàn, giá vũ khí) |
-| `kaykit_forest_nature`        | models    | Cây, đá, bụi, cỏ (thay Quaternius Nature, trừ hoa/nấm) |
-| `kaykit_space_base`           | models    | Khu cơ quan (thay Quaternius Modular Sci-Fi) |
-| `kaykit_rpg_tools`            | models    | Đe, đèn lồng, dụng cụ rơi `drop_item_kt_*` |
-| `kaykit_resource_bits`        | models    | Vật liệu rơi `drop_item_kr_*` (quặng, thỏi, gỗ, đá, vải, bánh răng) |
-| `kaykit_platformer`, `kaykit_city_builder`, `kaykit_block_bits` | library | Để dành, chưa dùng |
+| Thư mục (`packId`)                                              | Loại       | Dùng cho                                                                                                       |
+| --------------------------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------- |
+| `kaykit_adventurers`                                            | models     | Player (Rogue), NPC (Mage / Rogue Hooded / Knight / Barbarian), vũ khí `weapon_kk_*`                           |
+| `kaykit_character_animations`                                   | animations | 133 clip Rig_Medium (cận chiến, tầm xa, phép, né, Skeleton) + hình nộm `char_kk_mannequin`                     |
+| `kaykit_skeletons`                                              | models     | Quái `mob_skeleton_*` (chưa đặt vào map) + vũ khí `weapon_ks_*`                                                |
+| `kaykit_fantasy_weapons`                                        | models     | 25 vũ khí `weapon_kf_*` → appearance `gear_weapon_kf_*`                                                        |
+| `kaykit_dungeon`                                                | models     | Dungeon + thay Quaternius Medieval Village / Fantasy Props (tường, sàn, mái, hàng rào, thùng, bàn, giá vũ khí) |
+| `kaykit_forest_nature`                                          | models     | Cây, đá, bụi, cỏ (thay Quaternius Nature, trừ hoa/nấm)                                                         |
+| `kaykit_space_base`                                             | models     | Khu cơ quan (thay Quaternius Modular Sci-Fi)                                                                   |
+| `kaykit_rpg_tools`                                              | models     | Đe, đèn lồng, dụng cụ rơi `drop_item_kt_*`                                                                     |
+| `kaykit_resource_bits`                                          | models     | Vật liệu rơi `drop_item_kr_*` (quặng, thỏi, gỗ, đá, vải, bánh răng)                                            |
+| `kaykit_platformer`, `kaykit_city_builder`, `kaykit_block_bits` | library    | Để dành, chưa dùng                                                                                             |
 
 Còn thiếu file gốc (hiện placeholder): `quaternius_animated_mech` (robot trinh sát, boss mech) và `quaternius_ultimate_monsters` (Guardian vỏ đá).

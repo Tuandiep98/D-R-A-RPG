@@ -5,6 +5,6 @@ modelAssetId: env_bush_01
 scale: 0.9
 placeholder:
   shape: sphere
-  color: '#4c8c3c'
+  color: "#4c8c3c"
   height: 0.8
   radius: 0.7

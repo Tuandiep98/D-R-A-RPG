@@ -5,6 +5,6 @@ modelAssetId: env_tree_01
 scale: 1.2
 placeholder:
   shape: cone
-  color: '#2f6b3a'
+  color: "#2f6b3a"
   height: 4
   radius: 1.2

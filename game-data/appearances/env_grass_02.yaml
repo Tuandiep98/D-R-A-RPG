@@ -5,6 +5,6 @@ modelAssetId: env_grass_02
 scale: 1.0
 placeholder:
   shape: cone
-  color: '#4f8436'
+  color: "#4f8436"
   height: 1.1
   radius: 0.3

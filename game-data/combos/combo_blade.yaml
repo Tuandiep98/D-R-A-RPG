@@ -50,7 +50,15 @@ steps:
         moveMultiplier: 0.15
         critBonus: 0.15
         heavy: true
-        trail: { shape: smash, from: top, color: "#ffcf5a", size: 1.2, glow: [hand_r], impact: burst }
+        trail:
+          {
+            shape: smash,
+            from: top,
+            color: "#ffcf5a",
+            size: 1.2,
+            glow: [hand_r],
+            impact: burst,
+          }
         impactSfx: [sfx_hit_heavy]
       - id: stab_heavy
         name: Xuyên Tâm Thứ
@@ -65,7 +73,14 @@ steps:
         moveMultiplier: 0.2
         critBonus: 0.3
         heavy: true
-        trail: { shape: thrust, color: "#8fe3ff", size: 1.2, glow: [hand_r], impact: pierce }
+        trail:
+          {
+            shape: thrust,
+            color: "#8fe3ff",
+            size: 1.2,
+            glow: [hand_r],
+            impact: pierce,
+          }
         impactSfx: [sfx_hit_metal_01]
       - id: leap_heavy
         name: Phi Thân Bổ
@@ -85,7 +100,15 @@ steps:
         critBonus: 0.1
         weight: 0.8
         heavy: true
-        trail: { shape: smash, from: top, color: "#ff8a3d", size: 1.4, glow: [hand_r], impact: quake }
+        trail:
+          {
+            shape: smash,
+            from: top,
+            color: "#ff8a3d",
+            size: 1.4,
+            glow: [hand_r],
+            impact: quake,
+          }
         impactSfx: [sfx_slam]
       - id: spin_heavy
         name: Toàn Phong Trảm
@@ -99,5 +122,12 @@ steps:
         maxTargets: 6
         moveMultiplier: 0.6
         heavy: true
-        trail: { shape: spin, color: "#c9b6ff", size: 1.1, glow: [hand_r], impact: cyclone }
+        trail:
+          {
+            shape: spin,
+            color: "#c9b6ff",
+            size: 1.1,
+            glow: [hand_r],
+            impact: cyclone,
+          }
         impactSfx: [sfx_hit_heavy]

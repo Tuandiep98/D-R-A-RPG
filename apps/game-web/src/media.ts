@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 /**
  * Runtime media (icons, UI frames, sounds) built by `pnpm media:build` into
@@ -9,7 +9,13 @@ const MediaManifestSchema = z.object({
   version: z.literal(1),
   media: z.record(
     z.string(),
-    z.object({ url: z.string(), kind: z.enum(['audio', 'image']), bytes: z.number() }).loose(),
+    z
+      .object({
+        url: z.string(),
+        kind: z.enum(["audio", "image"]),
+        bytes: z.number(),
+      })
+      .loose(),
   ),
 });
 
@@ -23,7 +29,9 @@ export function loadMedia(): Promise<void> {
     .then((json) => {
       const parsed = MediaManifestSchema.safeParse(json);
       if (!parsed.success) return;
-      urls = new Map(Object.entries(parsed.data.media).map(([id, e]) => [id, base + e.url]));
+      urls = new Map(
+        Object.entries(parsed.data.media).map(([id, e]) => [id, base + e.url]),
+      );
       applyUiFrames();
     })
     .catch(() => {});
@@ -39,13 +47,13 @@ export function mediaUrl(id: string | null | undefined): string | null {
 function applyUiFrames(): void {
   const root = document.documentElement;
   for (const [id, cssVar] of [
-    ['ui_border', '--ui-border'],
-    ['ui_border_ornate', '--ui-border-ornate'],
-    ['ui_border_double', '--ui-border-double'],
-    ['ui_divider', '--ui-divider'],
+    ["ui_border", "--ui-border"],
+    ["ui_border_ornate", "--ui-border-ornate"],
+    ["ui_border_double", "--ui-border-double"],
+    ["ui_divider", "--ui-divider"],
   ] as const) {
     const url = urls.get(id);
     if (url) root.style.setProperty(cssVar, `url("${url}")`);
   }
-  root.classList.toggle('ui-framed', urls.has('ui_border'));
+  root.classList.toggle("ui-framed", urls.has("ui_border"));
 }

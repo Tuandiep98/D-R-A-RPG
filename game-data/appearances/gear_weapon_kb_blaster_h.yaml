@@ -5,6 +5,7 @@ id: gear_weapon_kb_blaster_h
 kind: equipment
 modelAssetId: weapon_kb_blaster_h
 scale: 0.8
-attach: { socket: hand_r, position: [0.168, 0.044, 0], rotation: [0, -1.5708, 0] }
+attach:
+  { socket: hand_r, position: [0.168, 0.044, 0], rotation: [0, -1.5708, 0] }
 tip: [0, 0.063, -0.259]
 placeholder: { shape: box, color: "#c9ced6", height: 0.181, radius: 0.12 }

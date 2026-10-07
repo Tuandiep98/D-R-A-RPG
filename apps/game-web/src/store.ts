@@ -1,16 +1,21 @@
-import type { DebugStats, Notice, QualityMode, UiState } from '@rpg/babylon-renderer';
-import type { ChatMessage } from '@rpg/game-protocol';
-import { create } from 'zustand';
-import type { SkillPosition } from './skill-loadout';
+import type {
+  DebugStats,
+  Notice,
+  QualityMode,
+  UiState,
+} from "@rpg/babylon-renderer";
+import type { ChatMessage } from "@rpg/game-protocol";
+import { create } from "zustand";
+import type { SkillPosition } from "./skill-loadout";
 
 export type Panel =
-  | 'skills'
-  | 'inventory'
-  | 'character'
-  | 'cultivation'
-  | 'settings'
-  | 'leaderboard'
-  | 'social'
+  | "skills"
+  | "inventory"
+  | "character"
+  | "cultivation"
+  | "settings"
+  | "leaderboard"
+  | "social"
   | null;
 
 export interface ToastNotice extends Notice {
@@ -41,7 +46,7 @@ interface UiStore {
   showDebug: boolean;
   quality: QualityMode;
   hostKind: string;
-  status: 'loading' | 'ready' | 'error';
+  status: "loading" | "ready" | "error";
   error: string | null;
   setUi(ui: UiState): void;
   setDebug(debug: DebugStats): void;
@@ -53,7 +58,7 @@ interface UiStore {
   closePanel(): void;
   toggleDebug(): void;
   setQuality(q: QualityMode): void;
-  setStatus(status: UiStore['status'], error?: string): void;
+  setStatus(status: UiStore["status"], error?: string): void;
   setHostKind(kind: string): void;
 }
 
@@ -74,20 +79,27 @@ export const useUiStore = create<UiStore>((set) => ({
   openNpc: (npc) => set({ npc, panel: null }),
   closeNpc: () => set({ npc: null }),
   pushChat: (m) => set((s) => ({ chat: [...s.chat, m].slice(-60) })),
-  showDebug: new URLSearchParams(window.location.search).has('debug'),
-  quality: 'auto',
-  hostKind: '',
-  status: 'loading',
+  showDebug: new URLSearchParams(window.location.search).has("debug"),
+  quality: "auto",
+  hostKind: "",
+  status: "loading",
   error: null,
   setUi: (ui) => set({ ui }),
   setDebug: (debug) => set({ debug }),
   pushNotice: (n) =>
     set((s) => {
       // Collapse repeats (e.g. spamming a skill on cooldown).
-      if (s.notices.some((x) => x.text === n.text && x.expires > performance.now() + 1500))
+      if (
+        s.notices.some(
+          (x) => x.text === n.text && x.expires > performance.now() + 1500,
+        )
+      )
         return s;
-      const ttl = n.tone === 'boss' ? 3500 : 2400;
-      const next = [...s.notices, { ...n, id: ++noticeId, expires: performance.now() + ttl }];
+      const ttl = n.tone === "boss" ? 3500 : 2400;
+      const next = [
+        ...s.notices,
+        { ...n, id: ++noticeId, expires: performance.now() + ttl },
+      ];
       return { notices: next.slice(-5) };
     }),
   pruneNotices: (now) =>
@@ -97,8 +109,12 @@ export const useUiStore = create<UiStore>((set) => ({
         : s,
     ),
   togglePanel: (panel) =>
-    set((s) => ({ panel: s.panel === panel ? null : panel, skillEditPosition: null })),
-  openSkillAssignment: (position) => set({ panel: 'skills', skillEditPosition: position }),
+    set((s) => ({
+      panel: s.panel === panel ? null : panel,
+      skillEditPosition: null,
+    })),
+  openSkillAssignment: (position) =>
+    set({ panel: "skills", skillEditPosition: position }),
   setSkillEditPosition: (skillEditPosition) => set({ skillEditPosition }),
   closePanel: () => set({ panel: null, npc: null }),
   toggleDebug: () => set((s) => ({ showDebug: !s.showDebug })),

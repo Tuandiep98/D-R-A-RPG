@@ -6,16 +6,16 @@ import {
   StandardMaterial,
   type TransformNode,
   Vector3,
-} from './babylon';
+} from "./babylon";
 
 /** Rarity colours shared by loot beams and the HUD (assets plan §9). */
 export const RARITY_COLORS: Record<string, string> = {
-  common: '#d8d8d8',
-  uncommon: '#5fd068',
-  rare: '#4aa3ff',
-  epic: '#b46bff',
-  legendary: '#ffb02e',
-  mythic: '#ff4f6d',
+  common: "#d8d8d8",
+  uncommon: "#5fd068",
+  rare: "#4aa3ff",
+  epic: "#b46bff",
+  legendary: "#ffb02e",
+  mythic: "#ff4f6d",
 };
 
 const VFX_COLORS: Record<string, Color3> = {
@@ -33,7 +33,12 @@ const VFX_COLORS: Record<string, Color3> = {
   thunder_ultimate: new Color3(0.65, 0.38, 1),
 };
 
-function emissive(scene: Scene, name: string, color: Color3, alpha = 1): StandardMaterial {
+function emissive(
+  scene: Scene,
+  name: string,
+  color: Color3,
+  alpha = 1,
+): StandardMaterial {
   const m = new StandardMaterial(name, scene);
   m.emissiveColor = color;
   m.diffuseColor = Color3.Black();
@@ -86,10 +91,24 @@ export class TelegraphPool {
         { diameter: 2, thickness: 0.08, tessellation: 48 },
         scene,
       );
-      ring.material = emissive(scene, `tele_ring_mat_${i}`, new Color3(1, 0.2, 0.15), 0.9);
-      const fill = MeshBuilder.CreateDisc(`tele_fill_${i}`, { radius: 1, tessellation: 48 }, scene);
+      ring.material = emissive(
+        scene,
+        `tele_ring_mat_${i}`,
+        new Color3(1, 0.2, 0.15),
+        0.9,
+      );
+      const fill = MeshBuilder.CreateDisc(
+        `tele_fill_${i}`,
+        { radius: 1, tessellation: 48 },
+        scene,
+      );
       fill.rotation.x = Math.PI / 2;
-      const fillMat = emissive(scene, `tele_fill_mat_${i}`, new Color3(1, 0.15, 0.1), 0.35);
+      const fillMat = emissive(
+        scene,
+        `tele_fill_mat_${i}`,
+        new Color3(1, 0.15, 0.1),
+        0.35,
+      );
       fillMat.backFaceCulling = false;
       fill.material = fillMat;
       for (const m of [ring, fill]) {
@@ -100,7 +119,13 @@ export class TelegraphPool {
     }, 12);
   }
 
-  show(key: string, x: number, z: number, radius: number, seconds: number): void {
+  show(
+    key: string,
+    x: number,
+    z: number,
+    radius: number,
+    seconds: number,
+  ): void {
     const t = this.pool.acquire();
     t.active = true;
     t.age = 0;
@@ -194,7 +219,7 @@ export class ImpactPool {
     it.mat.emissiveColor = VFX_COLORS[vfx] ?? Color3.White();
     it.ring.position.set(x, 0.3, z);
     it.ring.setEnabled(true);
-    const lightning = vfx.startsWith('thunder_');
+    const lightning = vfx.startsWith("thunder_");
     it.bolt.position.set(x, 0, z);
     it.bolt.scaling.setAll(Math.min(2, Math.max(0.8, radius / 2)));
     it.bolt.color = VFX_COLORS[vfx] ?? Color3.White();
@@ -234,8 +259,16 @@ export class ProjectilePool {
   private readonly pool: Pool<Projectile>;
   constructor(scene: Scene) {
     this.pool = new Pool((i) => {
-      const orb = MeshBuilder.CreateSphere(`proj_${i}`, { diameter: 0.35, segments: 8 }, scene);
-      const mat = emissive(scene, `proj_mat_${i}`, VFX_COLORS.projectile as Color3);
+      const orb = MeshBuilder.CreateSphere(
+        `proj_${i}`,
+        { diameter: 0.35, segments: 8 },
+        scene,
+      );
+      const mat = emissive(
+        scene,
+        `proj_mat_${i}`,
+        VFX_COLORS.projectile as Color3,
+      );
       orb.material = mat;
       orb.isPickable = false;
       orb.setEnabled(false);
@@ -295,12 +328,12 @@ export class LootBeams {
       mat = emissive(
         this.scene,
         `beam_${rarity}`,
-        Color3.FromHexString(RARITY_COLORS[rarity] ?? '#ffffff'),
+        Color3.FromHexString(RARITY_COLORS[rarity] ?? "#ffffff"),
         0.45,
       );
       this.mats.set(rarity, mat);
     }
-    const height = rarity === 'common' ? 1.2 : 2.6;
+    const height = rarity === "common" ? 1.2 : 2.6;
     const beam = MeshBuilder.CreateCylinder(
       `beam_${entityId}`,
       { height, diameterTop: 0.05, diameterBottom: 0.22, tessellation: 8 },

@@ -1,8 +1,8 @@
-import type { EntityId } from '@rpg/game-protocol';
-import type { PartyService, SimContext } from '../context';
-import type { Entity } from '../entity';
-import { distance } from '../math';
-import { secondsToTicks } from '../time';
+import type { EntityId } from "@rpg/game-protocol";
+import type { PartyService, SimContext } from "../context";
+import type { Entity } from "../entity";
+import { distance } from "../math";
+import { secondsToTicks } from "../time";
 
 export const PARTY_MAX = 5;
 const INVITE_SECONDS = 30;
@@ -20,20 +20,26 @@ export class Parties implements PartyService {
   private nextId = 1;
   readonly byId = new Map<number, Party>();
   /** target → (inviter, expiry tick) */
-  private readonly invites = new Map<EntityId, { fromId: EntityId; expires: number }>();
+  private readonly invites = new Map<
+    EntityId,
+    { fromId: EntityId; expires: number }
+  >();
 
   invite(ctx: SimContext, from: Entity, target: Entity): boolean {
     if (!from.player || !target.player || from.id === target.id) {
-      ctx.notice(from.id, 'invalid');
+      ctx.notice(from.id, "invalid");
       return false;
     }
     if (target.player.partyId !== null) {
-      ctx.notice(from.id, 'already_in_party');
+      ctx.notice(from.id, "already_in_party");
       return false;
     }
-    const party = from.player.partyId !== null ? this.byId.get(from.player.partyId) : undefined;
+    const party =
+      from.player.partyId !== null
+        ? this.byId.get(from.player.partyId)
+        : undefined;
     if (party && party.members.length >= PARTY_MAX) {
-      ctx.notice(from.id, 'party_full');
+      ctx.notice(from.id, "party_full");
       return false;
     }
     this.invites.set(target.id, {
@@ -41,7 +47,7 @@ export class Parties implements PartyService {
       expires: ctx.tick + secondsToTicks(INVITE_SECONDS),
     });
     ctx.emit({
-      type: 'PARTY_INVITE',
+      type: "PARTY_INVITE",
       ownerId: target.id,
       fromId: from.id,
       fromName: from.player.name,
@@ -59,22 +65,25 @@ export class Parties implements PartyService {
       !from?.player ||
       !target.player
     ) {
-      ctx.notice(target.id, 'no_invite');
+      ctx.notice(target.id, "no_invite");
       return false;
     }
     this.invites.delete(target.id);
     if (target.player.partyId !== null) {
-      ctx.notice(target.id, 'already_in_party');
+      ctx.notice(target.id, "already_in_party");
       return false;
     }
-    let party = from.player.partyId !== null ? this.byId.get(from.player.partyId) : undefined;
+    let party =
+      from.player.partyId !== null
+        ? this.byId.get(from.player.partyId)
+        : undefined;
     if (!party) {
       party = { id: this.nextId++, leaderId: from.id, members: [from.id] };
       this.byId.set(party.id, party);
       from.player.partyId = party.id;
     }
     if (party.members.length >= PARTY_MAX) {
-      ctx.notice(target.id, 'party_full');
+      ctx.notice(target.id, "party_full");
       return false;
     }
     party.members.push(target.id);
@@ -116,7 +125,11 @@ export class Parties implements PartyService {
   }
 
   /** Party members (including `e`) close to `pos`, for kill credit. */
-  nearbyMembers(ctx: SimContext, e: Entity, pos: { x: number; z: number }): Entity[] {
+  nearbyMembers(
+    ctx: SimContext,
+    e: Entity,
+    pos: { x: number; z: number },
+  ): Entity[] {
     const party =
       e.player?.partyId !== null && e.player?.partyId !== undefined
         ? this.byId.get(e.player.partyId)
@@ -125,7 +138,12 @@ export class Parties implements PartyService {
     const out: Entity[] = [];
     for (const id of party.members) {
       const m = ctx.entities.get(id);
-      if (m?.player && m.life.alive && distance(m.pos, pos) <= PARTY_SHARE_RANGE) out.push(m);
+      if (
+        m?.player &&
+        m.life.alive &&
+        distance(m.pos, pos) <= PARTY_SHARE_RANGE
+      )
+        out.push(m);
     }
     return out.length ? out : [e];
   }

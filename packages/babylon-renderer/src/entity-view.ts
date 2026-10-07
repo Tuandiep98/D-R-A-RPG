@@ -1,6 +1,6 @@
-import type { AssetLibrary } from '@rpg/asset-runtime';
-import type { AppearanceDef } from '@rpg/game-data';
-import type { EntityAction, EntityId } from '@rpg/game-protocol';
+import type { AssetLibrary } from "@rpg/asset-runtime";
+import type { AppearanceDef } from "@rpg/game-data";
+import type { EntityAction, EntityId } from "@rpg/game-protocol";
 import {
   Color3,
   type Mesh,
@@ -9,7 +9,7 @@ import {
   type ShadowGenerator,
   StandardMaterial,
   TransformNode,
-} from './babylon';
+} from "./babylon";
 import {
   type GearAppearances,
   ModelVisual,
@@ -17,13 +17,13 @@ import {
   type OverlayOptions,
   PlaceholderVisual,
   type Visual,
-} from './visuals';
+} from "./visuals";
 
 /**
  * Overhead gauge tones (D-033): weapon heat (warms from amber to red), the
  * white overheat cool-down that drains to empty, and reload progress.
  */
-export type GaugeTone = 'heat' | 'overheat' | 'reload';
+export type GaugeTone = "heat" | "overheat" | "reload";
 
 const GAUGE_COLORS = {
   bg: new Color3(0.06, 0.06, 0.07),
@@ -34,7 +34,10 @@ const GAUGE_COLORS = {
   reload: new Color3(0.55, 0.85, 1),
 } as const;
 type GaugeMaterial = keyof typeof GAUGE_COLORS;
-const gaugeMaterials = new WeakMap<Scene, Map<GaugeMaterial, StandardMaterial>>();
+const gaugeMaterials = new WeakMap<
+  Scene,
+  Map<GaugeMaterial, StandardMaterial>
+>();
 
 function gaugeMaterial(scene: Scene, key: GaugeMaterial): StandardMaterial {
   let mats = gaugeMaterials.get(scene);
@@ -60,15 +63,18 @@ export interface PickMetadata {
 }
 
 let viewCounter = 0;
-const barMaterials = new WeakMap<Scene, { bg: StandardMaterial; fg: StandardMaterial }>();
+const barMaterials = new WeakMap<
+  Scene,
+  { bg: StandardMaterial; fg: StandardMaterial }
+>();
 
 function hpBarMaterials(scene: Scene) {
   let m = barMaterials.get(scene);
   if (!m) {
-    const bg = new StandardMaterial('hpbar_bg', scene);
+    const bg = new StandardMaterial("hpbar_bg", scene);
     bg.emissiveColor = new Color3(0.08, 0.08, 0.08);
     bg.disableLighting = true;
-    const fg = new StandardMaterial('hpbar_fg', scene);
+    const fg = new StandardMaterial("hpbar_fg", scene);
     fg.emissiveColor = new Color3(0.85, 0.2, 0.18);
     fg.disableLighting = true;
     m = { bg, fg };
@@ -93,7 +99,11 @@ export class EntityView {
   private gear: GearAppearances = {};
   private hpBar: { root: TransformNode; fg: Mesh } | null = null;
   /** Created on first use: only shooters ever show it. */
-  private gauge: { root: TransformNode; fg: Mesh; material: GaugeMaterial | null } | null = null;
+  private gauge: {
+    root: TransformNode;
+    fg: Mesh;
+    material: GaugeMaterial | null;
+  } | null = null;
   private castShadows = false;
   /** Swing facing that overrides the (100 ms late) snapshot yaw for a while. */
   private face: { yaw: number; left: number } | null = null;
@@ -115,7 +125,10 @@ export class EntityView {
     this.height = appearance.placeholder.height;
 
     const { height, radius } = appearance.placeholder;
-    const pickRadius = Math.max(radius * 1.25, appearance.kind === 'loot' ? 0.6 : 0.3);
+    const pickRadius = Math.max(
+      radius * 1.25,
+      appearance.kind === "loot" ? 0.6 : 0.3,
+    );
     this.pick = MeshBuilder.CreateCapsule(
       `${name}_pick`,
       { height: Math.max(height * 1.1, pickRadius * 2.2), radius: pickRadius },
@@ -126,7 +139,7 @@ export class EntityView {
     this.pick.isPickable = true;
     this.pick.parent = this.root;
 
-    if (appearance.kind === 'monster') this.hpBar = this.createHpBar(name);
+    if (appearance.kind === "monster") this.hpBar = this.createHpBar(name);
 
     this.visual = new PlaceholderVisual(scene, appearance, name, assets);
     this.attachVisual(this.visual);
@@ -134,7 +147,13 @@ export class EntityView {
     if (assets.has(appearance.modelAssetId)) {
       void assets.loadContainer(appearance.modelAssetId).then((container) => {
         if (!container || this.root.isDisposed()) return;
-        const model = new ModelVisual(this.scene, container, appearance, name, assets);
+        const model = new ModelVisual(
+          this.scene,
+          container,
+          appearance,
+          name,
+          assets,
+        );
         this.detachVisual(this.visual);
         this.visual.dispose();
         this.visual = model;
@@ -161,7 +180,7 @@ export class EntityView {
 
   release(): void {
     this.entityId = 0;
-    this.setGauge(null, 'heat');
+    this.setGauge(null, "heat");
     this.pick.metadata = null;
     this.root.setEnabled(false);
   }
@@ -192,20 +211,22 @@ export class EntityView {
     this.visual.freeze(seconds);
   }
 
-  anchor(name: Parameters<Visual['anchor']>[0]): TransformNode | null {
+  anchor(name: Parameters<Visual["anchor"]>[0]): TransformNode | null {
     return this.visual.anchor(name);
   }
 
   setAction(action: EntityAction): void {
     if (action === this.action) return;
     this.action = action;
-    this.visual.setBase(action === 'dead' ? 'death' : action === 'move' ? 'run' : 'idle');
-    this.pick.isPickable = action !== 'dead';
+    this.visual.setBase(
+      action === "dead" ? "death" : action === "move" ? "run" : "idle",
+    );
+    this.pick.isPickable = action !== "dead";
   }
 
   setHp(hp: number, maxHp: number): void {
     if (!this.hpBar) return;
-    const show = hp > 0 && hp < maxHp && this.action !== 'dead';
+    const show = hp > 0 && hp < maxHp && this.action !== "dead";
     this.hpBar.root.setEnabled(show);
     if (show) {
       const f = Math.max(0.001, hp / maxHp);
@@ -231,7 +252,11 @@ export class EntityView {
     this.visual.oneShot(role);
   }
 
-  playClip(clip: string, speed: number, fallback: OneShotRole = 'attack'): void {
+  playClip(
+    clip: string,
+    speed: number,
+    fallback: OneShotRole = "attack",
+  ): void {
     this.visual.oneShotClip(clip, speed, fallback);
   }
 
@@ -257,7 +282,13 @@ export class EntityView {
     if (!this.gauge) this.gauge = this.createGauge();
     const g = this.gauge;
     const key: GaugeMaterial =
-      tone === 'heat' ? (value < 0.5 ? 'heat0' : value < 0.8 ? 'heat1' : 'heat2') : tone;
+      tone === "heat"
+        ? value < 0.5
+          ? "heat0"
+          : value < 0.8
+            ? "heat1"
+            : "heat2"
+        : tone;
     if (g.material !== key) {
       g.fg.material = gaugeMaterial(this.scene, key);
       g.material = key;
@@ -307,11 +338,19 @@ export class EntityView {
     root.billboardMode = TransformNode.BILLBOARDMODE_ALL;
     const width = Math.max(0.9, this.radius * 2);
     root.scaling.set(width, 0.12, 1);
-    const bg = MeshBuilder.CreatePlane(`${name}_hp_bg`, { size: 1 }, this.scene);
+    const bg = MeshBuilder.CreatePlane(
+      `${name}_hp_bg`,
+      { size: 1 },
+      this.scene,
+    );
     bg.material = mats.bg;
     bg.parent = root;
     bg.isPickable = false;
-    const fg = MeshBuilder.CreatePlane(`${name}_hp_fg`, { size: 1 }, this.scene);
+    const fg = MeshBuilder.CreatePlane(
+      `${name}_hp_fg`,
+      { size: 1 },
+      this.scene,
+    );
     fg.material = mats.fg;
     fg.parent = root;
     fg.position.z = -0.01;
@@ -321,7 +360,11 @@ export class EntityView {
     return { root, fg };
   }
 
-  private createGauge(): { root: TransformNode; fg: Mesh; material: GaugeMaterial | null } {
+  private createGauge(): {
+    root: TransformNode;
+    fg: Mesh;
+    material: GaugeMaterial | null;
+  } {
     const name = `${this.root.name}_gauge`;
     const root = new TransformNode(name, this.scene);
     root.parent = this.root;
@@ -329,7 +372,7 @@ export class EntityView {
     root.billboardMode = TransformNode.BILLBOARDMODE_ALL;
     root.scaling.set(0.75, 0.075, 1);
     const bg = MeshBuilder.CreatePlane(`${name}_bg`, { size: 1 }, this.scene);
-    bg.material = gaugeMaterial(this.scene, 'bg');
+    bg.material = gaugeMaterial(this.scene, "bg");
     bg.parent = root;
     bg.scaling.set(1.06, 1.5, 1);
     const fg = MeshBuilder.CreatePlane(`${name}_fg`, { size: 1 }, this.scene);
@@ -346,14 +389,16 @@ export class EntityView {
   private attachVisual(v: Visual): void {
     v.root.parent = this.root;
     this.visualScale = v.root.scaling.x;
-    if (this.appearance.kind === 'loot' || this.appearance.kind === 'portal') return;
+    if (this.appearance.kind === "loot" || this.appearance.kind === "portal")
+      return;
     if (this.shadows && this.castShadows) {
       for (const m of v.shadowCasters) this.shadows.addShadowCaster(m);
     }
   }
 
   private detachVisual(v: Visual): void {
-    if (this.shadows) for (const m of v.shadowCasters) this.shadows.removeShadowCaster(m);
+    if (this.shadows)
+      for (const m of v.shadowCasters) this.shadows.removeShadowCaster(m);
   }
 }
 
@@ -361,7 +406,9 @@ export class EntityView {
 export class EntityViewPool {
   private readonly free = new Map<string, EntityView[]>();
 
-  constructor(private readonly create: (appearance: AppearanceDef) => EntityView) {}
+  constructor(
+    private readonly create: (appearance: AppearanceDef) => EntityView,
+  ) {}
 
   acquire(appearance: AppearanceDef, entityId: EntityId): EntityView {
     const view = this.free.get(appearance.id)?.pop() ?? this.create(appearance);

@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
 /**
  * Control scheme + screen settings (per device, localStorage).
@@ -10,40 +10,50 @@ import { create } from 'zustand';
  * HUD out from those attributes plus orientation/size media queries, so the
  * game never locks orientation.
  */
-export type ControlScheme = 'auto' | 'desktop' | 'touch';
-export type JoystickMode = 'floating' | 'fixed';
-export type JoystickSize = 'small' | 'medium' | 'large';
+export type ControlScheme = "auto" | "desktop" | "touch";
+export type JoystickMode = "floating" | "fixed";
+export type JoystickSize = "small" | "medium" | "large";
 
-export const JOYSTICK_RADIUS: Record<JoystickSize, number> = { small: 44, medium: 56, large: 70 };
+export const JOYSTICK_RADIUS: Record<JoystickSize, number> = {
+  small: 44,
+  medium: 56,
+  large: 70,
+};
 
 export interface ControlSettings {
   scheme: ControlScheme;
   joystickMode: JoystickMode;
   /** Hand that holds the joystick; action buttons go to the other side. */
-  joystickSide: 'left' | 'right';
+  joystickSide: "left" | "right";
   joystickSize: JoystickSize;
   /** Touch: enter fullscreen on the first tap (where the browser allows it). */
   autoFullscreen: boolean;
 }
 
-const KEY = 'rpg.controls';
+const KEY = "rpg.controls";
 const DEFAULTS: ControlSettings = {
-  scheme: 'auto',
-  joystickMode: 'floating',
-  joystickSide: 'left',
-  joystickSize: 'medium',
+  scheme: "auto",
+  joystickMode: "floating",
+  joystickSide: "left",
+  joystickSize: "medium",
   autoFullscreen: true,
 };
 
 function read(): ControlSettings {
   try {
-    const raw = JSON.parse(localStorage.getItem(KEY) ?? '{}') as Partial<ControlSettings>;
+    const raw = JSON.parse(
+      localStorage.getItem(KEY) ?? "{}",
+    ) as Partial<ControlSettings>;
     const s = { ...DEFAULTS, ...raw };
     // Unknown values from an older build fall back to defaults.
-    if (!['auto', 'desktop', 'touch'].includes(s.scheme)) s.scheme = DEFAULTS.scheme;
-    if (!['floating', 'fixed'].includes(s.joystickMode)) s.joystickMode = DEFAULTS.joystickMode;
-    if (!['left', 'right'].includes(s.joystickSide)) s.joystickSide = DEFAULTS.joystickSide;
-    if (!(s.joystickSize in JOYSTICK_RADIUS)) s.joystickSize = DEFAULTS.joystickSize;
+    if (!["auto", "desktop", "touch"].includes(s.scheme))
+      s.scheme = DEFAULTS.scheme;
+    if (!["floating", "fixed"].includes(s.joystickMode))
+      s.joystickMode = DEFAULTS.joystickMode;
+    if (!["left", "right"].includes(s.joystickSide))
+      s.joystickSide = DEFAULTS.joystickSide;
+    if (!(s.joystickSize in JOYSTICK_RADIUS))
+      s.joystickSize = DEFAULTS.joystickSize;
     s.autoFullscreen = s.autoFullscreen !== false;
     return s;
   } catch {
@@ -51,17 +61,18 @@ function read(): ControlSettings {
   }
 }
 
-const coarse = () => typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches;
+const coarse = () =>
+  typeof matchMedia !== "undefined" && matchMedia("(pointer: coarse)").matches;
 
 interface ControlsStore extends ControlSettings {
   /** Device last used — what `auto` resolves to. */
-  detected: 'desktop' | 'touch';
+  detected: "desktop" | "touch";
   set(patch: Partial<ControlSettings>): void;
 }
 
 export const useControls = create<ControlsStore>((set) => ({
   ...read(),
-  detected: coarse() ? 'touch' : 'desktop',
+  detected: coarse() ? "touch" : "desktop",
   set: (patch) =>
     set((s) => {
       const next = { ...s, ...patch };
@@ -75,8 +86,9 @@ export const useControls = create<ControlsStore>((set) => ({
     }),
 }));
 
-export const effectiveScheme = (s: Pick<ControlsStore, 'scheme' | 'detected'>) =>
-  s.scheme === 'auto' ? s.detected : s.scheme;
+export const effectiveScheme = (
+  s: Pick<ControlsStore, "scheme" | "detected">,
+) => (s.scheme === "auto" ? s.detected : s.scheme);
 
 /** Reflects settings on <html> and tracks the device in use. Call once. */
 export function installControls(): void {
@@ -89,29 +101,35 @@ export function installControls(): void {
   apply();
   useControls.subscribe(apply);
 
-  const seen = (kind: 'desktop' | 'touch') => {
-    if (useControls.getState().detected !== kind) useControls.setState({ detected: kind });
+  const seen = (kind: "desktop" | "touch") => {
+    if (useControls.getState().detected !== kind)
+      useControls.setState({ detected: kind });
   };
   window.addEventListener(
-    'pointerdown',
-    (e) => seen(e.pointerType === 'mouse' ? 'desktop' : 'touch'),
+    "pointerdown",
+    (e) => seen(e.pointerType === "mouse" ? "desktop" : "touch"),
     { capture: true, passive: true },
   );
   // For touch, user activation (needed by requestFullscreen) comes on pointerup, not down.
   window.addEventListener(
-    'pointerup',
+    "pointerup",
     (e) => {
       const s = useControls.getState();
-      if (e.pointerType !== 'mouse' && s.autoFullscreen && !isFullscreen()) void enterFullscreen();
+      if (e.pointerType !== "mouse" && s.autoFullscreen && !isFullscreen())
+        void enterFullscreen();
     },
     { capture: true, passive: true },
   );
   // A physical keyboard on a tablet means desktop controls (typing in chat doesn't count).
   window.addEventListener(
-    'keydown',
+    "keydown",
     (e) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      if (/^(Key[WASD]|Arrow)/.test(e.code)) seen('desktop');
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      )
+        return;
+      if (/^(Key[WASD]|Arrow)/.test(e.code)) seen("desktop");
     },
     { capture: true, passive: true },
   );
@@ -142,7 +160,8 @@ export async function enterFullscreen(): Promise<void> {
   if (!fullscreenSupported() || isFullscreen()) return;
   const el = document.documentElement as WebkitElement;
   try {
-    if (el.requestFullscreen) await el.requestFullscreen({ navigationUI: 'hide' });
+    if (el.requestFullscreen)
+      await el.requestFullscreen({ navigationUI: "hide" });
     else await el.webkitRequestFullscreen?.();
   } catch {
     // Denied (no gesture / browser policy): stay windowed.
@@ -161,16 +180,16 @@ export async function toggleFullscreen(): Promise<void> {
 
 /** Subscribes to fullscreen changes (for the HUD toggle icon). */
 export function onFullscreenChange(cb: () => void): () => void {
-  document.addEventListener('fullscreenchange', cb);
-  document.addEventListener('webkitfullscreenchange', cb);
+  document.addEventListener("fullscreenchange", cb);
+  document.addEventListener("webkitfullscreenchange", cb);
   return () => {
-    document.removeEventListener('fullscreenchange', cb);
-    document.removeEventListener('webkitfullscreenchange', cb);
+    document.removeEventListener("fullscreenchange", cb);
+    document.removeEventListener("webkitfullscreenchange", cb);
   };
 }
 
 /** True when running as an installed PWA (already fullscreen/standalone). */
 export const isStandalone = (): boolean =>
-  typeof matchMedia !== 'undefined' &&
-  (matchMedia('(display-mode: fullscreen)').matches ||
-    matchMedia('(display-mode: standalone)').matches);
+  typeof matchMedia !== "undefined" &&
+  (matchMedia("(display-mode: fullscreen)").matches ||
+    matchMedia("(display-mode: standalone)").matches);

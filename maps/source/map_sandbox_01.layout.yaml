@@ -234,4 +234,9 @@ scatter:
   - { appearanceId: env_bush_02, count: 6, minSpacing: 3, scale: [0.7, 1] }
   - { appearanceId: env_flowers_01, count: 14, minSpacing: 2, scale: [0.6, 1] }
   - { appearanceId: env_fern_01, count: 8, minSpacing: 2, scale: [0.6, 0.9] }
-  - { appearanceId: env_grass_01, count: 60, minSpacing: 1.3, scale: [0.6, 1.1] }
+  - {
+      appearanceId: env_grass_01,
+      count: 60,
+      minSpacing: 1.3,
+      scale: [0.6, 1.1],
+    }

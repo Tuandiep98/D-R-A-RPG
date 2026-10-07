@@ -163,36 +163,43 @@ Mỗi quyết định: ngày, bối cảnh, quyết định, hệ quả. Khi mâ
 - **Hệ quả:** Phần stack/kiến trúc của master plan (§92–117) trùng với `01_tech_stack_plan.md` và đã được thực hiện; khi mâu thuẫn, decision log vẫn được ưu tiên.
 
 ## D-024 — Pipeline media riêng cho âm thanh, icon, khung UI, sprite VFX
+
 - **Ngày:** 2026-10-07
 - **Quyết định:** `SOURCE.json` có thêm `kind` (models/animations/audio/icons/ui/vfx) và `media` (id `sfx_*`/`icon_*`/`ui_*`/`vfx_*`). `pnpm media:build` xuất file băm tên + `media.manifest.json`: âm thanh → AAC `.m4a` (Safari/iOS phát được, desktop cũng được), icon/VFX → WebP thu nhỏ, khung UI → PNG lossless nhuộm màu lúc build (`tint`). Thiếu media thì client lùi về emoji / CSS / im lặng.
 - **Lý do:** tách khỏi pipeline glTF; id ổn định để game-data tham chiếu; validator bắt id sai.
 
 ## D-025 — Duyệt license 14 pack tải ngày 07/10/2026
+
 - **Ngày:** 2026-10-07
 - **Quyết định:** chủ dự án duyệt (approved + licenseVerified) 14 pack CC0: KayKit Adventurers, Quaternius Medieval Weapons / Ultimate RPG Items / RPG Pack / Ultimate Guns / Universal Animation Library, Kenney Blaster Kit / RPG Audio / Impact / Sci-fi / Interface Sounds / Fantasy UI Borders / Particle Pack, KDRN Ability Icons. Bằng chứng ghi trong `notes` từng pack; Medieval Weapons và KDRN không có file license trong zip (trang itch.io ghi CC0).
 
 ## D-026 — Trang bị dùng model thật, gắn bằng socket
+
 - **Ngày:** 2026-10-07
 - **Quyết định:** `GearAttachments` hiện placeholder ngay rồi thay bằng model (`appearance.modelAssetId`, `scale`, `yawOffset`) khi tải xong. Góc cầm chuẩn cho `hand_r` của humanoid_v1 là xoay X +90°. Mỗi model đã duyệt có appearance `gear_*` (trang bị) hoặc `drop_*` (vật rơi) sinh tự động với scale tính từ kích thước thật.
 
 ## D-027 — Đổi chuẩn nhân vật sang KayKit (chibi ~2.2 đầu, Rig_Medium)
+
 - **Ngày:** 2026-10-07
 - **Bối cảnh:** chủ dự án chọn phong cách KayKit Adventurers sau khi so sánh trong game (`reports/smoke/kaykit_vs_ubc.png`): nhân vật đầu to đọc rõ ở camera 2.5D, hệ KayKit đồng bộ style (nhân vật, quái Skeletons, dungeon, rừng, 133 animation), nhẹ (~300 KB, 6–9k tris, 1 atlas).
 - **Quyết định:** `kaykit_rig_medium_v1` là rig chuẩn cho player/NPC; ghi đè mục "semi-mini ~5 đầu" của assets plan. Player = KayKit Rogue, NPC = Mage / Rogue Hooded / Knight / Barbarian (tạm, chờ mảnh Á Đông). Vũ khí KayKit gắn `handslot.*` không xoay ở scale 0.62. Modular Outfits → `rejected`; Quaternius Medieval Weapons, Ultimate Guns → `prototype_only`. Animation chiến đấu lấy từ KayKit Character Animations (FBX) qua `pnpm assets:convert` (FBX2glTF).
 - **Hệ quả:** cần mảnh trang phục Á Đông trên Rig_Medium (art); tạm dùng `Throw`/`Use_Item` cho attack/cast tới khi có gói combat; D-026 (xoay X +90°) chỉ còn đúng cho humanoid_v1.
 
 ## D-028 — Commit file asset game dùng, không commit cả pack
+
 - **Ngày:** 2026-10-07
 - **Bối cảnh:** chủ dự án muốn clone ở máy khác là chạy được, không phải tải lại pack.
 - **Quyết định:** `pnpm assets:vendor` đọc mọi `SOURCE.json` có `status: approved` và sinh `art/third_party/.gitignore` dạng allowlist: chỉ các file được tham chiếu (model + `.bin` + ảnh, animation, `parts`, `textureDirs`, media, GLB đã convert). Phần còn lại của pack (OBJ, FBX Unity, model chưa dùng) ở máy local. Lần đầu: 464 file, ~44 MB. CI chạy `assets:vendor --check`, rồi `assets:build --allow-missing` + `media:build`.
 - **Hệ quả:** thêm asset mới = khai báo trong `SOURCE.json` → `pnpm assets:vendor` → commit. Pack còn thiếu file gốc (Quaternius Animated Mech, Ultimate Monsters) hiện bằng placeholder cho tới khi được tải và vendor.
 
 ## D-029 — Quái dùng model KayKit
+
 - **Ngày:** 2026-10-07
 - **Quyết định:** 6 quái đổi sang KayKit, giữ nguyên id appearance/monster nên data, map, quest không đổi: Sói Rừng → Skeleton Minion; Hồ Ly Lửa → Skeleton Rogue tint lửa; Cơ Giáp Trinh Sát → Skeleton Mage tint lam (bắn phép); Linh Lộc Tinh Anh → Skeleton Warrior tint vàng; Thạch Khôi Tiền Vệ → Mannequin_Large tint đá; Guardian X-04 (boss) → Mannequin_Large tint đỏ cầm búa. Appearance có thêm `defaultGear` để quái cầm vũ khí riêng. Quaternius Animated Animals / Animated Mech / Ultimate Monsters / Space Kit → `prototype_only`.
 - **Hệ quả:** tên/lore quái (sói, hồ ly, linh lộc, cơ giáp) chưa khớp hình bộ xương — cần đổi tên/mô tả hoặc thêm model thú/cơ giới cùng style sau.
 
 ## D-030 — Điều khiển trực tiếp (WASD / joystick) và HUD thích ứng
+
 - **Ngày:** 2026-10-07
 - **Quyết định:**
   - Thêm intent `MOVE_DIR { dir: {x,z} | null }` (PROTOCOL_VERSION 6): hướng trong không gian world, host chuẩn hoá. Đang giữ hướng thì movement bỏ qua `goal` (đuổi mục tiêu, cast đang chờ); cast vẫn làm nhân vật đứng yên. Lần nhấn mới huỷ click-to-move/auto-attack; đổi hướng trong lúc giữ thì không. Chết thì xoá hướng.
@@ -204,6 +211,7 @@ Mỗi quyết định: ngày, bối cảnh, quyết định, hệ quả. Khi mâ
 - **Kiểm tra:** `pnpm smoke:controls` (desktop WASD, điện thoại dọc/ngang bằng touch thật qua CDP).
 
 ## D-031 — Đánh thường combo 3 nhịp và hiệu ứng đòn đánh
+
 - **Ngày:** 2026-10-07
 - **Quyết định:**
   - Đánh thường không cần chọn mục tiêu: `game-data/combos/*.yaml` khai báo từng nhịp (phải → trái → đòn mạnh). Mỗi nhịp có `windup` (giây tới lúc chạm, đo theo frame chạm của clip / `animSpeed`), tầm, nón, `moveMultiplier`. Nhịp 3 chọn ngẫu nhiên theo `weight` giữa nhiều kiểu.
@@ -218,20 +226,21 @@ Mỗi quyết định: ngày, bối cảnh, quyết định, hệ quả. Khi mâ
 - **Hệ quả:** thêm kiểu đòn mới chỉ cần YAML (clip, windup, trail, impact). Clip mới có root motion phải khai báo `inPlace`.
 
 ## D-032 — Hiệu ứng skill Lôi Kiếm Tu (7 skill hệ lôi)
+
 - **Ngày:** 2026-10-07
 - **Quyết định:**
   - Skill khai báo clip của người thi triển trong YAML: `anim: { cast, castSpeed, impact, impactSpeed }`. Model thiếu clip thì dùng role `cast` của appearance. Đây chỉ là phần hiển thị, sim không đọc.
   - `vfx` của skill chọn kiểu hiển thị trong `packages/babylon-renderer/src/thunder-fx.ts`:
 
-    | Kiểu | Skill |
-    |---|---|
-    | `thunder_dash` | Lôi Bộ |
-    | `thunder_leap` | Lôi Ảnh Trảm |
-    | `thunder_arc` | Lôi Hoàn Kiếm |
-    | `thunder_field` | Lôi Vực |
+    | Kiểu                 | Skill              |
+    | -------------------- | ------------------ |
+    | `thunder_dash`       | Lôi Bộ             |
+    | `thunder_leap`       | Lôi Ảnh Trảm       |
+    | `thunder_arc`        | Lôi Hoàn Kiếm      |
+    | `thunder_field`      | Lôi Vực            |
     | `thunder_projectile` | Lôi Kiếm Xuyên Tâm |
-    | `thunder_strike` | Tử Điện Trảm |
-    | `thunder_ultimate` | Cửu Thiên Lôi Kiếm |
+    | `thunder_strike`     | Tử Điện Trảm       |
+    | `thunder_ultimate`   | Cửu Thiên Lôi Kiếm |
 
   - Hiệu ứng bám vào sự kiện của host:
     - `CAST_START`: tay tụ sáng, điện chạy quanh người, trận pháp dưới đất cho skill chọn điểm.
@@ -246,3 +255,11 @@ Mỗi quyết định: ngày, bối cảnh, quyết định, hệ quả. Khi mâ
   - Clip KayKit mới cho Rogue/Ranger: `Dodge_Forward` (thêm bản `_InPlace`), `Ranged_Magic_Raise`, `Ranged_Magic_Spellcasting_Long`. Lấy từ `Rig_Medium_MovementAdvanced`, `Rig_Medium_CombatRanged`, không cần retarget.
   - Preset Low: ít tia sét và hạt hơn, không có điện chạy quanh người, giới hạn 12 tia cùng lúc.
 - **Hệ quả:** thêm skill hệ khác (hoả, băng…) thì viết một module kiểu `thunder-fx.ts` và trỏ `vfx` tới nó. Âm thanh hiện tạm dùng Kenney Sci-Fi (`sfx_force_field`, `sfx_laser_*`, `sfx_explosion*`) cho tới khi có gói tiếng sấm CC0.
+
+## D-033 — Game UI theo Kenney Fantasy Glass
+
+- **Ngày:** 2026-10-07
+- **Quyết định của chủ dự án:** lấy mẫu Fantasy UI Borders của Kenney làm chuẩn cho tất cả UI game mới/sửa: nền xanh đen trong suốt, blur phía sau, khung góc vuông hồi văn trắng/xám, chữ sáng và accent xanh ngọc nhạt. Dùng lại element/source liên quan; không quay về look stone/metal/brass tự vẽ.
+- **Chuẩn triển khai:** `docs/game-ui-style.md`, `apps/game-web/src/fantasy-glass.css`, token/layout trong `hud-design.css`; source Kenney CC0, icon skill/item và glyph đã duyệt. Khung cơ bản được bundle cùng client để không phụ thuộc media build.
+- **Hiệu năng:** Low, reduced transparency và browser thiếu backdrop filter có nền đậm thay thế. Gameplay không bị blur toàn màn hình khi không mở cửa sổ.
+- **Hệ quả:** thay thế phần look/avoid-blur trong `docs/hud-field-kit.md`. Quy tắc được tham chiếu từ `AGENTS.md` và `CLAUDE.md`.

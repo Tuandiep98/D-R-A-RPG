@@ -1,13 +1,19 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 /** Stable content id: lowercase snake_case. */
-export const IdSchema = z.string().regex(/^[a-z][a-z0-9_]*$/, 'id must be lowercase snake_case');
+export const IdSchema = z
+  .string()
+  .regex(/^[a-z][a-z0-9_]*$/, "id must be lowercase snake_case");
 
 const Vec2 = z.strictObject({ x: z.number().finite(), z: z.number().finite() });
-const Vec3Tuple = z.tuple([z.number().finite(), z.number().finite(), z.number().finite()]);
+const Vec3Tuple = z.tuple([
+  z.number().finite(),
+  z.number().finite(),
+  z.number().finite(),
+]);
 const positive = z.number().finite().positive();
 const nonNegative = z.number().finite().nonnegative();
-const seconds = positive.describe('seconds');
+const seconds = positive.describe("seconds");
 const chance = z.number().min(0).max(1);
 
 // ---------------------------------------------------------------------------
@@ -63,21 +69,21 @@ export const SfxListSchema = z.array(SfxIdSchema).min(1);
 
 export const SkillTargetingSchema = z.enum([
   /** Needs a hostile target entity within range. */
-  'target',
+  "target",
   /** Centred on the caster. */
-  'self',
+  "self",
   /** A ground point within range (falls back to the current target's position). */
-  'point',
+  "point",
 ]);
 
-export const SkillEffectSchema = z.discriminatedUnion('type', [
+export const SkillEffectSchema = z.discriminatedUnion("type", [
   z.strictObject({
-    type: z.literal('dash'),
+    type: z.literal("dash"),
     /** Travel along the held direction, or facing when standing still. */
     distance: z.number().positive().max(12),
   }),
   z.strictObject({
-    type: z.literal('damage'),
+    type: z.literal("damage"),
     /** Multiplier on the caster's attack. */
     multiplier: positive,
     flat: nonNegative.default(0),
@@ -85,7 +91,7 @@ export const SkillEffectSchema = z.discriminatedUnion('type', [
     radius: nonNegative.default(0),
   }),
   z.strictObject({
-    type: z.literal('heal'),
+    type: z.literal("heal"),
     /** Fraction of max HP. */
     fraction: chance,
   }),
@@ -94,8 +100,8 @@ export const SkillEffectSchema = z.discriminatedUnion('type', [
 export const SkillDefSchema = z.strictObject({
   id: IdSchema,
   name: z.string().min(1),
-  description: z.string().default(''),
-  icon: z.string().default('⚔'),
+  description: z.string().default(""),
+  icon: z.string().default("⚔"),
   /** Runtime media id (`pnpm media:build`); the emoji `icon` stays as fallback. */
   iconImage: MediaIconIdSchema.optional(),
   targeting: SkillTargetingSchema,
@@ -105,14 +111,14 @@ export const SkillDefSchema = z.strictObject({
   cooldown: seconds,
   mpCost: z.number().int().nonnegative().default(0),
   /** Which mobile action slot may show this skill. Desktop slots accept either. */
-  barRole: z.enum(['primary', 'utility']).default('primary'),
+  barRole: z.enum(["primary", "utility"]).default("primary"),
   /**
    * Show the impact area to everyone while casting (boss telegraphs, assets plan §7).
    * The impact point is locked when the cast starts, so it can be dodged.
    */
   telegraph: z.boolean().default(false),
   effects: z.array(SkillEffectSchema).min(1),
-  vfx: z.string().default('slash'),
+  vfx: z.string().default("slash"),
   /**
    * Presentation only: clips (names inside the caster's model) played when the
    * cast starts and when it lands. Missing → the appearance's `cast` role.
@@ -127,7 +133,10 @@ export const SkillDefSchema = z.strictObject({
     .optional(),
   /** Presentation only: sounds when the cast starts and when it lands. */
   sfx: z
-    .strictObject({ cast: SfxListSchema.optional(), impact: SfxListSchema.optional() })
+    .strictObject({
+      cast: SfxListSchema.optional(),
+      impact: SfxListSchema.optional(),
+    })
     .default({}),
 });
 export type SkillDef = z.infer<typeof SkillDefSchema>;
@@ -138,21 +147,23 @@ export type SkillDef = z.infer<typeof SkillDefSchema>;
 
 /** Presentation of one swing: a slash ribbon / thrust / smash flash, plus hand glow. */
 export const SwingTrailSchema = z.strictObject({
-  shape: z.enum(['slash', 'thrust', 'smash', 'spin']),
+  shape: z.enum(["slash", "thrust", "smash", "spin"]),
   /** Slash sweep direction as the attacker sees it (right → left, …). */
-  from: z.enum(['right', 'left', 'top']).default('right'),
-  color: z.string().default('#dff4ff'),
+  from: z.enum(["right", "left", "top"]).default("right"),
+  color: z.string().default("#dff4ff"),
   /** Size multiplier on the swing's reach. */
   size: positive.default(1),
   /** Sockets that glow during the wind-up (heavy hits): "hand_r", "hand_l". */
-  glow: z.array(z.enum(['hand_r', 'hand_l'])).default([]),
+  glow: z.array(z.enum(["hand_r", "hand_l"])).default([]),
   /**
    * What the impact looks like: `spark` (light hits), `burst` (shock flash +
    * sparks), `quake` (ground ring, dust, debris), `pierce` (a line through the
    * target), `cyclone` (a ring of wind around the attacker). Anything but
    * `spark` also adds camera shake and hit-stop.
    */
-  impact: z.enum(['spark', 'burst', 'quake', 'pierce', 'cyclone']).default('spark'),
+  impact: z
+    .enum(["spark", "burst", "quake", "pierce", "cyclone"])
+    .default("spark"),
 });
 
 export const ComboVariantSchema = z.strictObject({
@@ -184,7 +195,7 @@ export const ComboVariantSchema = z.strictObject({
    */
   lungeWindow: z
     .tuple([z.number().min(0).max(1), z.number().min(0).max(1)])
-    .refine(([a, b]) => b > a, 'lungeWindow end must be after start')
+    .refine(([a, b]) => b > a, "lungeWindow end must be after start")
     .default([0, 1]),
   /** Random pick weight among a step's variants. */
   weight: positive.default(1),
@@ -210,7 +221,10 @@ export const ComboDefSchema = z.strictObject({
   missMargin: nonNegative.default(0.8),
   /** Yếu hại: hits landing on the target's back / flank. */
   weakPoint: z
-    .strictObject({ back: z.number().min(1).default(1.6), flank: z.number().min(1).default(1.25) })
+    .strictObject({
+      back: z.number().min(1).default(1.6),
+      flank: z.number().min(1).default(1.25),
+    })
     .default({ back: 1.6, flank: 1.25 }),
   /** Aim assist: turn toward a hostile within this many degrees of the facing. */
   assistAngle: z.number().min(0).max(180).default(70),
@@ -226,7 +240,9 @@ export type ComboDef = z.infer<typeof ComboDefSchema>;
 // Ranged basic attacks (đánh tầm xa, D-033): guns now; bows, magic, thrown later
 // ---------------------------------------------------------------------------
 
-const HexColorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'colour must be #rrggbb');
+const HexColorSchema = z
+  .string()
+  .regex(/^#[0-9a-fA-F]{6}$/, "colour must be #rrggbb");
 
 /**
  * How a main-hand ranged weapon shoots. The sim reads timing, ammo, heat and
@@ -242,21 +258,26 @@ export const RangedDefSchema = z
     id: IdSchema,
     name: z.string().min(1),
     /** Weapon family: drives presentation and future rules (bows draw, magic channels). */
-    kind: z.enum(['gun', 'bow', 'magic', 'thrown']).default('gun'),
-    fireMode: z.enum(['auto', 'semi', 'burst']),
+    kind: z.enum(["gun", "bow", "magic", "thrown"]).default("gun"),
+    fireMode: z.enum(["auto", "semi", "burst"]),
     /** Seconds between shots (auto cadence; minimum gap between semi presses / after a burst). */
     fireInterval: seconds,
     /** Seconds to raise the weapon before the first shot; a raised weapon fires at once. */
     windup: nonNegative.default(0),
     /** The weapon stays raised (body faces the aim, no windup) this long after a shot. */
     holdAim: nonNegative.default(0.8),
-    burst: z.strictObject({ count: z.number().int().min(2).max(8), interval: seconds }).optional(),
+    burst: z
+      .strictObject({
+        count: z.number().int().min(2).max(8),
+        interval: seconds,
+      })
+      .optional(),
     /** Rounds per magazine; 0 = no magazine (energy weapons limited by heat only). */
     magazine: z.number().int().min(0).max(200),
     reload: z
       .strictObject({
         /** magazine: refill at once after `seconds`; round: one round every `seconds`, firing interrupts. */
-        mode: z.enum(['magazine', 'round']).default('magazine'),
+        mode: z.enum(["magazine", "round"]).default("magazine"),
         seconds,
         /** Start reloading by itself when the magazine runs dry. */
         auto: z.boolean().default(true),
@@ -319,40 +340,43 @@ export const RangedDefSchema = z
      */
     anim: z
       .strictObject({
-        aim: z.string().min(1).default('Ranged_1H_Aiming'),
+        aim: z.string().min(1).default("Ranged_1H_Aiming"),
         aimFrom: nonNegative.default(0.4),
-        shoot: z.string().min(1).default('Ranged_1H_Shoot'),
+        shoot: z.string().min(1).default("Ranged_1H_Shoot"),
         shootFrom: nonNegative.default(0.27),
         shootTo: nonNegative.default(0.73),
         shootSpeed: positive.default(1.4),
         loop: z
-          .strictObject({ clip: z.string().min(1), shots: z.number().int().min(1) })
+          .strictObject({
+            clip: z.string().min(1),
+            shots: z.number().int().min(1),
+          })
           .optional(),
-        reload: z.string().min(1).default('Ranged_1H_Reload'),
+        reload: z.string().min(1).default("Ranged_1H_Reload"),
         lowerFrom: nonNegative.optional(),
       })
       .default({
-        aim: 'Ranged_1H_Aiming',
+        aim: "Ranged_1H_Aiming",
         aimFrom: 0.4,
-        shoot: 'Ranged_1H_Shoot',
+        shoot: "Ranged_1H_Shoot",
         shootFrom: 0.27,
         shootTo: 0.73,
         shootSpeed: 1.4,
-        reload: 'Ranged_1H_Reload',
+        reload: "Ranged_1H_Reload",
         lowerFrom: 0.73,
       }),
     /** Presentation: muzzle flash, tracer and impact style. */
     fx: z
       .strictObject({
-        color: HexColorSchema.default('#ffd27a'),
+        color: HexColorSchema.default("#ffd27a"),
         /** streak: fast slug · bolt: glowing energy bolt · pellet: small shot · beam: instant line. */
-        tracer: z.enum(['streak', 'bolt', 'pellet', 'beam']).default('streak'),
+        tracer: z.enum(["streak", "bolt", "pellet", "beam"]).default("streak"),
         /** Muzzle flash / tracer size multiplier. */
         size: positive.default(1),
         /** Camera kick on the shooter's own screen per shot. */
         kick: nonNegative.default(0),
       })
-      .default({ color: '#ffd27a', tracer: 'streak', size: 1, kick: 0 }),
+      .default({ color: "#ffd27a", tracer: "streak", size: 1, kick: 0 }),
     sfx: z
       .strictObject({
         shoot: SfxListSchema.optional(),
@@ -363,17 +387,18 @@ export const RangedDefSchema = z
       })
       .default({}),
   })
-  .refine((r) => r.fireMode !== 'burst' || r.burst, {
-    message: 'burst fire needs `burst`',
-    path: ['burst'],
+  .refine((r) => r.fireMode !== "burst" || r.burst, {
+    message: "burst fire needs `burst`",
+    path: ["burst"],
   })
   .refine((r) => r.magazine === 0 || r.reload, {
-    message: 'a magazine needs `reload`',
-    path: ['reload'],
+    message: "a magazine needs `reload`",
+    path: ["reload"],
   })
   .refine((r) => r.magazine > 0 || r.heat, {
-    message: 'without a magazine the weapon needs `heat` (otherwise it never stops)',
-    path: ['heat'],
+    message:
+      "without a magazine the weapon needs `heat` (otherwise it never stops)",
+    path: ["heat"],
   });
 export type RangedDef = z.infer<typeof RangedDefSchema>;
 
@@ -382,31 +407,38 @@ export type RangedDef = z.infer<typeof RangedDefSchema>;
 // ---------------------------------------------------------------------------
 
 export const EquipSlotSchema = z.enum([
-  'main_hand',
-  'off_hand',
-  'head',
-  'chest',
-  'gloves',
-  'pants',
-  'boots',
-  'back',
-  'artifact',
+  "main_hand",
+  "off_hand",
+  "head",
+  "chest",
+  "gloves",
+  "pants",
+  "boots",
+  "back",
+  "artifact",
 ]);
 export type EquipSlot = z.infer<typeof EquipSlotSchema>;
 
-export const RaritySchema = z.enum(['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic']);
+export const RaritySchema = z.enum([
+  "common",
+  "uncommon",
+  "rare",
+  "epic",
+  "legendary",
+  "mythic",
+]);
 export type Rarity = z.infer<typeof RaritySchema>;
 
 export const ItemDefSchema = z
   .strictObject({
     id: IdSchema,
     name: z.string().min(1),
-    kind: z.enum(['equipment', 'consumable', 'material']),
-    rarity: RaritySchema.default('common'),
-    icon: z.string().default('◆'),
+    kind: z.enum(["equipment", "consumable", "material"]),
+    rarity: RaritySchema.default("common"),
+    icon: z.string().default("◆"),
     /** Runtime media id (`pnpm media:build`); the emoji `icon` stays as fallback. */
     iconImage: MediaIconIdSchema.optional(),
-    description: z.string().default(''),
+    description: z.string().default(""),
     slot: EquipSlotSchema.optional(),
     /** Minimum realm to equip/use (no character level — master plan §31). */
     realm: IdSchema.optional(),
@@ -423,17 +455,17 @@ export const ItemDefSchema = z
     /** Main-hand ranged weapons (game-data/ranged): basic attacks shoot instead of swinging. */
     ranged: IdSchema.optional(),
   })
-  .refine((i) => !i.ranged || i.slot === 'main_hand', {
-    message: 'ranged weapons go in main_hand',
-    path: ['ranged'],
+  .refine((i) => !i.ranged || i.slot === "main_hand", {
+    message: "ranged weapons go in main_hand",
+    path: ["ranged"],
   })
-  .refine((i) => i.kind !== 'equipment' || i.slot, {
-    message: 'equipment needs a slot',
-    path: ['slot'],
+  .refine((i) => i.kind !== "equipment" || i.slot, {
+    message: "equipment needs a slot",
+    path: ["slot"],
   })
-  .refine((i) => i.kind !== 'consumable' || i.heal !== undefined, {
-    message: 'consumable needs an effect (heal)',
-    path: ['heal'],
+  .refine((i) => i.kind !== "consumable" || i.heal !== undefined, {
+    message: "consumable needs an effect (heal)",
+    path: ["heal"],
   });
 export type ItemDef = z.infer<typeof ItemDefSchema>;
 
@@ -493,7 +525,7 @@ export const RealmDefSchema = z.strictObject({
   name: z.string().min(1),
   /** Cơ Giới name of the same realm (Core Awakening, Foundation Frame…). */
   mechName: z.string().min(1),
-  description: z.string().default(''),
+  description: z.string().default(""),
   /** Total bonus while in this realm (not cumulative with lower realms). */
   bonus: StatBonusSchema.default({
     hp: 0,
@@ -531,11 +563,16 @@ export const RealmDefSchema = z.strictObject({
 });
 export type RealmDef = z.infer<typeof RealmDefSchema>;
 
-export const CultivationAxisSchema = z.enum(['than', 'nang_luong', 'than_thuc', 'dao']);
+export const CultivationAxisSchema = z.enum([
+  "than",
+  "nang_luong",
+  "than_thuc",
+  "dao",
+]);
 export type CultivationAxis = z.infer<typeof CultivationAxisSchema>;
 
 /** tien = Tiên Đạo, co = Cơ Đạo, hon_nguyen = hybrid (uses both capacities). */
-export const CultivationPathSchema = z.enum(['tien', 'co', 'hon_nguyen']);
+export const CultivationPathSchema = z.enum(["tien", "co", "hon_nguyen"]);
 export type CultivationPath = z.infer<typeof CultivationPathSchema>;
 
 /**
@@ -546,8 +583,8 @@ export type CultivationPath = z.infer<typeof CultivationPathSchema>;
 export const CultivationNodeDefSchema = z.strictObject({
   id: IdSchema,
   name: z.string().min(1),
-  description: z.string().default(''),
-  icon: z.string().default('✦'),
+  description: z.string().default(""),
+  icon: z.string().default("✦"),
   axis: CultivationAxisSchema,
   path: CultivationPathSchema,
   /** Minimum realm. */
@@ -601,13 +638,19 @@ export const CharacterDefSchema = z.strictObject({
 });
 export type CharacterDef = z.infer<typeof CharacterDefSchema>;
 
-export const MonsterTierSchema = z.enum(['normal', 'elite', 'mini_boss', 'boss', 'world_boss']);
+export const MonsterTierSchema = z.enum([
+  "normal",
+  "elite",
+  "mini_boss",
+  "boss",
+  "world_boss",
+]);
 export type MonsterTier = z.infer<typeof MonsterTierSchema>;
 
 export const MonsterPhaseSchema = z.strictObject({
   /** Phase starts when HP fraction drops to or below this. */
   hpBelow: chance,
-  name: z.string().default(''),
+  name: z.string().default(""),
   attackMultiplier: positive.default(1),
   speedMultiplier: positive.default(1),
   /** Replaces the skill list while the phase is active. */
@@ -619,13 +662,13 @@ export const MonsterDefSchema = z.strictObject({
   name: z.string().min(1),
   /** Cảnh giới; the realm gap scales damage both ways (master plan §57). */
   realm: IdSchema,
-  tier: MonsterTierSchema.default('normal'),
+  tier: MonsterTierSchema.default("normal"),
   appearanceId: IdSchema,
   stats: StatsSchema,
   movement: MovementDefSchema,
   combat: CombatDefSchema,
   ai: z.strictObject({
-    type: z.enum(['melee']),
+    type: z.enum(["melee"]),
     aggroRadius: positive,
     leashRadius: positive,
     /** Random idle wander radius around home; 0 disables wandering. */
@@ -644,9 +687,9 @@ export type MonsterDef = z.infer<typeof MonsterDefSchema>;
 export const NpcDefSchema = z.strictObject({
   id: IdSchema,
   name: z.string().min(1),
-  title: z.string().default(''),
+  title: z.string().default(""),
   appearanceId: IdSchema,
-  greeting: z.string().default(''),
+  greeting: z.string().default(""),
   /** Quests this NPC hands out and accepts. */
   quests: z.array(IdSchema).default([]),
   shopId: IdSchema.optional(),
@@ -657,25 +700,25 @@ export const NpcDefSchema = z.strictObject({
 });
 export type NpcDef = z.infer<typeof NpcDefSchema>;
 
-export const QuestObjectiveSchema = z.discriminatedUnion('type', [
+export const QuestObjectiveSchema = z.discriminatedUnion("type", [
   z.strictObject({
-    type: z.literal('kill'),
+    type: z.literal("kill"),
     monsterId: IdSchema,
     count: z.number().int().positive(),
   }),
   z.strictObject({
-    type: z.literal('collect'),
+    type: z.literal("collect"),
     itemId: IdSchema,
     count: z.number().int().positive(),
   }),
-  z.strictObject({ type: z.literal('talk'), npcId: IdSchema }),
+  z.strictObject({ type: z.literal("talk"), npcId: IdSchema }),
 ]);
 export type QuestObjective = z.infer<typeof QuestObjectiveSchema>;
 
 export const QuestDefSchema = z.strictObject({
   id: IdSchema,
   name: z.string().min(1),
-  description: z.string().default(''),
+  description: z.string().default(""),
   giverNpcId: IdSchema,
   /** Defaults to the giver. */
   turnInNpcId: IdSchema.optional(),
@@ -703,7 +746,11 @@ export type QuestDef = z.infer<typeof QuestDefSchema>;
 export const ShopDefSchema = z.strictObject({
   id: IdSchema,
   name: z.string().min(1),
-  items: z.array(z.strictObject({ itemId: IdSchema, price: z.number().int().positive() })).min(1),
+  items: z
+    .array(
+      z.strictObject({ itemId: IdSchema, price: z.number().int().positive() }),
+    )
+    .min(1),
   /** Fraction of an item's sellPrice paid when selling to this shop. */
   buybackRate: z.number().min(0).max(1).default(1),
 });
@@ -792,7 +839,7 @@ export type MapPortal = z.infer<typeof MapPortalSchema>;
 export const MapZoneSchema = z.strictObject({
   id: IdSchema,
   name: z.string().min(1),
-  kind: z.enum(['safe', 'combat', 'boss_arena', 'hazard']),
+  kind: z.enum(["safe", "combat", "boss_arena", "hazard"]),
   center: Vec2,
   radius: positive,
 });
@@ -849,11 +896,13 @@ export const MapDefSchema = z
     chunkSize: positive.default(32),
     ground: z.strictObject({
       appearanceId: IdSchema.optional(),
-      color: z.string().default('#5f8a4a'),
+      color: z.string().default("#5f8a4a"),
       paint: GroundPaintSchema.optional(),
     }),
     playerSpawn: Vec2,
-    arrivals: z.array(z.strictObject({ id: IdSchema, position: Vec2 })).default([]),
+    arrivals: z
+      .array(z.strictObject({ id: IdSchema, position: Vec2 }))
+      .default([]),
     chunks: z.array(MapChunkSchema).min(1),
     spawns: z.array(MapSpawnSchema).default([]),
     portals: z.array(MapPortalSchema).default([]),
@@ -871,45 +920,55 @@ export const MapDefSchema = z
      * shared: one world per channel (default). solo: a private copy per
      * character (dungeon, tech plan §29 "Instance #1234").
      */
-    instance: z.enum(['shared', 'solo']).default('shared'),
+    instance: z.enum(["shared", "solo"]).default("shared"),
   })
-  .refine((m) => m.bounds.min.x < m.bounds.max.x && m.bounds.min.z < m.bounds.max.z, {
-    message: 'bounds.min must be smaller than bounds.max',
-    path: ['bounds'],
-  });
+  .refine(
+    (m) => m.bounds.min.x < m.bounds.max.x && m.bounds.min.z < m.bounds.max.z,
+    {
+      message: "bounds.min must be smaller than bounds.max",
+      path: ["bounds"],
+    },
+  );
 export type MapDef = z.infer<typeof MapDefSchema>;
 
 // ---------------------------------------------------------------------------
 // Presentation: how a definition looks. Gameplay never reads this.
 // ---------------------------------------------------------------------------
 
-export const AnimationRoleSchema = z.enum(['idle', 'run', 'attack', 'cast', 'hit', 'death']);
+export const AnimationRoleSchema = z.enum([
+  "idle",
+  "run",
+  "attack",
+  "cast",
+  "hit",
+  "death",
+]);
 export type AnimationRole = z.infer<typeof AnimationRoleSchema>;
 
 /** Equipment attachment points (assets plan §5.3). */
 export const SocketSchema = z.enum([
-  'hand_r',
-  'hand_l',
-  'back',
-  'head',
-  'shoulder_l',
-  'shoulder_r',
-  'artifact',
-  'vfx_origin',
+  "hand_r",
+  "hand_l",
+  "back",
+  "head",
+  "shoulder_l",
+  "shoulder_r",
+  "artifact",
+  "vfx_origin",
 ]);
 export type Socket = z.infer<typeof SocketSchema>;
 
 export const AppearanceDefSchema = z.strictObject({
   id: IdSchema,
   kind: z.enum([
-    'character',
-    'monster',
-    'environment',
-    'ground',
-    'equipment',
-    'loot',
-    'portal',
-    'npc',
+    "character",
+    "monster",
+    "environment",
+    "ground",
+    "equipment",
+    "loot",
+    "portal",
+    "npc",
   ]),
   /** Asset id in the runtime manifest. Missing asset → placeholder. */
   modelAssetId: IdSchema.optional(),
@@ -940,7 +999,10 @@ export const AppearanceDefSchema = z.strictObject({
    * so the equipped item's own appearance can be attached instead.
    */
   builtIn: z
-    .partialRecord(EquipSlotSchema, z.strictObject({ node: z.string(), appearanceId: IdSchema }))
+    .partialRecord(
+      EquipSlotSchema,
+      z.strictObject({ node: z.string(), appearanceId: IdSchema }),
+    )
     .default({}),
   /**
    * Equipment appearances shown when the entity has nothing in that slot —
@@ -956,9 +1018,11 @@ export const AppearanceDefSchema = z.strictObject({
   /** Emissive tint used by elite/boss variants and rarity glows. */
   tint: z.string().optional(),
   /** Sounds by moment (presentation only); missing → renderer defaults. */
-  sfx: z.partialRecord(z.enum(['attack', 'hit', 'death']), SfxListSchema).default({}),
+  sfx: z
+    .partialRecord(z.enum(["attack", "hit", "death"]), SfxListSchema)
+    .default({}),
   placeholder: z.strictObject({
-    shape: z.enum(['capsule', 'box', 'cone', 'sphere', 'cylinder']),
+    shape: z.enum(["capsule", "box", "cone", "sphere", "cylinder"]),
     color: z.string(),
     height: positive,
     radius: positive,

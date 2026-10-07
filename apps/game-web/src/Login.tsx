@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { realmName } from './content';
+import { useEffect, useState } from "react";
+import { realmName } from "./content";
 import {
   type CharacterSummary,
   createCharacter,
@@ -9,7 +9,7 @@ import {
   refresh,
   register,
   startSession,
-} from './online';
+} from "./online";
 
 export interface OnlineChoice {
   characterId: string;
@@ -18,10 +18,10 @@ export interface OnlineChoice {
 
 /** Login → character select → play. Only shown in online mode (`?online`). */
 export function Login({ onPlay }: { onPlay: (choice: OnlineChoice) => void }) {
-  const [stage, setStage] = useState<'login' | 'characters'>('login');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [newName, setNewName] = useState('');
+  const [stage, setStage] = useState<"login" | "characters">("login");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [newName, setNewName] = useState("");
   const [characters, setCharacters] = useState<CharacterSummary[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -39,7 +39,7 @@ export function Login({ onPlay }: { onPlay: (choice: OnlineChoice) => void }) {
   };
   const loadCharacters = async () => {
     setCharacters((await listCharacters()).characters);
-    setStage('characters');
+    setStage("characters");
   };
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount
@@ -52,7 +52,7 @@ export function Login({ onPlay }: { onPlay: (choice: OnlineChoice) => void }) {
   return (
     <div className="login" onPointerDown={(e) => e.stopPropagation()}>
       <h1>Thiên Cơ Kỷ</h1>
-      {stage === 'login' ? (
+      {stage === "login" ? (
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -117,7 +117,7 @@ export function Login({ onPlay }: { onPlay: (choice: OnlineChoice) => void }) {
                 e.preventDefault();
                 void run(async () => {
                   await createCharacter(newName);
-                  setNewName('');
+                  setNewName("");
                   await loadCharacters();
                 });
               }}
@@ -127,7 +127,10 @@ export function Login({ onPlay }: { onPlay: (choice: OnlineChoice) => void }) {
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
               />
-              <button type="submit" disabled={busy || newName.trim().length < 2}>
+              <button
+                type="submit"
+                disabled={busy || newName.trim().length < 2}
+              >
                 Tạo nhân vật
               </button>
             </form>

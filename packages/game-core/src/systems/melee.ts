@@ -1,9 +1,14 @@
-import type { ComboDef, ComboVariant } from '@rpg/game-data';
-import { areHostile, inAttackRange, isAlive, type SimContext } from '../context';
-import type { Entity } from '../entity';
-import { clamp, clampToBounds, distance, sub, type Vec2, yawOf } from '../math';
-import { secondsToTicks } from '../time';
-import { applyDamage, rollHit } from './combat';
+import type { ComboDef, ComboVariant } from "@rpg/game-data";
+import {
+  areHostile,
+  inAttackRange,
+  isAlive,
+  type SimContext,
+} from "../context";
+import type { Entity } from "../entity";
+import { clamp, clampToBounds, distance, sub, type Vec2, yawOf } from "../math";
+import { secondsToTicks } from "../time";
+import { applyDamage, rollHit } from "./combat";
 
 /**
  * Basic attacks (đánh thường, D-031): chained swings from game-data/combos.
@@ -32,14 +37,20 @@ export function comboOf(ctx: SimContext, e: Entity): ComboDef | null {
   const def = ctx.content.characters.get(p.characterId);
   if (!def) return null;
   const mainId = p.equipment.main_hand;
-  const main = mainId ? p.inventory.find((i) => i.instanceId === mainId) : undefined;
+  const main = mainId
+    ? p.inventory.find((i) => i.instanceId === mainId)
+    : undefined;
   const item = main ? ctx.content.items.get(main.itemId) : undefined;
   const id = item ? (item.combo ?? def.combos.armed) : def.combos.unarmed;
   return ctx.content.combos.get(id) ?? null;
 }
 
 /** BASIC_ATTACK intent: swing now, or buffer the next step if a swing is running. */
-export function requestBasicAttack(ctx: SimContext, e: Entity, aim: Vec2 | null): boolean {
+export function requestBasicAttack(
+  ctx: SimContext,
+  e: Entity,
+  aim: Vec2 | null,
+): boolean {
   if (!e.player || e.cast) return false;
   if (e.swing) {
     e.player.combo.buffered = true;
@@ -58,7 +69,8 @@ export function startSwing(
   const combo = comboOf(ctx, e);
   const state = e.player?.combo;
   if (!combo || !state) return false;
-  const chained = ctx.tick - state.lastEndTick <= secondsToTicks(combo.resetAfter);
+  const chained =
+    ctx.tick - state.lastEndTick <= secondsToTicks(combo.resetAfter);
   const step = chained ? state.nextStep % combo.steps.length : 0;
   const variant = pickVariant(ctx, combo.steps[step]?.variants ?? []);
   if (!variant) return false;
@@ -72,7 +84,9 @@ export function startSwing(
     variant,
     startTick: ctx.tick,
     impactTick,
-    endTick: impactTick + (variant.recovery > 0 ? secondsToTicks(variant.recovery) : 0),
+    endTick:
+      impactTick +
+      (variant.recovery > 0 ? secondsToTicks(variant.recovery) : 0),
     yaw: faced.yaw,
     impacted: false,
     lungeLeft: variant.lunge,
@@ -81,7 +95,7 @@ export function startSwing(
   state.aim = null;
   e.combat.lastCombatTick = ctx.tick;
   ctx.emit({
-    type: 'ATTACK',
+    type: "ATTACK",
     sourceId: e.id,
     targetId: faced.target?.id ?? null,
     combo: { comboId: combo.id, step, variantId: variant.id, yaw: faced.yaw },
@@ -115,7 +129,10 @@ export function meleeSystem(ctx: SimContext): void {
       const windup = swing.impactTick - swing.startTick;
       const [from, to] = swing.variant.lungeWindow;
       const start = swing.startTick + Math.floor(windup * from);
-      const end = Math.max(start + 1, swing.startTick + Math.round(windup * to));
+      const end = Math.max(
+        start + 1,
+        swing.startTick + Math.round(windup * to),
+      );
       if (ctx.tick >= start && ctx.tick < end) {
         const perTick = swing.variant.lunge / (end - start);
         lunge(ctx, e, swing.yaw, Math.min(swing.lungeLeft, perTick));
@@ -137,7 +154,10 @@ export function meleeSystem(ctx: SimContext): void {
   }
 }
 
-function pickVariant(ctx: SimContext, variants: readonly ComboVariant[]): ComboVariant | null {
+function pickVariant(
+  ctx: SimContext,
+  variants: readonly ComboVariant[],
+): ComboVariant | null {
   if (variants.length <= 1) return variants[0] ?? null;
   const total = variants.reduce((s, v) => s + v.weight, 0);
   let roll = ctx.rng.next() * total;
@@ -168,17 +188,28 @@ function faceFor(
   aim: Vec2 | null,
   target: Entity | null,
 ): { yaw: number; target: Entity | null } {
-  if (aim && distance(aim, e.pos) > 0.05) return { yaw: yawOf(sub(aim, e.pos)), target: null };
+  if (aim && distance(aim, e.pos) > 0.05)
+    return { yaw: yawOf(sub(aim, e.pos)), target: null };
   const reachable = (t: Entity | null | undefined): t is Entity =>
-    !!t && t.life.alive && surfaceDistance(e, t) <= variant.reach + ASSIST_EXTRA;
+    !!t &&
+    t.life.alive &&
+    surfaceDistance(e, t) <= variant.reach + ASSIST_EXTRA;
   const chosen = target ?? ctx.entities.get(e.combat.targetId ?? 0) ?? null;
-  if (reachable(chosen)) return { yaw: yawOf(sub(chosen.pos, e.pos)), target: chosen };
+  if (reachable(chosen))
+    return { yaw: yawOf(sub(chosen.pos, e.pos)), target: chosen };
   const held = e.movement.dir;
   const around = held ? yawOf(held) : e.yaw;
   let best: Entity | null = null;
   let bestScore = Number.POSITIVE_INFINITY;
   for (const t of ctx.entities.values()) {
-    if (t === e || t.inert || !t.life.alive || !areHostile(e, t) || !reachable(t)) continue;
+    if (
+      t === e ||
+      t.inert ||
+      !t.life.alive ||
+      !areHostile(e, t) ||
+      !reachable(t)
+    )
+      continue;
     const ang = angleTo(e, around, t.pos);
     if (ang > combo.assistAngle * DEG) continue;
     // Prefer close and centred.
@@ -220,28 +251,32 @@ function resolveImpact(
   hits.sort((a, b) => a.surface - b.surface);
   for (const { t, surface } of hits.slice(0, v.maxTargets)) {
     let multiplier = v.damage;
-    let hit: 'solid' | 'graze' | 'weak' = 'solid';
+    let hit: "solid" | "graze" | "weak" = "solid";
     const grazeStart = v.reach * combo.grazeFrom;
     if (surface > grazeStart) {
-      const k = clamp((surface - grazeStart) / Math.max(1e-3, v.reach - grazeStart), 0, 1);
+      const k = clamp(
+        (surface - grazeStart) / Math.max(1e-3, v.reach - grazeStart),
+        0,
+        1,
+      );
       multiplier *= 1 + (combo.grazeMultiplier - 1) * k;
-      hit = 'graze';
+      hit = "graze";
     }
     // Yếu hại: where the blow lands relative to the target's facing.
     const back = facingDot(t, e.pos);
     if (back < -0.5) {
       multiplier *= combo.weakPoint.back;
-      hit = 'weak';
+      hit = "weak";
     } else if (back < 0.26) {
       multiplier *= combo.weakPoint.flank;
-      if (hit === 'solid') hit = 'weak';
+      if (hit === "solid") hit = "weak";
     }
     const { amount, crit } = rollHit(ctx, e, t, multiplier, 0, v.critBonus);
     applyDamage(ctx, e, t, amount, crit, null, { hit, heavy: v.heavy });
   }
   if (hits.length === 0)
     for (const t of near.slice(0, MAX_MISS_EVENTS))
-      ctx.emit({ type: 'MISS', sourceId: e.id, targetId: t.id });
+      ctx.emit({ type: "MISS", sourceId: e.id, targetId: t.id });
 }
 
 /** Cosine between the target's facing and the direction to `from` (1 = in front). */
@@ -265,7 +300,12 @@ function lunge(ctx: SimContext, e: Entity, yaw: number, metres: number): void {
     );
     const p = ctx.nav ? ctx.nav.closest(next) : next;
     if (distance(p, next) > 0.18 || distance(p, e.pos) > step * 1.5) break;
-    if (ctx.obstacles.some((o) => distance(p, o.pos) < o.radius + e.movement.radius)) break;
+    if (
+      ctx.obstacles.some(
+        (o) => distance(p, o.pos) < o.radius + e.movement.radius,
+      )
+    )
+      break;
     e.pos.x = p.x;
     e.pos.z = p.z;
     e.movement.moved = true;

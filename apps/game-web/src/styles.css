@@ -7,7 +7,12 @@
   --mp: #4a86e8;
   --xp: #e8c547;
   --accent: #ffcf5a;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
   color: var(--hud-text);
   -webkit-tap-highlight-color: transparent;
 }
@@ -1188,9 +1193,14 @@ kbd {
   top: calc(100% - var(--safe-b) - var(--joystick-radius) - 36px);
   width: calc(var(--joystick-radius) * 2);
   height: calc(var(--joystick-radius) * 2);
-  margin: calc(var(--joystick-radius) * -1) 0 0 calc(var(--joystick-radius) * -1);
+  margin: calc(var(--joystick-radius) * -1) 0 0
+    calc(var(--joystick-radius) * -1);
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.06) 40%, rgba(255, 255, 255, 0.14));
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.06) 40%,
+    rgba(255, 255, 255, 0.14)
+  );
   border: 2px solid rgba(255, 255, 255, 0.28);
   display: grid;
   place-items: center;

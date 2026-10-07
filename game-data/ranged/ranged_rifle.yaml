@@ -9,7 +9,8 @@ fireInterval: 0.1
 windup: 0.15
 magazine: 36
 reload: { seconds: 1.6, moveMultiplier: 0.75 }
-heat: { perShot: 0.06, coolPerSecond: 0.6, coolDelay: 0.3, overheatSeconds: 2.2 }
+heat:
+  { perShot: 0.06, coolPerSecond: 0.6, coolDelay: 0.3, overheatSeconds: 2.2 }
 projectile: { speed: 55, range: 16, radius: 0.1, jitter: 3.5 }
 damage: 0.3
 moveMultiplier: 0.6

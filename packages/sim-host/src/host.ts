@@ -1,4 +1,10 @@
-import type { ChatMessage, JoinInfo, PlayerState, SimEvent, Snapshot } from '@rpg/game-protocol';
+import type {
+  ChatMessage,
+  JoinInfo,
+  PlayerState,
+  SimEvent,
+  Snapshot,
+} from "@rpg/game-protocol";
 
 /**
  * The only channel between the client and the authoritative simulation.

@@ -1,8 +1,8 @@
-import { areHostile, edgeDistance, isAlive, type SimContext } from '../context';
-import type { Entity } from '../entity';
-import { clampToBounds, distance } from '../math';
-import { secondsToTicks } from '../time';
-import { effectRadius, requestCast } from './skills';
+import { areHostile, edgeDistance, isAlive, type SimContext } from "../context";
+import type { Entity } from "../entity";
+import { clampToBounds, distance } from "../math";
+import { secondsToTicks } from "../time";
+import { effectRadius, requestCast } from "./skills";
 
 const HOME_ARRIVE = 0.3;
 
@@ -17,31 +17,33 @@ const FAR_THINK_EVERY = 10;
 
 export function aiSystem(ctx: SimContext): void {
   const players: Entity[] = [];
-  for (const e of ctx.entities.values()) if (e.player && e.life.alive) players.push(e);
+  for (const e of ctx.entities.values())
+    if (e.player && e.life.alive) players.push(e);
   for (const e of ctx.entities.values()) {
     if (!e.ai || !e.life.alive) continue;
     const ai = e.ai;
     if (
-      ai.state === 'idle' &&
+      ai.state === "idle" &&
       e.life.lastAttackerId === null &&
       (ctx.tick + e.id) % FAR_THINK_EVERY !== 0
     ) {
       const near = players.some(
         (p) =>
-          Math.abs(p.pos.x - e.pos.x) < FAR_DISTANCE && Math.abs(p.pos.z - e.pos.z) < FAR_DISTANCE,
+          Math.abs(p.pos.x - e.pos.x) < FAR_DISTANCE &&
+          Math.abs(p.pos.z - e.pos.z) < FAR_DISTANCE,
       );
       if (!near) continue;
     }
 
     switch (ai.state) {
-      case 'idle': {
+      case "idle": {
         const attacker = ctx.entities.get(e.life.lastAttackerId ?? 0);
         const target =
           isAlive(attacker) && !ctx.inSafeZone(attacker.pos)
             ? attacker
             : findNearestHostile(ctx, e, ai.aggroRadius);
         if (target) {
-          ai.state = 'chase';
+          ai.state = "chase";
           e.combat.targetId = target.id;
           e.movement.goal = null;
           break;
@@ -64,7 +66,7 @@ export function aiSystem(ctx: SimContext): void {
         }
         break;
       }
-      case 'chase': {
+      case "chase": {
         const target = ctx.entities.get(e.combat.targetId ?? 0);
         const leashed = distance(e.pos, ai.home) > ai.leashRadius;
         if (!isAlive(target) || leashed || ctx.inSafeZone(target.pos)) {
@@ -74,9 +76,9 @@ export function aiSystem(ctx: SimContext): void {
         if (!e.cast && !e.pending) tryUseSkill(ctx, e, target);
         break;
       }
-      case 'return': {
+      case "return": {
         if (distance(e.pos, ai.home) <= HOME_ARRIVE) {
-          ai.state = 'idle';
+          ai.state = "idle";
           e.stats.hp = e.stats.maxHp;
           e.movement.goal = null;
           e.life.lastAttackerId = null;
@@ -99,16 +101,23 @@ function tryUseSkill(ctx: SimContext, e: Entity, target: Entity): void {
     if (ctx.tick < readyAt) continue;
     const skill = ctx.content.skills.get(skillId);
     if (!skill || e.stats.mp < skill.mpCost) continue;
-    const reach = skill.targeting === 'self' ? effectRadius(skill) * 0.8 : skill.range;
+    const reach =
+      skill.targeting === "self" ? effectRadius(skill) * 0.8 : skill.range;
     if (edgeDistance(e, target) > reach) continue;
-    requestCast(ctx, e, skillId, target.id, skill.targeting === 'point' ? { ...target.pos } : null);
+    requestCast(
+      ctx,
+      e,
+      skillId,
+      target.id,
+      skill.targeting === "point" ? { ...target.pos } : null,
+    );
     return;
   }
 }
 
 function startReturn(e: Entity): void {
   if (!e.ai) return;
-  e.ai.state = 'return';
+  e.ai.state = "return";
   e.combat.targetId = null;
   e.pending = null;
   e.cast = null;
@@ -116,7 +125,11 @@ function startReturn(e: Entity): void {
   e.movement.goal = { pos: { ...e.ai.home }, stopWithin: HOME_ARRIVE * 0.5 };
 }
 
-function findNearestHostile(ctx: SimContext, self: Entity, radius: number): Entity | null {
+function findNearestHostile(
+  ctx: SimContext,
+  self: Entity,
+  radius: number,
+): Entity | null {
   let best: Entity | null = null;
   let bestDist = radius;
   for (const other of ctx.entities.values()) {

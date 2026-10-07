@@ -7,7 +7,7 @@ import {
   StandardMaterial,
   type TransformNode,
   type Vector3,
-} from './babylon';
+} from "./babylon";
 
 const DAMAGE_LIFETIME = 0.9;
 
@@ -32,7 +32,16 @@ export class DamageTextPool {
     const item = this.items.find((i) => !i.active) ?? this.createOrRecycle();
     const ctx = item.texture.getContext();
     ctx.clearRect(0, 0, 256, 128);
-    item.texture.drawText(text, null, 88, 'bold 72px sans-serif', color, null, true, true);
+    item.texture.drawText(
+      text,
+      null,
+      88,
+      "bold 72px sans-serif",
+      color,
+      null,
+      true,
+      true,
+    );
     item.plane.position.copyFrom(position);
     item.plane.position.x += (Math.random() - 0.5) * 0.4;
     item.plane.scaling.setAll(scale);
@@ -70,7 +79,11 @@ export class DamageTextPool {
       return this.items.reduce((a, b) => (a.age > b.age ? a : b));
     }
     const n = this.items.length;
-    const plane = MeshBuilder.CreatePlane(`dmg_${n}`, { width: 1.2, height: 0.6 }, this.scene);
+    const plane = MeshBuilder.CreatePlane(
+      `dmg_${n}`,
+      { width: 1.2, height: 0.6 },
+      this.scene,
+    );
     plane.billboardMode = Mesh.BILLBOARDMODE_ALL;
     plane.isPickable = false;
     const texture = new DynamicTexture(
@@ -106,11 +119,11 @@ export class SelectionRing {
 
   constructor(scene: Scene) {
     this.ring = MeshBuilder.CreateTorus(
-      'selection',
+      "selection",
       { diameter: 1, thickness: 0.06, tessellation: 32 },
       scene,
     );
-    const mat = new StandardMaterial('selection_mat', scene);
+    const mat = new StandardMaterial("selection_mat", scene);
     mat.emissiveColor = new Color3(1, 0.25, 0.2);
     mat.disableLighting = true;
     this.ring.material = mat;
@@ -142,11 +155,11 @@ export class MoveMarker {
 
   constructor(scene: Scene) {
     this.ring = MeshBuilder.CreateTorus(
-      'move_marker',
+      "move_marker",
       { diameter: 1, thickness: 0.05, tessellation: 24 },
       scene,
     );
-    const mat = new StandardMaterial('move_marker_mat', scene);
+    const mat = new StandardMaterial("move_marker_mat", scene);
     mat.emissiveColor = new Color3(0.4, 1, 0.5);
     mat.disableLighting = true;
     this.ring.material = mat;

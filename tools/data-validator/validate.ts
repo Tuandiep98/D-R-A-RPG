@@ -2,18 +2,18 @@
  * Validates every YAML file under game-data/ with the shared Zod schemas and
  * cross-reference checks. Exit code 1 on any problem (used by CI).
  */
-import { readdirSync, readFileSync } from 'node:fs';
-import { join, relative, resolve } from 'node:path';
-import { buildContentBundle, ContentError } from '@rpg/game-data';
+import { readdirSync, readFileSync } from "node:fs";
+import { join, relative, resolve } from "node:path";
+import { buildContentBundle, ContentError } from "@rpg/game-data";
 
-const root = resolve(import.meta.dirname, '../../game-data');
-const artRoot = resolve(import.meta.dirname, '../../art/third_party');
+const root = resolve(import.meta.dirname, "../../game-data");
+const artRoot = resolve(import.meta.dirname, "../../art/third_party");
 
 const files = (readdirSync(root, { recursive: true }) as string[])
   .filter((p) => /\.ya?ml$/i.test(p))
   .map((p) => ({
-    path: relative(root, join(root, p)).replace(/\\/g, '/'),
-    text: readFileSync(join(root, p), 'utf8'),
+    path: relative(root, join(root, p)).replace(/\\/g, "/"),
+    text: readFileSync(join(root, p), "utf8"),
   }));
 
 try {
@@ -24,7 +24,7 @@ try {
     `game-data OK (${files.length} files): ` +
       Object.entries(bundle)
         .map(([k, v]) => `${(v as Map<string, unknown>).size} ${k}`)
-        .join(', '),
+        .join(", "),
   );
 } catch (err) {
   if (err instanceof ContentError) {
@@ -46,18 +46,19 @@ function validateAppearanceAssets(
   const approved = new Set<string>();
   for (const pack of readdirSync(artRoot, { withFileTypes: true })) {
     if (!pack.isDirectory()) continue;
-    const sourcePath = join(artRoot, pack.name, 'SOURCE.json');
+    const sourcePath = join(artRoot, pack.name, "SOURCE.json");
     let source: {
       status?: string;
       licenseVerified?: boolean;
       assets?: { assetId?: string }[];
     };
     try {
-      source = JSON.parse(readFileSync(sourcePath, 'utf8'));
+      source = JSON.parse(readFileSync(sourcePath, "utf8"));
     } catch {
       continue;
     }
-    if (source.status !== 'approved' || source.licenseVerified !== true) continue;
+    if (source.status !== "approved" || source.licenseVerified !== true)
+      continue;
     for (const asset of source.assets ?? []) {
       if (asset.assetId) approved.add(asset.assetId);
     }
@@ -75,10 +76,13 @@ function validateAppearanceAssets(
     }
   }
   for (const assetId of approved) {
-    if (!referenced.has(assetId)) problems.push(`approved asset "${assetId}" has no appearance`);
+    if (!referenced.has(assetId))
+      problems.push(`approved asset "${assetId}" has no appearance`);
   }
   if (problems.length > 0) {
-    throw new Error(`Invalid appearance assets:\n  - ${problems.join('\n  - ')}`);
+    throw new Error(
+      `Invalid appearance assets:\n  - ${problems.join("\n  - ")}`,
+    );
   }
 }
 
@@ -87,26 +91,37 @@ function validateAppearanceAssets(
  * `media` list (built by `pnpm media:build`); typos would otherwise fall back
  * to emoji/silence without anyone noticing.
  */
-function validateMediaRefs(bundle: ReturnType<typeof buildContentBundle>): void {
+function validateMediaRefs(
+  bundle: ReturnType<typeof buildContentBundle>,
+): void {
   const known = new Set<string>();
   for (const pack of readdirSync(artRoot, { withFileTypes: true })) {
     if (!pack.isDirectory()) continue;
-    let source: { status?: string; licenseVerified?: boolean; media?: { id?: string }[] };
+    let source: {
+      status?: string;
+      licenseVerified?: boolean;
+      media?: { id?: string }[];
+    };
     try {
-      source = JSON.parse(readFileSync(join(artRoot, pack.name, 'SOURCE.json'), 'utf8'));
+      source = JSON.parse(
+        readFileSync(join(artRoot, pack.name, "SOURCE.json"), "utf8"),
+      );
     } catch {
       continue;
     }
-    if (source.status !== 'approved' || source.licenseVerified !== true) continue;
+    if (source.status !== "approved" || source.licenseVerified !== true)
+      continue;
     for (const m of source.media ?? []) if (m.id) known.add(m.id);
   }
   const problems: string[] = [];
   const check = (owner: string, id: string | undefined) => {
-    if (id && !known.has(id)) problems.push(`${owner} references unknown media "${id}"`);
+    if (id && !known.has(id))
+      problems.push(`${owner} references unknown media "${id}"`);
   };
   for (const [id, s] of bundle.skills) {
     check(`skill "${id}"`, s.iconImage);
-    for (const sfx of [...(s.sfx.cast ?? []), ...(s.sfx.impact ?? [])]) check(`skill "${id}"`, sfx);
+    for (const sfx of [...(s.sfx.cast ?? []), ...(s.sfx.impact ?? [])])
+      check(`skill "${id}"`, sfx);
   }
   for (const [id, item] of bundle.items) check(`item "${id}"`, item.iconImage);
   for (const [id, r] of bundle.ranged)
@@ -116,5 +131,7 @@ function validateMediaRefs(bundle: ReturnType<typeof buildContentBundle>): void 
     for (const list of Object.values(a.sfx))
       for (const sfx of list ?? []) check(`appearance "${id}"`, sfx);
   if (problems.length > 0)
-    throw new Error(`Invalid media references:\n  - ${problems.join('\n  - ')}`);
+    throw new Error(
+      `Invalid media references:\n  - ${problems.join("\n  - ")}`,
+    );
 }

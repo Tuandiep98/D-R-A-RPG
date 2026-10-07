@@ -4,9 +4,9 @@
  * check candidates against the art bible's semi-mini target (~4.5–5.5 heads).
  *   pnpm assets:proportions <file.glb|gltf...>
  */
-import { NodeIO } from '@gltf-transform/core';
-import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
-import { getBounds } from '@gltf-transform/functions';
+import { NodeIO } from "@gltf-transform/core";
+import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
+import { getBounds } from "@gltf-transform/functions";
 
 const io = new NodeIO().registerExtensions(ALL_EXTENSIONS);
 
@@ -15,7 +15,7 @@ for (const file of process.argv.slice(2)) {
     const doc = await io.read(file);
     const root = doc.getRoot();
     const scene = root.getDefaultScene() ?? root.listScenes()[0];
-    if (!scene) throw new Error('no scene');
+    if (!scene) throw new Error("no scene");
     const b = getBounds(scene);
     const height = (b.max[1] ?? 0) - (b.min[1] ?? 0);
     const joints = root.listSkins().flatMap((s) => s.listJoints());

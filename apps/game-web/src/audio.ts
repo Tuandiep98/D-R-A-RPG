@@ -1,4 +1,4 @@
-import { mediaUrl } from './media';
+import { mediaUrl } from "./media";
 
 /**
  * Small WebAudio SFX player (assets plan §9: pooling / voice limit).
@@ -9,7 +9,7 @@ import { mediaUrl } from './media';
 const MAX_VOICES = 12;
 /** The same sound is not restarted within this window (multi-hit spam). */
 const RETRIGGER_MS = 45;
-const VOLUME_KEY = 'rpg.sfxVolume';
+const VOLUME_KEY = "rpg.sfxVolume";
 
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
@@ -21,7 +21,9 @@ let volume = readVolume();
 function readVolume(): number {
   try {
     const v = Number(localStorage.getItem(VOLUME_KEY));
-    return Number.isFinite(v) && localStorage.getItem(VOLUME_KEY) !== null ? v : 0.7;
+    return Number.isFinite(v) && localStorage.getItem(VOLUME_KEY) !== null
+      ? v
+      : 0.7;
   } catch {
     return 0.7;
   }
@@ -41,8 +43,10 @@ function ensureContext(): AudioContext | null {
 }
 
 // Unlock on the first gesture; later gestures resume a suspended context (iOS).
-for (const type of ['pointerdown', 'keydown'] as const)
-  window.addEventListener(type, () => void ensureContext()?.resume(), { passive: true });
+for (const type of ["pointerdown", "keydown"] as const)
+  window.addEventListener(type, () => void ensureContext()?.resume(), {
+    passive: true,
+  });
 
 function load(id: string): Promise<AudioBuffer | null> {
   let p = buffers.get(id);
@@ -62,12 +66,16 @@ function load(id: string): Promise<AudioBuffer | null> {
 }
 
 /** Plays one of `ids` at random. `gain` 0..1 (distance falloff from the caller). */
-export function playSfx(ids: string | readonly string[] | undefined, gain = 1): void {
+export function playSfx(
+  ids: string | readonly string[] | undefined,
+  gain = 1,
+): void {
   if (!ids || volume <= 0 || gain <= 0.02) return;
-  const list = typeof ids === 'string' ? [ids] : ids;
+  const list = typeof ids === "string" ? [ids] : ids;
   const id = list[Math.floor(Math.random() * list.length)];
   const c = ensureContext();
-  if (!id || !c || !master || c.state !== 'running' || voices >= MAX_VOICES) return;
+  if (!id || !c || !master || c.state !== "running" || voices >= MAX_VOICES)
+    return;
   const now = performance.now();
   if (now - (lastPlayed.get(id) ?? -1e9) < RETRIGGER_MS) return;
   lastPlayed.set(id, now);
@@ -105,10 +113,11 @@ export function setSfxVolume(v: number): void {
 /** Short UI feedback for every HUD button press (event delegation, one listener). */
 export function installUiSounds(): void {
   window.addEventListener(
-    'click',
+    "click",
     (e) => {
       const el = e.target as HTMLElement | null;
-      if (el?.closest('.hud button, .panel button, .login button')) playSfx('sfx_ui_click', 0.5);
+      if (el?.closest(".hud button, .panel button, .login button"))
+        playSfx("sfx_ui_click", 0.5);
     },
     { capture: true, passive: true },
   );

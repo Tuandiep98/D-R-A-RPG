@@ -1,11 +1,11 @@
-import { inAttackRange, isAlive, type SimContext } from '../context';
-import type { Entity, Stats } from '../entity';
-import { sub, yawOf } from '../math';
-import type { Rng } from '../rng';
-import { grantGold } from './inventory';
-import { dropLoot } from './loot';
-import { questOnKill } from './npc';
-import { backlashFactor, realmGapFactor } from './progression';
+import { inAttackRange, isAlive, type SimContext } from "../context";
+import type { Entity, Stats } from "../entity";
+import { sub, yawOf } from "../math";
+import type { Rng } from "../rng";
+import { grantGold } from "./inventory";
+import { dropLoot } from "./loot";
+import { questOnKill } from "./npc";
+import { backlashFactor, realmGapFactor } from "./progression";
 
 /** Damage roll before mitigation varies by ±10%. */
 const VARIANCE = 0.1;
@@ -22,8 +22,8 @@ export interface DamageRoll {
 /** Pure damage formula; exported for tests and future server-side tooling. */
 export function rollDamage(
   rng: Rng,
-  attacker: Pick<Stats, 'attack' | 'critChance' | 'critMultiplier'>,
-  defender: Pick<Stats, 'defense'>,
+  attacker: Pick<Stats, "attack" | "critChance" | "critMultiplier">,
+  defender: Pick<Stats, "defense">,
   multiplier = 1,
   flat = 0,
   critBonus = 0,
@@ -51,9 +51,19 @@ export function rollHit(
   flat = 0,
   critBonus = 0,
 ): DamageRoll {
-  const roll = rollDamage(ctx.rng, attacker.stats, defender.stats, multiplier, flat, critBonus);
-  const f = realmGapFactor(ctx, attacker, defender) * backlashFactor(ctx, attacker);
-  return f === 1 ? roll : { amount: Math.max(1, Math.round(roll.amount * f)), crit: roll.crit };
+  const roll = rollDamage(
+    ctx.rng,
+    attacker.stats,
+    defender.stats,
+    multiplier,
+    flat,
+    critBonus,
+  );
+  const f =
+    realmGapFactor(ctx, attacker, defender) * backlashFactor(ctx, attacker);
+  return f === 1
+    ? roll
+    : { amount: Math.max(1, Math.round(roll.amount * f)), crit: roll.crit };
 }
 
 /**
@@ -64,8 +74,9 @@ export function rollHit(
  */
 export function combatSystem(ctx: SimContext): void {
   for (const e of ctx.entities.values()) {
-    if (e.inert || !e.life.alive || e.combat.targetId === null || e.cast) continue;
-    if (e.pending && e.pending.type !== 'cast') continue;
+    if (e.inert || !e.life.alive || e.combat.targetId === null || e.cast)
+      continue;
+    if (e.pending && e.pending.type !== "cast") continue;
     const target = ctx.entities.get(e.combat.targetId);
     if (!isAlive(target)) {
       e.combat.targetId = null;
@@ -90,7 +101,7 @@ export function combatSystem(ctx: SimContext): void {
     if (ctx.tick < e.combat.nextAttackTick) continue;
 
     e.combat.nextAttackTick = ctx.tick + e.combat.attackIntervalTicks;
-    ctx.emit({ type: 'ATTACK', sourceId: e.id, targetId: target.id });
+    ctx.emit({ type: "ATTACK", sourceId: e.id, targetId: target.id });
     const { amount, crit } = rollHit(ctx, e, target);
     applyDamage(ctx, e, target, amount, crit, null);
   }
@@ -104,7 +115,7 @@ export function applyDamage(
   crit: boolean,
   skillId: string | null,
   detail?: {
-    hit: 'solid' | 'graze' | 'weak';
+    hit: "solid" | "graze" | "weak";
     heavy: boolean;
     /** Ranged hits: the SHOT and bullet that landed. */
     shot?: { id: number; pellet: number };
@@ -114,11 +125,14 @@ export function applyDamage(
   const dealt = Math.min(amount, target.stats.hp);
   target.stats.hp -= dealt;
   target.life.lastAttackerId = source.id;
-  target.life.damageBy.set(source.id, (target.life.damageBy.get(source.id) ?? 0) + dealt);
+  target.life.damageBy.set(
+    source.id,
+    (target.life.damageBy.get(source.id) ?? 0) + dealt,
+  );
   source.combat.lastCombatTick = ctx.tick;
   target.combat.lastCombatTick = ctx.tick;
   ctx.emit({
-    type: 'DAMAGE',
+    type: "DAMAGE",
     sourceId: source.id,
     targetId: target.id,
     amount: dealt,
@@ -133,7 +147,7 @@ export function applyDamage(
 
 /** Boss/elite phases (tech plan §26): thresholds on HP fraction, never reverting. */
 function updatePhase(ctx: SimContext, e: Entity): void {
-  if (!e.ai || e.kind !== 'monster') return;
+  if (!e.ai || e.kind !== "monster") return;
   const def = ctx.content.monsters.get(e.defId);
   if (!def || def.phases.length === 0) return;
   const frac = e.stats.hp / e.stats.maxHp;
@@ -152,7 +166,7 @@ function updatePhase(ctx: SimContext, e: Entity): void {
     for (const s of p.skills) next.set(s, e.skills.get(s) ?? ctx.tick + 20);
     e.skills = next;
   }
-  ctx.emit({ type: 'PHASE', id: e.id, phase, name: p.name });
+  ctx.emit({ type: "PHASE", id: e.id, phase, name: p.name });
 }
 
 function kill(ctx: SimContext, target: Entity, killer: Entity | null): void {
@@ -165,8 +179,8 @@ function kill(ctx: SimContext, target: Entity, killer: Entity | null): void {
   target.cast = null;
   target.swing = null;
   target.pending = null;
-  ctx.emit({ type: 'DEATH', id: target.id, killerId: killer?.id ?? null });
-  if (target.kind === 'monster') rewardKill(ctx, target);
+  ctx.emit({ type: "DEATH", id: target.id, killerId: killer?.id ?? null });
+  if (target.kind === "monster") rewardKill(ctx, target);
 }
 
 /**
@@ -199,7 +213,13 @@ function rewardKill(ctx: SimContext, monster: Entity): void {
     if (table.gold) {
       const gold = ctx.rng.int(table.gold.min, table.gold.max);
       if (gold > 0) {
-        grantGold(ctx, top, gold, 'monster_drop', `kill:${monster.id}:${ctx.tick}:${tableId}`);
+        grantGold(
+          ctx,
+          top,
+          gold,
+          "monster_drop",
+          `kill:${monster.id}:${ctx.tick}:${tableId}`,
+        );
       }
     }
     dropLoot(ctx, monster, top, table);

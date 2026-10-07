@@ -1,17 +1,17 @@
-import { describe, expect, it } from 'vitest';
-import type { EntitySnapshot } from './index';
-import { DeltaDecoder, DeltaEncoder } from './net';
+import { describe, expect, it } from "vitest";
+import type { EntitySnapshot } from "./index";
+import { DeltaDecoder, DeltaEncoder } from "./net";
 
 const ent = (id: number, x: number): EntitySnapshot => ({
   id,
-  kind: 'monster',
-  defId: 'wolf',
+  kind: "monster",
+  defId: "wolf",
   pos: { x, z: 0 },
   yaw: 0,
   hp: 10,
   maxHp: 10,
   realm: 0,
-  action: 'idle',
+  action: "idle",
   targetId: null,
   ownerId: null,
   phase: 0,
@@ -22,8 +22,8 @@ const ent = (id: number, x: number): EntitySnapshot => ({
 const visible = (...es: EntitySnapshot[]) =>
   new Map(es.map((e) => [e.id, { json: JSON.stringify(e), snap: e }]));
 
-describe('snapshot deltas', () => {
-  it('sends a full snapshot first, then only changes and removals', () => {
+describe("snapshot deltas", () => {
+  it("sends a full snapshot first, then only changes and removals", () => {
     const enc = new DeltaEncoder();
     const dec = new DeltaDecoder();
     const first = enc.encode(1, visible(ent(1, 0), ent(2, 0)));
@@ -45,7 +45,7 @@ describe('snapshot deltas', () => {
     expect(snap.entities).toEqual([ent(1, 5)]);
   });
 
-  it('reset forces a keyframe (e.g. after a map transfer)', () => {
+  it("reset forces a keyframe (e.g. after a map transfer)", () => {
     const enc = new DeltaEncoder();
     enc.encode(1, visible(ent(1, 0)));
     enc.reset();

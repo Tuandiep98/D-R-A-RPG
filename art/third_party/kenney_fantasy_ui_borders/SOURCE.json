@@ -7,7 +7,7 @@
   "licenseVerified": true,
   "downloadedAt": "2026-10-07",
   "status": "approved",
-  "notes": "White pixel fretwork (hồi văn) 9-slice frames, 48px with 16px corners, tinted gold at build time. Vector/ has the SVG source for redrawing in the game style. License approved by the project owner on 2026-10-07. Evidence: License.txt in the zip (CC0).",
+  "notes": "White pixel fretwork (hồi văn) 9-slice frames, 48px with 16px corners, tinted gold at build time. Vector/ has the SVG source for redrawing in the game style. License approved by the project owner on 2026-10-07. Evidence: License.txt in the zip (CC0). D-033: Fantasy Glass HUD frames are recoloured from the ui_glass_* sprites by `pnpm assets:fantasy-ui` into apps/game-web/src/assets/fantasy-ui (palette swap only, pixels unchanged).",
   "kind": "ui",
   "media": [
     {
@@ -34,6 +34,26 @@
       "id": "ui_divider",
       "file": "originals/PNG/Default/Divider/divider-002.png",
       "tint": "#d9b466"
+    },
+    {
+      "id": "ui_glass_panel",
+      "file": "originals/PNG/Default/Panel/panel-000.png"
+    },
+    {
+      "id": "ui_glass_slot",
+      "file": "originals/PNG/Default/Transparent center/panel-transparent-center-011.png"
+    },
+    {
+      "id": "ui_glass_button",
+      "file": "originals/PNG/Default/Transparent center/panel-transparent-center-009.png"
+    },
+    {
+      "id": "ui_glass_button_primary",
+      "file": "originals/PNG/Default/Panel/panel-009.png"
+    },
+    {
+      "id": "ui_glass_divider",
+      "file": "originals/PNG/Default/Divider Fade/divider-fade-000.png"
     }
   ]
 }

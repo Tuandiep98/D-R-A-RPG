@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 import {
   ChatMessageSchema,
   type EntityId,
@@ -8,7 +8,7 @@ import {
   PlayerStateSchema,
   SimEventSchema,
   type Snapshot,
-} from './index';
+} from "./index";
 
 /**
  * Network layer (M3). Snapshots travel as deltas: only entities whose state
@@ -40,7 +40,7 @@ export const ServerMessages = {
 } as const;
 
 /** Client → server: the only message type is an intent (validated with IntentSchema). */
-export const CLIENT_INTENT_MESSAGE = 'intent';
+export const CLIENT_INTENT_MESSAGE = "intent";
 
 /** Options a client passes when joining a zone room. */
 export const JoinOptionsSchema = z.object({

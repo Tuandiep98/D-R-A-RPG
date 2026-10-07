@@ -8,7 +8,7 @@ import {
   StandardMaterial,
   Vector3,
   VertexBuffer,
-} from './babylon';
+} from "./babylon";
 
 /**
  * Procedural lightning bolts (Lôi Kiếm Tu skills): jagged lines made by
@@ -83,11 +83,11 @@ export class LightningBatch {
           indices.push(a + 1, a + 2, n + 1, a + 2, n + 2, n + 1);
         }
       }
-    this.mesh = new Mesh('fx_lightning', scene);
+    this.mesh = new Mesh("fx_lightning", scene);
     this.mesh.setVerticesData(VertexBuffer.PositionKind, this.positions, true);
     this.mesh.setVerticesData(VertexBuffer.ColorKind, this.colors, true);
     this.mesh.setIndices(indices);
-    const mat = new StandardMaterial('fx_lightning_mat', scene);
+    const mat = new StandardMaterial("fx_lightning_mat", scene);
     mat.diffuseColor = Color3.Black();
     mat.specularColor = Color3.Black();
     mat.emissiveColor = Color3.White();
@@ -134,7 +134,11 @@ export class LightningBatch {
       const t = 0.2 + Math.random() * 0.55;
       const start = Vector3.Lerp(spec.from, spec.to, t);
       const dir = spec.to.subtract(spec.from).normalize();
-      const off = new Vector3(Math.random() - 0.5, -0.2, Math.random() - 0.5).normalize();
+      const off = new Vector3(
+        Math.random() - 0.5,
+        -0.2,
+        Math.random() - 0.5,
+      ).normalize();
       const end = start
         .add(dir.scale(len * 0.22))
         .add(off.scale(len * (0.15 + Math.random() * 0.2)));
@@ -160,7 +164,8 @@ export class LightningBatch {
     if (this.bolts.length >= this.cap) {
       let oldest = 0;
       for (let i = 1; i < this.bolts.length; i++)
-        if ((this.bolts[i]?.age ?? 0) > (this.bolts[oldest]?.age ?? 0)) oldest = i;
+        if ((this.bolts[i]?.age ?? 0) > (this.bolts[oldest]?.age ?? 0))
+          oldest = i;
       this.bolts[oldest] = b;
       return;
     }
@@ -197,7 +202,16 @@ export class LightningBatch {
       const hot = b.age < 0.05 ? 1.6 : 1;
       // Soft glow (fades to nothing at its edges) under a hard white core.
       this.writeStrip(n, 0, b, eye, b.width * 1.6, b.color, fade, 0);
-      this.writeStrip(n, 1, b, eye, b.width * 0.3, Color3.White(), Math.min(1, fade * hot), 0.6);
+      this.writeStrip(
+        n,
+        1,
+        b,
+        eye,
+        b.width * 0.3,
+        Color3.White(),
+        Math.min(1, fade * hot),
+        0.6,
+      );
       n++;
     }
     // Collapse the unused tail so it draws nothing.

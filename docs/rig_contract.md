@@ -4,24 +4,24 @@
 
 ## Quy ước chung
 
-| Mục               | Quy ước                                                                       |
-| ----------------- | ----------------------------------------------------------------------------- |
+| Mục               | Quy ước                                                                        |
+| ----------------- | ------------------------------------------------------------------------------ |
 | Đơn vị            | 1 unit = 1 m. Player KayKit cao ~1.35–1.6 m với `scale: 0.62` trong appearance |
-| Trục              | Y-up, mặt trước +Z (sau khi glTF loader của Babylon chuyển hệ trục)           |
-| Pivot             | Humanoid/quái: mặt đất, dưới tâm nhân vật. Prop: điểm dễ snap                 |
-| Transform gốc     | Không scale âm, không scale lệch trục (pipeline cảnh báo — `checkTransforms`) |
-| Skin influences   | Tối đa 4 / vertex                                                             |
-| Locomotion        | In-place; dịch chuyển do simulation quyết định (không root motion)            |
-| Định dạng runtime | GLB, meshopt (D-006), texture WebP ≤ budget theo loại (`TEXTURE_BUDGET`)      |
+| Trục              | Y-up, mặt trước +Z (sau khi glTF loader của Babylon chuyển hệ trục)            |
+| Pivot             | Humanoid/quái: mặt đất, dưới tâm nhân vật. Prop: điểm dễ snap                  |
+| Transform gốc     | Không scale âm, không scale lệch trục (pipeline cảnh báo — `checkTransforms`)  |
+| Skin influences   | Tối đa 4 / vertex                                                              |
+| Locomotion        | In-place; dịch chuyển do simulation quyết định (không root motion)             |
+| Định dạng runtime | GLB, meshopt (D-006), texture WebP ≤ budget theo loại (`TEXTURE_BUDGET`)       |
 
 ## Rig đang dùng
 
-| Rig id                    | Nguồn                       | Dùng cho             | Ghi chú                                              |
-| ------------------------- | --------------------------- | -------------------- | ---------------------------------------------------- |
+| Rig id                    | Nguồn                                                 | Dùng cho                         | Ghi chú                                                                                                  |
+| ------------------------- | ----------------------------------------------------- | -------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | `kaykit_rig_medium_v1`    | KayKit Adventurers / Skeletons + Character Animations | **player và NPC (chuẩn, D-027)** | 23 joint (`root…handslot.l/r…toes.r`); clip ghép theo tên joint; FBX animation qua `pnpm assets:convert` |
-| `humanoid_v1` (ngừng)     | UBC + Modular Outfits + UAL | hình nộm `char_ual_mannequin` | 65 joint; không còn dùng cho nhân vật (D-027) |
-| `quaternius_quadruped_v1` | Ultimate Animated Animals   | sói, hồ ly, linh lộc | Rig thú, không ép vào humanoid                       |
-| `quaternius_spacekit_v1`  | Ultimate Space Kit          | robot, mech boss     | Rig riêng của pack                                   |
+| `humanoid_v1` (ngừng)     | UBC + Modular Outfits + UAL                           | hình nộm `char_ual_mannequin`    | 65 joint; không còn dùng cho nhân vật (D-027)                                                            |
+| `quaternius_quadruped_v1` | Ultimate Animated Animals                             | sói, hồ ly, linh lộc             | Rig thú, không ép vào humanoid                                                                           |
+| `quaternius_spacekit_v1`  | Ultimate Space Kit                                    | robot, mech boss                 | Rig riêng của pack                                                                                       |
 
 `kaykit_rig_medium_v1` là rig chuẩn cho trang bị modular (assets plan §5.2, §6): mọi mảnh (Head/Body/Arm/Leg/Cape/Hat) và mọi clip phải giữ đúng tên joint; pipeline chỉ ghép animation khi tìm được joint đích cùng tên. `animationSource` nhận một hoặc nhiều file (General + MovementBasic + combat).
 

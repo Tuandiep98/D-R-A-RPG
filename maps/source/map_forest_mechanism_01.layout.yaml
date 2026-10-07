@@ -380,15 +380,66 @@ scatter:
       allowOnPath: false,
     }
   # Nature MegaKit variety (large → small: minSpacing checks everything already placed).
-  - { appearanceId: env_tree_03, count: 18, minSpacing: 5, colliderRadius: 0.6, scale: [0.8, 1.15] }
-  - { appearanceId: env_tree_04, count: 16, minSpacing: 5, colliderRadius: 0.6, scale: [0.8, 1.2] }
-  - { appearanceId: env_tree_dead_01, count: 6, minSpacing: 5, colliderRadius: 0.5, scale: [0.8, 1] }
-  - { appearanceId: env_rock_02, count: 12, minSpacing: 4, colliderRadius: 0.7, scale: [0.6, 1.1] }
-  - { appearanceId: env_rock_03, count: 10, minSpacing: 4.5, colliderRadius: 0.8, scale: [0.6, 1] }
+  - {
+      appearanceId: env_tree_03,
+      count: 18,
+      minSpacing: 5,
+      colliderRadius: 0.6,
+      scale: [0.8, 1.15],
+    }
+  - {
+      appearanceId: env_tree_04,
+      count: 16,
+      minSpacing: 5,
+      colliderRadius: 0.6,
+      scale: [0.8, 1.2],
+    }
+  - {
+      appearanceId: env_tree_dead_01,
+      count: 6,
+      minSpacing: 5,
+      colliderRadius: 0.5,
+      scale: [0.8, 1],
+    }
+  - {
+      appearanceId: env_rock_02,
+      count: 12,
+      minSpacing: 4,
+      colliderRadius: 0.7,
+      scale: [0.6, 1.1],
+    }
+  - {
+      appearanceId: env_rock_03,
+      count: 10,
+      minSpacing: 4.5,
+      colliderRadius: 0.8,
+      scale: [0.6, 1],
+    }
   - { appearanceId: env_bush_02, count: 20, minSpacing: 3, scale: [0.7, 1.1] }
   - { appearanceId: env_fern_01, count: 40, minSpacing: 2.2, scale: [0.7, 1.1] }
-  - { appearanceId: env_flowers_01, count: 30, minSpacing: 2.5, scale: [0.7, 1.1] }
+  - {
+      appearanceId: env_flowers_01,
+      count: 30,
+      minSpacing: 2.5,
+      scale: [0.7, 1.1],
+    }
   - { appearanceId: env_mushroom_01, count: 20, minSpacing: 2, scale: [0.6, 1] }
-  - { appearanceId: env_grass_02, count: 120, minSpacing: 1.6, scale: [0.7, 1.2] }
-  - { appearanceId: env_grass_01, count: 180, minSpacing: 1.4, scale: [0.7, 1.2] }
-  - { appearanceId: env_pebble_01, count: 40, minSpacing: 2, scale: [0.6, 1.2], allowOnPath: true }
+  - {
+      appearanceId: env_grass_02,
+      count: 120,
+      minSpacing: 1.6,
+      scale: [0.7, 1.2],
+    }
+  - {
+      appearanceId: env_grass_01,
+      count: 180,
+      minSpacing: 1.4,
+      scale: [0.7, 1.2],
+    }
+  - {
+      appearanceId: env_pebble_01,
+      count: 40,
+      minSpacing: 2,
+      scale: [0.6, 1.2],
+      allowOnPath: true,
+    }

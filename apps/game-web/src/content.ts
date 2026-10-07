@@ -1,19 +1,19 @@
-import { buildContentBundle, type ContentBundle } from '@rpg/game-data';
+import { buildContentBundle, type ContentBundle } from "@rpg/game-data";
 
 /**
  * Bundles every YAML file under game-data/ at build time and validates it
  * with the shared schemas. Invalid data fails loudly on boot.
  */
-const files = import.meta.glob('../../../game-data/**/*.yaml', {
-  query: '?raw',
-  import: 'default',
+const files = import.meta.glob("../../../game-data/**/*.yaml", {
+  query: "?raw",
+  import: "default",
   eager: true,
 }) as Record<string, string>;
 
 export function loadContent(): ContentBundle {
   return buildContentBundle(
     Object.entries(files).map(([path, text]) => ({
-      path: path.replace(/^.*game-data\//, ''),
+      path: path.replace(/^.*game-data\//, ""),
       text,
     })),
   );
@@ -22,7 +22,8 @@ export function loadContent(): ContentBundle {
 let cached: ContentBundle | null = null;
 
 /** Display name of a realm id (API rows carry ids). */
-export const realmName = (id: string): string => sharedContent().realms.get(id)?.name ?? id;
+export const realmName = (id: string): string =>
+  sharedContent().realms.get(id)?.name ?? id;
 
 /** One parsed bundle shared by HUD panels (the renderer gets its own at boot). */
 export function sharedContent(): ContentBundle {

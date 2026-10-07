@@ -313,7 +313,11 @@ function InteractButton() {
   );
 }
 
-const FIRE_MODE_LABEL = { auto: 'Liên thanh', semi: 'Bán tự động', burst: 'Loạt' } as const;
+const FIRE_MODE_LABEL = {
+  auto: 'Liên thanh',
+  semi: 'Bán tự động',
+  burst: 'Loạt',
+} as const;
 
 /**
  * Equipped gun (D-033): rounds left, fire mode, heat (amber → red), the
@@ -1085,6 +1089,30 @@ function Notices() {
   );
 }
 
+/** "Location discovered" banner, shown briefly whenever the map/zone name changes. */
+function ZoneBanner() {
+  const mapName = useUiStore((s) => s.ui?.mapName);
+  const zoneName = useUiStore((s) => s.ui?.zoneName);
+  const [shown, setShown] = useState<{ title: string; sub: string } | null>(null);
+  useEffect(() => {
+    if (!mapName) return;
+    setShown(
+      zoneName && zoneName !== mapName
+        ? { title: zoneName, sub: mapName }
+        : { title: mapName, sub: 'Tiến vào' },
+    );
+    const t = setTimeout(() => setShown(null), 3200);
+    return () => clearTimeout(t);
+  }, [mapName, zoneName]);
+  if (!shown) return null;
+  return (
+    <div className="zone-banner" role="status" key={shown.title}>
+      <small>{shown.sub}</small>
+      <strong>{shown.title}</strong>
+    </div>
+  );
+}
+
 function DebugOverlay() {
   const debug = useUiStore((s) => s.debug);
   const show = useUiStore((s) => s.showDebug);
@@ -1202,9 +1230,11 @@ export function Hud() {
   const status = useUiStore((s) => s.status);
   const error = useUiStore((s) => s.error);
   const panel = useUiStore((s) => s.panel);
+  const npc = useUiStore((s) => s.npc);
+  const quality = useUiStore((s) => s.quality);
 
   return (
-    <div className="hud">
+    <div className="hud" data-quality={quality}>
       {status === 'loading' && <div className="center-note">Đang tải…</div>}
       {status === 'error' && <div className="center-note error">Lỗi: {error}</div>}
       <PlayerPanel />
@@ -1216,10 +1246,12 @@ export function Hud() {
         <div className="center-note">Bạn đã gục ngã — đang hồi sinh…</div>
       )}
       <Notices />
+      <ZoneBanner />
       <DebugOverlay />
       <TouchJoystick />
       <MenuButtons />
       <ActionBar />
+      {(panel || npc) && <div className="panel-backdrop" aria-hidden="true" />}
       {panel === 'inventory' && <InventoryPanel />}
       {panel === 'skills' && <SkillPanel />}
       {panel === 'character' && <CharacterPanel />}

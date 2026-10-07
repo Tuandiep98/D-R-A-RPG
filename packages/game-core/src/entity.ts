@@ -1,27 +1,27 @@
-import type { ComboVariant, MonsterTier, RangedDef } from '@rpg/game-data';
+import type { ComboVariant, MonsterTier, RangedDef } from "@rpg/game-data";
 import type {
   EntityAction,
   EntityId,
   EntityKind,
   InventoryItem,
   ItemInstanceId,
-} from '@rpg/game-protocol';
-import type { Vec2 } from './math';
+} from "@rpg/game-protocol";
+import type { Vec2 } from "./math";
 
-export type Faction = 'players' | 'monsters' | 'neutral';
+export type Faction = "players" | "monsters" | "neutral";
 
-export type AiState = 'idle' | 'chase' | 'return';
+export type AiState = "idle" | "chase" | "return";
 
 export type EquipSlot =
-  | 'main_hand'
-  | 'off_hand'
-  | 'head'
-  | 'chest'
-  | 'gloves'
-  | 'pants'
-  | 'boots'
-  | 'back'
-  | 'artifact';
+  | "main_hand"
+  | "off_hand"
+  | "head"
+  | "chest"
+  | "gloves"
+  | "pants"
+  | "boots"
+  | "back"
+  | "artifact";
 
 export interface Goal {
   pos: Vec2;
@@ -159,10 +159,10 @@ export interface Projectile {
 
 /** Something the entity walks to and then does (pickup, portal, queued skill). */
 export type PendingAction =
-  | { type: 'pickup'; lootId: EntityId }
-  | { type: 'interact'; entityId: EntityId }
+  | { type: "pickup"; lootId: EntityId }
+  | { type: "interact"; entityId: EntityId }
   | {
-      type: 'cast';
+      type: "cast";
       skillId: string;
       targetId: EntityId | null;
       point: Vec2 | null;
@@ -170,7 +170,7 @@ export type PendingAction =
 
 export interface QuestState {
   questId: string;
-  status: 'active' | 'ready' | 'done';
+  status: "active" | "ready" | "done";
   /** Per objective (kill/talk); collect objectives are read from the inventory. */
   progress: number[];
 }
@@ -318,15 +318,15 @@ export interface LedgerEntry {
   amount: number;
   balanceAfter: number;
   reason:
-    | 'monster_drop'
-    | 'sell'
-    | 'buy'
-    | 'craft'
-    | 'upgrade'
-    | 'admin'
-    | 'quest'
-    | 'cultivation'
-    | 'breakthrough';
+    | "monster_drop"
+    | "sell"
+    | "buy"
+    | "craft"
+    | "upgrade"
+    | "admin"
+    | "quest"
+    | "cultivation"
+    | "breakthrough";
   /** Idempotency key: the same key is never applied twice. */
   key: string;
 }

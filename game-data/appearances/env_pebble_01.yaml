@@ -5,6 +5,6 @@ modelAssetId: env_pebble_01
 scale: 2.0
 placeholder:
   shape: sphere
-  color: '#8a8c92'
+  color: "#8a8c92"
   height: 0.1
   radius: 0.25

@@ -9,6 +9,7 @@ Tài liệu chính:
 - `docs/plan/02_assets_models_maps_plan.md` — art bible, rig, equipment, map, asset pipeline
 - `docs/plan/03_implementation_roadmap.md` — trạng thái từng phase/hạng mục, việc tiếp theo
 - `docs/asset_sourcing.md` — pack asset/model/map đề xuất theo lore mới, khoảng trống phải tự làm
+- `docs/game-ui-style.md` — quy tắc UI bắt buộc: Kenney Fantasy Glass, source/element, blur và fallback
 - `docs/decision_log.md` — quyết định đã chốt (ưu tiên khi mâu thuẫn với plan)
 - Contracts: `docs/rig_contract.md`, `docs/equipment_contract.md`, `docs/map_contract.md`, `docs/art_bible.md`, `docs/performance_budget.md`, `docs/asset_catalog.md` (tự sinh)
 
@@ -28,12 +29,14 @@ pnpm content:build       # maps:build → nav:build → validate:data
 pnpm assets:build        # art/third_party → apps/game-web/public/assets + docs/asset_catalog.md
 pnpm assets:convert      # pack chỉ có OBJ/FBX → <pack>/converted/*.glb (chạy trước assets:build)
 pnpm assets:vendor       # sinh art/third_party/.gitignore: commit đúng các file game dùng (--check trong CI)
+pnpm assets:fantasy-ui   # tô màu sprite Kenney Fantasy UI → apps/game-web/src/assets/fantasy-ui
 pnpm media:build         # icon / khung UI / âm thanh / sprite VFX → public/media + docs/media_catalog.md
 pnpm assets:inspect <f>  # kích thước, tris, clip của glTF; --json để dùng trong script
 pnpm assets:sheet <out> <dir>  # ảnh ghép có nhãn để chọn icon/khung bằng mắt
 pnpm smoke:gear [url]    # chụp cận nhân vật (hình nộm UAL) để căn socket/xoay vũ khí
 pnpm smoke [url]         # headless Chrome smoke test against a running dev/preview server
 pnpm smoke:controls [url] # WASD desktop + joystick điện thoại dọc/ngang (touch thật qua CDP)
+pnpm smoke:responsive [url] # 9 kích thước desktop/tablet/phone: tràn màn, đè nhau, vùng chạm <44px, chữ <11px
 pnpm smoke:login [url]   # đăng ký → tạo nhân vật → vào game → bang hội → chat (cần dev:stack)
 pnpm db:generate         # drizzle-kit migration sau khi sửa packages/persistence/src/schema.ts
 ```
@@ -102,3 +105,7 @@ infra/                     docker (compose, Dockerfiles), deploy (Caddyfile)
 - Pack chỉ có âm thanh/icon/UI/VFX dùng `kind` + `media` trong `SOURCE.json`; game-data trỏ tới media bằng `iconImage` / `sfx` (validator kiểm tra id).
 - Nhân vật chuẩn: KayKit `Rig_Medium` (chibi, scale 0.62, D-027). Vũ khí KayKit gắn `handslot.*` không xoay, `scale: 0.62`; vũ khí nguồn khác ghi rõ "NOT fitted" tới khi kiểm bằng `pnpm smoke:gear --player=char_kk_rogue`.
 - Pack chỉ có FBX/OBJ: thêm vào `FBX_PACKS`/`OBJ_PACKS` trong `tools/asset-processor/convert.ts`, chạy `pnpm assets:convert`, khai báo file trong `converted/`.
+
+## Game UI style (bắt buộc)
+
+Mọi UI game mới/sửa phải theo `docs/game-ui-style.md`: Kenney Fantasy UI Borders, nền xanh đen trong suốt có backdrop blur, khung góc vuông trắng/xám, chữ sáng và accent ngọc nhạt. Tái sử dụng element/source đã duyệt, token trong `hud-design.css` và khung/blur trong `fantasy-glass.css`. Quy tắc này thay thế look stone/metal/brass và yêu cầu tránh blur cũ. Giữ fallback nền đậm và tắt blur cho Low.

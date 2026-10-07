@@ -35,14 +35,14 @@ Bản khởi đầu theo assets plan §3. **Cần artist duyệt và bổ sung h
 
 ## Tỉ lệ
 
-| Loại              | Chiều cao mục tiêu             |
-| ----------------- | ------------------------------ |
-| Player (KayKit, scale 0.62) | 1.35–1.6 m (tuỳ mũ/tóc) |
-| Quái thường (thú) | 0.8–1.1 m                      |
-| Robot thường      | ~1.9 m                         |
-| Tinh anh          | ~1.8 m, tint vàng              |
-| Boss              | 3–4 m (1.8–4× player), tint đỏ |
-| Cây               | 4–7 m                          |
+| Loại                        | Chiều cao mục tiêu             |
+| --------------------------- | ------------------------------ |
+| Player (KayKit, scale 0.62) | 1.35–1.6 m (tuỳ mũ/tóc)        |
+| Quái thường (thú)           | 0.8–1.1 m                      |
+| Robot thường                | ~1.9 m                         |
+| Tinh anh                    | ~1.8 m, tint vàng              |
+| Boss                        | 3–4 m (1.8–4× player), tint đỏ |
+| Cây                         | 4–7 m                          |
 
 Vũ khí: giữ **tỉ lệ gốc KayKit** (cùng scale 0.62 với nhân vật, gắn `handslot.*` không xoay) — vốn đã to, dày so với thân chibi. Đồ vật/prop: khối tròn, cạnh vát, chi tiết lớn; tránh chi tiết mảnh khó đọc ở khoảng cách 6–20 m.
 
@@ -57,3 +57,7 @@ Pool có giới hạn theo preset (`vfxCap`). Telegraph boss **luôn hiện** k�
 3. Kit kiến trúc "di tích + cơ quan cổ" thay đá placeholder ở Phế Tích Cơ Giới.
 4. Model boss "Cơ Quan Thần Tướng" riêng (hiện dùng mech Space Kit).
 5. Bộ icon skill cùng style (gợi ý: SVG game-icons.net tô màu + khung chung); icon KDRN hiện tại là placeholder vẽ tay, lệch style.
+
+## Game UI — chuẩn bắt buộc (D-033)
+
+UI theo [Kenney Fantasy Glass](game-ui-style.md): nền xanh đen trong suốt có backdrop blur, viền hồi văn Kenney góc vuông trắng/xám, chữ sáng, accent xanh ngọc nhạt. Tất cả màn và element mới dùng cùng source/token; bảng màu cảnh, VFX và độ hiếm ở trên giữ vai trò riêng. Nhấn vàng cũ trong bảng palette không còn là accent mặc định cho HUD.

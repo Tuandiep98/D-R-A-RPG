@@ -1,4 +1,4 @@
-import type { GroundPaint, MapDef } from '@rpg/game-data';
+import type { GroundPaint, MapDef } from "@rpg/game-data";
 import {
   Color3,
   DynamicTexture,
@@ -6,7 +6,7 @@ import {
   MeshBuilder,
   type Scene,
   StandardMaterial,
-} from './babylon';
+} from "./babylon";
 
 /** Target spacing between painted ground vertices, metres. */
 const CELL = 1.25;
@@ -51,11 +51,21 @@ function valueNoise(seed: number) {
   };
 }
 
-function distToSegment(px: number, pz: number, ax: number, az: number, bx: number, bz: number) {
+function distToSegment(
+  px: number,
+  pz: number,
+  ax: number,
+  az: number,
+  bx: number,
+  bz: number,
+) {
   const dx = bx - ax;
   const dz = bz - az;
   const len = dx * dx + dz * dz;
-  const t = len === 0 ? 0 : Math.max(0, Math.min(1, ((px - ax) * dx + (pz - az) * dz) / len));
+  const t =
+    len === 0
+      ? 0
+      : Math.max(0, Math.min(1, ((px - ax) * dx + (pz - az) * dz) / len));
   return Math.hypot(px - (ax + dx * t), pz - (az + dz * t));
 }
 
@@ -70,8 +80,12 @@ export function groundColorAt(
   let c = base;
   if (paint.variation.length > 0) {
     const s = paint.noiseScale;
-    const amount = (noise(x / s, z / s) * 0.7 + noise((x / s) * 3.1, (z / s) * 3.1) * 0.3) ** 1.2;
-    const pick = noise(x / (s * 2.3) + 41.7, z / (s * 2.3) - 13.1) * paint.variation.length;
+    const amount =
+      (noise(x / s, z / s) * 0.7 + noise((x / s) * 3.1, (z / s) * 3.1) * 0.3) **
+      1.2;
+    const pick =
+      noise(x / (s * 2.3) + 41.7, z / (s * 2.3) - 13.1) *
+      paint.variation.length;
     const i = Math.min(paint.variation.length - 1, Math.floor(pick));
     const tint = hex(paint.variation[i] as string);
     c = mix(c, tint, smooth(amount) * paint.noiseAmount);
@@ -80,7 +94,8 @@ export function groundColorAt(
     const d = Math.hypot(x - p.center.x, z - p.center.z);
     // Ragged edge so camps do not look like perfect circles.
     const rag = (noise(x / 3 + 7, z / 3 - 3) - 0.5) * p.edge;
-    const t = 1 - smooth((d - p.radius + p.edge + rag) / Math.max(0.01, p.edge));
+    const t =
+      1 - smooth((d - p.radius + p.edge + rag) / Math.max(0.01, p.edge));
     if (t > 0) c = mix(c, hex(p.color), t);
   }
   for (const s of paint.strokes) {
@@ -91,7 +106,8 @@ export function groundColorAt(
       if (a && b) d = Math.min(d, distToSegment(x, z, a.x, a.z, b.x, b.z));
     }
     const rag = (noise(x / 2.5 - 11, z / 2.5 + 5) - 0.5) * s.edge;
-    const t = 1 - smooth((d - s.width / 2 + s.edge + rag) / Math.max(0.01, s.edge));
+    const t =
+      1 - smooth((d - s.width / 2 + s.edge + rag) / Math.max(0.01, s.edge));
     if (t > 0) {
       // Slight colour noise inside the road reads as packed dirt, not paint.
       const grit = 0.9 + noise(x * 0.9 + 3, z * 0.9) * 0.2;
@@ -105,7 +121,12 @@ export function groundColorAt(
 /** Tileable grey speckle multiplied over the vertex colours (ground grain). */
 function detailTexture(scene: Scene, seed: number): DynamicTexture {
   const size = 128;
-  const tex = new DynamicTexture('ground_detail', { width: size, height: size }, scene, true);
+  const tex = new DynamicTexture(
+    "ground_detail",
+    { width: size, height: size },
+    scene,
+    true,
+  );
   const ctx = tex.getContext();
   const img = ctx.getImageData(0, 0, size, size);
   const noise = valueNoise(seed + 17);
@@ -143,7 +164,7 @@ export function createGround(scene: Scene, map: MapDef): Mesh {
     ? Math.min(MAX_SUBDIVISIONS, Math.ceil(Math.max(width, depth) / CELL))
     : 1;
   const ground = MeshBuilder.CreateGround(
-    'ground',
+    "ground",
     { width, height: depth, subdivisions, updatable: false },
     scene,
   );
@@ -158,7 +179,7 @@ export function createGround(scene: Scene, map: MapDef): Mesh {
   } else {
     const base = hex(map.ground.color);
     const noise = valueNoise(map.seed);
-    const positions = ground.getVerticesData('position');
+    const positions = ground.getVerticesData("position");
     if (positions) {
       const colors = new Float32Array((positions.length / 3) * 4);
       for (let v = 0, i = 0; v < positions.length; v += 3, i += 4) {
@@ -174,7 +195,7 @@ export function createGround(scene: Scene, map: MapDef): Mesh {
         colors[i + 2] = c[2];
         colors[i + 3] = 1;
       }
-      ground.setVerticesData('color', colors, false, 4);
+      ground.setVerticesData("color", colors, false, 4);
     }
     const detail = detailTexture(scene, map.seed);
     detail.uScale = width / DETAIL_TILE;

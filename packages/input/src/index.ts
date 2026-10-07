@@ -3,37 +3,37 @@
  * game code only ever sees actions (tech plan §24).
  */
 export type GameAction =
-  | { type: 'SELECT'; x: number; y: number; source: 'mouse' | 'touch' }
+  | { type: "SELECT"; x: number; y: number; source: "mouse" | "touch" }
   /**
    * Movement axis from one adapter (x: right, y: forward, length ≤ 1, screen /
    * camera relative). InputManager merges sources and re-emits it as MOVE.
    */
-  | { type: 'MOVE_AXIS'; source: string; x: number; y: number }
+  | { type: "MOVE_AXIS"; source: string; x: number; y: number }
   /** Merged movement axis from every source; {0,0} = released. */
-  | { type: 'MOVE'; x: number; y: number }
-  | { type: 'CAMERA_ROTATE'; dx: number; dy: number }
-  | { type: 'ZOOM'; delta: number }
-  | { type: 'STOP' }
-  | { type: 'SKILL'; index: number }
-  | { type: 'INTERACT' }
-  | { type: 'TARGET_NEXT' }
+  | { type: "MOVE"; x: number; y: number }
+  | { type: "CAMERA_ROTATE"; dx: number; dy: number }
+  | { type: "ZOOM"; delta: number }
+  | { type: "STOP" }
+  | { type: "SKILL"; index: number }
+  | { type: "INTERACT" }
+  | { type: "TARGET_NEXT" }
   /** Basic attack pressed (Space / attack button); with a gun the trigger is held until ATTACK_RELEASE. */
-  | { type: 'ATTACK' }
-  | { type: 'ATTACK_RELEASE' }
+  | { type: "ATTACK" }
+  | { type: "ATTACK_RELEASE" }
   /** Desktop left button pressed / released over the canvas (guns fire while it is held). */
-  | { type: 'PRIMARY'; down: boolean; x: number; y: number }
+  | { type: "PRIMARY"; down: boolean; x: number; y: number }
   /** Desktop cursor position over the canvas (aiming); the game picks the ground only when needed. */
-  | { type: 'POINTER'; x: number; y: number }
+  | { type: "POINTER"; x: number; y: number }
   /** Reload the ranged weapon (R). */
-  | { type: 'RELOAD' }
+  | { type: "RELOAD" }
   /** Cycle main-hand weapons in the bag (X). */
-  | { type: 'SWAP_WEAPON' }
-  | { type: 'USE_POTION' }
+  | { type: "SWAP_WEAPON" }
+  | { type: "USE_POTION" }
   | {
-      type: 'TOGGLE_PANEL';
-      panel: 'inventory' | 'character' | 'cultivation' | 'settings';
+      type: "TOGGLE_PANEL";
+      panel: "inventory" | "character" | "cultivation" | "settings";
     }
-  | { type: 'TOGGLE_DEBUG' };
+  | { type: "TOGGLE_DEBUG" };
 
 export type ActionListener = (action: GameAction) => void;
 
@@ -77,7 +77,7 @@ export class InputManager {
   }
 
   private emit(action: GameAction): void {
-    if (action.type === 'MOVE_AXIS') {
+    if (action.type === "MOVE_AXIS") {
       this.mergeAxis(action.source, action.x, action.y);
       return;
     }
@@ -101,7 +101,7 @@ export class InputManager {
     }
     if (mx === this.move.x && my === this.move.y) return;
     this.move = { x: mx, y: my };
-    for (const l of this.listeners) l({ type: 'MOVE', x: mx, y: my });
+    for (const l of this.listeners) l({ type: "MOVE", x: mx, y: my });
   }
 }
 
@@ -136,18 +136,18 @@ export class MouseKeyboardAdapter implements InputAdapter {
     this.target = target;
     this.emit = emit;
     const signal = this.abort.signal;
-    target.addEventListener('pointerdown', this.onDown, { signal });
-    window.addEventListener('pointermove', this.onMove, { signal });
-    window.addEventListener('pointerup', this.onUp, { signal });
-    target.addEventListener('wheel', this.onWheel, { signal, passive: false });
-    target.addEventListener('contextmenu', (e) => e.preventDefault(), {
+    target.addEventListener("pointerdown", this.onDown, { signal });
+    window.addEventListener("pointermove", this.onMove, { signal });
+    window.addEventListener("pointerup", this.onUp, { signal });
+    target.addEventListener("wheel", this.onWheel, { signal, passive: false });
+    target.addEventListener("contextmenu", (e) => e.preventDefault(), {
       signal,
     });
-    window.addEventListener('keydown', this.onKey, { signal });
-    window.addEventListener('keyup', this.onKeyUp, { signal });
+    window.addEventListener("keydown", this.onKey, { signal });
+    window.addEventListener("keyup", this.onKeyUp, { signal });
     // Keys released while the tab is hidden never send keyup.
-    window.addEventListener('blur', this.releaseAll, { signal });
-    document.addEventListener('visibilitychange', this.releaseAll, { signal });
+    window.addEventListener("blur", this.releaseAll, { signal });
+    document.addEventListener("visibilitychange", this.releaseAll, { signal });
   }
 
   detach(): void {
@@ -160,8 +160,8 @@ export class MouseKeyboardAdapter implements InputAdapter {
 
   private readonly releaseAll = () => {
     // A trigger held when the tab loses focus would never see its keyup/pointerup.
-    if (this.held.has('Space') || this.down?.button === 0) {
-      this.emit({ type: 'ATTACK_RELEASE' });
+    if (this.held.has("Space") || this.down?.button === 0) {
+      this.emit({ type: "ATTACK_RELEASE" });
       this.down = null;
     }
     if (this.held.size === 0) return;
@@ -180,17 +180,17 @@ export class MouseKeyboardAdapter implements InputAdapter {
     }
     const len = Math.hypot(x, y);
     this.emit({
-      type: 'MOVE_AXIS',
-      source: 'keyboard',
+      type: "MOVE_AXIS",
+      source: "keyboard",
       x: len > 0 ? x / len : 0,
       y: len > 0 ? y / len : 0,
     });
   }
 
   private readonly onKeyUp = (e: KeyboardEvent) => {
-    if (e.code === 'Space') {
-      this.held.delete('Space');
-      this.emit({ type: 'ATTACK_RELEASE' });
+    if (e.code === "Space") {
+      this.held.delete("Space");
+      this.emit({ type: "ATTACK_RELEASE" });
       return;
     }
     if (this.held.delete(e.code)) this.emitAxis();
@@ -198,24 +198,28 @@ export class MouseKeyboardAdapter implements InputAdapter {
 
   private local(e: PointerEvent): { x: number; y: number } {
     const rect = this.target?.getBoundingClientRect();
-    return { x: e.clientX - (rect?.left ?? 0), y: e.clientY - (rect?.top ?? 0) };
+    return {
+      x: e.clientX - (rect?.left ?? 0),
+      y: e.clientY - (rect?.top ?? 0),
+    };
   }
 
   private readonly onDown = (e: PointerEvent) => {
-    if (e.pointerType !== 'mouse') return;
+    if (e.pointerType !== "mouse") return;
     this.down = { x: e.clientX, y: e.clientY, button: e.button };
     this.last = { x: e.clientX, y: e.clientY };
     this.rotating = e.button === 2;
-    if (e.button === 0) this.emit({ type: 'PRIMARY', down: true, ...this.local(e) });
+    if (e.button === 0)
+      this.emit({ type: "PRIMARY", down: true, ...this.local(e) });
   };
 
   private readonly onMove = (e: PointerEvent) => {
-    if (e.pointerType !== 'mouse') return;
+    if (e.pointerType !== "mouse") return;
     if (e.target === this.target || this.down?.button === 0)
-      this.emit({ type: 'POINTER', ...this.local(e) });
+      this.emit({ type: "POINTER", ...this.local(e) });
     if (!this.rotating) return;
     this.emit({
-      type: 'CAMERA_ROTATE',
+      type: "CAMERA_ROTATE",
       dx: e.clientX - this.last.x,
       dy: e.clientY - this.last.y,
     });
@@ -223,14 +227,15 @@ export class MouseKeyboardAdapter implements InputAdapter {
   };
 
   private readonly onUp = (e: PointerEvent) => {
-    if (e.pointerType !== 'mouse' || !this.down) return;
-    if (this.down.button === 0) this.emit({ type: 'PRIMARY', down: false, ...this.local(e) });
+    if (e.pointerType !== "mouse" || !this.down) return;
+    if (this.down.button === 0)
+      this.emit({ type: "PRIMARY", down: false, ...this.local(e) });
     const moved = Math.hypot(e.clientX - this.down.x, e.clientY - this.down.y);
     if (this.down.button === 0 && moved < CLICK_SLOP && this.target) {
       const rect = this.target.getBoundingClientRect();
       this.emit({
-        type: 'SELECT',
-        source: 'mouse',
+        type: "SELECT",
+        source: "mouse",
         x: e.clientX - rect.left,
         y: e.clientY - rect.top,
       });
@@ -241,11 +246,14 @@ export class MouseKeyboardAdapter implements InputAdapter {
 
   private readonly onWheel = (e: WheelEvent) => {
     e.preventDefault();
-    this.emit({ type: 'ZOOM', delta: Math.sign(e.deltaY) });
+    this.emit({ type: "ZOOM", delta: Math.sign(e.deltaY) });
   };
 
   private readonly onKey = (e: KeyboardEvent) => {
-    if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+    if (
+      e.target instanceof HTMLInputElement ||
+      e.target instanceof HTMLTextAreaElement
+    ) {
       // Typing (chat) releases movement instead of steering.
       this.releaseAll();
       return;
@@ -259,25 +267,27 @@ export class MouseKeyboardAdapter implements InputAdapter {
       return;
     }
     if (e.repeat) return;
-    if (e.code === 'Space') this.held.add('Space');
+    if (e.code === "Space") this.held.add("Space");
     const digit = /^Digit([1-4])$/.exec(e.code);
-    if (digit) this.emit({ type: 'SKILL', index: Number(digit[1]) - 1 });
-    else if (e.code === 'Escape') this.emit({ type: 'STOP' });
-    else if (e.code === 'Space') {
+    if (digit) this.emit({ type: "SKILL", index: Number(digit[1]) - 1 });
+    else if (e.code === "Escape") this.emit({ type: "STOP" });
+    else if (e.code === "Space") {
       e.preventDefault();
-      this.emit({ type: 'ATTACK' });
-    } else if (e.code === 'KeyF') this.emit({ type: 'INTERACT' });
-    else if (e.code === 'KeyQ') this.emit({ type: 'USE_POTION' });
-    else if (e.code === 'KeyR') this.emit({ type: 'RELOAD' });
-    else if (e.code === 'KeyX') this.emit({ type: 'SWAP_WEAPON' });
-    else if (e.code === 'KeyI' || e.code === 'KeyB')
-      this.emit({ type: 'TOGGLE_PANEL', panel: 'inventory' });
-    else if (e.code === 'KeyC') this.emit({ type: 'TOGGLE_PANEL', panel: 'character' });
-    else if (e.code === 'KeyK') this.emit({ type: 'TOGGLE_PANEL', panel: 'cultivation' });
-    else if (e.code === 'Tab') {
+      this.emit({ type: "ATTACK" });
+    } else if (e.code === "KeyF") this.emit({ type: "INTERACT" });
+    else if (e.code === "KeyQ") this.emit({ type: "USE_POTION" });
+    else if (e.code === "KeyR") this.emit({ type: "RELOAD" });
+    else if (e.code === "KeyX") this.emit({ type: "SWAP_WEAPON" });
+    else if (e.code === "KeyI" || e.code === "KeyB")
+      this.emit({ type: "TOGGLE_PANEL", panel: "inventory" });
+    else if (e.code === "KeyC")
+      this.emit({ type: "TOGGLE_PANEL", panel: "character" });
+    else if (e.code === "KeyK")
+      this.emit({ type: "TOGGLE_PANEL", panel: "cultivation" });
+    else if (e.code === "Tab") {
       e.preventDefault();
-      this.emit({ type: 'TARGET_NEXT' });
-    } else if (e.code === 'Backquote') this.emit({ type: 'TOGGLE_DEBUG' });
+      this.emit({ type: "TARGET_NEXT" });
+    } else if (e.code === "Backquote") this.emit({ type: "TOGGLE_DEBUG" });
   };
 }
 
@@ -297,11 +307,11 @@ export class TouchAdapter implements InputAdapter {
     this.target = target;
     this.emit = emit;
     const signal = this.abort.signal;
-    target.style.touchAction = 'none';
-    target.addEventListener('pointerdown', this.onDown, { signal });
-    target.addEventListener('pointermove', this.onMove, { signal });
-    target.addEventListener('pointerup', this.onUp, { signal });
-    target.addEventListener('pointercancel', this.onUp, { signal });
+    target.style.touchAction = "none";
+    target.addEventListener("pointerdown", this.onDown, { signal });
+    target.addEventListener("pointermove", this.onMove, { signal });
+    target.addEventListener("pointerup", this.onUp, { signal });
+    target.addEventListener("pointercancel", this.onUp, { signal });
   }
 
   detach(): void {
@@ -311,7 +321,7 @@ export class TouchAdapter implements InputAdapter {
   }
 
   private readonly onDown = (e: PointerEvent) => {
-    if (e.pointerType === 'mouse') return;
+    if (e.pointerType === "mouse") return;
     this.touches.set(e.pointerId, {
       x: e.clientX,
       y: e.clientY,
@@ -330,14 +340,15 @@ export class TouchAdapter implements InputAdapter {
     t.x = e.clientX;
     t.y = e.clientY;
     if (this.touches.size === 1) {
-      if (Math.hypot(t.x - t.startX, t.y - t.startY) >= CLICK_SLOP) this.dragged = true;
-      if (this.dragged) this.emit({ type: 'CAMERA_ROTATE', dx, dy });
+      if (Math.hypot(t.x - t.startX, t.y - t.startY) >= CLICK_SLOP)
+        this.dragged = true;
+      if (this.dragged) this.emit({ type: "CAMERA_ROTATE", dx, dy });
     } else if (this.touches.size === 2) {
       this.dragged = true;
       const d = this.currentPinch();
       const change = this.pinchDistance - d;
       if (Math.abs(change) > 12) {
-        this.emit({ type: 'ZOOM', delta: Math.sign(change) });
+        this.emit({ type: "ZOOM", delta: Math.sign(change) });
         this.pinchDistance = d;
       }
     }
@@ -347,11 +358,16 @@ export class TouchAdapter implements InputAdapter {
     const t = this.touches.get(e.pointerId);
     if (!t) return;
     this.touches.delete(e.pointerId);
-    if (e.type === 'pointerup' && this.touches.size === 0 && !this.dragged && this.target) {
+    if (
+      e.type === "pointerup" &&
+      this.touches.size === 0 &&
+      !this.dragged &&
+      this.target
+    ) {
       const rect = this.target.getBoundingClientRect();
       this.emit({
-        type: 'SELECT',
-        source: 'touch',
+        type: "SELECT",
+        source: "touch",
         x: e.clientX - rect.left,
         y: e.clientY - rect.top,
       });
@@ -386,43 +402,47 @@ export class GamepadAdapter implements InputAdapter {
 
   poll(dt: number): void {
     const pad =
-      typeof navigator !== 'undefined' ? navigator.getGamepads?.().find((p) => p?.connected) : null;
+      typeof navigator !== "undefined"
+        ? navigator.getGamepads?.().find((p) => p?.connected)
+        : null;
     if (!pad) return;
     const [lx = 0, ly = 0, rx = 0, ry = 0] = pad.axes;
     const dead = (v: number) => (Math.abs(v) < 0.15 ? 0 : v);
     // Left stick (radial dead zone) walks; quantised so tiny drift doesn't spam.
     const mag = Math.hypot(lx, ly);
     const stick =
-      mag < 0.25 ? { x: 0, y: 0 } : { x: q(lx / Math.max(mag, 1)), y: q(-ly / Math.max(mag, 1)) };
+      mag < 0.25
+        ? { x: 0, y: 0 }
+        : { x: q(lx / Math.max(mag, 1)), y: q(-ly / Math.max(mag, 1)) };
     if (stick.x !== this.stick.x || stick.y !== this.stick.y) {
       this.stick = stick;
-      this.emit({ type: 'MOVE_AXIS', source: 'gamepad', ...stick });
+      this.emit({ type: "MOVE_AXIS", source: "gamepad", ...stick });
     }
     if (dead(rx) || dead(ry))
       this.emit({
-        type: 'CAMERA_ROTATE',
+        type: "CAMERA_ROTATE",
         dx: dead(rx) * 600 * dt,
         dy: dead(ry) * 400 * dt,
       });
     const pressed = pad.buttons.map((b) => b.pressed);
     const edge = (i: number) => pressed[i] && !this.prev[i];
     for (const [idx, b] of [0, 1, 2, 3].entries())
-      if (edge(b)) this.emit({ type: 'SKILL', index: idx });
-    if (edge(4)) this.emit({ type: 'TARGET_NEXT' });
-    if (edge(5)) this.emit({ type: 'INTERACT' });
-    if (edge(6)) this.emit({ type: 'ZOOM', delta: -1 });
-    if (edge(7)) this.emit({ type: 'ZOOM', delta: 1 });
-    if (edge(9)) this.emit({ type: 'TOGGLE_PANEL', panel: 'inventory' });
-    if (edge(12)) this.emit({ type: 'USE_POTION' });
+      if (edge(b)) this.emit({ type: "SKILL", index: idx });
+    if (edge(4)) this.emit({ type: "TARGET_NEXT" });
+    if (edge(5)) this.emit({ type: "INTERACT" });
+    if (edge(6)) this.emit({ type: "ZOOM", delta: -1 });
+    if (edge(7)) this.emit({ type: "ZOOM", delta: 1 });
+    if (edge(9)) this.emit({ type: "TOGGLE_PANEL", panel: "inventory" });
+    if (edge(12)) this.emit({ type: "USE_POTION" });
     this.prev = pressed;
   }
 }
 
 export interface JoystickOptions {
   /** floating: the stick appears under the thumb; fixed: it stays at its rest spot. */
-  mode: 'floating' | 'fixed';
+  mode: "floating" | "fixed";
   /** Which side of the screen the stick zone covers (handedness). */
-  side: 'left' | 'right';
+  side: "left" | "right";
   /** Knob travel in CSS px. */
   radius: number;
 }
@@ -455,11 +475,11 @@ export class VirtualJoystick implements InputAdapter {
     private readonly container: HTMLElement,
     private opts: JoystickOptions,
   ) {
-    this.zone = document.createElement('div');
-    this.base = document.createElement('div');
-    this.knob = document.createElement('div');
-    this.base.className = 'joystick-base';
-    this.knob.className = 'joystick-knob';
+    this.zone = document.createElement("div");
+    this.base = document.createElement("div");
+    this.knob = document.createElement("div");
+    this.base.className = "joystick-base";
+    this.knob.className = "joystick-knob";
     this.base.append(this.knob);
     this.zone.append(this.base);
     this.applyOptions();
@@ -476,11 +496,13 @@ export class VirtualJoystick implements InputAdapter {
     this.emit = emit;
     this.container.append(this.zone);
     const signal = this.abort.signal;
-    this.zone.addEventListener('pointerdown', this.onDown, { signal });
-    this.zone.addEventListener('pointermove', this.onMove, { signal });
-    this.zone.addEventListener('pointerup', this.onUp, { signal });
-    this.zone.addEventListener('pointercancel', this.onUp, { signal });
-    this.zone.addEventListener('contextmenu', (e) => e.preventDefault(), { signal });
+    this.zone.addEventListener("pointerdown", this.onDown, { signal });
+    this.zone.addEventListener("pointermove", this.onMove, { signal });
+    this.zone.addEventListener("pointerup", this.onUp, { signal });
+    this.zone.addEventListener("pointercancel", this.onUp, { signal });
+    this.zone.addEventListener("contextmenu", (e) => e.preventDefault(), {
+      signal,
+    });
   }
 
   detach(): void {
@@ -493,16 +515,16 @@ export class VirtualJoystick implements InputAdapter {
   private applyOptions(): void {
     const { mode, side, radius } = this.opts;
     this.zone.className = `joystick-zone joystick-${mode} joystick-${side}`;
-    this.zone.style.setProperty('--joystick-radius', `${radius}px`);
+    this.zone.style.setProperty("--joystick-radius", `${radius}px`);
     this.resetVisual();
   }
 
   private resetVisual(): void {
-    this.zone.classList.remove('joystick-active');
+    this.zone.classList.remove("joystick-active");
     // Rest spot comes from CSS; inline left/top only while a floating stick is held.
-    this.base.style.left = '';
-    this.base.style.top = '';
-    this.knob.style.transform = '';
+    this.base.style.left = "";
+    this.base.style.top = "";
+    this.knob.style.transform = "";
   }
 
   private readonly onDown = (e: PointerEvent) => {
@@ -513,14 +535,14 @@ export class VirtualJoystick implements InputAdapter {
     this.zone.setPointerCapture(e.pointerId);
     this.start = { x: e.clientX, y: e.clientY, t: performance.now() };
     this.travelled = 0;
-    if (this.opts.mode === 'floating') {
+    if (this.opts.mode === "floating") {
       this.center = { x: e.clientX, y: e.clientY };
       this.placeBase();
     } else {
       const r = this.base.getBoundingClientRect();
       this.center = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
     }
-    this.zone.classList.add('joystick-active');
+    this.zone.classList.add("joystick-active");
     this.update(e.clientX, e.clientY);
   };
 
@@ -536,15 +558,15 @@ export class VirtualJoystick implements InputAdapter {
   private readonly onUp = (e: PointerEvent) => {
     if (e.pointerId !== this.pointerId) return;
     const tap =
-      e.type === 'pointerup' &&
+      e.type === "pointerup" &&
       this.travelled < CLICK_SLOP &&
       performance.now() - this.start.t < TAP_MS;
     this.release();
     if (tap && this.target) {
       const rect = this.target.getBoundingClientRect();
       this.emit({
-        type: 'SELECT',
-        source: 'touch',
+        type: "SELECT",
+        source: "touch",
         x: e.clientX - rect.left,
         y: e.clientY - rect.top,
       });
@@ -557,7 +579,7 @@ export class VirtualJoystick implements InputAdapter {
       this.zone.releasePointerCapture(this.pointerId);
     this.pointerId = null;
     this.resetVisual();
-    this.emit({ type: 'MOVE_AXIS', source: 'joystick', x: 0, y: 0 });
+    this.emit({ type: "MOVE_AXIS", source: "joystick", x: 0, y: 0 });
   }
 
   private placeBase(): void {
@@ -572,7 +594,7 @@ export class VirtualJoystick implements InputAdapter {
     let dy = py - this.center.y;
     let dist = Math.hypot(dx, dy);
     // Floating stick follows a thumb that overshoots, so reversing is instant.
-    if (this.opts.mode === 'floating' && dist > radius) {
+    if (this.opts.mode === "floating" && dist > radius) {
       const k = (dist - radius) / dist;
       this.center.x += dx * k;
       this.center.y += dy * k;
@@ -587,10 +609,10 @@ export class VirtualJoystick implements InputAdapter {
     this.knob.style.transform = `translate(${nx * clamped}px, ${ny * clamped}px)`;
     const t = clamped / radius;
     if (t < JOYSTICK_DEAD) {
-      this.emit({ type: 'MOVE_AXIS', source: 'joystick', x: 0, y: 0 });
+      this.emit({ type: "MOVE_AXIS", source: "joystick", x: 0, y: 0 });
       return;
     }
     // Screen y grows downward; the axis' y is "forward" (up on screen).
-    this.emit({ type: 'MOVE_AXIS', source: 'joystick', x: nx, y: -ny });
+    this.emit({ type: "MOVE_AXIS", source: "joystick", x: nx, y: -ny });
   }
 }

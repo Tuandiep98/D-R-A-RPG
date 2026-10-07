@@ -1,5 +1,5 @@
-import type { AssetLibrary } from '@rpg/asset-runtime';
-import type { AppearanceDef, ContentBundle, MapDef } from '@rpg/game-data';
+import type { AssetLibrary } from "@rpg/asset-runtime";
+import type { AppearanceDef, ContentBundle, MapDef } from "@rpg/game-data";
 import {
   type AbstractMesh,
   type Material,
@@ -10,9 +10,9 @@ import {
   type Scene,
   Vector3,
   VertexBufferDeduceStride,
-} from './babylon';
-import { createGround } from './ground';
-import { createPlaceholderMesh } from './placeholder';
+} from "./babylon";
+import { createGround } from "./ground";
+import { createPlaceholderMesh } from "./placeholder";
 
 /** Alpha of environment pieces that stand between the camera and the player. */
 const OCCLUDED_ALPHA = 0.28;
@@ -85,7 +85,7 @@ export class EnvironmentView {
 
     const byAppearance = new Map<
       string,
-      { chunkId: string; inst: MapDef['chunks'][number]['instances'][number] }[]
+      { chunkId: string; inst: MapDef["chunks"][number]["instances"][number] }[]
     >();
     for (const chunk of map.chunks) {
       for (const inst of chunk.instances) {
@@ -97,17 +97,25 @@ export class EnvironmentView {
 
     await Promise.all(
       [...byAppearance].map(async ([appearanceId, entries]) => {
-        const appearance = content.appearances.get(appearanceId) as AppearanceDef | undefined;
+        const appearance = content.appearances.get(appearanceId) as
+          AppearanceDef | undefined;
         if (!appearance) throw new Error(`Unknown appearance ${appearanceId}`);
         const solid =
-          (appearance.modelAssetId && (await mergedModel(assets, appearance.modelAssetId))) ||
+          (appearance.modelAssetId &&
+            (await mergedModel(assets, appearance.modelAssetId))) ||
           createPlaceholderMesh(scene, appearance, `env_${appearanceId}`);
         solid.name = `env_${appearanceId}`;
         solid.isPickable = false;
         solid.receiveShadows = true;
         solid.refreshBoundingInfo();
-        const { minimum: mn, maximum: mx } = solid.getBoundingInfo().boundingBox;
-        const footprint = Math.max(Math.abs(mn.x), Math.abs(mx.x), Math.abs(mn.z), Math.abs(mx.z));
+        const { minimum: mn, maximum: mx } =
+          solid.getBoundingInfo().boundingBox;
+        const footprint = Math.max(
+          Math.abs(mn.x),
+          Math.abs(mx.x),
+          Math.abs(mn.z),
+          Math.abs(mx.z),
+        );
 
         const farModel = appearance.modelAssetId
           ? await mergedModel(assets, appearance.modelAssetId, true)
@@ -118,7 +126,11 @@ export class EnvironmentView {
           farModel.receiveShadows = true;
           farModel.freezeWorldMatrix();
         }
-        const faded = solid.clone(`env_${appearanceId}_faded`, null, true) as Mesh;
+        const faded = solid.clone(
+          `env_${appearanceId}_faded`,
+          null,
+          true,
+        ) as Mesh;
         faded.makeGeometryUnique();
         faded.material = fadedMaterial(solid.material);
         faded.isPickable = false;
@@ -129,7 +141,11 @@ export class EnvironmentView {
           const matrix = new Float32Array(16);
           Matrix.Compose(
             new Vector3(s, s, s),
-            Quaternion.RotationYawPitchRoll(inst.rotationY + appearance.yawOffset, 0, 0),
+            Quaternion.RotationYawPitchRoll(
+              inst.rotationY + appearance.yawOffset,
+              0,
+              0,
+            ),
             new Vector3(inst.position[0], inst.position[1], inst.position[2]),
           ).copyToArray(matrix);
           return {
@@ -148,10 +164,11 @@ export class EnvironmentView {
         const capacity = Math.max(1, instances.length) * 16;
         const solidBuffer = new Float32Array(capacity);
         const fadedBuffer = new Float32Array(capacity);
-        solid.thinInstanceSetBuffer('matrix', solidBuffer, 16, false);
-        faded.thinInstanceSetBuffer('matrix', fadedBuffer, 16, false);
+        solid.thinInstanceSetBuffer("matrix", solidBuffer, 16, false);
+        faded.thinInstanceSetBuffer("matrix", fadedBuffer, 16, false);
         const farBuffer = farModel ? new Float32Array(capacity) : null;
-        if (farModel && farBuffer) farModel.thinInstanceSetBuffer('matrix', farBuffer, 16, false);
+        if (farModel && farBuffer)
+          farModel.thinInstanceSetBuffer("matrix", farBuffer, 16, false);
         view.batches.push({
           appearanceId,
           solid,
@@ -176,7 +193,8 @@ export class EnvironmentView {
     const cj = Math.floor((z - this.map.bounds.min.z) / size);
     const out = new Set<string>();
     for (let i = ci - radius; i <= ci + radius; i++) {
-      for (let j = cj - radius; j <= cj + radius; j++) out.add(`chunk_${i}_${j}`);
+      for (let j = cj - radius; j <= cj + radius; j++)
+        out.add(`chunk_${i}_${j}`);
     }
     return out;
   }
@@ -186,7 +204,10 @@ export class EnvironmentView {
     const prev = this.activeChunks;
     const same =
       chunks === prev ||
-      (!!chunks && !!prev && chunks.size === prev.size && [...chunks].every((c) => prev.has(c)));
+      (!!chunks &&
+        !!prev &&
+        chunks.size === prev.size &&
+        [...chunks].every((c) => prev.has(c)));
     if (same) return;
     this.activeChunks = chunks;
     for (const b of this.batches) b.dirty = true;
@@ -200,7 +221,8 @@ export class EnvironmentView {
     instances: number;
   } {
     let instances = 0;
-    for (const b of this.batches) for (const i of b.instances) if (this.isActive(i)) instances++;
+    for (const b of this.batches)
+      for (const i of b.instances) if (this.isActive(i)) instances++;
     return {
       batches: this.batches.length,
       activeChunks: this.activeChunks
@@ -215,7 +237,8 @@ export class EnvironmentView {
   updateLod(x: number, z: number): void {
     if (
       this.lodCenter &&
-      Math.hypot(x - this.lodCenter.x, z - this.lodCenter.z) < LOD_REFRESH_DISTANCE
+      Math.hypot(x - this.lodCenter.x, z - this.lodCenter.z) <
+        LOD_REFRESH_DISTANCE
     )
       return;
     this.lodCenter = { x, z };
@@ -251,7 +274,9 @@ export class EnvironmentView {
           const px = camera.x + dx * t - inst.x;
           const pz = camera.z + dz * t - inst.z;
           const rayY = camera.y + (target.y - camera.y) * t;
-          blocks = px * px + pz * pz < inst.radius * inst.radius && inst.height > rayY - 0.3;
+          blocks =
+            px * px + pz * pz < inst.radius * inst.radius &&
+            inst.height > rayY - 0.3;
         }
         if (blocks !== inst.occluded) {
           inst.occluded = blocks;
@@ -286,7 +311,8 @@ export class EnvironmentView {
       for (const inst of b.instances) {
         if (!this.isActive(inst)) continue;
         if (inst.occluded) b.fadedBuffer.set(inst.matrix, faded++ * 16);
-        else if (inst.far && b.farBuffer) b.farBuffer.set(inst.matrix, far++ * 16);
+        else if (inst.far && b.farBuffer)
+          b.farBuffer.set(inst.matrix, far++ * 16);
         else b.solidBuffer.set(inst.matrix, solid++ * 16);
       }
       commit(b.solid, solid);
@@ -301,7 +327,7 @@ function commit(mesh: Mesh, count: number): void {
     mesh.setEnabled(false);
     return;
   }
-  mesh.thinInstanceBufferUpdated('matrix');
+  mesh.thinInstanceBufferUpdated("matrix");
   mesh.thinInstanceCount = count;
   mesh.thinInstanceRefreshBoundingInfo();
   mesh.setEnabled(true);
@@ -311,7 +337,9 @@ function fadedMaterial(material: Material | null): Material | null {
   if (!material) return null;
   if (material instanceof MultiMaterial) {
     const multi = material.clone(`${material.name}_faded`, true);
-    multi.subMaterials = multi.subMaterials.map((m) => (m ? toTransparent(m) : m));
+    multi.subMaterials = multi.subMaterials.map((m) =>
+      m ? toTransparent(m) : m,
+    );
     return multi;
   }
   return toTransparent(material.clone(`${material.name}_faded`) ?? material);
@@ -329,25 +357,37 @@ async function mergedModel(
   assetId: string,
   lod1 = false,
 ): Promise<Mesh | null> {
-  const container = lod1 ? await assets.loadLod1(assetId) : await assets.loadContainer(assetId);
+  const container = lod1
+    ? await assets.loadLod1(assetId)
+    : await assets.loadContainer(assetId);
   if (!container) return null;
-  const entries = container.instantiateModelsToScene((n) => `${assetId}_${n}`, false, {
-    doNotInstantiate: true,
-  });
+  const entries = container.instantiateModelsToScene(
+    (n) => `${assetId}_${n}`,
+    false,
+    {
+      doNotInstantiate: true,
+    },
+  );
   const meshes = entries.rootNodes
     .flatMap((root) => root.getChildMeshes(false))
-    .filter((m: AbstractMesh): m is Mesh => m instanceof Mesh && m.getTotalVertices() > 0);
+    .filter(
+      (m: AbstractMesh): m is Mesh =>
+        m instanceof Mesh && m.getTotalVertices() > 0,
+    );
   for (const m of meshes) m.computeWorldMatrix(true);
   let merged: Mesh | null = null;
   try {
     completeVertexAttributes(meshes);
-    merged = meshes.length ? Mesh.MergeMeshes(meshes, true, true, undefined, false, true) : null;
+    merged = meshes.length
+      ? Mesh.MergeMeshes(meshes, true, true, undefined, false, true)
+      : null;
   } catch (error) {
     console.warn(`[env] could not merge ${assetId}; using placeholder`, error);
   }
   for (const root of entries.rootNodes) root.dispose();
   for (const g of entries.animationGroups) g.dispose();
-  if (!merged) console.warn(`[env] could not merge ${assetId}; using placeholder`);
+  if (!merged)
+    console.warn(`[env] could not merge ${assetId}; using placeholder`);
   return merged;
 }
 
@@ -366,8 +406,9 @@ function completeVertexAttributes(meshes: readonly Mesh[]): void {
       if (own.has(kind)) continue;
       const stride = VertexBufferDeduceStride(kind);
       const data = new Float32Array(vertices * stride);
-      if (kind === 'color') data.fill(1);
-      if (kind === 'tangent') for (let i = 3; i < data.length; i += stride) data[i] = 1;
+      if (kind === "color") data.fill(1);
+      if (kind === "tangent")
+        for (let i = 3; i < data.length; i += stride) data[i] = 1;
       mesh.setVerticesData(kind, data, false, stride);
     }
   }

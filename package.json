@@ -31,11 +31,13 @@
     "dev:stack": "tsx --env-file-if-exists=.env tools/dev-stack/main.ts",
     "smoke:login": "tsx tools/smoke/login-flow.ts",
     "assets:convert": "tsx tools/asset-processor/convert.ts",
+    "assets:fantasy-ui": "tsx tools/asset-processor/fantasy-ui.ts",
     "assets:inspect": "tsx tools/asset-processor/inspect.ts",
     "assets:sheet": "tsx tools/asset-processor/contact-sheet.ts",
     "media:build": "tsx tools/asset-processor/media.ts",
     "smoke:gear": "tsx tools/smoke/gear-fit.ts",
     "smoke:controls": "tsx tools/smoke/controls.ts",
+    "smoke:responsive": "tsx tools/smoke/responsive.ts",
     "smoke:gun": "tsx tools/smoke/gun.ts",
     "assets:proportions": "tsx tools/asset-processor/proportions.ts",
     "assets:vendor": "tsx tools/asset-processor/vendor.ts"
