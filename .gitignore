@@ -21,3 +21,6 @@ reports/smoke/
 # Local PGlite database (dev without Docker)
 .data/
 
+
+# Local pnpm content-addressable store
+.pnpm-store/
