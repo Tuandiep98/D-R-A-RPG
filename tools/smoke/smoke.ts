@@ -187,6 +187,11 @@ try {
 
   // NPC dialog: talk to the elder and accept the first quest (offline only: fresh character).
   if (!url.includes('online')) {
+    // Combat can leave the player far from town, especially in software-rendered
+    // Chromium. Start this independent scenario at the village spawn.
+    await page.goto(url, { waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => '__rpg' in window, null, { timeout: 60_000 });
+    await page.waitForTimeout(1500);
     const npcs = (await entities()).filter((e) => e.kind === 'npc');
     check(npcs.length === 3, `village has 3 NPCs (${npcs.length})`);
     const elder = npcs.find((e) => e.defId === 'npc_elder');
@@ -198,7 +203,7 @@ try {
           // biome-ignore lint/suspicious/noExplicitAny: debug hook
           (window as any).__rpg.view.send({ type: 'INTERACT', entityId: id });
         }, elder.id);
-      await page.waitForSelector('.npc-panel', { timeout: 15_000 }).catch(() => null);
+      await page.waitForSelector('.npc-panel', { timeout: 30_000 }).catch(() => null);
       check((await page.locator('.npc-panel').count()) === 1, 'NPC dialog opens');
       await page
         .locator('.npc-panel button', { hasText: 'Nhận' })
