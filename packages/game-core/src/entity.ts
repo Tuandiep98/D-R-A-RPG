@@ -1,4 +1,4 @@
-import type { MonsterTier } from '@rpg/game-data';
+import type { ComboVariant, MonsterTier } from '@rpg/game-data';
 import type {
   EntityAction,
   EntityId,
@@ -51,6 +51,32 @@ export interface Cast {
   endTick: number;
 }
 
+/** One basic-attack swing in flight (systems/melee.ts). Times are ticks. */
+export interface Swing {
+  comboId: string;
+  step: number;
+  variant: ComboVariant;
+  startTick: number;
+  impactTick: number;
+  endTick: number;
+  /** Facing locked when the swing started (aim / held direction / assist). */
+  yaw: number;
+  impacted: boolean;
+  /** Lunge metres still to travel during the wind-up. */
+  lungeLeft: number;
+}
+
+/** Combo chain bookkeeping per player. */
+export interface ComboState {
+  /** Step the next swing uses if it starts before `lastEndTick + reset`. */
+  nextStep: number;
+  lastEndTick: number;
+  /** A press during a swing: chain straight into the next step when it ends. */
+  buffered: boolean;
+  /** Aim point of the buffered press (desktop cursor). */
+  aim: Vec2 | null;
+}
+
 /** Something the entity walks to and then does (pickup, portal, queued skill). */
 export type PendingAction =
   | { type: 'pickup'; lootId: EntityId }
@@ -82,6 +108,7 @@ export interface PlayerData {
   equipment: Partial<Record<EquipSlot, ItemInstanceId>>;
   itemReadyAtTick: number;
   quests: QuestState[];
+  combo: ComboState;
 }
 
 export interface LootData {
@@ -167,6 +194,7 @@ export interface Entity {
   /** Skill id → tick at which it is ready again. Order = skill bar order. */
   skills: Map<string, number>;
   cast: Cast | null;
+  swing: Swing | null;
   pending: PendingAction | null;
 
   player: PlayerData | null;

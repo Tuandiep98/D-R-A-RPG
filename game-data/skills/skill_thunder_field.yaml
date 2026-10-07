@@ -1,0 +1,13 @@
+id: skill_thunder_field
+name: Lôi Vực
+description: Gọi sét xuống một vùng quanh mục tiêu.
+icon: "✺"
+targeting: point
+range: 9
+castTime: 0.6
+cooldown: 13
+mpCost: 28
+effects:
+  - { type: damage, multiplier: 2.1, radius: 3 }
+vfx: thunder_field
+sfx: { cast: [sfx_swing_02], impact: [sfx_hit_heavy] }

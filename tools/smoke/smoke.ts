@@ -2,7 +2,7 @@
  * Headless smoke test of the running dev server:
  *   pnpm dev            (in another terminal)
  *   pnpm smoke [url]    (default http://localhost:5173)
- * Uses the locally installed Chrome (no browser download). Checks boot, click-to-move,
+ * Uses the locally installed Chrome (no browser download). Checks boot, ground-click attack,
  * click-to-attack and console errors; writes screenshots to reports/smoke/.
  */
 import { mkdirSync } from 'node:fs';
@@ -77,14 +77,46 @@ try {
   check(list.filter((e) => e.kind === 'monster').length === 5, '5 monsters rendered');
   if (!player) throw new Error('no player');
 
-  // Click-to-move: click the ground below the player on screen (toward the camera).
+  check(
+    (await page.locator('.actionbar .skill:not(.potion)').count()) === 7,
+    'seven default sword skills shown',
+  );
+  await page.locator('.menu button[title="Kỹ năng"]').click();
+  check(
+    (await page.locator('.skill-list-item').count()) === 7,
+    'skill menu lists the full default kit',
+  );
+  await page.screenshot({ path: resolve(outDir, '01b_skills.png') });
+  await page.locator('.skill-panel .panel-head button').last().click();
+  // Desktop ground click starts a basic swing instead of walking to the point.
   const start = { x: player.wx, z: player.wz };
   await page.mouse.click(player.x + 120, player.y + 60);
-  await page.waitForTimeout(1500);
+  const swung = await page
+    .waitForFunction(
+      (id) =>
+        (window as unknown as { __rpg: { view: { debugEntities(): DebugEntity[] } } }).__rpg.view
+          .debugEntities()
+          .some((e) => e.id === id && e.action === 'cast'),
+      player.id,
+      { timeout: 1000 },
+    )
+    .then(() => true)
+    .catch(() => false);
+  check(swung, 'desktop ground click starts a basic attack');
+  await page.waitForTimeout(1000);
   list = await entities();
-  const moved = list.find((e) => e.id === player.id);
-  const dist = moved ? Math.hypot(moved.wx - start.x, moved.wz - start.z) : 0;
-  check(dist > 1, `click-to-move moved the player (${dist.toFixed(2)} m)`);
+  const afterClick = list.find((e) => e.id === player.id);
+  const dist = afterClick ? Math.hypot(afterClick.wx - start.x, afterClick.wz - start.z) : 0;
+  check(dist < 1, `ground click did not issue movement (${dist.toFixed(2)} m)`);
+
+  await page.locator('.actionbar .skill:not(.potion)').first().click();
+  const cooldown = await page
+    .locator('.actionbar .skill:not(.potion) .skill-cd')
+    .first()
+    .waitFor({ timeout: 1500 })
+    .then(() => true)
+    .catch(() => false);
+  check(cooldown, 'mobility skill enters cooldown');
 
   // Walk forward until a monster is on screen, then click-to-attack the nearest one.
   const onScreen = (e: DebugEntity) => e.x > 40 && e.x < 1240 && e.y > 90 && e.y < 660;
@@ -98,8 +130,9 @@ try {
   };
   let target = findTarget(list);
   for (let i = 0; i < 6 && !target; i++) {
-    await page.mouse.click(640, 230);
+    await page.keyboard.down('KeyW');
     await page.waitForTimeout(1500);
+    await page.keyboard.up('KeyW');
     list = await entities();
     target = findTarget(list);
   }

@@ -47,7 +47,7 @@ describe('LocalSimHost', () => {
     expect(snap.entities.filter((e) => e.kind === 'monster')).toHaveLength(5);
     expect(snap.entities.filter((e) => e.kind === 'portal')).toHaveLength(1);
     const ps = state as unknown as PlayerState;
-    expect(ps.skills).toHaveLength(2); // more come from cultivation nodes, not levels
+    expect(ps.skills).toHaveLength(7); // default Lôi Kiếm Tu combat kit
     expect(ps.realm).toBe('luyen_khi');
     expect(ps.inventory.length).toBeGreaterThan(0);
     host.dispose();

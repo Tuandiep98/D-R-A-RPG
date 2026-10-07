@@ -149,7 +149,7 @@ function SkillButton({
     <button
       type="button"
       style={style}
-      className={`skill ${slot.usable ? '' : 'skill-disabled'}`}
+      className={`skill ${slot.skillId.startsWith('skill_thunder_') ? 'skill-thunder' : ''} ${slot.skillId === 'skill_thunder_judgement' ? 'skill-ultimate' : ''} ${slot.usable ? '' : 'skill-disabled'}`}
       title={`${slot.name}${slot.mpCost ? ` · ${slot.mpCost} MP` : ''}\n${slot.description}`}
       onPointerDown={(e) => {
         e.stopPropagation();
@@ -273,7 +273,7 @@ function DesktopActionBar() {
     <div className="actionbar">
       <InteractButton />
       <div className="skills">
-        {ui.skills.map((s, i) => (
+        {ui.skills.slice(0, 8).map((s, i) => (
           <SkillButton key={s.skillId} slot={s} index={i} />
         ))}
         <PotionButton />
@@ -284,7 +284,7 @@ function DesktopActionBar() {
 
 /**
  * Touch: big attack button in the corner opposite the joystick, skills on a
- * quarter arc around it (thumb reach), potion and target switch after them.
+ * quarter arc around it (thumb reach), with potion in the final arc slot.
  * Slot positions are static — computed per render, never per frame.
  */
 function TouchActionBar() {
@@ -298,8 +298,9 @@ function TouchActionBar() {
       transform: `translate(calc(${o.x}px * var(--arc-scale) - 50%), calc(${o.y}px * var(--arc-scale) - 50%))`,
     };
   };
-  // Potion and target switch take the next free slots after the skills.
-  const next = ui.skills.length;
+  // Keep the touch cluster within two rings on portrait phones.
+  const visible = ui.skills.slice(0, 7);
+  const next = visible.length;
   return (
     <div className="touch-actions">
       <div className="touch-interact">
@@ -316,22 +317,10 @@ function TouchActionBar() {
       >
         ⚔
       </button>
-      {ui.skills.map((s, i) => (
+      {visible.map((s, i) => (
         <SkillButton key={s.skillId} slot={s} index={i} style={at(i)} />
       ))}
       <PotionButton style={at(next)} />
-      <button
-        type="button"
-        className="skill skill-small"
-        style={at(next + 1)}
-        title="Đổi mục tiêu (Tab)"
-        onPointerDown={(e) => {
-          e.stopPropagation();
-          game()?.targetNext();
-        }}
-      >
-        ◎
-      </button>
     </div>
   );
 }
@@ -339,6 +328,49 @@ function TouchActionBar() {
 function ActionBar() {
   const touch = useControls((s) => effectiveScheme(s) === 'touch');
   return touch ? <TouchActionBar /> : <DesktopActionBar />;
+}
+
+function SkillPanel() {
+  const skills = useUiStore((s) => s.ui?.skills ?? []);
+  const close = useUiStore((s) => s.closePanel);
+  return (
+    <div className="panel skill-panel" onPointerDown={(e) => e.stopPropagation()}>
+      <div className="panel-head">
+        <strong>Kỹ năng</strong>
+        <span className="skill-panel-actions">
+          <button type="button" title="Đổi mục tiêu" onClick={() => game()?.targetNext()}>
+            ◎
+          </button>
+          <button type="button" onClick={close}>
+            ✕
+          </button>
+        </span>
+      </div>
+      <p className="muted">Chọn chiêu để thi triển. Phím 1–8 dùng các ô đầu trên thanh kỹ năng.</p>
+      <div className="skill-list">
+        {skills.map((slot, index) => (
+          <button
+            key={slot.skillId}
+            type="button"
+            className={`skill-list-item ${slot.usable ? '' : 'skill-disabled'}`}
+            onClick={() => {
+              game()?.castSkill(index);
+              close();
+            }}
+          >
+            <GameIcon icon={slot.icon} image={slot.iconImage} />
+            <span className="skill-list-copy">
+              <strong>{slot.name}</strong>
+              <small>{slot.description}</small>
+            </span>
+            <span className="skill-list-cost">
+              {slot.remaining > 0 ? `${Math.ceil(slot.remaining)}s` : `${slot.mpCost} MP`}
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function ItemTile({ item, onClick }: { item: ItemView; onClick?: () => void }) {
@@ -667,8 +699,9 @@ function HelpLine() {
   if (touch) return null;
   return (
     <div className="help">
-      WASD/↑↓←→: di chuyển · Click: đi/đánh/nhặt/nói chuyện · Space: đánh · 1–5: chiêu · Q: thuốc ·
-      F: tương tác · Tab: đổi mục tiêu · I: túi đồ · K: tu luyện · Enter: chat · Chuột phải: xoay
+      WASD/↑↓←→: di chuyển · Click trái: đánh/chọn/nhặt/nói chuyện · Space: đánh · 1–8: chiêu · Q:
+      thuốc · F: tương tác · Tab: đổi mục tiêu · I: túi đồ · K: tu luyện · Enter: chat · Chuột phải:
+      xoay
     </div>
   );
 }
@@ -728,6 +761,9 @@ function MenuButtons() {
   const toggle = useUiStore((s) => s.togglePanel);
   return (
     <div className="menu" onPointerDown={(e) => e.stopPropagation()}>
+      <button type="button" title="Kỹ năng" onClick={() => toggle('skills')}>
+        ⚡
+      </button>
       <button type="button" title="Túi đồ (I)" onClick={() => toggle('inventory')}>
         🎒
       </button>
@@ -779,6 +815,7 @@ export function Hud() {
       <MenuButtons />
       <ActionBar />
       {panel === 'inventory' && <InventoryPanel />}
+      {panel === 'skills' && <SkillPanel />}
       {panel === 'character' && <CharacterPanel />}
       {panel === 'cultivation' && <CultivationPanel />}
       {panel === 'settings' && <SettingsPanel />}

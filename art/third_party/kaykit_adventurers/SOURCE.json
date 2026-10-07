@@ -117,9 +117,28 @@
         "Ranged_Magic_Shoot",
         "Ranged_Magic_Spellcasting",
         "Ranged_1H_Shoot",
-        "Ranged_Bow_Release"
+        "Ranged_Bow_Release",
+        "Melee_1H_Attack_Slice_Horizontal",
+        "Melee_1H_Attack_Jump_Chop",
+        "Melee_2H_Attack_Spinning",
+        "Melee_Dualwield_Attack_Stab",
+        "Melee_Dualwield_Attack_Slice",
+        "Melee_Unarmed_Attack_Kick"
       ],
-      "type": "character"
+      "type": "character",
+      "derivedClips": [
+        {
+          "name": "Melee_1H_Attack_Slice_Horizontal_Rev",
+          "from": "Melee_1H_Attack_Slice_Horizontal",
+          "reverse": true,
+          "trimStart": 0.3
+        },
+        {
+          "name": "Melee_Unarmed_Attack_Punch_A_Mirror",
+          "from": "Melee_Unarmed_Attack_Punch_A",
+          "mirror": true
+        }
+      ]
     },
     {
       "assetId": "char_kk_barbarian",
@@ -159,9 +178,28 @@
         "Ranged_Magic_Shoot",
         "Ranged_Magic_Spellcasting",
         "Ranged_1H_Shoot",
-        "Ranged_Bow_Release"
+        "Ranged_Bow_Release",
+        "Melee_1H_Attack_Slice_Horizontal",
+        "Melee_1H_Attack_Jump_Chop",
+        "Melee_2H_Attack_Spinning",
+        "Melee_Dualwield_Attack_Stab",
+        "Melee_Dualwield_Attack_Slice",
+        "Melee_Unarmed_Attack_Kick"
       ],
-      "type": "character"
+      "type": "character",
+      "derivedClips": [
+        {
+          "name": "Melee_1H_Attack_Slice_Horizontal_Rev",
+          "from": "Melee_1H_Attack_Slice_Horizontal",
+          "reverse": true,
+          "trimStart": 0.3
+        },
+        {
+          "name": "Melee_Unarmed_Attack_Punch_A_Mirror",
+          "from": "Melee_Unarmed_Attack_Punch_A",
+          "mirror": true
+        }
+      ]
     },
     {
       "assetId": "char_kk_rogue_hooded",

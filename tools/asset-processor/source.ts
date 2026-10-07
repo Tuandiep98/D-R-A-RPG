@@ -63,6 +63,21 @@ export const PackSourceSchema = z
             .optional(),
           animationClips: z.array(z.string()).min(1).optional(),
           /**
+           * Clips baked from grafted ones (tools/asset-processor/derive-clips.ts):
+           * reversed and/or left-right mirrored, e.g. a left-hand punch.
+           */
+          derivedClips: z
+            .array(
+              z.strictObject({
+                name: z.string().min(1),
+                from: z.string().min(1),
+                reverse: z.boolean().optional(),
+                mirror: z.boolean().optional(),
+                trimStart: z.number().nonnegative().optional(),
+              }),
+            )
+            .default([]),
+          /**
            * Skinned parts grafted onto this file's skeleton by joint name, e.g. a
            * UBC head and hairstyle on a headless modular outfit. `keepJoints`
            * keeps only part triangles weighted to those joints.

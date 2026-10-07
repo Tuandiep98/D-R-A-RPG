@@ -1,0 +1,12 @@
+id: skill_thunder_leap
+name: Lôi Ảnh Trảm
+description: Lướt 5 mét, chém kẻ địch quanh điểm dừng.
+icon: "🌩"
+targeting: self
+cooldown: 9
+mpCost: 18
+effects:
+  - { type: dash, distance: 5 }
+  - { type: damage, multiplier: 1.3, radius: 1.8 }
+vfx: thunder_dash
+sfx: { cast: [sfx_swing_02], impact: [sfx_hit_metal_02] }

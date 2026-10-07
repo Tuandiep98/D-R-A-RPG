@@ -4,7 +4,7 @@ import { z } from 'zod';
  * Wire contract between client and simulation host (local or server).
  * Bump PROTOCOL_VERSION on any breaking change to these schemas.
  */
-export const PROTOCOL_VERSION = 6;
+export const PROTOCOL_VERSION = 7;
 
 /** Max world coordinate magnitude accepted from a client, in metres. */
 export const MAX_COORD = 10_000;
@@ -55,6 +55,12 @@ export const IntentSchema = z.discriminatedUnion('type', [
       .object({ x: z.number().finite().min(-1).max(1), z: z.number().finite().min(-1).max(1) })
       .nullable(),
   }),
+  /**
+   * Basic attack (đánh thường): the next swing of the combo, no target needed.
+   * `aim` is a world point to face (desktop cursor); without it the host uses
+   * the held direction, then aim assist, then the current facing.
+   */
+  z.strictObject({ type: z.literal('BASIC_ATTACK'), aim: Vec2Schema.nullable().optional() }),
   z.strictObject({
     type: z.literal('ATTACK_TARGET'),
     targetId: EntityIdSchema,
@@ -204,7 +210,17 @@ export const SimEventSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('ATTACK'),
     sourceId: EntityIdSchema,
-    targetId: EntityIdSchema,
+    /** Null for a combo swing at nothing in particular. */
+    targetId: EntityIdSchema.nullable(),
+    /** Combo swings: which combo/step/variant (presentation looks up clip + trail). */
+    combo: z
+      .object({
+        comboId: z.string(),
+        step: z.number().int().nonnegative(),
+        variantId: z.string(),
+        yaw: z.number().finite(),
+      })
+      .optional(),
   }),
   z.object({
     type: z.literal('DAMAGE'),
@@ -213,7 +229,12 @@ export const SimEventSchema = z.discriminatedUnion('type', [
     amount: z.number().int().nonnegative(),
     crit: z.boolean(),
     skillId: z.string().nullable(),
+    /** Combo hits, timed on the impact tick: solid, glancing (sượt) or weak point (yếu hại). */
+    hit: z.enum(['solid', 'graze', 'weak']).optional(),
+    heavy: z.boolean().optional(),
   }),
+  /** A combo swing whose target stood just out of reach (shown as "Trượt"). */
+  z.object({ type: z.literal('MISS'), sourceId: EntityIdSchema, targetId: EntityIdSchema }),
   z.object({
     type: z.literal('HEAL'),
     targetId: EntityIdSchema,

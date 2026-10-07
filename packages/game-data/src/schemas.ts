@@ -72,6 +72,11 @@ export const SkillTargetingSchema = z.enum([
 
 export const SkillEffectSchema = z.discriminatedUnion('type', [
   z.strictObject({
+    type: z.literal('dash'),
+    /** Travel along the held direction, or facing when standing still. */
+    distance: z.number().positive().max(12),
+  }),
+  z.strictObject({
     type: z.literal('damage'),
     /** Multiplier on the caster's attack. */
     multiplier: positive,
@@ -114,6 +119,78 @@ export const SkillDefSchema = z.strictObject({
 export type SkillDef = z.infer<typeof SkillDefSchema>;
 
 // ---------------------------------------------------------------------------
+// Basic attack combos (đánh thường): chained swings, no target needed
+// ---------------------------------------------------------------------------
+
+/** Presentation of one swing: a slash ribbon / thrust / smash flash, plus hand glow. */
+export const SwingTrailSchema = z.strictObject({
+  shape: z.enum(['slash', 'thrust', 'smash', 'spin']),
+  /** Slash sweep direction as the attacker sees it (right → left, …). */
+  from: z.enum(['right', 'left', 'top']).default('right'),
+  color: z.string().default('#dff4ff'),
+  /** Size multiplier on the swing's reach. */
+  size: positive.default(1),
+  /** Sockets that glow during the wind-up (heavy hits): "hand_r", "hand_l". */
+  glow: z.array(z.enum(['hand_r', 'hand_l'])).default([]),
+});
+
+export const ComboVariantSchema = z.strictObject({
+  id: IdSchema,
+  name: z.string().min(1),
+  /** Clip name in the character model (KayKit Rig_Medium; derived clips allowed). */
+  clip: z.string().min(1),
+  animSpeed: positive.default(1),
+  /** Seconds from the press to the impact (matches the clip's contact frame / animSpeed). */
+  windup: positive,
+  /** Seconds after the impact before the next swing starts. */
+  recovery: nonNegative,
+  /** Multiplier on attack. Heavy finishers are 2.4–3.2×. */
+  damage: positive,
+  /** Edge-to-edge reach in metres; beyond it the swing misses. */
+  reach: positive,
+  /** Cone width in degrees (360 = all around). */
+  arc: z.number().min(10).max(360),
+  maxTargets: z.number().int().min(1).max(12).default(1),
+  /** Movement speed multiplier while swinging (0 = rooted). */
+  moveMultiplier: z.number().min(0).max(1),
+  /** Added crit chance for this swing. */
+  critBonus: chance.default(0),
+  /** Metres dashed forward during the wind-up (jumping chop). */
+  lunge: nonNegative.default(0),
+  /** Random pick weight among a step's variants. */
+  weight: positive.default(1),
+  heavy: z.boolean().default(false),
+  trail: SwingTrailSchema,
+  sfx: SfxListSchema.optional(),
+});
+export type ComboVariant = z.infer<typeof ComboVariantSchema>;
+
+export const ComboDefSchema = z.strictObject({
+  id: IdSchema,
+  name: z.string().min(1),
+  /** Idle seconds after a swing before the chain restarts at step 1. */
+  resetAfter: seconds,
+  /** Surface distance past `grazeFrom × reach` is a glancing blow ("sượt"). */
+  grazeFrom: z.number().min(0.1).max(1).default(0.7),
+  /** Damage factor at the very tip of the reach (linear from 1 at grazeFrom). */
+  grazeMultiplier: z.number().min(0.1).max(1).default(0.5),
+  /** Targets this far past the reach still show "Trượt" (miss) feedback. */
+  missMargin: nonNegative.default(0.8),
+  /** Yếu hại: hits landing on the target's back / flank. */
+  weakPoint: z
+    .strictObject({ back: z.number().min(1).default(1.6), flank: z.number().min(1).default(1.25) })
+    .default({ back: 1.6, flank: 1.25 }),
+  /** Aim assist: turn toward a hostile within this many degrees of the facing. */
+  assistAngle: z.number().min(0).max(180).default(70),
+  /** Each step is one swing; a step with several variants picks one at random. */
+  steps: z
+    .array(z.strictObject({ variants: z.array(ComboVariantSchema).min(1) }))
+    .min(1)
+    .max(6),
+});
+export type ComboDef = z.infer<typeof ComboDefSchema>;
+
+// ---------------------------------------------------------------------------
 // Items, loot, progression
 // ---------------------------------------------------------------------------
 
@@ -154,6 +231,8 @@ export const ItemDefSchema = z
     sellPrice: z.number().int().nonnegative().default(0),
     /** Presentation (assets plan §6): many items may share one appearance. */
     appearanceId: IdSchema.optional(),
+    /** Main-hand weapons: basic-attack combo used while equipped (default: character's armed). */
+    combo: IdSchema.optional(),
   })
   .refine((i) => i.kind !== 'equipment' || i.slot, {
     message: 'equipment needs a slot',
@@ -311,6 +390,8 @@ export const CharacterDefSchema = z.strictObject({
   stats: StatsSchema,
   movement: MovementDefSchema,
   combat: CombatDefSchema,
+  /** Basic-attack combos: bare hands, and any main-hand weapon without its own `combo`. */
+  combos: z.strictObject({ unarmed: IdSchema, armed: IdSchema }),
   respawnSeconds: seconds,
   /** Skill bar, in order. */
   skills: z.array(IdSchema).max(8).default([]),

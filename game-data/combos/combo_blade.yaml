@@ -1,0 +1,96 @@
+# Đánh thường khi cầm kiếm/vũ khí một tay. 3 nhịp: chém phải → chém trái → đòn mạnh.
+# windup = thời điểm chạm của clip / animSpeed (đo bằng FK, xem docs/decision_log.md D-031).
+id: combo_blade
+name: Kiếm pháp cơ bản
+resetAfter: 1.0
+grazeFrom: 0.7
+grazeMultiplier: 0.5
+missMargin: 0.8
+weakPoint: { back: 1.6, flank: 1.25 }
+assistAngle: 70
+steps:
+  - variants:
+      - id: slash_right
+        name: Hữu Trảm
+        # Slice_Horizontal chạy ngược: kéo kiếm sang phải rồi quét sang trái.
+        clip: Melee_1H_Attack_Slice_Horizontal_Rev
+        animSpeed: 1.7
+        windup: 0.5
+        recovery: 0.18
+        damage: 1.0
+        reach: 1.5
+        arc: 120
+        maxTargets: 2
+        moveMultiplier: 0.55
+        trail: { shape: slash, from: right, color: "#dff4ff" }
+  - variants:
+      - id: slash_left
+        name: Tả Trảm
+        clip: Melee_1H_Attack_Slice_Horizontal
+        animSpeed: 1.15
+        windup: 0.25
+        recovery: 0.35
+        damage: 1.1
+        reach: 1.5
+        arc: 130
+        maxTargets: 2
+        moveMultiplier: 0.55
+        trail: { shape: slash, from: left, color: "#dff4ff" }
+  - variants:
+      - id: chop_heavy
+        name: Khai Sơn Trảm
+        clip: Melee_1H_Attack_Chop
+        animSpeed: 1.15
+        windup: 0.52
+        recovery: 0.45
+        damage: 2.8
+        reach: 1.8
+        arc: 70
+        maxTargets: 3
+        moveMultiplier: 0.15
+        critBonus: 0.15
+        heavy: true
+        trail: { shape: smash, from: top, color: "#ffcf5a", size: 1.2, glow: [hand_r] }
+      - id: stab_heavy
+        name: Xuyên Tâm Thứ
+        clip: Melee_1H_Attack_Stab
+        animSpeed: 1.1
+        windup: 0.38
+        recovery: 0.5
+        damage: 2.6
+        reach: 2.5
+        arc: 30
+        maxTargets: 3
+        moveMultiplier: 0.2
+        critBonus: 0.3
+        heavy: true
+        trail: { shape: thrust, color: "#8fe3ff", size: 1.2, glow: [hand_r] }
+      - id: leap_heavy
+        name: Phi Thân Bổ
+        clip: Melee_1H_Attack_Jump_Chop
+        animSpeed: 1.2
+        windup: 0.62
+        recovery: 0.4
+        damage: 3.2
+        reach: 2.0
+        arc: 100
+        maxTargets: 4
+        moveMultiplier: 0
+        lunge: 2.2
+        critBonus: 0.1
+        weight: 0.8
+        heavy: true
+        trail: { shape: smash, from: top, color: "#ff8a3d", size: 1.4, glow: [hand_r] }
+      - id: spin_heavy
+        name: Toàn Phong Trảm
+        clip: Melee_2H_Attack_Spinning
+        animSpeed: 1.0
+        windup: 0.35
+        recovery: 0.4
+        damage: 2.4
+        reach: 1.7
+        arc: 360
+        maxTargets: 6
+        moveMultiplier: 0.6
+        heavy: true
+        trail: { shape: spin, color: "#c9b6ff", size: 1.1, glow: [hand_r] }

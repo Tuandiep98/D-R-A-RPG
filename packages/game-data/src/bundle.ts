@@ -5,6 +5,8 @@ import {
   AppearanceDefSchema,
   type CharacterDef,
   CharacterDefSchema,
+  type ComboDef,
+  ComboDefSchema,
   type CultivationNodeDef,
   CultivationNodeDefSchema,
   type ItemDef,
@@ -39,6 +41,7 @@ export interface ContentBundle {
   maps: ReadonlyMap<string, MapDef>;
   appearances: ReadonlyMap<string, AppearanceDef>;
   skills: ReadonlyMap<string, SkillDef>;
+  combos: ReadonlyMap<string, ComboDef>;
   items: ReadonlyMap<string, ItemDef>;
   loot: ReadonlyMap<string, LootTableDef>;
   progression: ReadonlyMap<string, ProgressionRules>;
@@ -78,6 +81,7 @@ const FOLDERS = {
   maps: MapDefSchema,
   appearances: AppearanceDefSchema,
   skills: SkillDefSchema,
+  combos: ComboDefSchema,
   items: ItemDefSchema,
   loot: LootTableDefSchema,
   progression: ProgressionRulesSchema,
@@ -116,6 +120,7 @@ export function buildContentBundle(files: readonly ContentFile[]): ContentBundle
     maps: new Map(),
     appearances: new Map(),
     skills: new Map(),
+    combos: new Map(),
     items: new Map(),
     loot: new Map(),
     progression: new Map(),
@@ -219,10 +224,16 @@ function checkReferences(bundle: ContentBundle, issues: ContentIssue[]): void {
     for (const m of r.breakthrough?.materials ?? []) needItem(owner, m.itemId);
   }
 
+  for (const it of bundle.items.values()) {
+    if (it.combo) need(bundle.combos, 'combo')(`items/${it.id}`, it.combo);
+  }
+
   for (const c of bundle.characters.values()) {
     const owner = `characters/${c.id}`;
     needAppearance(owner, c.appearanceId);
     for (const s of c.skills) needSkill(owner, s);
+    need(bundle.combos, 'combo')(owner, c.combos.unarmed);
+    need(bundle.combos, 'combo')(owner, c.combos.armed);
     for (const it of c.starterItems) {
       needItem(owner, it.itemId);
       const def = bundle.items.get(it.itemId);

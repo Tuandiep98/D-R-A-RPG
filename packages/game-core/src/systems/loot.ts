@@ -103,6 +103,7 @@ export function makeInert(
     ai: null,
     skills: new Map(),
     cast: null,
+    swing: null,
     pending: null,
     player: null,
     loot: extra.loot ?? null,

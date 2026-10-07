@@ -19,6 +19,7 @@ import { applyIntents, pendingSystem, type QueuedIntent } from './systems/intent
 import { addItem, equip, INVENTORY_CAPACITY } from './systems/inventory';
 import { actionSystem, lifeSystem } from './systems/life';
 import { lootSystem, makeInert } from './systems/loot';
+import { meleeSystem } from './systems/melee';
 import { movementSystem } from './systems/movement';
 import { questProgress } from './systems/npc';
 import { Parties } from './systems/party';
@@ -230,6 +231,7 @@ export class World implements SimContext {
       ai: null,
       skills: new Map(def.skills.map((s) => [s, 0])),
       cast: null,
+      swing: null,
       pending: null,
       player: {
         characterId: def.id,
@@ -242,6 +244,7 @@ export class World implements SimContext {
         inventory: save ? save.inventory.map((i) => ({ ...i })) : [],
         equipment: save ? { ...save.equipment } : {},
         itemReadyAtTick: 0,
+        combo: { nextStep: 0, lastEndTick: -1_000_000, buffered: false, aim: null },
         quests: (save?.quests ?? []).map((q) => ({
           ...q,
           progress: [...q.progress],
@@ -377,6 +380,7 @@ export class World implements SimContext {
     aiSystem(this);
     skillSystem(this);
     combatSystem(this);
+    meleeSystem(this);
     movementSystem(this);
     pendingSystem(this);
     lootSystem(this);
@@ -451,6 +455,7 @@ export class World implements SimContext {
           },
           skills: new Map(def.skills.map((s) => [s, 40])),
           cast: null,
+          swing: null,
           pending: null,
           player: null,
           loot: null,

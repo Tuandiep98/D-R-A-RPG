@@ -36,7 +36,7 @@ export function movementSystem(ctx: SimContext): void {
     }
     if (ctx.nav) updatePath(ctx, e);
 
-    let budget = e.movement.speed * TICK_DT;
+    let budget = e.movement.speed * (e.swing?.variant.moveMultiplier ?? 1) * TICK_DT;
     while (budget > 1e-6) {
       const path = e.movement.path;
       const isFinal = !path || path.length <= 1;
@@ -78,7 +78,7 @@ export function movementSystem(ctx: SimContext): void {
 
 /** One tick along a held direction; on a navmesh the step slides along edges. */
 function steer(ctx: SimContext, e: Entity, dir: Vec2): void {
-  const step = e.movement.speed * TICK_DT;
+  const step = e.movement.speed * (e.swing?.variant.moveMultiplier ?? 1) * TICK_DT;
   e.yaw = yawOf(dir);
   const next = { x: e.pos.x + dir.x * step, z: e.pos.z + dir.z * step };
   const p = ctx.nav ? ctx.nav.closest(next) : next;

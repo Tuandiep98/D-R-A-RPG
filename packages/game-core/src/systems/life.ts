@@ -22,6 +22,9 @@ export function lifeSystem(ctx: SimContext): void {
       e.combat.targetId = null;
       e.combat.nextAttackTick = 0;
       e.cast = null;
+      e.swing = null;
+      if (e.player)
+        e.player.combo = { nextStep: 0, lastEndTick: -1_000_000, buffered: false, aim: null };
       e.pending = null;
       if (e.ai) {
         e.ai.state = 'idle';
@@ -52,7 +55,7 @@ export function actionSystem(ctx: SimContext): void {
       continue;
     }
     const target = e.combat.targetId !== null ? ctx.entities.get(e.combat.targetId) : undefined;
-    if (e.cast) e.action = 'cast';
+    if (e.cast || e.swing) e.action = 'cast';
     else if (e.movement.moved) e.action = 'move';
     else if (target?.life.alive && inAttackRange(e, target)) e.action = 'combat';
     else e.action = 'idle';

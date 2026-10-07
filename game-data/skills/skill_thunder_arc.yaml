@@ -1,0 +1,12 @@
+id: skill_thunder_arc
+name: Lôi Hoàn Kiếm
+description: Xoáy kiếm điện, đánh kẻ địch quanh thân.
+icon: "◎"
+targeting: self
+castTime: 0.2
+cooldown: 8
+mpCost: 20
+effects:
+  - { type: damage, multiplier: 1.5, radius: 3.2 }
+vfx: thunder_arc
+sfx: { cast: [sfx_swing_01], impact: [sfx_chop] }

@@ -2,7 +2,7 @@ import type { SkillDef } from '@rpg/game-data';
 import type { EntityId } from '@rpg/game-protocol';
 import { areHostile, edgeDistance, isAlive, type SimContext } from '../context';
 import type { Entity } from '../entity';
-import { distance, sub, type Vec2, yawOf } from '../math';
+import { clampToBounds, distance, sub, type Vec2, yawOf } from '../math';
 import { secondsToTicks } from '../time';
 import { applyDamage, rollHit } from './combat';
 
@@ -82,10 +82,13 @@ function startCast(
   aim: Vec2 | null,
 ): void {
   e.pending = null;
+  e.swing = null;
+  if (e.player) e.player.combo.buffered = false;
   e.stats.mp -= skill.mpCost;
   e.skills.set(skill.id, ctx.tick + secondsToTicks(skill.cooldown));
   e.movement.goal = null;
   e.movement.path = null;
+  if (skill.effects.some((effect) => effect.type === 'dash')) e.combat.targetId = null;
   if (aim) e.yaw = yawOf(sub(aim, e.pos));
   const castTicks = skill.castTime > 0 ? secondsToTicks(skill.castTime) : 0;
   const point = skill.targeting === 'self' ? { ...e.pos } : aim;
@@ -149,16 +152,21 @@ function resolveCast(ctx: SimContext, e: Entity): void {
   const point = cast.point ?? { ...e.pos };
   const target = cast.targetId !== null ? ctx.entities.get(cast.targetId) : undefined;
 
+  for (const effect of skill.effects) {
+    if (effect.type === 'dash') dash(ctx, e, effect.distance);
+  }
+  const impactPoint = skill.targeting === 'self' ? { ...e.pos } : point;
   ctx.emit({
     type: 'SKILL_IMPACT',
     sourceId: e.id,
     skillId: skill.id,
-    point: { ...point },
+    point: impactPoint,
     radius: effectRadius(skill),
     targetId: target?.id ?? null,
   });
 
   for (const effect of skill.effects) {
+    if (effect.type === 'dash') continue;
     if (effect.type === 'heal') {
       const amount = Math.min(
         e.stats.maxHp - e.stats.hp,
@@ -172,7 +180,7 @@ function resolveCast(ctx: SimContext, e: Entity): void {
     if (effect.radius > 0) {
       for (const other of ctx.entities.values()) {
         if (!isAlive(other) || !areHostile(e, other)) continue;
-        if (distance(other.pos, point) <= effect.radius + other.movement.radius)
+        if (distance(other.pos, impactPoint) <= effect.radius + other.movement.radius)
           victims.push(other);
       }
     } else if (isAlive(target) && edgeDistance(e, target) <= skill.range * 1.5 + 1) {
@@ -185,4 +193,29 @@ function resolveCast(ctx: SimContext, e: Entity): void {
   }
   // Keep fighting what we just hit.
   if (isAlive(target) && areHostile(e, target)) e.combat.targetId = target.id;
+}
+
+/** Short, bounded traversal; sample the whole route so a dash cannot cross walls or nav gaps. */
+function dash(ctx: SimContext, e: Entity, metres: number): void {
+  const dir = e.movement.dir ?? { x: Math.sin(e.yaw), z: Math.cos(e.yaw) };
+  const length = Math.hypot(dir.x, dir.z);
+  if (length < 1e-6) return;
+  const dx = dir.x / length;
+  const dz = dir.z / length;
+  const steps = Math.ceil(metres / 0.25);
+  const step = metres / steps;
+  for (let i = 0; i < steps; i++) {
+    const next = clampToBounds(
+      { x: e.pos.x + dx * step, z: e.pos.z + dz * step },
+      ctx.bounds,
+      e.movement.radius,
+    );
+    const p = ctx.nav ? ctx.nav.closest(next) : next;
+    if (distance(p, next) > 0.18 || distance(p, e.pos) > step * 1.5) break;
+    if (ctx.obstacles.some((o) => distance(p, o.pos) < o.radius + e.movement.radius)) break;
+    e.pos.x = p.x;
+    e.pos.z = p.z;
+  }
+  e.yaw = yawOf(dir);
+  e.movement.moved = true;
 }

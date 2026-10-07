@@ -3,6 +3,7 @@ import type { ChatMessage } from '@rpg/game-protocol';
 import { create } from 'zustand';
 
 export type Panel =
+  | 'skills'
   | 'inventory'
   | 'character'
   | 'cultivation'

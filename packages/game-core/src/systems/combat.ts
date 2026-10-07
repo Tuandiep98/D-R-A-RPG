@@ -26,10 +26,11 @@ export function rollDamage(
   defender: Pick<Stats, 'defense'>,
   multiplier = 1,
   flat = 0,
+  critBonus = 0,
 ): DamageRoll {
   const mitigation = 100 / (100 + defender.defense * DEFENSE_WEIGHT);
   const variance = 1 + rng.range(-VARIANCE, VARIANCE);
-  const crit = rng.chance(attacker.critChance);
+  const crit = rng.chance(attacker.critChance + critBonus);
   const raw =
     (attacker.attack * multiplier + flat) *
     mitigation *
@@ -48,8 +49,9 @@ export function rollHit(
   defender: Entity,
   multiplier = 1,
   flat = 0,
+  critBonus = 0,
 ): DamageRoll {
-  const roll = rollDamage(ctx.rng, attacker.stats, defender.stats, multiplier, flat);
+  const roll = rollDamage(ctx.rng, attacker.stats, defender.stats, multiplier, flat, critBonus);
   const f = realmGapFactor(ctx, attacker, defender) * backlashFactor(ctx, attacker);
   return f === 1 ? roll : { amount: Math.max(1, Math.round(roll.amount * f)), crit: roll.crit };
 }
@@ -57,7 +59,8 @@ export function rollHit(
 /**
  * For every entity with a combat target: close the distance, then swing on
  * cooldown. Runs before movement so a chase goal is followed in the same tick.
- * Casting suspends auto-attacks.
+ * Casting suspends auto-attacks. Players swing their basic-attack combo
+ * instead of a single timed hit (systems/melee.ts).
  */
 export function combatSystem(ctx: SimContext): void {
   for (const e of ctx.entities.values()) {
@@ -82,6 +85,7 @@ export function combatSystem(ctx: SimContext): void {
 
     e.movement.goal = null;
     e.movement.path = null;
+    if (e.player) continue; // meleeSystem starts and advances player combo swings.
     e.yaw = yawOf(sub(target.pos, e.pos));
     if (ctx.tick < e.combat.nextAttackTick) continue;
 
@@ -99,6 +103,7 @@ export function applyDamage(
   amount: number,
   crit: boolean,
   skillId: string | null,
+  melee?: { hit: 'solid' | 'graze' | 'weak'; heavy: boolean },
 ): void {
   if (!target.life.alive) return;
   const dealt = Math.min(amount, target.stats.hp);
@@ -114,6 +119,7 @@ export function applyDamage(
     amount: dealt,
     crit,
     skillId,
+    ...(melee ? { hit: melee.hit, heavy: melee.heavy } : {}),
   });
   if (target.stats.hp <= 0) kill(ctx, target, source);
   else updatePhase(ctx, target);
@@ -151,6 +157,7 @@ function kill(ctx: SimContext, target: Entity, killer: Entity | null): void {
   target.movement.dir = null;
   target.combat.targetId = null;
   target.cast = null;
+  target.swing = null;
   target.pending = null;
   ctx.emit({ type: 'DEATH', id: target.id, killerId: killer?.id ?? null });
   if (target.kind === 'monster') rewardKill(ctx, target);

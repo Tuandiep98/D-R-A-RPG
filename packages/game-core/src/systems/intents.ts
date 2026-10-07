@@ -5,6 +5,7 @@ import { clampToBounds, distance } from '../math';
 import { breakthrough, openNode } from './cultivation';
 import { equip, unequip, useItem } from './inventory';
 import { tryPickup } from './loot';
+import { requestBasicAttack } from './melee';
 import { acceptQuest, craft, openNpc, shopBuy, shopSell, turnInQuest, upgrade } from './npc';
 import { requestCast } from './skills';
 
@@ -72,7 +73,15 @@ function apply(ctx: SimContext, actor: Entity, intent: Intent): boolean {
     case 'STOP':
       clearActions(actor);
       actor.movement.dir = null;
+      actor.swing = null;
       return true;
+    case 'BASIC_ATTACK':
+      // Swinging at nothing in particular drops auto-attack/queued actions.
+      actor.combat.targetId = null;
+      actor.pending = null;
+      actor.movement.goal = null;
+      actor.movement.path = null;
+      return requestBasicAttack(ctx, actor, intent.aim ?? null);
     case 'ATTACK_TARGET': {
       const target = ctx.entities.get(intent.targetId);
       if (!isAlive(target) || target.id === actor.id || !areHostile(actor, target)) return false;

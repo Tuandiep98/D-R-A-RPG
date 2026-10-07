@@ -30,6 +30,7 @@ export interface Visual {
   readonly shadowCasters: AbstractMesh[];
   setBase(role: BaseRole): void;
   oneShot(role: OneShotRole): void;
+  oneShotClip(clip: string, speed: number): void;
   setGear(gear: GearAppearances): void;
   update(dt: number): void;
   reset(): void;
@@ -207,6 +208,10 @@ export class PlaceholderVisual implements Visual {
     else this.hitT = 0.15;
   }
 
+  oneShotClip(_clip: string, _speed: number): void {
+    this.oneShot('attack');
+  }
+
   setGear(gear: GearAppearances): void {
     this.gear.apply(gear);
   }
@@ -258,6 +263,7 @@ export class ModelVisual implements Visual {
   readonly shadowCasters: AbstractMesh[];
   private readonly groups = new Map<AnimationRole, AnimationGroup>();
   private readonly allGroups: AnimationGroup[];
+  private readonly clips = new Map<string, AnimationGroup>();
   private readonly nodesByName = new Map<string, Node>();
   private readonly gear: GearAttachments;
   private base: BaseRole | null = null;
@@ -292,6 +298,7 @@ export class ModelVisual implements Visual {
 
     this.allGroups = entries.animationGroups;
     const byName = new Map(entries.animationGroups.map((g) => [stripPrefix(g.name, name), g]));
+    for (const [clip, group] of byName) this.clips.set(clip, group);
     for (const [role, clip] of Object.entries(appearance.animations)) {
       const g = byName.get(clip);
       if (g) this.groups.set(role as AnimationRole, g);
@@ -348,6 +355,23 @@ export class ModelVisual implements Visual {
     });
   }
 
+  oneShotClip(clip: string, speed: number): void {
+    const g = this.clips.get(clip);
+    if (!g) {
+      this.oneShot('attack');
+      return;
+    }
+    if (this.base === 'death') return;
+    this.oneShotActive = 'attack';
+    this.playGroup(g, false, speed);
+    g.onAnimationGroupEndObservable.addOnce(() => {
+      if (this.oneShotActive !== 'attack') return;
+      this.oneShotActive = null;
+      const base = this.base ?? 'idle';
+      this.playOnly(base, base !== 'death');
+    });
+  }
+
   setGear(gear: GearAppearances): void {
     this.gear.apply(gear);
   }
@@ -374,9 +398,9 @@ export class ModelVisual implements Visual {
     else for (const other of this.allGroups) if (other.isPlaying) other.stop();
   }
 
-  private playGroup(g: AnimationGroup, loop: boolean): void {
+  private playGroup(g: AnimationGroup, loop: boolean, speed = 1): void {
     for (const other of this.allGroups) if (other !== g && other.isPlaying) other.stop();
-    g.start(loop, 1, g.from, g.to);
+    g.start(loop, speed, g.from, g.to);
   }
 }
 

@@ -1,0 +1,13 @@
+id: skill_thunder_judgement
+name: Cửu Thiên Lôi Kiếm
+description: Tụ lôi lực rồi giáng một đòn kiếm sét cực mạnh vào vùng mục tiêu.
+icon: "☄"
+targeting: point
+range: 10
+castTime: 1.1
+cooldown: 32
+mpCost: 55
+effects:
+  - { type: damage, multiplier: 5.5, radius: 3.6 }
+vfx: thunder_ultimate
+sfx: { cast: [sfx_draw_blade], impact: [sfx_hit_heavy] }

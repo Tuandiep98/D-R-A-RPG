@@ -155,6 +155,10 @@ export class EntityView {
     this.visual.oneShot(role);
   }
 
+  playClip(clip: string, speed: number): void {
+    this.visual.oneShotClip(clip, speed);
+  }
+
   update(dt: number): void {
     this.visual.update(dt);
   }

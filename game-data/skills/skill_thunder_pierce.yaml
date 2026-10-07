@@ -1,0 +1,13 @@
+id: skill_thunder_pierce
+name: Lôi Kiếm Xuyên Tâm
+description: Phóng kiếm khí điện vào một mục tiêu từ xa.
+icon: "✦"
+targeting: target
+range: 11
+castTime: 0.25
+cooldown: 5
+mpCost: 12
+effects:
+  - { type: damage, multiplier: 2 }
+vfx: thunder_projectile
+sfx: { cast: [sfx_swing_02], impact: [sfx_hit_metal_02] }

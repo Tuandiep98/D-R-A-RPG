@@ -1,6 +1,7 @@
 import {
   AppearanceDefSchema,
   CharacterDefSchema,
+  ComboDefSchema,
   type ContentBundle,
   CultivationNodeDefSchema,
   ItemDefSchema,
@@ -243,6 +244,7 @@ export function makeContent(o: FixtureOverrides = {}): ContentBundle {
     },
     movement: { speed: 5, radius: 0.4 },
     combat: { range: 1.5, attackInterval: 1 },
+    combos: { unarmed: 'test_combo', armed: 'test_combo' },
     respawnSeconds: 5,
     skills: ['slash', 'whirl', 'mend'],
     starterItems: [
@@ -286,12 +288,36 @@ export function makeContent(o: FixtureOverrides = {}): ContentBundle {
     ...o.map,
   });
   const maps = [map, ...(o.extraMaps ?? []).map((m) => MapDefSchema.parse(m))];
+  const combo = ComboDefSchema.parse({
+    id: 'test_combo',
+    name: 'Test combo',
+    resetAfter: 1,
+    steps: [
+      {
+        variants: [
+          {
+            id: 'swing',
+            name: 'Swing',
+            clip: 'attack',
+            windup: 0.05,
+            recovery: 0.95,
+            damage: 1,
+            reach: 1.5,
+            arc: 180,
+            moveMultiplier: 1,
+            trail: { shape: 'slash' },
+          },
+        ],
+      },
+    ],
+  });
   return {
     appearances: new Map([[appearance.id, appearance]]),
     characters: new Map([[character.id, character]]),
     monsters: new Map(monsters.map((m) => [m.id, m])),
     maps: new Map(maps.map((m) => [m.id, m])),
     skills: new Map(skills.map((s) => [s.id, s])),
+    combos: new Map([[combo.id, combo]]),
     items: new Map(items.map((i) => [i.id, i])),
     loot: new Map([[loot.id, loot]]),
     progression: new Map([[progression.id, progression]]),

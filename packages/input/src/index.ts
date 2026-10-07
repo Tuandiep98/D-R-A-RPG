@@ -3,7 +3,7 @@
  * game code only ever sees actions (tech plan §24).
  */
 export type GameAction =
-  | { type: 'SELECT'; x: number; y: number }
+  | { type: 'SELECT'; x: number; y: number; source: 'mouse' | 'touch' }
   /**
    * Movement axis from one adapter (x: right, y: forward, length ≤ 1, screen /
    * camera relative). InputManager merges sources and re-emits it as MOVE.
@@ -112,7 +112,7 @@ const MOVE_KEYS: Record<string, readonly [number, number]> = {
 };
 
 /**
- * Left click: select / walk. Right drag: rotate. Wheel: zoom.
+ * Left click: select / attack. Right drag: rotate. Wheel: zoom.
  * WASD or arrow keys: walk relative to the camera. Esc: stop. Backquote: debug.
  */
 export class MouseKeyboardAdapter implements InputAdapter {
@@ -201,6 +201,7 @@ export class MouseKeyboardAdapter implements InputAdapter {
       const rect = this.target.getBoundingClientRect();
       this.emit({
         type: 'SELECT',
+        source: 'mouse',
         x: e.clientX - rect.left,
         y: e.clientY - rect.top,
       });
@@ -318,6 +319,7 @@ export class TouchAdapter implements InputAdapter {
       const rect = this.target.getBoundingClientRect();
       this.emit({
         type: 'SELECT',
+        source: 'touch',
         x: e.clientX - rect.left,
         y: e.clientY - rect.top,
       });
@@ -508,7 +510,12 @@ export class VirtualJoystick implements InputAdapter {
     this.release();
     if (tap && this.target) {
       const rect = this.target.getBoundingClientRect();
-      this.emit({ type: 'SELECT', x: e.clientX - rect.left, y: e.clientY - rect.top });
+      this.emit({
+        type: 'SELECT',
+        source: 'touch',
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      });
     }
   };
 

@@ -438,15 +438,18 @@ export class GameView {
     );
   }
 
-  /** Basic attack button / Space: auto-attack the selected or nearest hostile. */
+  /** Basic attack button / Space: one combo swing, including when no target is selected. */
   attack(): void {
-    const target = this.currentOrNearestHostile();
-    if (!target) {
-      this.opts.onNotice?.({ text: NOTICE_TEXT.no_target, tone: 'warn' });
-      return;
-    }
-    this.select(target.state.id);
-    this.opts.host.sendIntent({ type: 'ATTACK_TARGET', targetId: target.state.id });
+    const target = this.selectedId !== null ? this.sampled.get(this.selectedId) : undefined;
+    const me = this.sampled.get(this.join.playerId);
+    const aim =
+      target &&
+      me &&
+      target.state.action !== 'dead' &&
+      Math.hypot(target.x - me.x, target.z - me.z) < 4
+        ? { x: target.x, z: target.z }
+        : null;
+    this.opts.host.sendIntent({ type: 'BASIC_ATTACK', aim });
   }
 
   targetNext(): void {
@@ -776,14 +779,14 @@ export class GameView {
         this.opts.onToggleDebug?.(this.scene);
         break;
       case 'SELECT':
-        this.handleSelect(action.x, action.y);
+        this.handleSelect(action.x, action.y, action.source);
         break;
       case 'TOGGLE_PANEL':
         break;
     }
   }
 
-  private handleSelect(x: number, y: number): void {
+  private handleSelect(x: number, y: number, source: 'mouse' | 'touch'): void {
     const entityHit = this.scene.pick(
       x,
       y,
@@ -815,6 +818,14 @@ export class GameView {
       (m) => (m.metadata as { ground?: boolean } | null)?.ground === true,
     );
     const p = groundHit?.pickedPoint;
+    if (source === 'mouse' && document.documentElement.dataset.controls !== 'touch') {
+      this.marker.hide();
+      this.opts.host.sendIntent({
+        type: 'BASIC_ATTACK',
+        aim: p ? { x: p.x, z: p.z } : null,
+      });
+      return;
+    }
     // While steering with keys/stick a ground click would fight the held direction.
     if (p && this.moveAxis.x === 0 && this.moveAxis.y === 0) {
       this.marker.show(p.x, p.z);
@@ -898,7 +909,12 @@ export class GameView {
       switch (ev.type) {
         case 'ATTACK': {
           const view = this.views.get(ev.sourceId);
-          view?.play('attack');
+          const combo = ev.combo ? this.opts.content.combos.get(ev.combo.comboId) : undefined;
+          const variant = ev.combo
+            ? combo?.steps[ev.combo.step]?.variants.find((v) => v.id === ev.combo?.variantId)
+            : undefined;
+          if (variant) view?.playClip(variant.clip, variant.animSpeed);
+          else view?.play('attack');
           this.sfxAt(view?.appearance.sfx.attack ?? DEFAULT_SFX.attack, ev.sourceId, 0.7);
           break;
         }
@@ -906,7 +922,8 @@ export class GameView {
           const view = this.views.get(ev.targetId);
           if (!view) break;
           // Auto-attacks: show the number on the clip's hit frame (appearance.hitDelay).
-          const hitDelay = ev.skillId ? 0 : (this.views.get(ev.sourceId)?.appearance.hitDelay ?? 0);
+          const hitDelay =
+            ev.skillId || ev.hit ? 0 : (this.views.get(ev.sourceId)?.appearance.hitDelay ?? 0);
           const delayedReplay = ev.skillId === '__delayed';
           if (hitDelay > 0) {
             this.delayed.push({
@@ -928,7 +945,22 @@ export class GameView {
               : ev.skillId && !delayedReplay
                 ? '#8fe3ff'
                 : '#ffffff';
-          this.floatText(view, ev.crit ? `${ev.amount}!` : `${ev.amount}`, color);
+          this.floatText(
+            view,
+            ev.hit === 'graze'
+              ? `Sượt ${ev.amount}`
+              : ev.hit === 'weak'
+                ? `Yếu hại ${ev.amount}`
+                : ev.crit
+                  ? `${ev.amount}!`
+                  : `${ev.amount}`,
+            color,
+          );
+          break;
+        }
+        case 'MISS': {
+          const view = this.views.get(ev.targetId);
+          if (view) this.floatText(view, 'Trượt', '#b9d2e5');
           break;
         }
         case 'HEAL': {
@@ -937,8 +969,12 @@ export class GameView {
           break;
         }
         case 'CAST_START': {
-          this.views.get(ev.sourceId)?.play('cast');
-          this.sfxAt(this.opts.content.skills.get(ev.skillId)?.sfx.cast, ev.sourceId);
+          const source = this.views.get(ev.sourceId);
+          const skill = this.opts.content.skills.get(ev.skillId);
+          source?.play('cast');
+          this.sfxAt(skill?.sfx.cast, ev.sourceId);
+          if (source && skill?.vfx.startsWith('thunder_'))
+            this.impacts.spawn(source.root.position.x, source.root.position.z, 1.05, skill.vfx);
           if (ev.telegraph && ev.point && ev.radius > 0) {
             const seconds = Math.max(0.1, (ev.endTick - tick) / TICK_RATE);
             this.telegraphs.show(`${ev.sourceId}`, ev.point.x, ev.point.z, ev.radius, seconds);
@@ -952,13 +988,15 @@ export class GameView {
           this.sfxAt(skill?.sfx.impact, ev.targetId ?? ev.sourceId);
           const src = this.views.get(ev.sourceId);
           const tgt = ev.targetId !== null ? this.views.get(ev.targetId) : undefined;
-          if (vfx === 'projectile' && src && tgt) {
+          if ((vfx === 'projectile' || vfx === 'thunder_projectile') && src && tgt) {
             this.projectiles.fire(
               src.root.position.add(new Vector3(0, src.height * 0.6, 0)),
               tgt.root.position.add(new Vector3(0, tgt.height * 0.5, 0)),
               vfx,
             );
           } else if (ev.radius > 0) this.impacts.spawn(ev.point.x, ev.point.z, ev.radius, vfx);
+          else if (skill?.targeting === 'self' && vfx.startsWith('thunder_'))
+            this.impacts.spawn(ev.point.x, ev.point.z, 1.1, vfx);
           else if (tgt) this.impacts.spawn(tgt.root.position.x, tgt.root.position.z, 0.8, vfx);
           else if (src && vfx === 'heal')
             this.impacts.spawn(src.root.position.x, src.root.position.z, 1.2, vfx);

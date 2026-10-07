@@ -25,6 +25,12 @@ const VFX_COLORS: Record<string, Color3> = {
   projectile: new Color3(0.5, 0.95, 1),
   heal: new Color3(0.4, 1, 0.5),
   level: new Color3(1, 0.85, 0.3),
+  thunder_dash: new Color3(0.23, 0.78, 1),
+  thunder_arc: new Color3(0.38, 0.68, 1),
+  thunder_field: new Color3(0.35, 0.62, 1),
+  thunder_projectile: new Color3(0.54, 0.9, 1),
+  thunder_strike: new Color3(0.74, 0.86, 1),
+  thunder_ultimate: new Color3(0.65, 0.38, 1),
 };
 
 function emissive(scene: Scene, name: string, color: Color3, alpha = 1): StandardMaterial {
@@ -130,6 +136,7 @@ export class TelegraphPool {
 
 interface Impact {
   ring: Mesh;
+  bolt: ReturnType<typeof MeshBuilder.CreateLineSystem>;
   mat: StandardMaterial;
   active: boolean;
   age: number;
@@ -150,7 +157,28 @@ export class ImpactPool {
       ring.material = mat;
       ring.isPickable = false;
       ring.setEnabled(false);
-      return { ring, mat, active: false, age: 0, radius: 1 };
+      const bolt = MeshBuilder.CreateLineSystem(
+        `impact_bolt_${i}`,
+        {
+          lines: [
+            [
+              new Vector3(-0.2, 2.1, 0),
+              new Vector3(0.15, 1.55, 0.1),
+              new Vector3(-0.15, 1, 0.05),
+              new Vector3(0.22, 0.4, 0),
+            ],
+            [
+              new Vector3(0.15, 1.55, 0.1),
+              new Vector3(0.55, 1.2, 0.2),
+              new Vector3(0.35, 0.8, 0.3),
+            ],
+          ],
+        },
+        scene,
+      );
+      bolt.isPickable = false;
+      bolt.setEnabled(false);
+      return { ring, bolt, mat, active: false, age: 0, radius: 1 };
     }, 16);
   }
 
@@ -166,6 +194,12 @@ export class ImpactPool {
     it.mat.emissiveColor = VFX_COLORS[vfx] ?? Color3.White();
     it.ring.position.set(x, 0.3, z);
     it.ring.setEnabled(true);
+    const lightning = vfx.startsWith('thunder_');
+    it.bolt.position.set(x, 0, z);
+    it.bolt.scaling.setAll(Math.min(2, Math.max(0.8, radius / 2)));
+    it.bolt.color = VFX_COLORS[vfx] ?? Color3.White();
+    it.bolt.visibility = 1;
+    it.bolt.setEnabled(lightning);
   }
 
   update(dt: number): void {
@@ -175,9 +209,11 @@ export class ImpactPool {
       const f = it.age / 0.4;
       it.ring.scaling.setAll(it.radius * (0.3 + f * 0.9));
       it.mat.alpha = Math.max(0, 1 - f);
+      it.bolt.visibility = Math.max(0, 1 - f);
       if (f >= 1) {
         it.active = false;
         it.ring.setEnabled(false);
+        it.bolt.setEnabled(false);
       }
     }
   }

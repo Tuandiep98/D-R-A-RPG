@@ -16,11 +16,17 @@ movement:
 combat:
   range: 1.4
   attackInterval: 0.9
+combos: { unarmed: combo_unarmed, armed: combo_blade }
 respawnSeconds: 5
 skills:
-  - skill_heavy_slash
-  - skill_qi_heal
-# More skills come from cultivation nodes (game-data/cultivation), not levels.
+  - skill_thunder_step
+  - skill_thunder_leap
+  - skill_thunder_arc
+  - skill_thunder_field
+  - skill_thunder_pierce
+  - skill_thunder_execution
+  - skill_thunder_judgement
+# Default combat kit for the Lôi Kiếm Tu prototype. Other skills still unlock via cultivation.
 starterItems:
   - { itemId: item_sword_iron, equip: true }
   - { itemId: item_potion_hp_small, count: 5 }

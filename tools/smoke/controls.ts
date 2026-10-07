@@ -147,14 +147,12 @@ async function phone(browser: Browser, w: number, h: number, label: string): Pro
     check(Math.hypot(d.wx - c.wx, d.wz - c.wz) < 0.05, `${label}: release stops the player`);
   }
 
-  // Attack button: auto-attack nearest hostile (or a "no target" notice).
+  // Attack button starts a combo swing even with no hostile selected.
   const btn = await page.locator('.attack-button').boundingBox();
   if (btn) {
     await page.touchscreen.tap(btn.x + btn.width / 2, btn.y + btn.height / 2);
     await page.waitForTimeout(400);
-    const target = await page.locator('.frame-target').count();
-    const notice = await page.locator('.notice').count();
-    check(target + notice > 0, `${label}: attack button targets or explains`);
+    check((await player(page))?.action === 'cast', `${label}: attack button starts a swing`);
   }
   await page.screenshot({ path: resolve(outDir, `controls_${label}.png`) });
   check(errors.length === 0, `${label}: no console errors ${errors.slice(0, 3).join(' | ')}`);

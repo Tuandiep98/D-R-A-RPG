@@ -36,6 +36,7 @@ import {
 } from '@gltf-transform/functions';
 import { MeshoptDecoder, MeshoptEncoder, MeshoptSimplifier } from 'meshoptimizer';
 import sharp from 'sharp';
+import { deriveClips } from './derive-clips';
 import { dropMeshes, graftParts, keepTrianglesByJoints } from './parts';
 import { readTolerant } from './read';
 import { type PackSource, PackSourceSchema, TEXTURE_BUDGET, TRIANGLE_BUDGET } from './source';
@@ -166,6 +167,8 @@ for (const dir of packs) {
         );
         graftAnimations(doc, animationDoc, asset.animationClips);
       }
+      for (const problem of deriveClips(doc, asset.derivedClips))
+        errors.push(`${pack.packId}/${asset.assetId}: ${problem}`);
       const tris = countTriangles(doc);
       const sourceBytes = (await io.writeBinary(doc)).byteLength;
       const animations = doc
