@@ -335,8 +335,5 @@ await mobileContext.close();
 console.log(`screenshots → ${outDir}/gun_*.png`);
 // A WebGL page can keep Chromium busy during shutdown; cap cleanup so the
 // smoke command always reports its actual assertion result to CI.
-await Promise.race([
-  browser.close(),
-  new Promise<void>((resolve) => setTimeout(resolve, 5000)),
-]);
+await Promise.race([browser.close(), new Promise<void>((resolve) => setTimeout(resolve, 5000))]);
 process.exit(failures.length > 0 ? 1 : 0);

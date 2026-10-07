@@ -7,6 +7,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 const repoRoot = fileURLToPath(new URL('../..', import.meta.url));
 
 export default defineConfig(({ mode }) => ({
+  base: mode === 'pages' ? '/D-R-A-RPG/' : '/',
   plugins: [
     react(),
     // `pnpm dev:mobile` serves HTTPS on the LAN: Safari only exposes WebGPU in a
