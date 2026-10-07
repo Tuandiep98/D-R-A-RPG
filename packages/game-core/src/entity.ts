@@ -125,6 +125,8 @@ export interface Entity {
     path: Vec2[] | null;
     pathTick: number;
     pathGoal: Vec2 | null;
+    /** Unit direction held by direct control (MOVE_DIR); overrides `goal` while set. */
+    dir: Vec2 | null;
     /** Set by the movement system each tick. */
     moved: boolean;
   };

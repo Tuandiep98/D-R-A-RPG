@@ -22,7 +22,8 @@ export default defineConfig(({ mode }) => ({
         description: 'RPG 2.5D semi-mini: Robot · Tu tiên · Võ hiệp',
         lang: 'vi',
         display: 'fullscreen',
-        orientation: 'landscape',
+        // No lock: the HUD adapts to portrait and landscape (see controls.ts).
+        orientation: 'any',
         background_color: '#1b2430',
         theme_color: '#1b2430',
         start_url: '.',

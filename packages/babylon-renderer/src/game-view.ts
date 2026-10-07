@@ -19,6 +19,7 @@ import type {
 import {
   type GameAction,
   GamepadAdapter,
+  type InputAdapter,
   InputManager,
   MouseKeyboardAdapter,
   TouchAdapter,
@@ -62,6 +63,12 @@ const DEFAULT_SFX = {
 } as const;
 /** Auto-target and interaction search radii (tech plan §25 "nearest target"). */
 const AUTO_TARGET_RANGE = 14;
+/** Direct movement: directions snap to this many headings (fewer intents). */
+const MOVE_HEADINGS = 32;
+/** Min gap between MOVE_DIR steering updates; releases go out at once. */
+const MOVE_SEND_MS = 120;
+/** Re-send a held direction this often (lost message, respawn, map change). */
+const MOVE_KEEPALIVE_MS = 1000;
 const INTERACT_SEARCH = 6;
 
 export interface UnitFrame {
@@ -246,6 +253,12 @@ export class GameView {
   private readonly unsubscribe: (() => void)[] = [];
   private readonly gamepad = new GamepadAdapter();
   private selectedId: EntityId | null = null;
+  /** Merged movement axis (x right, y forward; camera relative). */
+  private moveAxis = { x: 0, y: 0 };
+  /** Heading index last sent as MOVE_DIR, or null when released. */
+  private sentHeading: number | null = null;
+  private sentHeadingAt = 0;
+  private releaseRepeatAt = 0;
   private playerState: PlayerState | null = null;
   private lastUi = '';
   private lastUiAt = 0;
@@ -356,6 +369,12 @@ export class GameView {
 
   // ---- Commands used by the HUD (they only ever send intents) ----------
 
+  /** Plugs an extra input device in (the on-screen joystick); returns its detach. */
+  addInput(adapter: InputAdapter): () => void {
+    this.input.use(adapter);
+    return () => this.input.remove(adapter);
+  }
+
   castSkill(index: number): void {
     const slot = this.playerState?.skills[index];
     if (!slot) return;
@@ -417,6 +436,17 @@ export class GameView {
         ? { type: 'PICKUP', lootId: near.state.id }
         : { type: 'INTERACT', entityId: near.state.id },
     );
+  }
+
+  /** Basic attack button / Space: auto-attack the selected or nearest hostile. */
+  attack(): void {
+    const target = this.currentOrNearestHostile();
+    if (!target) {
+      this.opts.onNotice?.({ text: NOTICE_TEXT.no_target, tone: 'warn' });
+      return;
+    }
+    this.select(target.state.id);
+    this.opts.host.sendIntent({ type: 'ATTACK_TARGET', targetId: target.state.id });
   }
 
   targetNext(): void {
@@ -567,6 +597,7 @@ export class GameView {
     this.time += dt;
     const now = performance.now();
     this.gamepad.poll(dt);
+    this.steer(now);
     if (this.delayed.length > 0) {
       for (let i = this.delayed.length - 1; i >= 0; i--) {
         const d = this.delayed[i];
@@ -659,9 +690,64 @@ export class GameView {
 
   // ---- Input ------------------------------------------------------------
 
+  /**
+   * Turns the camera-relative movement axis into a world heading and sends
+   * MOVE_DIR when it changes (rule 10: no per-frame messages). Runs every
+   * frame because rotating the camera while walking changes the heading too.
+   */
+  private steer(now: number): void {
+    const me = this.sampled.get(this.join.playerId);
+    const alive = !!me && me.state.action !== 'dead';
+    const { x, y } = this.moveAxis;
+    let heading: number | null = null;
+    if (alive && (x !== 0 || y !== 0)) {
+      // ArcRotateCamera sits at target + r·(cos α, ·, sin α): forward is the opposite.
+      const a = this.rig.camera.alpha;
+      const fx = -Math.cos(a);
+      const fz = -Math.sin(a);
+      const wx = fz * x + fx * y; // right = (fz, -fx)
+      const wz = -fx * x + fz * y;
+      const step = (Math.PI * 2) / MOVE_HEADINGS;
+      heading = (Math.round(Math.atan2(wz, wx) / step) + MOVE_HEADINGS) % MOVE_HEADINGS;
+    }
+    if (heading === null) {
+      // Dead players can't act; the host clears direct movement on death.
+      if (this.sentHeading !== null && alive) {
+        this.opts.host.sendIntent({ type: 'MOVE_DIR', dir: null });
+        this.releaseRepeatAt = now + 250;
+      } else if (this.releaseRepeatAt > 0 && now >= this.releaseRepeatAt) {
+        // Once more: a dropped (rate-limited) release would walk forever.
+        if (alive) this.opts.host.sendIntent({ type: 'MOVE_DIR', dir: null });
+        this.releaseRepeatAt = 0;
+      }
+      this.sentHeading = null;
+      return;
+    }
+    this.releaseRepeatAt = 0;
+    const since = now - this.sentHeadingAt;
+    const changed = heading !== this.sentHeading;
+    if (
+      (changed && (this.sentHeading === null || since >= MOVE_SEND_MS)) ||
+      since >= MOVE_KEEPALIVE_MS
+    ) {
+      const angle = (heading * Math.PI * 2) / MOVE_HEADINGS;
+      const r = (v: number) => Math.round(v * 1000) / 1000;
+      this.opts.host.sendIntent({
+        type: 'MOVE_DIR',
+        dir: { x: r(Math.cos(angle)), z: r(Math.sin(angle)) },
+      });
+      if (this.sentHeading === null) this.marker.hide();
+      this.sentHeading = heading;
+      this.sentHeadingAt = now;
+    }
+  }
+
   private handleAction(action: GameAction): void {
     this.opts.onAction?.(action);
     switch (action.type) {
+      case 'MOVE':
+        this.moveAxis = { x: action.x, y: action.y };
+        break;
       case 'CAMERA_ROTATE':
         this.rig.rotate(action.dx, action.dy);
         break;
@@ -679,6 +765,9 @@ export class GameView {
         break;
       case 'TARGET_NEXT':
         this.targetNext();
+        break;
+      case 'ATTACK':
+        this.attack();
         break;
       case 'USE_POTION':
         this.usePotion();
@@ -726,7 +815,8 @@ export class GameView {
       (m) => (m.metadata as { ground?: boolean } | null)?.ground === true,
     );
     const p = groundHit?.pickedPoint;
-    if (p) {
+    // While steering with keys/stick a ground click would fight the held direction.
+    if (p && this.moveAxis.x === 0 && this.moveAxis.y === 0) {
       this.marker.show(p.x, p.z);
       this.opts.host.sendIntent({
         type: 'MOVE_TO',

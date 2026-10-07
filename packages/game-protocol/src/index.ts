@@ -4,7 +4,7 @@ import { z } from 'zod';
  * Wire contract between client and simulation host (local or server).
  * Bump PROTOCOL_VERSION on any breaking change to these schemas.
  */
-export const PROTOCOL_VERSION = 5;
+export const PROTOCOL_VERSION = 6;
 
 /** Max world coordinate magnitude accepted from a client, in metres. */
 export const MAX_COORD = 10_000;
@@ -44,6 +44,17 @@ export const EquipSlotSchema = z.enum([
 
 export const IntentSchema = z.discriminatedUnion('type', [
   z.strictObject({ type: z.literal('MOVE_TO'), target: Vec2Schema }),
+  /**
+   * Direct movement (WASD / joystick / left stick): a world-space XZ direction,
+   * length ≤ 1 (the host normalises it), or null to release. Clients send it on
+   * change only.
+   */
+  z.strictObject({
+    type: z.literal('MOVE_DIR'),
+    dir: z
+      .object({ x: z.number().finite().min(-1).max(1), z: z.number().finite().min(-1).max(1) })
+      .nullable(),
+  }),
   z.strictObject({
     type: z.literal('ATTACK_TARGET'),
     targetId: EntityIdSchema,

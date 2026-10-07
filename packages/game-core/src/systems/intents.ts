@@ -48,6 +48,7 @@ function apply(ctx: SimContext, actor: Entity, intent: Intent): boolean {
   switch (intent.type) {
     case 'MOVE_TO': {
       clearActions(actor);
+      actor.movement.dir = null;
       const target = clampToBounds(intent.target, ctx.bounds, actor.movement.radius);
       actor.movement.goal = {
         pos: ctx.nav ? ctx.nav.closest(target) : target,
@@ -55,8 +56,22 @@ function apply(ctx: SimContext, actor: Entity, intent: Intent): boolean {
       };
       return true;
     }
+    case 'MOVE_DIR': {
+      const d = intent.dir;
+      const len = d ? Math.hypot(d.x, d.z) : 0;
+      if (!d || len < 1e-3) {
+        actor.movement.dir = null;
+        return true;
+      }
+      // A fresh press cancels click-to-move, auto-attack and queued actions;
+      // steering while held (direction changes, keep-alives) does not.
+      if (!actor.movement.dir) clearActions(actor);
+      actor.movement.dir = { x: d.x / len, z: d.z / len };
+      return true;
+    }
     case 'STOP':
       clearActions(actor);
+      actor.movement.dir = null;
       return true;
     case 'ATTACK_TARGET': {
       const target = ctx.entities.get(intent.targetId);

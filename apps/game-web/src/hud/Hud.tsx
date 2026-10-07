@@ -1,8 +1,19 @@
 import type { ItemView, QualityMode, SkillSlot, UnitFrame } from '@rpg/babylon-renderer';
 import { type EquipSlot, realmLadder } from '@rpg/game-data';
-import { useEffect, useState } from 'react';
+import { type CSSProperties, useEffect, useState } from 'react';
 import { getSfxVolume, playSfx, setSfxVolume } from '../audio';
 import { sharedContent } from '../content';
+import {
+  type ControlScheme,
+  effectiveScheme,
+  fullscreenSupported,
+  isFullscreen,
+  isStandalone,
+  type JoystickSize,
+  onFullscreenChange,
+  toggleFullscreen,
+  useControls,
+} from '../controls';
 import { game } from '../game';
 import { useUiStore } from '../store';
 import { CultivationPanel } from './CultivationPanel';
@@ -10,6 +21,7 @@ import { GameIcon } from './GameIcon';
 import { NpcPanel } from './NpcPanel';
 import { ChatBox, LeaderboardPanel, QuestTracker } from './Social';
 import { SocialPanel } from './SocialPanel';
+import { arcOffset, TouchJoystick } from './TouchControls';
 
 const ONLINE = new URLSearchParams(window.location.search).has('online');
 
@@ -123,11 +135,20 @@ function PlayerPanel() {
   );
 }
 
-function SkillButton({ slot, index }: { slot: SkillSlot; index: number }) {
+function SkillButton({
+  slot,
+  index,
+  style,
+}: {
+  slot: SkillSlot;
+  index: number;
+  style?: CSSProperties;
+}) {
   const sweep = slot.remaining > 0 ? Math.min(1, slot.remaining / slot.cooldown) : 0;
   return (
     <button
       type="button"
+      style={style}
       className={`skill ${slot.usable ? '' : 'skill-disabled'}`}
       title={`${slot.name}${slot.mpCost ? ` · ${slot.mpCost} MP` : ''}\n${slot.description}`}
       onPointerDown={(e) => {
@@ -205,48 +226,119 @@ function InvitePrompt() {
   );
 }
 
-function ActionBar() {
+function PotionButton({ style }: { style?: CSSProperties }) {
+  const potion = useUiStore((s) => s.ui?.potion);
+  if (!potion) return null;
+  return (
+    <button
+      type="button"
+      style={style}
+      className={`skill potion ${potion.remaining > 0 ? 'skill-disabled' : ''}`}
+      title="Dùng thuốc (Q)"
+      onPointerDown={(e) => {
+        e.stopPropagation();
+        game()?.usePotion();
+      }}
+    >
+      <GameIcon className="skill-icon" icon={potion.icon} image={potion.iconImage} />
+      <span className="skill-count">{potion.count}</span>
+      {potion.remaining > 0 && <span className="skill-cd">{Math.ceil(potion.remaining)}</span>}
+      <span className="skill-key">Q</span>
+    </button>
+  );
+}
+
+function InteractButton() {
+  const interact = useUiStore((s) => s.ui?.interact);
+  if (!interact) return null;
+  return (
+    <button
+      type="button"
+      className="interact"
+      onPointerDown={(e) => {
+        e.stopPropagation();
+        game()?.interact();
+      }}
+    >
+      {interact.label} <kbd>F</kbd>
+    </button>
+  );
+}
+
+/** Desktop: one row centred at the bottom, hotkeys printed on the buttons. */
+function DesktopActionBar() {
   const ui = useUiStore((s) => s.ui);
   if (!ui?.player) return null;
   return (
     <div className="actionbar">
-      {ui.interact && (
-        <button
-          type="button"
-          className="interact"
-          onPointerDown={(e) => {
-            e.stopPropagation();
-            game()?.interact();
-          }}
-        >
-          {ui.interact.label} <kbd>F</kbd>
-        </button>
-      )}
+      <InteractButton />
       <div className="skills">
         {ui.skills.map((s, i) => (
           <SkillButton key={s.skillId} slot={s} index={i} />
         ))}
-        {ui.potion && (
-          <button
-            type="button"
-            className={`skill potion ${ui.potion.remaining > 0 ? 'skill-disabled' : ''}`}
-            title="Dùng thuốc (Q)"
-            onPointerDown={(e) => {
-              e.stopPropagation();
-              game()?.usePotion();
-            }}
-          >
-            <GameIcon className="skill-icon" icon={ui.potion.icon} image={ui.potion.iconImage} />
-            <span className="skill-count">{ui.potion.count}</span>
-            {ui.potion.remaining > 0 && (
-              <span className="skill-cd">{Math.ceil(ui.potion.remaining)}</span>
-            )}
-            <span className="skill-key">Q</span>
-          </button>
-        )}
+        <PotionButton />
       </div>
     </div>
   );
+}
+
+/**
+ * Touch: big attack button in the corner opposite the joystick, skills on a
+ * quarter arc around it (thumb reach), potion and target switch after them.
+ * Slot positions are static — computed per render, never per frame.
+ */
+function TouchActionBar() {
+  const ui = useUiStore((s) => s.ui);
+  const mirrored = useControls((s) => s.joystickSide === 'right');
+  if (!ui?.player) return null;
+  const at = (i: number): CSSProperties => {
+    const o = arcOffset(i, mirrored);
+    // --arc-scale (CSS) tightens the arc on narrow portrait screens.
+    return {
+      transform: `translate(calc(${o.x}px * var(--arc-scale) - 50%), calc(${o.y}px * var(--arc-scale) - 50%))`,
+    };
+  };
+  // Potion and target switch take the next free slots after the skills.
+  const next = ui.skills.length;
+  return (
+    <div className="touch-actions">
+      <div className="touch-interact">
+        <InteractButton />
+      </div>
+      <button
+        type="button"
+        className="attack-button"
+        title="Đánh mục tiêu gần nhất (Space)"
+        onPointerDown={(e) => {
+          e.stopPropagation();
+          game()?.attack();
+        }}
+      >
+        ⚔
+      </button>
+      {ui.skills.map((s, i) => (
+        <SkillButton key={s.skillId} slot={s} index={i} style={at(i)} />
+      ))}
+      <PotionButton style={at(next)} />
+      <button
+        type="button"
+        className="skill skill-small"
+        style={at(next + 1)}
+        title="Đổi mục tiêu (Tab)"
+        onPointerDown={(e) => {
+          e.stopPropagation();
+          game()?.targetNext();
+        }}
+      >
+        ◎
+      </button>
+    </div>
+  );
+}
+
+function ActionBar() {
+  const touch = useControls((s) => effectiveScheme(s) === 'touch');
+  return touch ? <TouchActionBar /> : <DesktopActionBar />;
 }
 
 function ItemTile({ item, onClick }: { item: ItemView; onClick?: () => void }) {
@@ -433,9 +525,150 @@ function SettingsPanel() {
           onPointerUp={() => playSfx('sfx_hit_metal_01')}
         />
       </div>
+      <ControlSettings />
       <button type="button" className="wide" onClick={toggleDebug}>
         Bật/tắt thông số debug
       </button>
+    </div>
+  );
+}
+
+function Segmented<T extends string>({
+  value,
+  options,
+  onChange,
+}: {
+  value: T;
+  options: readonly { id: T; label: string }[];
+  onChange: (v: T) => void;
+}) {
+  return (
+    <div className="segmented">
+      {options.map((o) => (
+        <button
+          key={o.id}
+          type="button"
+          className={value === o.id ? 'active' : ''}
+          onClick={() => onChange(o.id)}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+const SCHEMES: readonly { id: ControlScheme; label: string }[] = [
+  { id: 'auto', label: 'Tự động' },
+  { id: 'desktop', label: 'Phím + chuột' },
+  { id: 'touch', label: 'Cảm ứng' },
+];
+const SIZES: readonly { id: JoystickSize; label: string }[] = [
+  { id: 'small', label: 'Nhỏ' },
+  { id: 'medium', label: 'Vừa' },
+  { id: 'large', label: 'Lớn' },
+];
+
+function ControlSettings() {
+  const c = useControls();
+  const scheme = effectiveScheme(c);
+  const [full, setFull] = useState(isFullscreen);
+  useEffect(() => onFullscreenChange(() => setFull(isFullscreen())), []);
+  return (
+    <>
+      <div className="setting">
+        <span>
+          Điều khiển{' '}
+          {c.scheme === 'auto' && (
+            <span className="muted">({scheme === 'touch' ? 'cảm ứng' : 'phím + chuột'})</span>
+          )}
+        </span>
+        <Segmented value={c.scheme} options={SCHEMES} onChange={(v) => c.set({ scheme: v })} />
+      </div>
+      {scheme === 'touch' && (
+        <>
+          <div className="setting">
+            <span>Joystick</span>
+            <Segmented
+              value={c.joystickMode}
+              options={[
+                { id: 'floating', label: 'Nổi (theo ngón tay)' },
+                { id: 'fixed', label: 'Cố định' },
+              ]}
+              onChange={(v) => c.set({ joystickMode: v })}
+            />
+          </div>
+          <div className="setting">
+            <span>Joystick ở bên</span>
+            <Segmented
+              value={c.joystickSide}
+              options={[
+                { id: 'left', label: 'Trái' },
+                { id: 'right', label: 'Phải' },
+              ]}
+              onChange={(v) => c.set({ joystickSide: v })}
+            />
+          </div>
+          <div className="setting">
+            <span>Cỡ joystick</span>
+            <Segmented
+              value={c.joystickSize}
+              options={SIZES}
+              onChange={(v) => c.set({ joystickSize: v })}
+            />
+          </div>
+        </>
+      )}
+      <div className="setting">
+        <span>Toàn màn hình</span>
+        {fullscreenSupported() ? (
+          <>
+            <button type="button" className="wide" onClick={() => void toggleFullscreen()}>
+              {full ? 'Thoát toàn màn hình' : 'Vào toàn màn hình'}
+            </button>
+            <label className="check">
+              <input
+                type="checkbox"
+                checked={c.autoFullscreen}
+                onChange={(e) => c.set({ autoFullscreen: e.target.checked })}
+              />
+              Tự bật khi chạm màn hình (điện thoại)
+            </label>
+          </>
+        ) : (
+          <span className="muted">
+            {isStandalone()
+              ? 'Đang chạy dạng ứng dụng (đã toàn màn hình).'
+              : 'Trình duyệt không hỗ trợ — dùng “Thêm vào Màn hình chính” để chơi toàn màn hình.'}
+          </span>
+        )}
+      </div>
+    </>
+  );
+}
+
+function FullscreenButton() {
+  const [full, setFull] = useState(isFullscreen);
+  useEffect(() => onFullscreenChange(() => setFull(isFullscreen())), []);
+  if (!fullscreenSupported()) return null;
+  return (
+    <button
+      type="button"
+      title={full ? 'Thoát toàn màn hình' : 'Toàn màn hình'}
+      onClick={() => void toggleFullscreen()}
+    >
+      {full ? '🗗' : '⛶'}
+    </button>
+  );
+}
+
+function HelpLine() {
+  const touch = useControls((s) => effectiveScheme(s) === 'touch');
+  if (touch) return null;
+  return (
+    <div className="help">
+      WASD/↑↓←→: di chuyển · Click: đi/đánh/nhặt/nói chuyện · Space: đánh · 1–5: chiêu · Q: thuốc ·
+      F: tương tác · Tab: đổi mục tiêu · I: túi đồ · K: tu luyện · Enter: chat · Chuột phải: xoay
     </div>
   );
 }
@@ -514,6 +747,7 @@ function MenuButtons() {
           👥
         </button>
       )}
+      <FullscreenButton />
       <button type="button" title="Cài đặt" onClick={() => toggle('settings')}>
         ⚙
       </button>
@@ -541,6 +775,7 @@ export function Hud() {
       )}
       <Notices />
       <DebugOverlay />
+      <TouchJoystick />
       <MenuButtons />
       <ActionBar />
       {panel === 'inventory' && <InventoryPanel />}
@@ -552,10 +787,7 @@ export function Hud() {
       <NpcPanel />
       <QuestTracker />
       <ChatBox />
-      <div className="help">
-        Click: đi/đánh/nhặt/nói chuyện · 1–5: chiêu · Q: thuốc · F: tương tác · Tab: đổi mục tiêu ·
-        I: túi đồ · K: tu luyện · Enter: chat · Chuột phải: xoay
-      </div>
+      <HelpLine />
     </div>
   );
 }

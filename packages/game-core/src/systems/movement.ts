@@ -1,6 +1,6 @@
 import type { SimContext } from '../context';
 import type { Entity } from '../entity';
-import { clampToBounds, distance, yawOf } from '../math';
+import { clampToBounds, distance, type Vec2, yawOf } from '../math';
 import { TICK_DT } from '../time';
 
 const ARRIVE_EPSILON = 1e-3;
@@ -21,6 +21,13 @@ export function movementSystem(ctx: SimContext): void {
     e.movement.moved = false;
     if (e.inert || !e.life.alive) continue;
     bodies.push(e);
+
+    if (e.movement.dir) {
+      // Direct control wins over goals (chase, queued casts); casting roots.
+      e.movement.path = null;
+      if (!e.cast) steer(ctx, e, e.movement.dir);
+      continue;
+    }
 
     const goal = e.movement.goal;
     if (!goal) {
@@ -67,6 +74,20 @@ export function movementSystem(ctx: SimContext): void {
 
   separateBodies(bodies);
   for (const e of bodies) resolveStatic(ctx, e);
+}
+
+/** One tick along a held direction; on a navmesh the step slides along edges. */
+function steer(ctx: SimContext, e: Entity, dir: Vec2): void {
+  const step = e.movement.speed * TICK_DT;
+  e.yaw = yawOf(dir);
+  const next = { x: e.pos.x + dir.x * step, z: e.pos.z + dir.z * step };
+  const p = ctx.nav ? ctx.nav.closest(next) : next;
+  const moved = distance(p, e.pos);
+  // closest() can snap across a gap to another island; never teleport.
+  if (moved < 1e-4 || moved > step * 1.5) return;
+  e.pos.x = p.x;
+  e.pos.z = p.z;
+  e.movement.moved = true;
 }
 
 function updatePath(ctx: SimContext, e: Entity): void {

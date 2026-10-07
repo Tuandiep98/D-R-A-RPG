@@ -148,6 +148,7 @@ function kill(ctx: SimContext, target: Entity, killer: Entity | null): void {
   target.life.respawnAtTick = ctx.tick + target.life.respawnTicks;
   target.movement.goal = null;
   target.movement.path = null;
+  target.movement.dir = null;
   target.combat.targetId = null;
   target.cast = null;
   target.pending = null;

@@ -203,6 +203,7 @@ export class World implements SimContext {
         path: null,
         pathTick: 0,
         pathGoal: null,
+        dir: null,
         moved: false,
       },
       stats: {
@@ -418,6 +419,7 @@ export class World implements SimContext {
             path: null,
             pathTick: 0,
             pathGoal: null,
+            dir: null,
             moved: false,
           },
           stats: { ...def.stats, maxHp: def.stats.hp, maxMp: def.stats.mp },

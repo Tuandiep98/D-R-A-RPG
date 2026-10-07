@@ -33,11 +33,14 @@ pnpm assets:inspect <f>  # kích thước, tris, clip của glTF; --json để d
 pnpm assets:sheet <out> <dir>  # ảnh ghép có nhãn để chọn icon/khung bằng mắt
 pnpm smoke:gear [url]    # chụp cận nhân vật (hình nộm UAL) để căn socket/xoay vũ khí
 pnpm smoke [url]         # headless Chrome smoke test against a running dev/preview server
+pnpm smoke:controls [url] # WASD desktop + joystick điện thoại dọc/ngang (touch thật qua CDP)
 pnpm smoke:login [url]   # đăng ký → tạo nhân vật → vào game → bang hội → chat (cần dev:stack)
 pnpm db:generate         # drizzle-kit migration sau khi sửa packages/persistence/src/schema.ts
 ```
 
 URL flags của web client: `?webgl`, `?noworker`, `?map=<id>`, `?quality=low|medium|high`, `?debug` (bật `window.__rpg` ở bản build), `?player=<appearanceId>` (vẽ player bằng appearance khác, chỉ phía client — vd `char_kk_knight`), `?mannequin` (hình nộm KayKit Mannequin_Medium), `?online` (đăng nhập qua API), `?online&dev=<tên>` (đăng nhập dev thẳng vào game server, cần `ALLOW_DEV_LOGIN=true`).
+
+Điều khiển (D-030): setting "Điều khiển" Tự động/Phím + chuột/Cảm ứng → `<html data-controls data-hand>` (CSS bố trí HUD theo đó, không khoá hướng màn hình). Di chuyển trực tiếp qua intent `MOVE_DIR` (WASD/mũi tên, joystick ảo, cần trái gamepad); click-to-move vẫn dùng được. Phím: Esc dừng, Space đánh, F tương tác.
 
 Lưu ý môi trường: hook `rtk` có thể làm sai output của biome/grep — dùng `rtk proxy npx biome check .` và kiểm tra exit code.
 

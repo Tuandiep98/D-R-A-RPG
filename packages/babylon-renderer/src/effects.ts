@@ -159,6 +159,11 @@ export class MoveMarker {
     this.ring.setEnabled(true);
   }
 
+  hide(): void {
+    this.age = Number.POSITIVE_INFINITY;
+    this.ring.setEnabled(false);
+  }
+
   update(dt: number): void {
     if (this.age > 0.6) return;
     this.age += dt;

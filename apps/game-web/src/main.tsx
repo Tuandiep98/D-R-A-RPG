@@ -1,6 +1,7 @@
 import { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { installUiSounds } from './audio';
+import { installControls } from './controls';
 import { GameCanvas } from './GameCanvas';
 import { Hud } from './hud/Hud';
 import { Login, type OnlineChoice } from './Login';
@@ -9,6 +10,7 @@ import './styles.css';
 
 void loadMedia();
 installUiSounds();
+installControls();
 
 const params = new URLSearchParams(window.location.search);
 /** `?online` → API login; `?online&dev=<name>` → dev login straight to the game server. */

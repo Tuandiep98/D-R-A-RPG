@@ -191,3 +191,14 @@ Mỗi quyết định: ngày, bối cảnh, quyết định, hệ quả. Khi mâ
 - **Ngày:** 2026-10-07
 - **Quyết định:** 6 quái đổi sang KayKit, giữ nguyên id appearance/monster nên data, map, quest không đổi: Sói Rừng → Skeleton Minion; Hồ Ly Lửa → Skeleton Rogue tint lửa; Cơ Giáp Trinh Sát → Skeleton Mage tint lam (bắn phép); Linh Lộc Tinh Anh → Skeleton Warrior tint vàng; Thạch Khôi Tiền Vệ → Mannequin_Large tint đá; Guardian X-04 (boss) → Mannequin_Large tint đỏ cầm búa. Appearance có thêm `defaultGear` để quái cầm vũ khí riêng. Quaternius Animated Animals / Animated Mech / Ultimate Monsters / Space Kit → `prototype_only`.
 - **Hệ quả:** tên/lore quái (sói, hồ ly, linh lộc, cơ giáp) chưa khớp hình bộ xương — cần đổi tên/mô tả hoặc thêm model thú/cơ giới cùng style sau.
+
+## D-030 — Điều khiển trực tiếp (WASD / joystick) và HUD thích ứng
+- **Ngày:** 2026-10-07
+- **Quyết định:**
+  - Thêm intent `MOVE_DIR { dir: {x,z} | null }` (PROTOCOL_VERSION 6): hướng trong không gian world, host chuẩn hoá. Đang giữ hướng thì movement bỏ qua `goal` (đuổi mục tiêu, cast đang chờ); cast vẫn làm nhân vật đứng yên. Lần nhấn mới huỷ click-to-move/auto-attack; đổi hướng trong lúc giữ thì không. Chết thì xoá hướng.
+  - Client gửi khi hướng đổi (lượng tử 32 hướng, ≥120 ms/lần), giữ phím thì gửi lại mỗi 1 s, nhả thì gửi `null` hai lần (chống mất tin do rate limit). Không gửi mỗi frame (quy tắc 10).
+  - Nguồn trục: bàn phím WASD/mũi tên, `VirtualJoystick` (DOM thuần, chế độ nổi/cố định, trái/phải, 3 cỡ), cần trái gamepad; `InputManager` gộp và kẹp độ dài 1. Phím S không còn là STOP (Esc = dừng, Space = đánh).
+  - Setting "Điều khiển": Tự động / Phím + chuột / Cảm ứng. Tự động = thiết bị dùng gần nhất (pointerType, phím di chuyển), phản ánh qua `<html data-controls data-hand>`; CSS bố trí HUD theo thuộc tính đó và media query hướng màn hình/chiều cao. Không khoá hướng (manifest `orientation: any`).
+  - Cảm ứng: nút Đánh lớn ở góc đối diện joystick, chiêu xếp vòng cung quanh nó. Toàn màn hình qua Fullscreen API (nút ⛶, tuỳ chọn tự bật khi chạm); iPhone Safari không hỗ trợ → hướng dẫn "Thêm vào Màn hình chính" (PWA `display: fullscreen`).
+- **Lý do:** mobile cần thao tác bằng ngón cái; click-to-move vẫn giữ cho chuột. Sim authoritative không đổi: client chỉ gửi hướng.
+- **Kiểm tra:** `pnpm smoke:controls` (desktop WASD, điện thoại dọc/ngang bằng touch thật qua CDP).

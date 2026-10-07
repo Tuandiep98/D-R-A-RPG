@@ -285,7 +285,7 @@ kbd {
   left: 50%;
   transform: translate(-50%, -50%);
   width: min(560px, calc(100vw - 24px));
-  max-height: calc(100vh - 24px);
+  max-height: calc(100dvh - 24px);
   overflow: auto;
   padding: 12px;
   background: rgba(14, 19, 27, 0.95);
@@ -512,52 +512,9 @@ kbd {
   text-overflow: ellipsis;
 }
 
-/* Touch devices: bigger skill buttons bottom-right, no keyboard help. */
-@media (pointer: coarse) {
-  .help {
-    display: none;
-  }
-
-  .actionbar {
-    left: auto;
-    right: max(12px, env(safe-area-inset-right));
-    transform: none;
-    bottom: max(12px, env(safe-area-inset-bottom));
-    justify-items: end;
-  }
-
-  .skills {
-    display: grid;
-    grid-template-columns: repeat(3, 60px);
-    gap: 8px;
-  }
-
-  .skill {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-  }
-
-  .skill-cd {
-    border-radius: 50%;
-  }
-
-  .skill-key {
-    display: none;
-  }
-}
-
 @media (max-height: 480px) {
   .frame-boss {
     top: calc(max(10px, env(safe-area-inset-top)) + 64px);
-  }
-
-  .menu {
-    top: auto;
-    bottom: max(12px, env(safe-area-inset-bottom));
-    right: auto;
-    left: max(10px, env(safe-area-inset-left));
-    display: flex;
   }
 }
 
@@ -773,14 +730,23 @@ kbd {
   justify-content: space-between;
 }
 
-@media (pointer: coarse) {
-  .chat {
-    width: min(260px, 45vw);
-  }
+/* Touch: the joystick owns the bottom corner, so chat sits under the party/player frames. */
+:root[data-controls="touch"] .chat {
+  bottom: auto;
+  top: calc(max(10px, env(safe-area-inset-top)) + 84px);
+  width: min(260px, 42vw);
+}
 
-  .quest-tracker {
-    display: none;
-  }
+:root[data-controls="touch"][data-hand="right"] .chat {
+  left: max(10px, env(safe-area-inset-left));
+}
+
+:root[data-controls="touch"] .chat-list {
+  max-height: 72px;
+}
+
+:root[data-controls="touch"] .quest-tracker {
+  display: none;
 }
 
 /* ---- Party ----------------------------------------------------------------- */
@@ -983,4 +949,282 @@ kbd {
 .ui-framed .panel-small {
   border-width: 12px;
   border-image-width: 12px;
+}
+
+/* ---- Control schemes ------------------------------------------------------
+ * <html data-controls="desktop|touch" data-hand="left|right"> is set by
+ * controls.ts (setting "Điều khiển", auto = last device used). Desktop keeps
+ * the centred hotkey bar; touch gets a joystick + thumb-arc action cluster.
+ * Orientation is never locked: portrait/landscape rules below only re-flow.
+ */
+
+:root {
+  --safe-l: max(12px, env(safe-area-inset-left));
+  --safe-r: max(12px, env(safe-area-inset-right));
+  --safe-b: max(12px, env(safe-area-inset-bottom));
+  /* Centre of the attack button, measured from the bottom corner. */
+  --attack-size: 76px;
+  --attack-inset: 58px;
+  --arc-scale: 1;
+}
+
+/* Joystick: zone covers the lower half of one side; base/knob drawn here. */
+.joystick-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.joystick-zone {
+  position: absolute;
+  bottom: 0;
+  width: 46%;
+  height: 58%;
+  pointer-events: auto;
+  touch-action: none;
+  --joystick-radius: 56px;
+}
+
+.joystick-left {
+  left: 0;
+}
+
+.joystick-right {
+  right: 0;
+}
+
+.joystick-base {
+  position: absolute;
+  /* Rest spot (fixed mode, and the faded hint for floating mode). */
+  left: calc(var(--safe-l) + var(--joystick-radius) + 28px);
+  top: calc(100% - var(--safe-b) - var(--joystick-radius) - 36px);
+  width: calc(var(--joystick-radius) * 2);
+  height: calc(var(--joystick-radius) * 2);
+  margin: calc(var(--joystick-radius) * -1) 0 0 calc(var(--joystick-radius) * -1);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.06) 40%, rgba(255, 255, 255, 0.14));
+  border: 2px solid rgba(255, 255, 255, 0.28);
+  display: grid;
+  place-items: center;
+  opacity: 0.55;
+  transition: opacity 0.15s;
+  pointer-events: none;
+}
+
+.joystick-right .joystick-base {
+  left: calc(100% - var(--safe-r) - var(--joystick-radius) - 28px);
+}
+
+.joystick-floating .joystick-base {
+  opacity: 0.25;
+}
+
+.joystick-active .joystick-base {
+  opacity: 1;
+  transition: none;
+}
+
+.joystick-knob {
+  width: calc(var(--joystick-radius) * 0.9);
+  height: calc(var(--joystick-radius) * 0.9);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 35% 30%,
+    rgba(255, 255, 255, 0.85),
+    rgba(190, 205, 225, 0.6)
+  );
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+  will-change: transform;
+}
+
+/* Touch action cluster: anchored at the attack button's centre. */
+.touch-actions {
+  position: absolute;
+  right: calc(var(--safe-r) + var(--attack-inset));
+  bottom: calc(var(--safe-b) + var(--attack-inset));
+  width: 0;
+  height: 0;
+}
+
+:root[data-hand="right"] .touch-actions {
+  right: auto;
+  left: calc(var(--safe-l) + var(--attack-inset));
+}
+
+.touch-actions > .skill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+}
+
+.touch-actions > .skill .skill-cd,
+.touch-actions > .skill > .game-icon.skill-icon {
+  border-radius: 50%;
+}
+
+.touch-actions > .skill-small {
+  width: 46px;
+  height: 46px;
+  font-size: 20px;
+}
+
+.touch-actions .skill-key {
+  display: none;
+}
+
+.touch-actions .potion {
+  margin: 0;
+  width: 48px;
+  height: 48px;
+}
+
+.attack-button {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--attack-size);
+  height: var(--attack-size);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 2px solid rgba(255, 207, 90, 0.7);
+  background: radial-gradient(circle at 35% 30%, #6b4a2a, #2a1a0e);
+  font-size: 32px;
+  touch-action: none;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.attack-button:active {
+  transform: translate(-50%, -50%) scale(0.93);
+}
+
+/* Interact pill floats above the cluster. */
+.touch-interact {
+  position: absolute;
+  bottom: 196px;
+  right: -40px;
+  white-space: nowrap;
+}
+
+:root[data-hand="right"] .touch-interact {
+  right: auto;
+  left: -40px;
+}
+
+.touch-interact .interact {
+  padding: 10px 18px;
+  font-size: 15px;
+}
+
+.touch-interact kbd {
+  display: none;
+}
+
+/* Bigger tap targets for the side menu on touch. */
+:root[data-controls="touch"] .menu button {
+  width: 44px;
+  height: 44px;
+}
+
+:root[data-controls="touch"][data-hand="right"] .menu {
+  right: auto;
+  left: var(--safe-l);
+  top: calc(max(10px, env(safe-area-inset-top)) + 170px);
+}
+
+/* Short landscape phones: menu becomes a row at the top, cluster shrinks. */
+@media (max-height: 480px) {
+  :root {
+    --attack-size: 66px;
+    --attack-inset: 48px;
+  }
+
+  .joystick-zone {
+    height: 70%;
+  }
+
+  .menu {
+    top: max(8px, env(safe-area-inset-top));
+    bottom: auto;
+    right: var(--safe-r);
+    left: auto;
+    display: flex;
+  }
+
+  :root[data-controls="touch"][data-hand="right"] .menu {
+    top: max(8px, env(safe-area-inset-top));
+    left: auto;
+    right: var(--safe-r);
+  }
+
+  .touch-interact {
+    bottom: 168px;
+  }
+}
+
+/* Portrait phones: frames stack on the left, target frame moves under the menu row. */
+@media (orientation: portrait) and (max-width: 600px) {
+  .frame-player {
+    width: min(230px, 58vw);
+  }
+
+  .frame-target {
+    left: var(--safe-l);
+    transform: none;
+    top: calc(max(10px, env(safe-area-inset-top)) + 106px);
+    width: min(230px, 58vw);
+  }
+
+  .menu {
+    top: max(10px, env(safe-area-inset-top));
+    right: var(--safe-r);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    max-width: 38vw;
+  }
+
+  :root[data-controls="touch"][data-hand="right"] .menu {
+    top: max(10px, env(safe-area-inset-top));
+    left: auto;
+    right: var(--safe-r);
+  }
+
+  .joystick-zone {
+    width: 50%;
+    height: 45%;
+  }
+
+  :root[data-controls="touch"] .chat {
+    top: calc(max(10px, env(safe-area-inset-top)) + 186px);
+  }
+
+  .notices {
+    top: 30%;
+  }
+
+  :root {
+    --arc-scale: 0.85;
+  }
+}
+
+/* Dev stats overlay: out of the menu's way on touch layouts. */
+:root[data-controls="touch"] .debug {
+  top: auto;
+  right: auto;
+  bottom: 46%;
+  left: var(--safe-l);
+  font-size: 10px;
+  opacity: 0.75;
+}
+
+.check {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 12px;
+  pointer-events: auto;
 }

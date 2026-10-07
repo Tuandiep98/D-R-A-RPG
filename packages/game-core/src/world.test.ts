@@ -80,6 +80,38 @@ describe('World', () => {
     expect(get(world, id).action).toBe('idle');
   });
 
+  it('walks along a held MOVE_DIR until released', () => {
+    const world = new World({ content: makeContent(), mapId: 'test_map' });
+    const id = world.spawnPlayer('hero');
+    // Not unit length: the host normalises it.
+    world.enqueueIntent(id, { type: 'MOVE_DIR', dir: { x: 0, z: -0.5 } });
+    run(world, TICK_RATE);
+    expect(get(world, id).pos.z).toBeCloseTo(-5, 1);
+    expect(get(world, id).action).toBe('move');
+    world.enqueueIntent(id, { type: 'MOVE_DIR', dir: null });
+    run(world, 2);
+    const z = get(world, id).pos.z;
+    run(world, TICK_RATE);
+    expect(get(world, id).pos.z).toBe(z);
+    expect(get(world, id).action).toBe('idle');
+  });
+
+  it('a fresh MOVE_DIR cancels auto-attack; steering keeps the new state', () => {
+    const world = new World({ content: makeContent(), mapId: 'test_map' });
+    const id = world.spawnPlayer('hero');
+    const mob = monsterOf(world);
+    world.enqueueIntent(id, { type: 'ATTACK_TARGET', targetId: mob.id });
+    world.step();
+    world.enqueueIntent(id, { type: 'MOVE_DIR', dir: { x: 1, z: 0 } });
+    world.step();
+    expect(get(world, id).combat.targetId).toBeNull();
+    world.enqueueIntent(id, { type: 'ATTACK_TARGET', targetId: mob.id });
+    world.enqueueIntent(id, { type: 'MOVE_DIR', dir: { x: 0, z: 1 } });
+    world.step();
+    expect(get(world, id).combat.targetId).toBe(mob.id);
+    expect(get(world, id).movement.dir).toEqual({ x: 0, z: 1 });
+  });
+
   it('clamps MOVE_TO inside map bounds', () => {
     const world = new World({ content: makeContent(), mapId: 'test_map' });
     const id = world.spawnPlayer('hero');

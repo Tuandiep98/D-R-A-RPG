@@ -69,6 +69,7 @@ export function makeInert(
       path: null,
       pathTick: 0,
       pathGoal: null,
+      dir: null,
       moved: false,
     },
     stats: {
