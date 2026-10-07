@@ -92,7 +92,7 @@
     },
     {
       "id": "icon_item_fishbone",
-      "file": "originals/Icons/FishBone.png",
+      "file": "originals/Icons/Fishbone.png",
       "size": 128
     },
     {
@@ -182,7 +182,7 @@
     },
     {
       "id": "icon_item_sword_big",
-      "file": "originals/Icons/Sword_big.png",
+      "file": "originals/Icons/Sword_Big.png",
       "size": 128
     },
     {
@@ -192,7 +192,7 @@
     },
     {
       "id": "icon_item_sword_big_golden",
-      "file": "originals/Icons/Sword_big_Golden.png",
+      "file": "originals/Icons/Sword_Big_Golden.png",
       "size": 128
     },
     {
@@ -202,7 +202,7 @@
     },
     {
       "id": "icon_item_axe_small",
-      "file": "originals/Icons/Axe_small.png",
+      "file": "originals/Icons/Axe_Small.png",
       "size": 128
     },
     {
