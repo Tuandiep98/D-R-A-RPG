@@ -27,6 +27,7 @@ import {
 import { useUiStore } from '../store';
 import { CultivationPanel } from './CultivationPanel';
 import { GameIcon } from './GameIcon';
+import { HudGlyph, skillGlyph } from './HudGlyph';
 import { NpcPanel } from './NpcPanel';
 import { ChatBox, LeaderboardPanel, QuestTracker } from './Social';
 import { SocialPanel } from './SocialPanel';
@@ -54,6 +55,10 @@ const SLOT_LABEL: Record<EquipSlot, string> = {
 };
 
 const realmNameOf = (rank: number): string => realmLadder(sharedContent())[rank]?.name ?? '';
+const elementClass = (skillId: string): string => {
+  const element = /^skill_(wood|fire|earth|metal|water|thunder)_/.exec(skillId)?.[1];
+  return element ? `skill-element-${element}` : '';
+};
 
 function Bar({
   value,
@@ -133,11 +138,11 @@ function PlayerPanel() {
         <div className="backlash small">Phản phệ {Math.ceil(p.cultivation.backlash)}s</div>
       )}
       <div className="frame-meta">
-        <span>🪙 {p.gold}</span>
+        <span>Vàng {p.gold}</span>
         <span className="zone">
           {ui.mapName}
-          {ui.zoneName ? ` · ${ui.zoneName}` : ''}
-          {p.inSafeZone ? ' 🛡' : ''}
+          {ui.zoneName && ui.zoneName !== ui.mapName ? ` · ${ui.zoneName}` : ''}
+          {p.inSafeZone ? ' · An toàn' : ''}
         </span>
       </div>
     </div>
@@ -157,14 +162,14 @@ function SkillButton({
   return (
     <button
       type="button"
-      className={`skill ${className} ${slot.skillId.startsWith('skill_thunder_') ? 'skill-thunder' : ''} ${slot.skillId === 'skill_thunder_judgement' ? 'skill-ultimate' : ''} ${slot.usable ? '' : 'skill-disabled'}`}
+      className={`skill ${className} ${elementClass(slot.skillId)} ${slot.skillId === 'skill_thunder_judgement' ? 'skill-ultimate' : ''} ${slot.usable ? '' : 'skill-disabled'}`}
       title={`${slot.name}${slot.mpCost ? ` · ${slot.mpCost} MP` : ''}\n${slot.description}`}
       onPointerDown={(e) => {
         e.stopPropagation();
         game()?.castSkillById(slot.skillId);
       }}
     >
-      <GameIcon className="skill-icon" icon={slot.icon} image={slot.iconImage} />
+      <SkillVisual slot={slot} className="skill-icon" />
       {sweep > 0 && (
         <span
           className="skill-cd"
@@ -177,6 +182,15 @@ function SkillButton({
       )}
       {hotkey && <span className="skill-key">{hotkey}</span>}
     </button>
+  );
+}
+
+function SkillVisual({ slot, className = '' }: { slot: SkillSlot; className?: string }) {
+  const glyph = skillGlyph(slot.skillId);
+  return glyph ? (
+    <HudGlyph name={glyph} className={className} />
+  ) : (
+    <GameIcon className={className} icon={slot.icon} image={slot.iconImage} />
   );
 }
 
@@ -283,6 +297,7 @@ function PotionButton({ className = '' }: { className?: string }) {
 
 function InteractButton() {
   const interact = useUiStore((s) => s.ui?.interact);
+  const touch = useControls((s) => effectiveScheme(s) === 'touch');
   if (!interact) return null;
   return (
     <button
@@ -293,7 +308,7 @@ function InteractButton() {
         game()?.interact();
       }}
     >
-      {interact.label} <kbd>F</kbd>
+      {touch ? interact.label.split(':')[0] : interact.label} <kbd>F</kbd>
     </button>
   );
 }
@@ -422,7 +437,7 @@ function TouchActionBar({ slots }: { slots: (SkillSlot | null)[] }) {
         onPointerCancel={() => game()?.attackUp()}
         onLostPointerCapture={() => game()?.attackUp()}
       >
-        {gun ? '🎯' : '⚔'}
+        <HudGlyph name={gun ? 'gun' : 'blade'} />
       </button>
       {gun && canReload && (
         <button
@@ -434,7 +449,7 @@ function TouchActionBar({ slots }: { slots: (SkillSlot | null)[] }) {
             game()?.reload();
           }}
         >
-          ⟳
+          <HudGlyph name="reload" />
         </button>
       )}
       {weapons > 1 && (
@@ -447,7 +462,7 @@ function TouchActionBar({ slots }: { slots: (SkillSlot | null)[] }) {
             game()?.swapWeapon();
           }}
         >
-          ⇄
+          <HudGlyph name="swap" />
         </button>
       )}
       {TOUCH_POSITIONS.map((position, i) =>
@@ -505,7 +520,7 @@ function SkillPanel() {
         <strong>Kỹ năng</strong>
         <span className="skill-panel-actions">
           <button type="button" title="Đổi mục tiêu" onClick={() => game()?.targetNext()}>
-            ◎
+            <HudGlyph name="target" />
           </button>
           <button type="button" onClick={close}>
             ✕
@@ -527,7 +542,7 @@ function SkillPanel() {
               aria-pressed={position === id}
             >
               <span>{i + 1}</span>
-              <span>{desktopSlots[i]?.icon ?? '+'}</span>
+              <span>{desktopSlots[i] ? <SkillVisual slot={desktopSlots[i]} /> : '+'}</span>
               <small>{desktopSlots[i]?.name ?? 'Trống'}</small>
             </button>
           ))}
@@ -545,7 +560,7 @@ function SkillPanel() {
               aria-pressed={position === id}
             >
               <span>{i === 3 ? '↯' : i + 1}</span>
-              <span>{touchSlots[i]?.icon ?? '+'}</span>
+              <span>{touchSlots[i] ? <SkillVisual slot={touchSlots[i]} /> : '+'}</span>
               <small>{touchSlots[i]?.name ?? 'Trống'}</small>
             </button>
           ))}
@@ -562,7 +577,7 @@ function SkillPanel() {
       <div className="skill-list">
         {eligible.map((slot) => (
           <div key={slot.skillId} className="skill-list-item">
-            <GameIcon icon={slot.icon} image={slot.iconImage} />
+            <SkillVisual slot={slot} />
             <span className="skill-list-copy">
               <strong>{slot.name}</strong>
               <small>{slot.description}</small>
@@ -583,13 +598,22 @@ function SkillPanel() {
   );
 }
 
-function ItemTile({ item, onClick }: { item: ItemView; onClick?: () => void }) {
+function ItemTile({
+  item,
+  onClick,
+  selected = false,
+}: {
+  item: ItemView;
+  onClick?: () => void;
+  selected?: boolean;
+}) {
   return (
     <button
       type="button"
-      className={`item ${item.equipped ? 'item-equipped' : ''}`}
+      className={`item ${item.equipped ? 'item-equipped' : ''} ${selected ? 'item-selected' : ''}`}
       style={{ borderColor: item.rarityColor }}
       onClick={onClick}
+      aria-pressed={selected}
       title={`${item.name}\n${item.bonus}${item.realmName ? `\nYêu cầu ${item.realmName}` : ''}${item.description ? `\n${item.description}` : ''}`}
     >
       <GameIcon icon={item.icon} image={item.iconImage} />
@@ -603,9 +627,18 @@ function InventoryPanel() {
   const ui = useUiStore((s) => s.ui);
   const close = useUiStore((s) => s.closePanel);
   const [hover, setHover] = useState<ItemView | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const touch = useControls((s) => effectiveScheme(s) === 'touch');
   if (!ui) return null;
   const slots = Object.keys(SLOT_LABEL) as EquipSlot[];
   const empty = Math.max(0, ui.inventoryCapacity - ui.inventory.length);
+  // A small preview of empty cells keeps the selected item within reach on phones.
+  const visibleEmpty = touch ? Math.min(empty, Math.max(0, 10 - ui.inventory.length)) : empty;
+  const selected =
+    ui.inventory.find((item) => item.instanceId === selectedId) ??
+    Object.values(ui.equipment).find((item) => item?.instanceId === selectedId) ??
+    null;
+  const detail = touch ? selected : (hover ?? selected);
   const act = (item: ItemView) => {
     if (item.kind === 'equipment') {
       if (item.equipped && item.slot) game()?.unequip(item.slot);
@@ -613,52 +646,87 @@ function InventoryPanel() {
     } else if (item.kind === 'consumable') game()?.useItem(item.instanceId);
   };
   return (
-    <div className="panel" onPointerDown={(e) => e.stopPropagation()}>
+    <div className="panel inventory-panel" onPointerDown={(e) => e.stopPropagation()}>
       <div className="panel-head">
-        <strong>Túi đồ & Trang bị</strong>
-        <button type="button" onClick={close}>
+        <strong>Hành trang</strong>
+        <button type="button" aria-label="Đóng hành trang" onClick={close}>
           ✕
         </button>
       </div>
-      <div className="equip">
-        {slots.map((slot) => {
-          const item = ui.equipment[slot];
-          return (
-            <div key={slot} className="equip-slot">
-              <span className="equip-label">{SLOT_LABEL[slot]}</span>
-              {item ? (
-                <ItemTile item={item} onClick={() => game()?.unequip(slot)} />
-              ) : (
-                <span className="item item-empty" />
-              )}
-            </div>
-          );
-        })}
-      </div>
-      <div className="grid">
-        {ui.inventory.map((item) => (
-          <span
-            key={item.instanceId}
-            onPointerEnter={() => setHover(item)}
-            onPointerLeave={() => setHover(null)}
-          >
-            <ItemTile item={item} onClick={() => act(item)} />
-          </span>
-        ))}
-        {Array.from({ length: empty }, (_, i) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: empty placeholder cells
-          <span key={`e${i}`} className="item item-empty" />
-        ))}
+      <div className="inventory-layout">
+        <section className="inventory-equipped" aria-label="Trang bị">
+          <h3>Trang bị</h3>
+          <div className="equip">
+            {slots.map((slot) => {
+              const item = ui.equipment[slot];
+              return (
+                <div key={slot} className="equip-slot">
+                  <span className="equip-label">{SLOT_LABEL[slot]}</span>
+                  {item ? (
+                    <ItemTile
+                      item={item}
+                      selected={selectedId === item.instanceId}
+                      onClick={() =>
+                        touch ? setSelectedId(item.instanceId) : game()?.unequip(slot)
+                      }
+                    />
+                  ) : (
+                    <span className="item item-empty" />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+        <section className="inventory-bag" aria-label="Túi đồ">
+          <div className="inventory-bag-head">
+            <h3>Túi đồ</h3>
+            <span>
+              {ui.inventory.length} / {ui.inventoryCapacity}
+            </span>
+          </div>
+          <div className="grid">
+            {ui.inventory.map((item) => (
+              <span
+                key={item.instanceId}
+                onPointerEnter={() => setHover(item)}
+                onPointerLeave={() => setHover(null)}
+              >
+                <ItemTile
+                  item={item}
+                  selected={selectedId === item.instanceId}
+                  onClick={() => (touch ? setSelectedId(item.instanceId) : act(item))}
+                />
+              </span>
+            ))}
+            {Array.from({ length: visibleEmpty }, (_, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: empty placeholder cells
+              <span key={`e${i}`} className="item item-empty" />
+            ))}
+          </div>
+        </section>
       </div>
       <div className="item-detail">
-        {hover ? (
+        {detail ? (
           <>
-            <strong style={{ color: hover.rarityColor }}>{hover.name}</strong>
-            <span>{hover.bonus}</span>
-            {hover.realmName && <span>Yêu cầu cảnh giới {hover.realmName}</span>}
+            <strong style={{ color: detail.rarityColor }}>{detail.name}</strong>
+            <span>{detail.bonus}</span>
+            {detail.realmName && <span>Yêu cầu cảnh giới {detail.realmName}</span>}
+            {detail.description && <span>{detail.description}</span>}
+            {touch && (detail.kind === 'equipment' || detail.kind === 'consumable') && (
+              <button type="button" className="inventory-use" onClick={() => act(detail)}>
+                {detail.kind === 'consumable'
+                  ? 'Sử dụng'
+                  : detail.equipped
+                    ? 'Tháo ra'
+                    : 'Trang bị'}
+              </button>
+            )}
           </>
         ) : (
-          <span className="muted">Chạm/nhấn vào trang bị để mặc hoặc tháo, vào thuốc để dùng.</span>
+          <span className="muted">
+            {touch ? 'Chạm vào một món để xem và sử dụng.' : 'Chọn vật phẩm để xem thông tin.'}
+          </span>
         )}
       </div>
     </div>
@@ -727,51 +795,60 @@ function SettingsPanel() {
     { id: 'high', label: 'Cao' },
   ];
   return (
-    <div className="panel panel-small" onPointerDown={(e) => e.stopPropagation()}>
+    <div className="panel settings-panel" onPointerDown={(e) => e.stopPropagation()}>
       <div className="panel-head">
         <strong>Cài đặt</strong>
-        <button type="button" onClick={close}>
+        <button type="button" aria-label="Đóng cài đặt" onClick={close}>
           ✕
         </button>
       </div>
-      <div className="setting">
-        <span>Chất lượng đồ hoạ</span>
-        <div className="segmented">
-          {options.map((o) => (
-            <button
-              key={o.id}
-              type="button"
-              className={quality === o.id ? 'active' : ''}
-              onClick={() => {
-                setQuality(o.id);
-                game()?.setQuality(o.id);
-              }}
-            >
-              {o.label}
-            </button>
-          ))}
+      <section className="settings-group">
+        <h3>Hình ảnh</h3>
+        <div className="setting">
+          <span>Chất lượng đồ hoạ</span>
+          <div className="segmented">
+            {options.map((o) => (
+              <button
+                key={o.id}
+                type="button"
+                className={quality === o.id ? 'active' : ''}
+                onClick={() => {
+                  setQuality(o.id);
+                  game()?.setQuality(o.id);
+                }}
+              >
+                {o.label}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
-      <div className="setting">
-        <span>Âm lượng hiệu ứng</span>
-        <input
-          type="range"
-          min={0}
-          max={1}
-          step={0.05}
-          value={sfxVolume}
-          onChange={(e) => {
-            setSfxVolumeState(Number(e.target.value));
-            setSfxVolume(Number(e.target.value));
-          }}
-          onPointerUp={() => playSfx('sfx_hit_metal_01')}
-        />
-      </div>
+      </section>
+      <section className="settings-group">
+        <h3>Âm thanh</h3>
+        <div className="setting">
+          <span>Âm lượng hiệu ứng · {Math.round(sfxVolume * 100)}%</span>
+          <input
+            type="range"
+            min={0}
+            max={1}
+            step={0.05}
+            value={sfxVolume}
+            onChange={(e) => {
+              setSfxVolumeState(Number(e.target.value));
+              setSfxVolume(Number(e.target.value));
+            }}
+            onPointerUp={() => playSfx('sfx_hit_metal_01')}
+          />
+        </div>
+      </section>
       <ControlSettings />
-      <TestCharacters />
-      <button type="button" className="wide" onClick={toggleDebug}>
-        Bật/tắt thông số debug
-      </button>
+      <section className="settings-group">
+        <h3>Chơi thử</h3>
+        <TestCharacters />
+        <button type="button" className="wide" onClick={toggleDebug}>
+          Bật/tắt thông số debug
+        </button>
+      </section>
     </div>
   );
 }
@@ -854,7 +931,8 @@ function ControlSettings() {
   const [full, setFull] = useState(isFullscreen);
   useEffect(() => onFullscreenChange(() => setFull(isFullscreen())), []);
   return (
-    <>
+    <section className="settings-group">
+      <h3>Điều khiển</h3>
       <div className="setting">
         <span>
           Điều khiển{' '}
@@ -922,7 +1000,7 @@ function ControlSettings() {
           </span>
         )}
       </div>
-    </>
+    </section>
   );
 }
 
@@ -946,7 +1024,7 @@ function FullscreenButton() {
         title={full ? 'Thoát toàn màn hình' : 'Toàn màn hình'}
         onClick={() => (supported ? void toggleFullscreen() : setHint((h) => !h))}
       >
-        {full ? '🗗' : '⛶'}
+        <HudGlyph name="fullscreen" />
       </button>
       {hint &&
         // Outside the menu so its button layout (a row of icons on phones) does not squeeze it.
@@ -967,12 +1045,20 @@ function FullscreenButton() {
 
 function HelpLine() {
   const touch = useControls((s) => effectiveScheme(s) === 'touch');
+  const [open, setOpen] = useState(false);
   if (touch) return null;
   return (
-    <div className="help">
-      WASD/↑↓←→: di chuyển · Click trái: đánh/chọn/nhặt/nói chuyện (súng: giữ để bắn theo chuột) ·
-      Space: đánh · R: nạp đạn · X: đổi vũ khí · 1–4: chiêu · Q: thuốc · F: tương tác · Tab: đổi mục
-      tiêu · I: túi đồ · K: tu luyện · Enter: chat · Chuột phải: xoay
+    <div className={`help ${open ? 'help-open' : ''}`}>
+      <button type="button" aria-expanded={open} onClick={() => setOpen((value) => !value)}>
+        {open ? 'Đóng hướng dẫn' : '? Điều khiển'}
+      </button>
+      {open && (
+        <span>
+          WASD/↑↓←→: di chuyển · Click trái: đánh/chọn/nhặt/nói chuyện (súng: giữ để bắn) · Space:
+          đánh · R: nạp đạn · X: đổi vũ khí · 1–4: chiêu · Q: thuốc · F: tương tác · Tab: đổi mục
+          tiêu · I: túi đồ · K: tu luyện · Enter: chat · Chuột phải: xoay
+        </span>
+      )}
     </div>
   );
 }
@@ -1030,35 +1116,84 @@ function DebugOverlay() {
 
 function MenuButtons() {
   const toggle = useUiStore((s) => s.togglePanel);
+  const touch = useControls((s) => effectiveScheme(s) === 'touch');
+  const [open, setOpen] = useState(false);
+  const show = (panel: Parameters<typeof toggle>[0]) => {
+    toggle(panel);
+    setOpen(false);
+  };
   return (
-    <div className="menu" onPointerDown={(e) => e.stopPropagation()}>
-      <button type="button" title="Kỹ năng" onClick={() => toggle('skills')}>
-        ⚡
-      </button>
-      <button type="button" title="Túi đồ (I)" onClick={() => toggle('inventory')}>
-        🎒
-      </button>
-      <button type="button" title="Nhân vật (C)" onClick={() => toggle('character')}>
-        👤
-      </button>
-      <button type="button" title="Tu luyện & Đột phá (K)" onClick={() => toggle('cultivation')}>
-        ☯
-      </button>
-      {ONLINE && (
-        <button type="button" title="Bảng xếp hạng" onClick={() => toggle('leaderboard')}>
-          🏆
+    <nav
+      className={`menu ${open ? 'menu-open' : ''}`}
+      aria-label="Menu trò chơi"
+      onPointerDown={(e) => e.stopPropagation()}
+    >
+      {touch && (
+        <button
+          type="button"
+          className="menu-trigger"
+          title="Mở menu"
+          aria-label={open ? 'Đóng menu' : 'Mở menu'}
+          aria-expanded={open}
+          onClick={() => setOpen((value) => !value)}
+        >
+          <HudGlyph name={open ? 'close' : 'menu'} />
         </button>
       )}
-      {ONLINE && (
-        <button type="button" title="Bạn bè & Bang hội" onClick={() => toggle('social')}>
-          👥
+      <div className="menu-items">
+        <button type="button" title="Kỹ năng" aria-label="Kỹ năng" onClick={() => show('skills')}>
+          <HudGlyph name="skills" />
         </button>
-      )}
-      <FullscreenButton />
-      <button type="button" title="Cài đặt" onClick={() => toggle('settings')}>
-        ⚙
-      </button>
-    </div>
+        <button
+          type="button"
+          title="Túi đồ (I)"
+          aria-label="Túi đồ"
+          onClick={() => show('inventory')}
+        >
+          <HudGlyph name="pack" />
+        </button>
+        <button
+          type="button"
+          title="Nhân vật (C)"
+          aria-label="Nhân vật"
+          onClick={() => show('character')}
+        >
+          <HudGlyph name="character" />
+        </button>
+        <button
+          type="button"
+          title="Tu luyện & Đột phá (K)"
+          aria-label="Tu luyện"
+          onClick={() => show('cultivation')}
+        >
+          <HudGlyph name="cultivation" />
+        </button>
+        {ONLINE && (
+          <button
+            type="button"
+            title="Bảng xếp hạng"
+            aria-label="Bảng xếp hạng"
+            onClick={() => show('leaderboard')}
+          >
+            <HudGlyph name="ranking" />
+          </button>
+        )}
+        {ONLINE && (
+          <button
+            type="button"
+            title="Bạn bè & Bang hội"
+            aria-label="Bạn bè và bang hội"
+            onClick={() => show('social')}
+          >
+            <HudGlyph name="social" />
+          </button>
+        )}
+        <FullscreenButton />
+        <button type="button" title="Cài đặt" aria-label="Cài đặt" onClick={() => show('settings')}>
+          <HudGlyph name="settings" />
+        </button>
+      </div>
+    </nav>
   );
 }
 

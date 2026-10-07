@@ -7,6 +7,7 @@ import { Hud } from './hud/Hud';
 import { Login, type OnlineChoice } from './Login';
 import { loadMedia } from './media';
 import './styles.css';
+import './hud-design.css';
 
 void loadMedia();
 installUiSounds();

@@ -315,14 +315,20 @@ if (attackButton) {
     () => (window as unknown as { __touchShots: number }).__touchShots,
   );
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
-  await mobile.waitForTimeout(700);
+  // Shots already queued in the worker may arrive after touchEnd. Compare a
+  // settled count with a later count to verify the trigger has actually stopped.
+  await mobile.waitForTimeout(250);
+  const settledShots = await mobile.evaluate(
+    () => (window as unknown as { __touchShots: number }).__touchShots,
+  );
+  await mobile.waitForTimeout(500);
   const releasedShots = await mobile.evaluate(
     () => (window as unknown as { __touchShots: number }).__touchShots,
   );
   check(heldShots >= 3, `mobile: holding attack fires automatically (${heldShots} shots)`);
   check(
-    releasedShots <= heldShots + 1,
-    `mobile: releasing attack stops firing (${releasedShots} shots)`,
+    releasedShots === settledShots,
+    `mobile: releasing attack stops firing (${settledShots} → ${releasedShots} shots)`,
   );
   await cdp.detach();
 }

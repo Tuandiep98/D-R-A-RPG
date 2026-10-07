@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { realmName } from '../content';
+import { effectiveScheme, useControls } from '../controls';
 import { game } from '../game';
 import { fetchLeaderboard } from '../online';
 import { useUiStore } from '../store';
@@ -34,6 +35,7 @@ export function QuestTracker() {
 /** Map chat. Enter focuses the input; the host enforces length, rate and mutes. */
 export function ChatBox() {
   const messages = useUiStore((s) => s.chat);
+  const touch = useControls((s) => effectiveScheme(s) === 'touch');
   const [text, setText] = useState('');
   const [open, setOpen] = useState(false);
   const input = useRef<HTMLInputElement>(null);
@@ -57,6 +59,18 @@ export function ChatBox() {
 
   return (
     <div className={`chat ${open ? 'chat-open' : ''}`} onPointerDown={(e) => e.stopPropagation()}>
+      {touch && !open && (
+        <button
+          type="button"
+          className="chat-toggle"
+          onClick={() => {
+            setOpen(true);
+            requestAnimationFrame(() => input.current?.focus());
+          }}
+        >
+          Chat{messages.length > 0 ? ` · ${messages.length}` : ''}
+        </button>
+      )}
       <div className="chat-list" ref={list}>
         {messages.slice(-30).map((m) => (
           <div

@@ -74,7 +74,7 @@ export const useUiStore = create<UiStore>((set) => ({
   openNpc: (npc) => set({ npc, panel: null }),
   closeNpc: () => set({ npc: null }),
   pushChat: (m) => set((s) => ({ chat: [...s.chat, m].slice(-60) })),
-  showDebug: true,
+  showDebug: new URLSearchParams(window.location.search).has('debug'),
   quality: 'auto',
   hostKind: '',
   status: 'loading',

@@ -192,10 +192,14 @@ async function phone(browser: Browser, w: number, h: number, label: string): Pro
     Math.abs(after - before) > 0.1,
     `${label}: swipe rotates the camera (Δα ${(after - before).toFixed(2)})`,
   );
+  check(await page.locator('.menu-trigger').isVisible(), `${label}: compact menu shown`);
+  await page.locator('.menu-trigger').tap();
   check(
     await page.locator('.menu .fullscreen-button').isVisible(),
-    `${label}: fullscreen button shown`,
+    `${label}: fullscreen button reachable from menu`,
   );
+  if (label === 'portrait') await page.screenshot({ path: resolve(outDir, 'hud_mobile_menu.png') });
+  else await page.locator('.menu-trigger').tap();
 
   // Attack button starts a combo swing even with no hostile selected.
   const btn = await page.locator('.attack-button').boundingBox();
@@ -221,6 +225,21 @@ async function phone(browser: Browser, w: number, h: number, label: string): Pro
         false,
       `${label}: utility assignment updates the compact slot`,
     );
+    await page.locator('.menu-trigger').tap();
+    await page.locator('.menu button[title="Túi đồ (I)"]').tap();
+    check(await page.locator('.inventory-panel').isVisible(), 'portrait: inventory opens');
+    await page.locator('.inventory-bag .item:not(.item-empty)').first().tap();
+    check(
+      await page.locator('.inventory-panel .item-detail strong').isVisible(),
+      'portrait: tapping an item shows its detail',
+    );
+    await page.screenshot({ path: resolve(outDir, 'hud_mobile_inventory.png') });
+    await page.locator('.inventory-panel .panel-head button').tap();
+    await page.locator('.menu-trigger').tap();
+    await page.locator('.menu button[title="Cài đặt"]').tap();
+    check(await page.locator('.settings-panel').isVisible(), 'portrait: settings opens');
+    await page.screenshot({ path: resolve(outDir, 'hud_mobile_settings.png') });
+    await page.locator('.settings-panel .panel-head button').tap();
   }
   await page.screenshot({ path: resolve(outDir, `controls_${label}.png`) });
   check(errors.length === 0, `${label}: no console errors ${errors.slice(0, 3).join(' | ')}`);
