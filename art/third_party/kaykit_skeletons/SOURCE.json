@@ -17,7 +17,8 @@
         "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb",
         "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_MovementBasic.glb",
         "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_CombatMelee.glb",
-        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_Special.glb"
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_Special.glb",
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_CombatRanged.glb"
       ],
       "animationClips": [
         "Skeletons_Idle",
@@ -29,7 +30,10 @@
         "Melee_1H_Attack_Chop",
         "Melee_2H_Attack_Slice",
         "Ranged_Magic_Shoot",
-        "Ranged_1H_Shoot"
+        "Ranged_1H_Shoot",
+        "Melee_1H_Attack_Stab",
+        "Melee_Unarmed_Attack_Punch_A",
+        "Melee_Block"
       ],
       "type": "monster"
     },
@@ -40,7 +44,8 @@
         "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb",
         "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_MovementBasic.glb",
         "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_CombatMelee.glb",
-        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_Special.glb"
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_Special.glb",
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_CombatRanged.glb"
       ],
       "animationClips": [
         "Skeletons_Idle",
@@ -52,7 +57,10 @@
         "Melee_1H_Attack_Chop",
         "Melee_2H_Attack_Slice",
         "Ranged_Magic_Shoot",
-        "Ranged_1H_Shoot"
+        "Ranged_1H_Shoot",
+        "Melee_1H_Attack_Stab",
+        "Melee_Unarmed_Attack_Punch_A",
+        "Melee_Block"
       ],
       "type": "monster"
     },
@@ -63,7 +71,8 @@
         "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb",
         "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_MovementBasic.glb",
         "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_CombatMelee.glb",
-        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_Special.glb"
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_Special.glb",
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_CombatRanged.glb"
       ],
       "animationClips": [
         "Skeletons_Idle",
@@ -75,7 +84,10 @@
         "Melee_1H_Attack_Chop",
         "Melee_2H_Attack_Slice",
         "Ranged_Magic_Shoot",
-        "Ranged_1H_Shoot"
+        "Ranged_1H_Shoot",
+        "Melee_1H_Attack_Stab",
+        "Melee_Unarmed_Attack_Punch_A",
+        "Melee_Block"
       ],
       "type": "monster"
     },
@@ -86,7 +98,8 @@
         "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb",
         "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_MovementBasic.glb",
         "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_CombatMelee.glb",
-        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_Special.glb"
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_Special.glb",
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_CombatRanged.glb"
       ],
       "animationClips": [
         "Skeletons_Idle",
@@ -98,7 +111,10 @@
         "Melee_1H_Attack_Chop",
         "Melee_2H_Attack_Slice",
         "Ranged_Magic_Shoot",
-        "Ranged_1H_Shoot"
+        "Ranged_1H_Shoot",
+        "Melee_1H_Attack_Stab",
+        "Melee_Unarmed_Attack_Punch_A",
+        "Melee_Block"
       ],
       "type": "monster"
     },

@@ -186,3 +186,8 @@ Mỗi quyết định: ngày, bối cảnh, quyết định, hệ quả. Khi mâ
 - **Bối cảnh:** chủ dự án muốn clone ở máy khác là chạy được, không phải tải lại pack.
 - **Quyết định:** `pnpm assets:vendor` đọc mọi `SOURCE.json` có `status: approved` và sinh `art/third_party/.gitignore` dạng allowlist: chỉ các file được tham chiếu (model + `.bin` + ảnh, animation, `parts`, `textureDirs`, media, GLB đã convert). Phần còn lại của pack (OBJ, FBX Unity, model chưa dùng) ở máy local. Lần đầu: 464 file, ~44 MB. CI chạy `assets:vendor --check`, rồi `assets:build --allow-missing` + `media:build`.
 - **Hệ quả:** thêm asset mới = khai báo trong `SOURCE.json` → `pnpm assets:vendor` → commit. Pack còn thiếu file gốc (Quaternius Animated Mech, Ultimate Monsters) hiện bằng placeholder cho tới khi được tải và vendor.
+
+## D-029 — Quái dùng model KayKit
+- **Ngày:** 2026-10-07
+- **Quyết định:** 6 quái đổi sang KayKit, giữ nguyên id appearance/monster nên data, map, quest không đổi: Sói Rừng → Skeleton Minion; Hồ Ly Lửa → Skeleton Rogue tint lửa; Cơ Giáp Trinh Sát → Skeleton Mage tint lam (bắn phép); Linh Lộc Tinh Anh → Skeleton Warrior tint vàng; Thạch Khôi Tiền Vệ → Mannequin_Large tint đá; Guardian X-04 (boss) → Mannequin_Large tint đỏ cầm búa. Appearance có thêm `defaultGear` để quái cầm vũ khí riêng. Quaternius Animated Animals / Animated Mech / Ultimate Monsters / Space Kit → `prototype_only`.
+- **Hệ quả:** tên/lore quái (sói, hồ ly, linh lộc, cơ giáp) chưa khớp hình bộ xương — cần đổi tên/mô tả hoặc thêm model thú/cơ giới cùng style sau.

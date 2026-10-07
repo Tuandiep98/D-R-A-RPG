@@ -1,19 +1,23 @@
+# KayKit Mannequin_Large boss — Huyền Vũ · Guardian X-04 (KayKit, D-027)
 id: mob_mech_boss_01
-# Quaternius Animated Mech Pack — George.gltf (Guardian X-04 mechanical shell)
 kind: monster
-modelAssetId: mob_mech_boss_01
-scale: 0.54
+modelAssetId: mob_kk_brute
+scale: 0.85
 tint: "#ff4a3d"
 animations:
-  {
-    idle: Idle,
-    run: Walk,
-    attack: Kick,
-    cast: Shoot,
-    hit: HitRecieve_1,
-    death: Death,
-  }
-hitDelay: 0.35
+  idle: Idle_A
+  run: Walking_A
+  attack: Melee_2H_Slam
+  cast: Melee_Unarmed_Smash
+  hit: Hit_A
+  death: Death_A
+sockets:
+  hand_r: handslot.r
+  hand_l: handslot.l
+  head: head
+defaultGear:
+  main_hand: gear_weapon_kf_hammer_c
+hitDelay: 0.5
 sfx:
   hit: [sfx_hit_metal_01, sfx_hit_metal_02, sfx_robot_hit]
   death: [sfx_explosion]

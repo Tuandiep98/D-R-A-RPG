@@ -1,11 +1,25 @@
+# Skeleton Warrior tinh anh — Linh Lộc Tinh Anh (xung kích) (KayKit, D-027)
 id: mob_stag_elite_01
-# Quaternius Ultimate Animated Animals — Stag.gltf (elite variant, tinted)
 kind: monster
-modelAssetId: mob_stag_elite_01
-scale: 0.5
-tint: '#ffd86b'
-animations: { idle: Idle, run: Gallop, attack: Attack_Headbutt, cast: Attack_Kick, hit: Idle_HitReact1, death: Death }
-hitDelay: 0.3
+modelAssetId: mob_skeleton_warrior
+scale: 0.78
+tint: "#ffd86b"
+animations:
+  idle: Skeletons_Idle
+  run: Running_A
+  attack: Melee_2H_Attack_Slice
+  cast: Melee_1H_Attack_Chop
+  hit: Hit_A
+  death: Skeletons_Death
+sockets:
+  hand_r: handslot.r
+  hand_l: handslot.l
+  head: head
+defaultGear:
+  main_hand: gear_weapon_ks_axe
+  off_hand: gear_weapon_ks_shield_large_a
+hitDelay: 0.4
 sfx:
-  death: [sfx_hit_soft]
-placeholder: { shape: box, color: '#c9a24a', height: 1.8, radius: 0.8 }
+  hit: [sfx_hit_plate, sfx_hit_wood]
+  death: [sfx_hit_plate]
+placeholder: { shape: capsule, color: "#c9a24a", height: 1.8, radius: 0.5 }

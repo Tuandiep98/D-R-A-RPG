@@ -1,16 +1,22 @@
+# KayKit Mannequin_Large đá — Thạch Khôi Tiền Vệ (KayKit, D-027)
 id: mob_guardian_stone_01
 kind: monster
-modelAssetId: mob_guardian_stone_01
-scale: 0.75
+modelAssetId: mob_kk_brute
+scale: 0.45
+tint: "#8c857a"
 animations:
-  idle: Flying_Idle
-  run: Fast_Flying
-  attack: Punch
-  cast: Headbutt
-  hit: HitReact
-  death: Death
-hitDelay: 0.3
+  idle: Idle_A
+  run: Walking_A
+  attack: Melee_Unarmed_Punch
+  cast: Melee_Unarmed_Smash
+  hit: Hit_A
+  death: Death_A
+sockets:
+  hand_r: handslot.r
+  hand_l: handslot.l
+  head: head
+hitDelay: 0.4
 sfx:
-  hit: [sfx_hit_metal_01, sfx_hit_metal_02, sfx_robot_hit]
-  death: [sfx_explosion]
+  hit: [sfx_hit_metal_01, sfx_slam]
+  death: [sfx_explosion_low]
 placeholder: { shape: sphere, color: "#77746e", height: 1.8, radius: 0.85 }

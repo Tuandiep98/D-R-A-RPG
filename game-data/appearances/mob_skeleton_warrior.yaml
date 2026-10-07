@@ -14,6 +14,9 @@ sockets:
   hand_r: handslot.r
   hand_l: handslot.l
   head: head
+defaultGear:
+  main_hand: gear_weapon_ks_axe
+  off_hand: gear_weapon_ks_shield_large_a
 hitDelay: 0.35
 sfx:
   hit: [sfx_hit_wood, sfx_hit_soft]

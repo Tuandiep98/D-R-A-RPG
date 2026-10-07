@@ -595,6 +595,7 @@ export class GameView {
         if (!appearance) continue;
         view = this.pool.acquire(appearance, id);
         view.setCastShadows(this.shouldCastShadow(e.state));
+        if (!e.state.gear) view.setGear(this.withDefaultGear(appearance, {}));
         this.views.set(id, view);
         if (e.state.kind === 'loot') {
           const rarity = this.opts.content.items.get(e.state.defId)?.rarity ?? 'common';
@@ -608,7 +609,7 @@ export class GameView {
         const key = JSON.stringify(e.state.gear);
         if (this.gearKeys.get(id) !== key) {
           this.gearKeys.set(id, key);
-          view.setGear(this.gearAppearances(e.state.gear));
+          view.setGear(this.withDefaultGear(view.appearance, this.gearAppearances(e.state.gear)));
         }
       }
       view.update(dt);
@@ -1028,6 +1029,16 @@ export class GameView {
         return def ? c.appearances.get(def.appearanceId) : undefined;
       }
     }
+  }
+
+  /** Appearance-level default gear (monster weapons) under the real equipment. */
+  private withDefaultGear(appearance: AppearanceDef, gear: GearAppearances): GearAppearances {
+    const out: GearAppearances = {};
+    for (const [slot, appId] of Object.entries(appearance.defaultGear)) {
+      const app = appId ? this.opts.content.appearances.get(appId) : undefined;
+      if (app) out[slot as EquipSlot] = app;
+    }
+    return { ...out, ...gear };
   }
 
   private gearAppearances(gear: Partial<Record<EquipSlot, string>>): GearAppearances {

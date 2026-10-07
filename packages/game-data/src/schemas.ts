@@ -663,6 +663,11 @@ export const AppearanceDefSchema = z.strictObject({
     .partialRecord(EquipSlotSchema, z.strictObject({ node: z.string(), appearanceId: IdSchema }))
     .default({}),
   /**
+   * Equipment appearances shown when the entity has nothing in that slot —
+   * e.g. a skeleton's blade (monsters carry no inventory). Real gear wins.
+   */
+  defaultGear: z.partialRecord(EquipSlotSchema, IdSchema).default({}),
+  /**
    * Seconds from the start of the attack clip to the visual hit (animation
    * event, assets plan §7). The client delays damage numbers by this much;
    * the outcome itself is already decided by the server.

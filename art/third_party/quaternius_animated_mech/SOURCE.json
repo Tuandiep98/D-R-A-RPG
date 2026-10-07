@@ -6,8 +6,8 @@
   "license": "CC0-1.0",
   "licenseVerified": true,
   "downloadedAt": "2026-10-06",
-  "status": "approved",
-  "notes": "Textured glTF edition. Leela is the scout chassis; George is the current Guardian X-04 mechanical shell.",
+  "status": "prototype_only",
+  "notes": "Prototype only since D-029: monsters use KayKit Skeletons / Mannequin_Large. Textured glTF edition. Leela is the scout chassis; George is the current Guardian X-04 mechanical shell.",
   "assets": [
     {
       "assetId": "mob_robot_scout_01",

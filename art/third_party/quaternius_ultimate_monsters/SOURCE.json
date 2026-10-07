@@ -6,8 +6,8 @@
   "license": "CC0-1.0",
   "licenseVerified": true,
   "downloadedAt": "2026-10-06",
-  "status": "approved",
-  "notes": "Goleling Evolved is reserved for the stone-shell phase of Guardian X-04.",
+  "status": "prototype_only",
+  "notes": "Prototype only since D-029: monsters use KayKit Skeletons / Mannequin_Large. Goleling Evolved is reserved for the stone-shell phase of Guardian X-04.",
   "assets": [
     {
       "assetId": "mob_guardian_stone_01",

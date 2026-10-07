@@ -1,19 +1,23 @@
-# Quaternius Ultimate Animated Animals — Wolf.gltf
+# Skeleton Minion — Sói Rừng (bầy, nhỏ, nhanh) (KayKit, D-027)
 id: mob_wolf_01
 kind: monster
-modelAssetId: mob_wolf_01
-scale: 0.4
+modelAssetId: mob_skeleton_minion
+scale: 0.5
 animations:
-  idle: Idle
-  run: Gallop
-  attack: Attack
-  hit: Idle_HitReact1
-  death: Death
-hitDelay: 0.2
+  idle: Skeletons_Idle
+  run: Running_A
+  attack: Melee_1H_Attack_Chop
+  cast: Melee_Unarmed_Attack_Punch_A
+  hit: Hit_A
+  death: Skeletons_Death
+sockets:
+  hand_r: handslot.r
+  hand_l: handslot.l
+  head: head
+defaultGear:
+  main_hand: gear_weapon_ks_blade
+hitDelay: 0.35
 sfx:
-  death: [sfx_hit_soft]
-placeholder:
-  shape: box
-  color: '#8a6d4f'
-  height: 1.05
-  radius: 0.5
+  hit: [sfx_hit_wood, sfx_hit_soft]
+  death: [sfx_hit_plate]
+placeholder: { shape: capsule, color: "#d8d2c4", height: 1.1, radius: 0.35 }

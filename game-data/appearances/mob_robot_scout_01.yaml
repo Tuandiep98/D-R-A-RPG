@@ -1,20 +1,24 @@
-# Quaternius Animated Mech Pack — Leela.gltf
+# Skeleton Mage tint lam — Cơ Giáp Trinh Sát (bắn tầm xa) (KayKit, D-027)
 id: mob_robot_scout_01
 kind: monster
-modelAssetId: mob_robot_scout_01
-scale: 0.36
+modelAssetId: mob_skeleton_mage
+scale: 0.6
+tint: "#5fd8ff"
 animations:
-  idle: Idle
-  run: Walk
-  attack: Shoot
-  hit: HitRecieve_1
-  death: Death
+  idle: Skeletons_Idle
+  run: Running_A
+  attack: Ranged_Magic_Shoot
+  cast: Ranged_Magic_Shoot
+  hit: Hit_A
+  death: Skeletons_Death
+sockets:
+  hand_r: handslot.r
+  hand_l: handslot.l
+  head: head
+defaultGear:
+  main_hand: gear_weapon_ks_staff
 hitDelay: 0.3
 sfx:
   hit: [sfx_hit_metal_01, sfx_hit_metal_02, sfx_robot_hit]
   death: [sfx_explosion]
-placeholder:
-  shape: cylinder
-  color: "#9aa4b1"
-  height: 1.9
-  radius: 0.6
+placeholder: { shape: cylinder, color: "#9aa4b1", height: 1.4, radius: 0.45 }

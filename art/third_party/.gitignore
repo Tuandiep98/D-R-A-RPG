@@ -41,11 +41,15 @@
 !/kaykit_adventurers/originals/Characters/gltf/Ranger.glb
 !/kaykit_adventurers/originals/Characters/gltf/Rogue.glb
 !/kaykit_adventurers/originals/Characters/gltf/Rogue_Hooded.glb
+!/kaykit_character_animations/originals/Animations/gltf/Rig_Large/Rig_Large_CombatMelee.glb
+!/kaykit_character_animations/originals/Animations/gltf/Rig_Large/Rig_Large_General.glb
+!/kaykit_character_animations/originals/Animations/gltf/Rig_Large/Rig_Large_MovementBasic.glb
 !/kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_CombatMelee.glb
 !/kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_CombatRanged.glb
 !/kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb
 !/kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_MovementBasic.glb
 !/kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_Special.glb
+!/kaykit_character_animations/originals/Mannequin\ Character/characters/Mannequin_Large.glb
 !/kaykit_character_animations/originals/Mannequin\ Character/characters/Mannequin_Medium.glb
 !/kaykit_dungeon/originals/Assets/gltf/banner_patternA_red.bin
 !/kaykit_dungeon/originals/Assets/gltf/banner_patternA_red.gltf
@@ -374,9 +378,6 @@
 !/kenney_scifi_sounds/originals/Audio/laserRetro_000.ogg
 !/kenney_scifi_sounds/originals/Audio/laserSmall_000.ogg
 !/kenney_scifi_sounds/originals/Audio/lowFrequency_explosion_000.ogg
-!/quaternius_animated_animals/originals/glTF/Fox.gltf
-!/quaternius_animated_animals/originals/glTF/Stag.gltf
-!/quaternius_animated_animals/originals/glTF/Wolf.gltf
 !/quaternius_nature_megakit/originals/glTF/Flower_3_Group.bin
 !/quaternius_nature_megakit/originals/glTF/Flower_3_Group.gltf
 !/quaternius_nature_megakit/originals/glTF/Flowers.png

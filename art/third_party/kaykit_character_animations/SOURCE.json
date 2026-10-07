@@ -7,7 +7,7 @@
   "licenseVerified": true,
   "downloadedAt": "2026-10-07",
   "status": "approved",
-  "notes": "133 clips for Rig_Medium/Rig_Large in FBX and glTF (glTF used directly — no FBX conversion needed). Mannequin_Medium is a neutral preview body. License approved by the project owner on 2026-10-07 (License.txt in the zip states CC0).",
+  "notes": "133 clips for Rig_Medium/Rig_Large in FBX and glTF (glTF used directly — no FBX conversion needed). Mannequin_Medium is a neutral preview body; Mannequin_Large (Rig_Large) is the tinted brute body for golem/boss monsters. License approved by the project owner on 2026-10-07 (License.txt in the zip states CC0).",
   "kind": "animations",
   "assets": [
     {
@@ -27,6 +27,28 @@
         "Use_Item"
       ],
       "type": "character"
+    },
+    {
+      "assetId": "mob_kk_brute",
+      "file": "originals/Mannequin Character/characters/Mannequin_Large.glb",
+      "animationSource": [
+        "originals/Animations/gltf/Rig_Large/Rig_Large_General.glb",
+        "originals/Animations/gltf/Rig_Large/Rig_Large_MovementBasic.glb",
+        "originals/Animations/gltf/Rig_Large/Rig_Large_CombatMelee.glb"
+      ],
+      "animationClips": [
+        "Idle_A",
+        "Walking_A",
+        "Running_A",
+        "Hit_A",
+        "Death_A",
+        "Melee_2H_Slam",
+        "Melee_2H_Attack",
+        "Melee_Unarmed_Smash",
+        "Melee_Unarmed_Punch",
+        "Melee_Unarmed_Kick"
+      ],
+      "type": "monster"
     }
   ]
 }
