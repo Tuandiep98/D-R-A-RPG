@@ -83,7 +83,7 @@ try {
   if (!player) throw new Error("no player");
 
   check(
-    (await page.locator(".actionbar .skills .skill").count()) === 4,
+    (await page.locator(".action-slot").count()) === 4,
     "desktop action bar has four skill slots",
   );
   await page.locator('.menu button[title="Kỹ năng"]').click();
@@ -100,7 +100,7 @@ try {
   check(
     (
       await page
-        .locator(".actionbar .skills .skill")
+        .locator(".action-slot")
         .first()
         .getAttribute("title")
     )?.includes("Lôi Ảnh Trảm") ?? false,
@@ -135,7 +135,7 @@ try {
 
   await page.keyboard.press("Digit1");
   const cooldown = await page
-    .locator(".actionbar .skills .skill-cd")
+    .locator(".action-slot .skill-cd")
     .first()
     .waitFor({ timeout: 1500 })
     .then(() => true)
@@ -168,7 +168,7 @@ try {
     await page.mouse.click(target.x, target.y);
     await page.waitForTimeout(500);
     const frame = await page
-      .locator(".frame-target")
+      .locator(".target-hud")
       .innerText()
       .catch(() => "");
     check(

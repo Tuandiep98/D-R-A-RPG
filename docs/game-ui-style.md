@@ -40,6 +40,16 @@ Trước khi tự tạo element: tìm trong source Kenney và các pack đã duy
 
 Các giá trị có thể tinh chỉnh trong token để bảo đảm độ đọc, nhưng không đổi định hướng hình thức nếu chưa có yêu cầu của chủ dự án.
 
+## Bố cục HUD chính
+
+- Góc trái trên: ô avatar (khung slot) với ảnh đầu nhân vật render 3D nổi lên trên khung, đứng trước thanh HP/MP. Không panel, không tên; tên/cảnh giới ở cửa sổ Nhân vật.
+- Cụm hành động (cảm ứng và phím + chuột dùng chung vị trí): nút đánh thường lớn ở góc, hình vũ khí đang cầm render 3D tràn lên trên khung. Kỹ năng xếp thành hai hàng hướng về nút đánh: hàng trên 3 kỹ năng chính, hàng dưới lướt/khiên + đổi vũ khí + nạp đạn. Thuốc nằm trên nút đánh. Không xếp vòng tròn.
+- Mục tiêu: cùng kiểu avatar với người chơi (đầu 3D, quái không có xương đầu thì cả thân), badge Tinh anh/Boss dưới avatar, chỉ thanh HP; tên và cảnh giới để trong tooltip.
+- Tên NPC hiện trên đầu (chữ trắng đậm + bóng, không khung). Nhắc tương tác (`F` + Nói chuyện / Nhặt / Vào) nằm ngay trên tên, bám theo entity bằng `GameView.bindOverhead`; khi mục tiêu ra ngoài màn hình thì trượt về mép để vẫn bấm được. Không dùng hộp tương tác cố định ở đáy màn hình.
+- Desktop giữ nhãn phím (1–4, Q, R, X, F) và 4 ô kỹ năng bằng nhau; cảm ứng ẩn nhãn phím, ô thứ 4 nhỏ hơn, đảo bên theo tay cầm.
+- Súng: chỉ hiện số đạn (chữ số + bóng đổ, không khung) đè lên cạnh dưới nút đánh; không còn khung tên súng/thanh nhiệt.
+- Ảnh 3D cho HUD do `Snapshots` (`packages/babylon-renderer/src/snapshot.ts`) chụp một lần khi ngoại hình/trang bị đổi, không render mỗi frame.
+
 ## Hiệu năng và kiểm tra
 
 - Preset Low tắt blur và tăng độ đậm nền. `prefers-reduced-transparency` và browser thiếu `backdrop-filter` dùng nền đậm thay thế.

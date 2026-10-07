@@ -6,8 +6,8 @@
   "license": "CC0-1.0",
   "licenseVerified": true,
   "downloadedAt": "2026-10-06",
-  "status": "prototype_only",
-  "notes": "Prototype only since D-029: monsters use KayKit Skeletons / Mannequin_Large. Goleling Evolved is reserved for the stone-shell phase of Guardian X-04.",
+  "status": "approved",
+  "notes": "Approved for Thạch Khôi Tiền Vệ (D-034): Goleling Evolved replaces the KayKit Mannequin_Large stand-in. Other models in the pack stay unused. License.txt states CC0 1.0.",
   "assets": [
     {
       "assetId": "mob_guardian_stone_01",

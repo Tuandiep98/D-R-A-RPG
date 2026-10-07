@@ -1,20 +1,18 @@
-# KayKit Mannequin_Large đá — Thạch Khôi Tiền Vệ (KayKit, D-027)
+# Quaternius Ultimate Monsters — Goleling Evolved: Thạch Khôi Tiền Vệ (D-034).
+# Hovering stone golem, 3.81 units to the crown → ~1.9 m at scale 0.5.
 id: mob_guardian_stone_01
 kind: monster
-modelAssetId: mob_kk_brute
-scale: 0.45
-tint: "#8c857a"
+modelAssetId: mob_guardian_stone_01
+scale: 0.5
 animations:
-  idle: Idle_A
-  run: Walking_A
-  attack: Melee_Unarmed_Punch
-  cast: Melee_Unarmed_Smash
-  hit: Hit_A
-  death: Death_A
+  idle: Flying_Idle
+  run: Fast_Flying
+  attack: Punch
+  cast: Headbutt
+  hit: HitReact
+  death: Death
 sockets:
-  hand_r: handslot.r
-  hand_l: handslot.l
-  head: head
+  head: Head
 hitDelay: 0.4
 sfx:
   hit: [sfx_hit_metal_01, sfx_slam]

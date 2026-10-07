@@ -263,3 +263,10 @@ Mỗi quyết định: ngày, bối cảnh, quyết định, hệ quả. Khi mâ
 - **Chuẩn triển khai:** `docs/game-ui-style.md`, `apps/game-web/src/fantasy-glass.css`, token/layout trong `hud-design.css`; source Kenney CC0, icon skill/item và glyph đã duyệt. Khung cơ bản được bundle cùng client để không phụ thuộc media build.
 - **Hiệu năng:** Low, reduced transparency và browser thiếu backdrop filter có nền đậm thay thế. Gameplay không bị blur toàn màn hình khi không mở cửa sổ.
 - **Hệ quả:** thay thế phần look/avoid-blur trong `docs/hud-field-kit.md`. Quy tắc được tham chiếu từ `AGENTS.md` và `CLAUDE.md`.
+
+## D-034 — Thạch Khôi Tiền Vệ dùng golem Quaternius; tint nhân màu thay vì phát sáng
+
+- **Ngày:** 2026-10-08
+- **Bối cảnh:** chủ dự án không muốn quái dùng model mẫu (KayKit Mannequin_Large) và thấy các quái có `tint` bị nhợt màu.
+- **Quyết định:** Thạch Khôi Tiền Vệ (`mob_guardian_stone_01`) đổi sang Goleling Evolved (Quaternius Ultimate Monsters, CC0, 5.9k tris): golem đá bay, clip Flying_Idle / Fast_Flying / Punch / Headbutt / HitReact / Death, scale 0.5, không tint. Pack chuyển `approved` nhưng chỉ vendor file này (ghi đè một phần D-029). `tint` của appearance giờ nhân vào màu gốc (albedo, 65% về phía màu tint) thay cho emissive × 0.35 — emissive cộng cùng một lượng sáng lên mọi mặt nên làm model bạc màu.
+- **Hệ quả:** quái tint giữ được sáng tối; tint không đổi được hẳn màu texture (vd. mũ đỏ của Skeleton Mage không thành xanh lam). Guardian X-04 (boss) vẫn dùng Mannequin_Large tint đỏ — cần model riêng sau.

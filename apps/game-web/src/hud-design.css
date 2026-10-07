@@ -31,8 +31,7 @@
 
 .frame,
 .party-member,
-.quest,
-.ammo {
+.quest {
   background: var(--hud-bg);
   border: 1px solid var(--hud-border);
   border-radius: 0;
@@ -42,16 +41,6 @@
 .frame {
   padding: 10px 12px 9px;
   gap: 5px;
-}
-
-.frame-player {
-  width: min(265px, 45vw);
-  border-left: 3px solid var(--hud-brass);
-}
-
-.frame-target {
-  width: min(290px, 42vw);
-  border-top: 2px solid var(--hud-thunder);
 }
 
 .frame-boss {
@@ -109,20 +98,6 @@
   font-weight: 650;
 }
 
-.actionbar {
-  bottom: calc(var(--safe-b) + 17px);
-  gap: 6px;
-}
-
-.actionbar .skills {
-  gap: 6px;
-  padding: 8px 10px;
-  border: 1px solid var(--hud-border);
-  border-bottom: 3px solid #9a8963;
-  border-radius: 0;
-  background: var(--hud-bg);
-}
-
 .skill,
 .menu button,
 .loadout-slot,
@@ -146,11 +121,6 @@
 .menu button:active,
 .item:active {
   transform: scale(0.96);
-}
-
-.actionbar .skill {
-  width: clamp(49px, 5vw, 61px);
-  height: clamp(49px, 5vw, 61px);
 }
 
 .skill-element-thunder {
@@ -521,75 +491,6 @@
   );
   box-shadow: 0 2px 7px rgba(0, 0, 0, 0.28);
 }
-.touch-actions > .skill {
-  width: 56px;
-  height: 56px;
-  border-radius: 0;
-}
-.touch-actions > .touch-slot-4 {
-  width: 46px;
-  height: 46px;
-  border-style: solid;
-}
-.touch-actions > .touch-potion {
-  width: 46px;
-  height: 46px;
-}
-.touch-actions > .skill:active {
-  transform: translate(-50%, -50%) scale(0.94);
-}
-.attack-button {
-  width: var(--attack-size);
-  height: var(--attack-size);
-  border: 2px solid #d9e4e7;
-  border-radius: 0;
-  background: rgba(47, 63, 72, 0.78);
-  color: #f3f5f2;
-  box-shadow:
-    inset 0 0 0 5px rgba(19, 31, 33, 0.3),
-    0 5px 14px rgba(0, 0, 0, 0.26);
-}
-.attack-button .hud-glyph {
-  width: 39px;
-  height: 39px;
-  margin: auto;
-  stroke-width: 2;
-}
-.attack-gun {
-  border-color: #a2d9df;
-  background: rgba(36, 66, 83, 0.78);
-  color: #e0f8f5;
-}
-.touch-actions > .touch-reload,
-.touch-actions > .touch-swap {
-  width: 44px;
-  height: 44px;
-  color: #e0e7d3;
-}
-.touch-actions > .touch-reload .hud-glyph,
-.touch-actions > .touch-swap .hud-glyph {
-  width: 22px;
-  height: 22px;
-}
-.touch-actions > .ammo-touch {
-  right: calc(62px * var(--cluster-scale));
-}
-.ammo {
-  border-left: 3px solid #b9a875;
-  border-radius: 0;
-}
-.ammo-track {
-  height: 6px;
-  border-radius: 0;
-}
-.ammo-bar {
-  border-radius: 0;
-}
-.ammo-key {
-  min-width: 28px;
-  min-height: 25px;
-  border-color: var(--hud-border);
-}
 
 .quest {
   border-left: 3px solid var(--hud-brass);
@@ -720,15 +621,6 @@
   width: 48px;
   height: 48px;
 }
-:root[data-controls="touch"] .frame-player {
-  width: min(245px, calc(100vw - 86px));
-}
-:root[data-controls="touch"] .frame-player .frame-meta > span:first-child {
-  display: none;
-}
-:root[data-controls="touch"] .frame-target {
-  width: min(245px, calc(100vw - 86px));
-}
 :root[data-controls="touch"] .chat {
   top: calc(max(10px, env(safe-area-inset-top)) + 86px);
 }
@@ -743,16 +635,6 @@
   z-index: 12;
   width: min(300px, 76vw);
 }
-:root[data-controls="touch"] .touch-interact {
-  bottom: calc(222px * var(--cluster-scale));
-  width: max-content;
-  max-width: min(230px, 65vw);
-}
-:root[data-controls="touch"] .touch-interact .interact {
-  min-width: 108px;
-  white-space: nowrap;
-  text-align: center;
-}
 :root[data-controls="touch"] .panel {
   max-height: calc(100dvh - 18px);
 }
@@ -760,9 +642,6 @@
 @media (orientation: portrait) and (max-width: 600px) {
   :root[data-controls="touch"] .menu-open .menu-items {
     top: 104px;
-  }
-  :root[data-controls="touch"] .frame-target {
-    top: calc(max(10px, env(safe-area-inset-top)) + 103px);
   }
   :root[data-controls="touch"] .chat {
     top: calc(max(10px, env(safe-area-inset-top)) + 169px);
@@ -783,12 +662,6 @@
 }
 
 @media (max-height: 480px) {
-  :root[data-controls="touch"] .frame-player {
-    width: min(235px, 36vw);
-  }
-  :root[data-controls="touch"] .touch-interact {
-    bottom: calc(174px * var(--cluster-scale));
-  }
   .panel {
     max-height: calc(100dvh - 12px);
   }

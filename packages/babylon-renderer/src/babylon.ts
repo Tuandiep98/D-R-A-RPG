@@ -22,6 +22,8 @@ export {
   VertexBufferDeduceStride,
 } from "@babylonjs/core/Buffers/buffer.pure";
 export { ArcRotateCamera } from "@babylonjs/core/Cameras/arcRotateCamera";
+export { Camera } from "@babylonjs/core/Cameras/camera";
+export { TargetCamera } from "@babylonjs/core/Cameras/targetCamera";
 export type { AbstractEngine } from "@babylonjs/core/Engines/abstractEngine";
 export { Constants } from "@babylonjs/core/Engines/constants";
 export { Engine } from "@babylonjs/core/Engines/engine";
@@ -34,6 +36,7 @@ export { Material } from "@babylonjs/core/Materials/material";
 export { MultiMaterial } from "@babylonjs/core/Materials/multiMaterial";
 export { StandardMaterial } from "@babylonjs/core/Materials/standardMaterial";
 export { DynamicTexture } from "@babylonjs/core/Materials/Textures/dynamicTexture";
+export { RenderTargetTexture } from "@babylonjs/core/Materials/Textures/renderTargetTexture";
 export { Texture } from "@babylonjs/core/Materials/Textures/texture";
 export { Color3, Color4 } from "@babylonjs/core/Maths/math.color";
 export { Matrix, Quaternion, Vector3 } from "@babylonjs/core/Maths/math.vector";

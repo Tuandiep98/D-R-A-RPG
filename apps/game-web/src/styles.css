@@ -68,19 +68,6 @@ body,
   gap: 4px;
 }
 
-.frame-player {
-  top: max(10px, env(safe-area-inset-top));
-  left: max(10px, env(safe-area-inset-left));
-  width: min(270px, 44vw);
-}
-
-.frame-target {
-  top: max(10px, env(safe-area-inset-top));
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(280px, 40vw);
-}
-
 .frame-boss {
   top: calc(max(10px, env(safe-area-inset-top)) + 74px);
   left: 50%;
@@ -175,18 +162,6 @@ body,
   text-shadow: 0 1px 2px #000;
 }
 
-/* ---- Action bar --------------------------------------------------------- */
-
-.actionbar {
-  position: absolute;
-  bottom: calc(max(10px, env(safe-area-inset-bottom)) + 26px);
-  left: 50%;
-  transform: translateX(-50%);
-  display: grid;
-  justify-items: center;
-  gap: 8px;
-}
-
 .skills {
   display: flex;
   gap: 8px;
@@ -204,20 +179,6 @@ body,
   place-items: center;
   cursor: pointer;
   touch-action: none;
-}
-
-.actionbar .skill {
-  width: clamp(48px, 12vw, 58px);
-  height: clamp(48px, 12vw, 58px);
-}
-
-.actionbar > .desktop-potion {
-  position: absolute;
-  left: calc(100% + 12px);
-  bottom: 0;
-  width: 44px;
-  height: 44px;
-  margin-left: 0;
 }
 
 .skill-thunder {
@@ -1155,10 +1116,6 @@ kbd {
   --safe-l: max(12px, env(safe-area-inset-left));
   --safe-r: max(12px, env(safe-area-inset-right));
   --safe-b: max(12px, env(safe-area-inset-bottom));
-  /* Centre of the attack button, measured from the bottom corner. */
-  --attack-size: 82px;
-  --attack-inset: 94px;
-  --cluster-scale: 1;
 }
 
 /* Joystick: zone covers the lower half of one side; base/knob drawn here. */
@@ -1235,122 +1192,6 @@ kbd {
   will-change: transform;
 }
 
-/* Touch action cluster: anchored at the attack button's centre. */
-.touch-actions {
-  position: absolute;
-  right: calc(var(--safe-r) + var(--attack-inset));
-  bottom: calc(var(--safe-b) + var(--attack-inset));
-  width: 0;
-  height: 0;
-}
-
-:root[data-hand="right"] .touch-actions {
-  right: auto;
-  left: calc(var(--safe-l) + var(--attack-inset));
-}
-
-.touch-actions > .skill {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.touch-actions > .skill .skill-cd,
-.touch-actions > .skill > .game-icon.skill-icon {
-  border-radius: 50%;
-}
-
-.touch-actions > .skill:active {
-  transform: translate(-50%, -50%) scale(0.94);
-}
-
-.touch-actions > .touch-slot-1 {
-  left: calc(-103px * var(--cluster-scale));
-}
-
-.touch-actions > .touch-slot-2 {
-  left: calc(-76px * var(--cluster-scale));
-  top: calc(-76px * var(--cluster-scale));
-}
-
-.touch-actions > .touch-slot-3 {
-  top: calc(-107px * var(--cluster-scale));
-}
-
-.touch-actions > .touch-slot-4 {
-  width: 44px;
-  height: 44px;
-  left: calc(-103px * var(--cluster-scale));
-  top: calc(56px * var(--cluster-scale));
-  border-style: double;
-}
-
-:root[data-hand="right"] .touch-actions > .touch-slot-1,
-:root[data-hand="right"] .touch-actions > .touch-slot-4 {
-  left: calc(103px * var(--cluster-scale));
-}
-
-:root[data-hand="right"] .touch-actions > .touch-slot-2 {
-  left: calc(76px * var(--cluster-scale));
-}
-
-.touch-actions .skill-key {
-  display: none;
-}
-
-.touch-actions > .touch-potion {
-  top: calc(-177px * var(--cluster-scale));
-  width: 42px;
-  height: 42px;
-  opacity: 0.9;
-}
-
-.attack-button {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: var(--attack-size);
-  height: var(--attack-size);
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  border: 2px solid rgba(255, 207, 90, 0.7);
-  background: radial-gradient(circle at 35% 30%, #6b4a2a, #2a1a0e);
-  font-size: 32px;
-  touch-action: none;
-  cursor: pointer;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-}
-
-.attack-button:active {
-  transform: translate(-50%, -50%) scale(0.93);
-}
-
-/* Interact pill floats above the cluster. */
-.touch-interact {
-  position: absolute;
-  bottom: 226px;
-  right: -40px;
-  white-space: nowrap;
-}
-
-:root[data-hand="right"] .touch-interact {
-  right: auto;
-  left: -40px;
-}
-
-.touch-interact .interact {
-  padding: 10px 18px;
-  font-size: 15px;
-}
-
-.touch-interact kbd {
-  display: none;
-}
-
 /* Bigger tap targets for the side menu on touch. */
 :root[data-controls="touch"] .menu button {
   width: 44px;
@@ -1365,11 +1206,6 @@ kbd {
 
 /* Short landscape phones: menu becomes a row at the top, cluster shrinks. */
 @media (max-height: 480px) {
-  :root {
-    --attack-size: 70px;
-    --attack-inset: 80px;
-    --cluster-scale: 0.82;
-  }
 
   .joystick-zone {
     height: 70%;
@@ -1388,39 +1224,10 @@ kbd {
     left: auto;
     right: var(--safe-r);
   }
-
-  .touch-interact {
-    bottom: 176px;
-  }
 }
 
 /* Portrait phones: frames stack on the left, target frame moves under the menu row. */
 @media (orientation: portrait) and (max-width: 600px) {
-  .frame-player {
-    width: min(230px, 58vw);
-  }
-
-  .frame-player .frame-name > span:first-child {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .frame-player .frame-level {
-    min-width: 0;
-    max-width: 44%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .frame-target {
-    left: var(--safe-l);
-    transform: none;
-    top: calc(max(10px, env(safe-area-inset-top)) + 106px);
-    width: min(230px, 58vw);
-  }
 
   .menu {
     top: max(10px, env(safe-area-inset-top));
@@ -1450,17 +1257,9 @@ kbd {
     top: 30%;
   }
 
-  :root {
-    --cluster-scale: 0.85;
-  }
 }
 
 @media (orientation: portrait) and (max-width: 360px) {
-  :root {
-    --attack-size: 72px;
-    --attack-inset: 84px;
-    --cluster-scale: 0.72;
-  }
 
   .joystick-zone {
     width: 42%;
@@ -1491,145 +1290,4 @@ kbd {
   align-items: center;
   font-size: 12px;
   pointer-events: auto;
-}
-
-/* ---- Ranged weapons (D-033) ---------------------------------------------- */
-
-.ammo {
-  min-width: 220px;
-  padding: 6px 10px 5px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(10, 14, 22, 0.72);
-  font-size: 12px;
-  pointer-events: auto;
-}
-
-.ammo-head,
-.ammo-foot {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.ammo-name {
-  opacity: 0.85;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.ammo-count {
-  font-variant-numeric: tabular-nums;
-  opacity: 0.8;
-}
-
-.ammo-count b {
-  font-size: 18px;
-  opacity: 1;
-  color: #ffe6a8;
-}
-
-.ammo-empty b {
-  color: #ff6b5e;
-}
-
-.ammo-track {
-  position: relative;
-  height: 5px;
-  margin: 4px 0 3px;
-  border-radius: 3px;
-  background: rgba(255, 255, 255, 0.1);
-  overflow: hidden;
-}
-
-.ammo-bar {
-  position: absolute;
-  inset: 0 auto 0 0;
-  border-radius: 3px;
-  transition: width 0.1s linear;
-}
-
-.ammo-heat {
-  background: linear-gradient(90deg, #ffc84d, #ff8a3c);
-}
-
-.ammo-heat.hot {
-  background: linear-gradient(90deg, #ff8a3c, #ff3b2f);
-}
-
-.ammo-overheat {
-  background: #fff;
-  box-shadow: 0 0 6px rgba(255, 255, 255, 0.7);
-}
-
-.ammo-reload {
-  background: #8fd8ff;
-}
-
-.ammo-foot {
-  font-size: 11px;
-  opacity: 0.85;
-}
-
-.ammo-warn {
-  color: #fff;
-  font-weight: 600;
-}
-
-.ammo-keys {
-  display: flex;
-  gap: 4px;
-}
-
-.ammo-key {
-  min-width: 20px;
-  padding: 0 4px;
-  border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  background: rgba(255, 255, 255, 0.08);
-  color: inherit;
-  font-size: 11px;
-  cursor: pointer;
-}
-
-/* Touch: the panel sits above the attack cluster, toward the screen centre. */
-.touch-actions > .ammo-touch {
-  position: absolute;
-  right: calc(60px * var(--cluster-scale));
-  bottom: calc(150px * var(--cluster-scale));
-  min-width: 170px;
-}
-
-:root[data-hand="right"] .touch-actions > .ammo-touch {
-  right: auto;
-  left: calc(60px * var(--cluster-scale));
-}
-
-.attack-gun {
-  border-color: rgba(143, 216, 255, 0.75);
-  background: radial-gradient(circle at 35% 30%, #2f5670, #0e1c2a);
-}
-
-.touch-actions > .touch-reload,
-.touch-actions > .touch-swap {
-  width: 42px;
-  height: 42px;
-  font-size: 20px;
-  color: #dff4ff;
-}
-
-.touch-actions > .touch-reload {
-  left: calc(4px * var(--cluster-scale));
-  top: calc(66px * var(--cluster-scale));
-}
-
-.touch-actions > .touch-swap {
-  left: calc(-50px * var(--cluster-scale));
-  top: calc(70px * var(--cluster-scale));
-}
-
-:root[data-hand="right"] .touch-actions > .touch-swap {
-  left: calc(50px * var(--cluster-scale));
 }

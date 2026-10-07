@@ -1,6 +1,6 @@
 import type { ItemView, QualityMode, SkillSlot, UnitFrame } from '@rpg/babylon-renderer';
 import { type EquipSlot, realmLadder } from '@rpg/game-data';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { getSfxVolume, playSfx, setSfxVolume } from '../audio';
 import { sharedContent } from '../content';
@@ -120,30 +120,74 @@ function UnitPanel({ unit, className }: { unit: UnitFrame; className: string }) 
   );
 }
 
+/**
+ * Top-left: a small avatar slot whose 3D head render pops out over the frame,
+ * standing in front of the HP / MP bars. No panel, no name: the character
+ * window has the rest.
+ */
+/**
+ * The selected unit, in the player's style: avatar (3D head, or the whole
+ * beast) with its tier under it, then its name over the HP bar. Realm stays
+ * in the tooltip.
+ */
+function TargetPanel({ unit }: { unit: UnitFrame }) {
+  const portrait = useUiStore((s) => s.ui?.targetPortrait ?? null);
+  const tier = unit.tier && unit.tier !== 'normal' ? TIER_LABEL[unit.tier] : null;
+  const myId = useUiStore((s) => s.ui?.player?.id);
+  const inMyParty = useUiStore((s) => s.ui?.party?.members.some((m) => m.id === unit.id) ?? false);
+  const canInvite = unit.kind === 'player' && unit.id !== myId && !inMyParty;
+  return (
+    <div className="target-hud">
+      <div
+        className="target-avatar"
+        title={unit.realmName ? `${unit.name} · ${unit.realmName}` : unit.name}
+      >
+        {portrait ? <img src={portrait} alt="" draggable={false} /> : <HudGlyph name="target" />}
+        {tier && <span className={`tier tier-${unit.tier}`}>{tier}</span>}
+      </div>
+      <div className="player-bars">
+        <span className="target-name">{unit.name}</span>
+        {unit.maxHp > 0 && <Bar value={unit.hp} max={unit.maxHp} tone="enemy" />}
+        {unit.cast && (
+          <Bar
+            value={Math.round(unit.cast.progress * 100)}
+            max={100}
+            tone="cast"
+            label={unit.cast.name}
+          />
+        )}
+        {canInvite && (
+          <button
+            type="button"
+            className="frame-action"
+            onPointerDown={(e) => {
+              e.stopPropagation();
+              game()?.send({ type: 'PARTY_INVITE', targetId: unit.id });
+            }}
+          >
+            Mời vào nhóm
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function PlayerPanel() {
-  const ui = useUiStore((s) => s.ui);
-  const p = ui?.player;
+  const p = useUiStore((s) => s.ui?.player);
+  const portrait = useUiStore((s) => s.ui?.portrait ?? null);
   if (!p) return null;
   return (
-    <div className="frame frame-player">
-      <div className="frame-name">
-        <span>{p.name}</span>
-        <span className="frame-level" title={p.cultivation.mechName}>
-          {p.cultivation.realmName}
-        </span>
+    <div className="player-hud">
+      <div className="player-avatar" title={`${p.name} · ${p.cultivation.realmName}`}>
+        {portrait ? <img src={portrait} alt="" draggable={false} /> : <HudGlyph name="character" />}
       </div>
-      <Bar value={p.hp} max={p.maxHp} tone="player" />
-      <Bar value={p.mp} max={p.maxMp} tone="mp" />
-      {p.cultivation.backlash > 0 && (
-        <div className="backlash small">Phản phệ {Math.ceil(p.cultivation.backlash)}s</div>
-      )}
-      <div className="frame-meta">
-        <span>Vàng {p.gold}</span>
-        <span className="zone">
-          {ui.mapName}
-          {ui.zoneName && ui.zoneName !== ui.mapName ? ` · ${ui.zoneName}` : ''}
-          {p.inSafeZone ? ' · An toàn' : ''}
-        </span>
+      <div className="player-bars">
+        <Bar value={p.hp} max={p.maxHp} tone="player" />
+        <Bar value={p.mp} max={p.maxMp} tone="mp" />
+        {p.cultivation.backlash > 0 && (
+          <div className="backlash small">Phản phệ {Math.ceil(p.cultivation.backlash)}s</div>
+        )}
       </div>
     </div>
   );
@@ -295,196 +339,185 @@ function PotionButton({ className = '' }: { className?: string }) {
   );
 }
 
-function InteractButton() {
-  const interact = useUiStore((s) => s.ui?.interact);
+/**
+ * Names over NPCs' heads and the interact prompt over the nearest
+ * interactable (NPC, loot, portal). GameView moves each element every frame
+ * through bindOverhead; React only adds / removes them (10 Hz).
+ */
+function OverheadLayer() {
+  const npcs = useUiStore((s) => s.ui?.npcs);
+  const interact = useUiStore((s) => s.ui?.interact ?? null);
   const touch = useControls((s) => effectiveScheme(s) === 'touch');
-  if (!interact) return null;
+  const anchors = new Map<number, string | null>((npcs ?? []).map((n) => [n.id, n.name]));
+  if (interact && !anchors.has(interact.id)) anchors.set(interact.id, null);
   return (
-    <button
-      type="button"
-      className="interact"
-      onPointerDown={(e) => {
-        e.stopPropagation();
-        game()?.interact();
-      }}
-    >
-      {touch ? interact.label.split(':')[0] : interact.label} <kbd>F</kbd>
-    </button>
+    <div className="overhead-layer">
+      {[...anchors].map(([id, name]) => (
+        <Overhead
+          key={id}
+          id={id}
+          name={name}
+          prompt={interact?.id === id ? interact.verb : null}
+          touch={touch}
+        />
+      ))}
+    </div>
   );
 }
 
-const FIRE_MODE_LABEL = {
-  auto: 'Liên thanh',
-  semi: 'Bán tự động',
-  burst: 'Loạt',
-} as const;
+function Overhead({
+  id,
+  name,
+  prompt,
+  touch,
+}: {
+  id: number;
+  name: string | null;
+  prompt: string | null;
+  touch: boolean;
+}) {
+  const bind = useCallback((el: HTMLDivElement | null) => game()?.bindOverhead(id, el), [id]);
+  return (
+    // Hidden until GameView has placed it on its first frame.
+    <div
+      ref={bind}
+      className="overhead"
+      data-clamp={prompt ? '' : undefined}
+      style={{ visibility: 'hidden' }}
+    >
+      {prompt && (
+        <button
+          type="button"
+          className="overhead-prompt"
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            game()?.interact();
+          }}
+        >
+          {!touch && <kbd>F</kbd>}
+          <span>{prompt}</span>
+        </button>
+      )}
+      {name && <span className="overhead-name">{name}</span>}
+    </div>
+  );
+}
 
 /**
- * Equipped gun (D-033): rounds left, fire mode, heat (amber → red), the
- * overheat cool-down and reload progress. Only shown with a ranged weapon.
+ * Rounds left, sitting on the attack button's bottom edge (D-033). Amber when
+ * hot, red when overheated or empty, light blue while reloading.
  */
-function AmmoPanel({ touch }: { touch: boolean }) {
+function AmmoBadge() {
   const r = useUiStore((s) => s.ui?.ranged ?? null);
-  const weapons = useUiStore((s) => s.ui?.weaponCount ?? 0);
   if (!r) return null;
   const empty = r.magazine > 0 && r.ammo === 0;
-  const status =
+  const state =
     r.overheat > 0
-      ? `Quá tải ${r.overheat.toFixed(1)}s`
+      ? 'over'
       : r.reload !== null
-        ? 'Đang nạp đạn…'
+        ? 'reload'
         : empty
-          ? 'Hết đạn — R để nạp'
-          : FIRE_MODE_LABEL[r.fireMode];
-  const bar =
-    r.overheat > 0 ? (
-      <div className="ammo-bar ammo-overheat" style={{ width: `${r.heat * 100}%` }} />
-    ) : r.reload !== null ? (
-      <div className="ammo-bar ammo-reload" style={{ width: `${r.reload * 100}%` }} />
-    ) : (
-      <div
-        className={`ammo-bar ammo-heat ${r.heat > 0.8 ? 'hot' : ''}`}
-        style={{ width: `${r.heat * 100}%` }}
-      />
-    );
+          ? 'empty'
+          : r.heat > 0.8
+            ? 'hot'
+            : '';
   return (
-    <div className={`ammo ${touch ? 'ammo-touch' : ''}`} onPointerDown={(e) => e.stopPropagation()}>
-      <div className="ammo-head">
-        <span className="ammo-name">{r.name}</span>
-        <span className={`ammo-count ${empty ? 'ammo-empty' : ''}`}>
-          {r.magazine > 0 ? (
-            <>
-              <b>{r.ammo}</b>/{r.magazine}
-            </>
-          ) : (
-            '∞'
-          )}
-        </span>
-      </div>
-      <div className="ammo-track">{bar}</div>
-      <div className="ammo-foot">
-        <span className={r.overheat > 0 ? 'ammo-warn' : ''}>{status}</span>
-        {!touch && (
-          <span className="ammo-keys">
-            {r.magazine > 0 && (
-              <button
-                type="button"
-                className="ammo-key"
-                title="Nạp đạn (R)"
-                onClick={() => game()?.reload()}
-              >
-                R
-              </button>
-            )}
-            {weapons > 1 && (
-              <button
-                type="button"
-                className="ammo-key"
-                title="Đổi vũ khí (X)"
-                onClick={() => game()?.swapWeapon()}
-              >
-                X
-              </button>
-            )}
-          </span>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/** Desktop: four equal, assignable slots centred at the bottom. */
-function DesktopActionBar({ slots }: { slots: (SkillSlot | null)[] }) {
-  return (
-    <div className="actionbar">
-      <AmmoPanel touch={false} />
-      <InteractButton />
-      <div className="skills">
-        {DESKTOP_POSITIONS.map((position, i) =>
-          slots[i] ? (
-            <SkillButton key={position} slot={slots[i]} hotkey={i + 1} />
-          ) : (
-            <EmptySkillButton key={position} position={position} hotkey={i + 1} />
-          ),
-        )}
-      </div>
-      <PotionButton className="desktop-potion" />
-    </div>
+    <span className={`ammo-badge ${state}`}>
+      {r.overheat > 0
+        ? `${r.overheat.toFixed(1)}s`
+        : r.magazine > 0
+          ? `${r.ammo}/${r.magazine}`
+          : '∞'}
+    </span>
   );
 }
 
 /**
- * Touch: three equal primary skills around the large basic attack, with a
- * smaller mobility/defense slot below them.
+ * Both control schemes share one layout: the big basic attack in the corner
+ * (its weapon rendered in 3D, popping out of the frame), skills in two rows
+ * running toward it — three on top, the fourth slot plus swap / reload
+ * underneath — and the potion above it. Desktop keeps its hotkey labels.
  */
-function TouchActionBar({ slots }: { slots: (SkillSlot | null)[] }) {
+function ActionCluster({ slots, touch }: { slots: (SkillSlot | null)[]; touch: boolean }) {
   const gun = useUiStore((s) => !!s.ui?.ranged);
   const canReload = useUiStore((s) => (s.ui?.ranged?.magazine ?? 0) > 0);
   const weapons = useUiStore((s) => s.ui?.weaponCount ?? 0);
+  const weaponImage = useUiStore((s) => s.ui?.weaponImage ?? null);
+  const positions = touch ? TOUCH_POSITIONS : DESKTOP_POSITIONS;
+  const [s1, s2, s3, s4] = positions.map((position, i) => {
+    const className = `action-slot action-slot-${i + 1}`;
+    const hotkey = touch ? undefined : i + 1;
+    const assigned = slots[i];
+    return assigned ? (
+      <SkillButton key={position} slot={assigned} hotkey={hotkey} className={className} />
+    ) : (
+      <EmptySkillButton key={position} position={position} hotkey={hotkey} className={className} />
+    );
+  });
   return (
-    <div className="touch-actions">
-      <div className="touch-interact">
-        <InteractButton />
+    <div className="action-cluster">
+      <div className="action-rows">
+        <div className="action-row">
+          {s1}
+          {s2}
+          {s3}
+        </div>
+        <div className="action-row action-row-utility">
+          {s4}
+          {weapons > 1 && (
+            <button
+              type="button"
+              className="skill action-swap"
+              title="Đổi vũ khí (X)"
+              onPointerDown={(e) => {
+                e.stopPropagation();
+                game()?.swapWeapon();
+              }}
+            >
+              <HudGlyph name="swap" />
+              <span className="skill-key">X</span>
+            </button>
+          )}
+          {gun && canReload && (
+            <button
+              type="button"
+              className="skill action-reload"
+              title="Nạp đạn (R)"
+              onPointerDown={(e) => {
+                e.stopPropagation();
+                game()?.reload();
+              }}
+            >
+              <HudGlyph name="reload" />
+              <span className="skill-key">R</span>
+            </button>
+          )}
+        </div>
       </div>
-      <AmmoPanel touch />
-      <button
-        type="button"
-        className={`attack-button ${gun ? 'attack-gun' : ''}`}
-        title={gun ? 'Bắn (giữ để bắn liên tục)' : 'Đánh thường'}
-        onPointerDown={(e) => {
-          e.stopPropagation();
-          // Keep receiving the release even if the thumb slides off the button.
-          e.currentTarget.setPointerCapture(e.pointerId);
-          game()?.attackDown();
-        }}
-        onPointerUp={() => game()?.attackUp()}
-        onPointerCancel={() => game()?.attackUp()}
-        onLostPointerCapture={() => game()?.attackUp()}
-      >
-        <HudGlyph name={gun ? 'gun' : 'blade'} />
-      </button>
-      {gun && canReload && (
+      <div className="action-main">
+        <PotionButton className="action-potion" />
         <button
           type="button"
-          className="skill touch-reload"
-          title="Nạp đạn"
+          className={`attack-button ${gun ? 'attack-gun' : ''}`}
+          title={gun ? 'Bắn (giữ để bắn liên tục · Space)' : 'Đánh thường (Space)'}
           onPointerDown={(e) => {
             e.stopPropagation();
-            game()?.reload();
+            // Keep receiving the release even if the pointer slides off the button.
+            e.currentTarget.setPointerCapture(e.pointerId);
+            game()?.attackDown();
           }}
+          onPointerUp={() => game()?.attackUp()}
+          onPointerCancel={() => game()?.attackUp()}
+          onLostPointerCapture={() => game()?.attackUp()}
         >
-          <HudGlyph name="reload" />
+          {weaponImage ? (
+            <img className="attack-weapon" src={weaponImage} alt="" draggable={false} />
+          ) : (
+            <HudGlyph name={gun ? 'gun' : 'blade'} />
+          )}
+          <AmmoBadge />
         </button>
-      )}
-      {weapons > 1 && (
-        <button
-          type="button"
-          className="skill touch-swap"
-          title="Đổi vũ khí"
-          onPointerDown={(e) => {
-            e.stopPropagation();
-            game()?.swapWeapon();
-          }}
-        >
-          <HudGlyph name="swap" />
-        </button>
-      )}
-      {TOUCH_POSITIONS.map((position, i) =>
-        slots[i] ? (
-          <SkillButton
-            key={position}
-            slot={slots[i]}
-            className={`touch-slot touch-slot-${i + 1}`}
-          />
-        ) : (
-          <EmptySkillButton
-            key={position}
-            position={position}
-            className={`touch-slot touch-slot-${i + 1}`}
-          />
-        ),
-      )}
-      <PotionButton className="touch-potion" />
+      </div>
     </div>
   );
 }
@@ -500,7 +533,7 @@ function ActionBar() {
     currentGame?.setSkillBindings(bindingKey.split('|').map((id) => id || null));
   }, [bindingKey, currentGame]);
   if (!ui?.player) return null;
-  return touch ? <TouchActionBar slots={slots} /> : <DesktopActionBar slots={slots} />;
+  return <ActionCluster slots={slots} touch={touch} />;
 }
 
 function SkillPanel() {
@@ -1237,10 +1270,11 @@ export function Hud() {
     <div className="hud" data-quality={quality}>
       {status === 'loading' && <div className="center-note">Đang tải…</div>}
       {status === 'error' && <div className="center-note error">Lỗi: {error}</div>}
+      <OverheadLayer />
       <PlayerPanel />
       <PartyFrames />
       <InvitePrompt />
-      {ui?.target && <UnitPanel unit={ui.target} className="frame-target" />}
+      {ui?.target && <TargetPanel unit={ui.target} />}
       {ui?.boss && <UnitPanel unit={ui.boss} className="frame-boss" />}
       {ui?.player && !ui.player.alive && (
         <div className="center-note">Bạn đã gục ngã — đang hồi sinh…</div>

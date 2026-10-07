@@ -82,7 +82,7 @@ async function desktop(browser: Browser): Promise<void> {
   );
   check(await page.locator(".help").isVisible(), "desktop: key help visible");
   check(
-    (await page.locator(".actionbar .skills .skill").count()) === 4,
+    (await page.locator(".action-slot").count()) === 4,
     "desktop: four equal skill slots",
   );
 
@@ -156,12 +156,12 @@ async function phone(
     `${label}: attack button shown`,
   );
   check(
-    (await page.locator(".touch-actions > .touch-slot").count()) === 4,
+    (await page.locator(".action-cluster .action-slot").count()) === 4,
     `${label}: four skill slots shown`,
   );
   const attackBox = await page.locator(".attack-button").boundingBox();
-  const primaryBox = await page.locator(".touch-slot-1").boundingBox();
-  const utilityBox = await page.locator(".touch-slot-4").boundingBox();
+  const primaryBox = await page.locator(".action-slot-1").boundingBox();
+  const utilityBox = await page.locator(".action-slot-4").boundingBox();
   check(
     !!attackBox && !!primaryBox && attackBox.width > primaryBox.width,
     `${label}: basic attack is largest`,
@@ -283,7 +283,7 @@ async function phone(
       .tap();
     await page.locator(".skill-panel .panel-head button").last().tap();
     check(
-      (await page.locator(".touch-slot-4").getAttribute("title"))?.includes(
+      (await page.locator(".action-slot-4").getAttribute("title"))?.includes(
         "Lôi Ảnh Trảm",
       ) ?? false,
       `${label}: utility assignment updates the compact slot`,

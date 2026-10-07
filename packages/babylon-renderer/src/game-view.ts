@@ -52,6 +52,7 @@ import {
   type QualityPreset,
 } from "./quality";
 import { GunFx } from "./ranged-fx";
+import { Snapshots } from "./snapshot";
 import { type InterpolatedEntity, SnapshotBuffer } from "./snapshot-buffer";
 import { type Feedback, isThunderStyle, ThunderFx } from "./thunder-fx";
 import {
@@ -65,6 +66,9 @@ import type { GearAppearances } from "./visuals";
 
 const TICK_RATE = 20;
 const UI_INTERVAL_MS = 100;
+/** Scratch vectors for placeOverhead (runs every frame). */
+const OVERHEAD_POINT = new Vector3();
+const OVERHEAD_SCREEN = new Vector3();
 /** Sounds fade to silence this far (metres) from the local player. */
 const SFX_RANGE = 28;
 /** Generic sounds when an appearance/skill does not name its own (media ids). */
@@ -160,6 +164,10 @@ export interface UiState {
   /** Main-hand weapons in the bag (the swap button shows from 2). */
   weaponCount: number;
   zoneName: string | null;
+  /** 3D render of the player's head (blob: URL), null until captured. */
+  portrait: string | null;
+  /** 3D render of the main-hand weapon (blob: URL), null when bare-handed. */
+  weaponImage: string | null;
   player:
     | (UnitFrame & {
         mp: number;
@@ -172,6 +180,10 @@ export interface UiState {
     | null;
   target: UnitFrame | null;
   boss: UnitFrame | null;
+  /** 3D render of the target's head (blob: URL), null until captured. */
+  targetPortrait: string | null;
+  /** NPCs in view: their names float over their heads (bindOverhead). */
+  npcs: { id: EntityId; name: string }[];
   skills: SkillSlot[];
   potion: {
     instanceId: string;
@@ -183,7 +195,8 @@ export interface UiState {
   inventory: ItemView[];
   inventoryCapacity: number;
   equipment: Partial<Record<EquipSlot, ItemView>>;
-  interact: { label: string } | null;
+  /** Nearest interactable: full label, the verb shown over its head, and its id. */
+  interact: { label: string; verb: string; id: EntityId } | null;
   quests: QuestView[];
   questsDone: string[];
   party: PlayerState["party"];
@@ -306,6 +319,16 @@ export class GameView {
   private releaseRepeatAt = 0;
   private playerState: PlayerState | null = null;
   private lastUi = "";
+  private snapshots: Snapshots | null = null;
+  /** Portraits of other units by appearance id (null while rendering / when missing). */
+  private readonly unitPortraits = new Map<string, string | null>();
+  /** HUD elements pinned over entities' heads, positioned every frame. */
+  private readonly overhead = new Map<EntityId, HTMLElement>();
+  /** HUD renders by kind: the key they were made for and the blob URL. */
+  private readonly hudShots = {
+    portrait: { key: "", url: null as string | null },
+    weapon: { key: "", url: null as string | null },
+  };
   private lastUiAt = 0;
   private time = 0;
   private cameraSnapped = false;
@@ -696,6 +719,10 @@ export class GameView {
     this.pool.dispose();
     this.damage.dispose();
     this.lootBeams.dispose();
+    for (const shot of Object.values(this.hudShots))
+      if (shot.url) URL.revokeObjectURL(shot.url);
+    for (const url of this.unitPortraits.values())
+      if (url) URL.revokeObjectURL(url);
     void this.assets.dispose();
     this.scene.dispose();
     this.engine.dispose();
@@ -856,6 +883,7 @@ export class GameView {
     this.thunder.update(dt);
     this.bolts.update(dt);
     this.scene.render();
+    this.placeOverhead();
     this.publish(now);
   }
 
@@ -1988,6 +2016,128 @@ export class GameView {
     };
   }
 
+  /**
+   * Re-renders the HUD portrait / weapon icon when the player's appearance or
+   * the relevant gear changes (one-off captures, see snapshot.ts).
+   */
+  private refreshSnapshots(): void {
+    const view = this.views.get(this.join.playerId);
+    const me = this.sampled.get(this.join.playerId);
+    if (!view || !me) return;
+    const appearance = view.appearance;
+    // Wait for the manifest: before it loads every model looks missing.
+    if (!this.assets.has(appearance.modelAssetId)) return;
+    this.snapshots ??= new Snapshots(this.scene, this.assets);
+    const gear = this.withDefaultGear(
+      appearance,
+      this.gearAppearances(me.state.gear ?? {}),
+    );
+    const weapon = gear.main_hand;
+    this.updateShot(
+      "portrait",
+      `${appearance.id}|${gear.head?.id ?? ""}|${gear.back?.id ?? ""}`,
+      (s) => s.portrait(appearance, gear),
+    );
+    this.updateShot("weapon", weapon?.id ?? "", (s) =>
+      weapon ? s.item(weapon) : Promise.resolve(null),
+    );
+  }
+
+  /**
+   * Pins a HUD element over an entity's head (null unbinds). The element is
+   * moved with a transform every frame — no React state involved (rule 7).
+   */
+  bindOverhead(id: EntityId, el: HTMLElement | null): void {
+    if (el) this.overhead.set(id, el);
+    else this.overhead.delete(id);
+  }
+
+  private placeOverhead(): void {
+    if (this.overhead.size === 0) return;
+    const canvas = this.engine.getRenderingCanvas();
+    if (!canvas) return;
+    const w = this.engine.getRenderWidth();
+    const h = this.engine.getRenderHeight();
+    const sx = canvas.clientWidth / w;
+    const sy = canvas.clientHeight / h;
+    const viewport = this.rig.camera.viewport.toGlobal(w, h);
+    const transform = this.scene.getTransformMatrix();
+    for (const [id, el] of this.overhead) {
+      const view = this.views.get(id);
+      if (!view) {
+        el.style.visibility = "hidden";
+        continue;
+      }
+      const p = view.root.position;
+      OVERHEAD_POINT.set(p.x, p.y + view.height + 0.3, p.z);
+      Vector3.ProjectToRef(
+        OVERHEAD_POINT,
+        Matrix.IdentityReadOnly,
+        transform,
+        viewport,
+        OVERHEAD_SCREEN,
+      );
+      let x = OVERHEAD_SCREEN.x * sx;
+      let y = OVERHEAD_SCREEN.y * sy;
+      const inFront = OVERHEAD_SCREEN.z > 0 && OVERHEAD_SCREEN.z < 1;
+      // The interact prompt (data-clamp) must stay reachable: it slides to the
+      // screen edge instead of leaving with an off-screen target.
+      if (inFront && el.dataset.clamp !== undefined) {
+        const halfW = el.offsetWidth / 2 + 8;
+        x = Math.min(Math.max(x, halfW), canvas.clientWidth - halfW);
+        y = Math.min(
+          Math.max(y, el.offsetHeight + 8),
+          canvas.clientHeight * 0.75,
+        );
+      }
+      const onScreen =
+        x >= 0 && x <= canvas.clientWidth && y >= 0 && y <= canvas.clientHeight;
+      el.style.visibility = inFront && onScreen ? "" : "hidden";
+      el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
+    }
+  }
+
+  /** Cached head render of another unit, started on first request. */
+  private unitPortrait(id: EntityId | null): string | null {
+    const view = id === null ? undefined : this.views.get(id);
+    if (!view) return null;
+    const appearance = view.appearance;
+    if (this.unitPortraits.has(appearance.id))
+      return this.unitPortraits.get(appearance.id) ?? null;
+    if (!this.assets.has(appearance.modelAssetId)) return null;
+    this.snapshots ??= new Snapshots(this.scene, this.assets);
+    this.unitPortraits.set(appearance.id, null);
+    void this.snapshots
+      .portrait(appearance, this.withDefaultGear(appearance, {}))
+      .then((url) => {
+        if (this.scene.isDisposed) {
+          if (url) URL.revokeObjectURL(url);
+          return;
+        }
+        this.unitPortraits.set(appearance.id, url);
+      });
+    return null;
+  }
+
+  private updateShot(
+    kind: keyof GameView["hudShots"],
+    key: string,
+    render: (s: Snapshots) => Promise<string | null>,
+  ): void {
+    const shot = this.hudShots[kind];
+    if (!this.snapshots || shot.key === key) return;
+    shot.key = key;
+    void render(this.snapshots).then((url) => {
+      // A newer gear change may have superseded this capture.
+      if (shot.key !== key || this.scene.isDisposed) {
+        if (url) URL.revokeObjectURL(url);
+        return;
+      }
+      if (shot.url) URL.revokeObjectURL(shot.url);
+      shot.url = url;
+    });
+  }
+
   /** UI and debug overlays update at 10 Hz, never per frame (CLAUDE.md rule 7). */
   private publish(now: number): void {
     if (now - this.lastUiAt < UI_INTERVAL_MS) return;
@@ -1998,6 +2148,7 @@ export class GameView {
     const map = c.maps.get(this.join.mapId);
     const meFrame = this.unitFrame(this.join.playerId, tick);
     const me = this.sampled.get(this.join.playerId);
+    this.refreshSnapshots();
     const zone =
       me && map
         ? (map.zones.find(
@@ -2055,13 +2206,28 @@ export class GameView {
     }
 
     const interactTarget = this.nearestInteractable();
-    let interactLabel: string | null = null;
-    if (interactTarget?.state.kind === "loot")
-      interactLabel = `Nhặt ${c.items.get(interactTarget.state.defId)?.name ?? ""}`;
-    else if (interactTarget?.state.kind === "npc")
-      interactLabel = `Nói chuyện: ${c.npcs.get(interactTarget.state.defId)?.name ?? ""}`;
-    else if (interactTarget)
-      interactLabel = `Vào ${this.unitFrame(interactTarget.state.id, tick)?.name ?? "cổng"}`;
+    let interact: UiState["interact"] = null;
+    if (interactTarget) {
+      const st = interactTarget.state;
+      const [verb, name] =
+        st.kind === "loot"
+          ? ["Nhặt", c.items.get(st.defId)?.name ?? ""]
+          : st.kind === "npc"
+            ? ["Nói chuyện", c.npcs.get(st.defId)?.name ?? ""]
+            : ["Vào", this.unitFrame(st.id, tick)?.name ?? "cổng"];
+      interact = {
+        label: st.kind === "npc" ? `${verb}: ${name}` : `${verb} ${name}`,
+        verb: st.kind === "npc" ? verb : `${verb} ${name}`,
+        id: st.id,
+      };
+    }
+    const npcs: UiState["npcs"] = [];
+    for (const e of this.sampled.values())
+      if (e.state.kind === "npc")
+        npcs.push({
+          id: e.state.id,
+          name: c.npcs.get(e.state.defId)?.name ?? e.state.defId,
+        });
 
     const ui: UiState = {
       mapName: map?.name ?? this.join.mapId,
@@ -2089,6 +2255,8 @@ export class GameView {
           : null,
       weaponCount: inventory.filter((i) => i.slot === "main_hand").length,
       zoneName: zone,
+      portrait: this.hudShots.portrait.url,
+      weaponImage: this.hudShots.weapon.url,
       player:
         meFrame && ps
           ? {
@@ -2103,6 +2271,7 @@ export class GameView {
           : null,
       target: this.unitFrame(this.selectedId, tick),
       boss: boss && boss.id !== this.selectedId ? boss : null,
+      targetPortrait: this.unitPortrait(this.selectedId),
       skills: (ps?.skills ?? []).map((s) => {
         const def = c.skills.get(s.skillId);
         const remaining = Math.max(0, (s.readyAtTick - tick) / TICK_RATE);
@@ -2137,7 +2306,8 @@ export class GameView {
       inventory,
       inventoryCapacity: ps?.inventoryCapacity ?? 0,
       equipment,
-      interact: interactLabel ? { label: interactLabel } : null,
+      interact,
+      npcs,
       questsDone: (ps?.quests ?? [])
         .filter((q) => q.status === "done")
         .map((q) => q.questId),

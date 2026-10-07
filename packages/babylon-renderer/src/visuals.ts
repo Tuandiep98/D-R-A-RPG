@@ -442,11 +442,20 @@ export class ModelVisual implements Visual {
       this.nodesByName.set(stripPrefix(n.name, name), n);
 
     if (appearance.tint) {
-      const tint = Color3.FromHexString(appearance.tint).scale(0.35);
+      // Recolour by multiplying the base colour, part-way toward the tint so
+      // the texture's shading survives. (An emissive tint washed the models
+      // out: it adds the same light everywhere, lit side or not.)
+      const tint = Color3.Lerp(
+        Color3.White(),
+        Color3.FromHexString(appearance.tint),
+        0.65,
+      );
       for (const m of this.shadowCasters) {
         const mat = m.material as
-          (Material & { emissiveColor?: Color3 }) | null;
-        if (mat && "emissiveColor" in mat) mat.emissiveColor = tint;
+          | (Material & { albedoColor?: Color3; diffuseColor?: Color3 })
+          | null;
+        if (mat?.albedoColor) mat.albedoColor = tint;
+        else if (mat?.diffuseColor) mat.diffuseColor = tint;
       }
     }
 

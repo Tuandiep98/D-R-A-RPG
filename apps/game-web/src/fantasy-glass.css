@@ -95,7 +95,7 @@
   image-rendering: pixelated;
 }
 
-.hud :is(.frame, .party-member, .quest, .ammo, .notice, .actionbar .skills, .interact, .help-open) {
+.hud :is(.frame, .party-member, .quest, .notice, .interact, .help-open) {
   border: 8px solid transparent;
   border-image: var(--fui-panel) 16 fill / 8px stretch;
   border-radius: 0;
@@ -163,7 +163,7 @@
   border-image-width: 16px;
 }
 
-.hud :is(.bar, .ammo-track, .ammo-bar, .skill-cd, .game-icon.skill-icon) {
+.hud :is(.bar, .skill-cd, .game-icon.skill-icon) {
   border-radius: 0;
 }
 
@@ -366,9 +366,6 @@
   top: calc(max(10px, env(safe-area-inset-top)) + 110px);
 }
 @media (orientation: portrait) and (max-width: 600px) {
-  :root[data-controls="touch"] .hud .frame-target {
-    top: calc(max(10px, env(safe-area-inset-top)) + 115px);
-  }
   :root[data-controls="touch"] .hud .frame-boss {
     top: calc(max(10px, env(safe-area-inset-top)) + 225px);
   }
@@ -390,14 +387,7 @@
 /* Touch: every control is at least 44 × 44 px. */
 :root[data-controls="touch"]
   .hud
-  :is(
-    .panel button,
-    .chat-toggle,
-    .chat button,
-    .help button,
-    .interact,
-    .touch-actions > .touch-potion
-  ) {
+  :is(.panel button, .chat-toggle, .chat button, .help button, .interact) {
   min-width: 44px;
   min-height: 44px;
 }
@@ -405,21 +395,6 @@
   height: 44px;
 }
 
-/*
- * Short landscape phones: the cluster is compressed, so the interact pill
- * would sit on the potion. Park it beside the cluster, level with attack.
- */
-@media (max-height: 480px) {
-  :root[data-controls="touch"] .touch-interact {
-    bottom: 0;
-    right: calc(150px * var(--cluster-scale) + 8px);
-    transform: translateY(50%);
-  }
-  :root[data-controls="touch"][data-hand="right"] .touch-interact {
-    right: auto;
-    left: calc(150px * var(--cluster-scale) + 8px);
-  }
-}
 :root[data-controls="touch"] .hud label.check {
   min-height: 44px;
   align-items: center;
@@ -436,4 +411,359 @@
   background: none;
   color: var(--hud-text);
   image-rendering: pixelated;
+}
+
+/* ---------- Player HUD: 3D head avatar in front of HP / MP, no panel ---------- */
+.hud .player-hud {
+  position: absolute;
+  /* Room for the head popping out above the avatar slot. */
+  top: calc(max(10px, env(safe-area-inset-top)) + 28px);
+  left: max(10px, env(safe-area-inset-left));
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+.hud :is(.player-avatar, .target-avatar) {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  border: 8px solid transparent;
+  border-image: var(--fui-slot) 16 fill / 8px stretch;
+  image-rendering: pixelated;
+  pointer-events: auto;
+}
+/*
+ * 1.8× the slot's well, bottom-aligned: the head rises above the frame while
+ * the clip keeps the shoulders inside the well (45% = well top, 22/78% = its sides).
+ */
+.hud :is(.player-avatar, .target-avatar) img {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 180%;
+  transform: translateX(-50%);
+  /* In front of the frame: the head covers the top edge as it pops out. */
+  z-index: 1;
+  clip-path: polygon(0 0, 100% 0, 100% 45%, 78% 45%, 78% 100%, 22% 100%, 22% 45%, 0 45%);
+  image-rendering: auto;
+  filter: drop-shadow(0 3px 2px rgba(0, 0, 0, 0.55));
+  pointer-events: none;
+}
+.hud :is(.player-avatar, .target-avatar) .hud-glyph {
+  width: 30px;
+  height: 30px;
+}
+.hud .player-bars {
+  display: grid;
+  gap: 4px;
+  width: min(210px, 48vw);
+  /* Bars start behind the avatar so it stands in front of them. */
+  margin-left: -6px;
+}
+.hud .player-bars .bar {
+  height: 16px;
+  background: rgba(5, 13, 19, 0.78);
+  border-color: rgba(218, 233, 238, 0.32);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+}
+.hud .player-bars .bar-mp {
+  height: 12px;
+}
+.hud .player-bars .bar-text {
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.9),
+    0 0 3px rgba(0, 0, 0, 0.7);
+}
+.hud .player-bars .backlash {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+/* ---------- Touch cluster: attack in the corner, skill rows toward it ---------- */
+:root {
+  --attack-size: 84px;
+  --skill-size: 50px;
+  --util-size: 44px;
+  --cluster-gap: 8px;
+}
+:root:not([data-controls="touch"]) {
+  --attack-size: 80px;
+  --skill-size: 54px;
+}
+.action-cluster {
+  position: absolute;
+  right: var(--safe-r);
+  /* The ammo badge hangs below the attack button. */
+  bottom: calc(var(--safe-b) + 12px);
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  pointer-events: none;
+}
+:root[data-controls="touch"][data-hand="right"] .action-cluster {
+  right: auto;
+  left: var(--safe-l);
+  flex-direction: row-reverse;
+}
+.action-cluster button {
+  pointer-events: auto;
+}
+.action-rows {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--cluster-gap);
+}
+:root[data-controls="touch"][data-hand="right"] .action-rows {
+  align-items: flex-start;
+}
+.action-row {
+  display: flex;
+  align-items: center;
+  gap: var(--cluster-gap);
+}
+:root[data-controls="touch"][data-hand="right"] .action-row {
+  flex-direction: row-reverse;
+}
+.action-cluster .skill {
+  width: var(--skill-size);
+  height: var(--skill-size);
+}
+.action-cluster :is(.action-row-utility, .action-main) > .skill {
+  width: var(--util-size);
+  height: var(--util-size);
+}
+/* Desktop: four equal slots (the loadout panel promises it). */
+:root:not([data-controls="touch"]) .action-row-utility > .action-slot {
+  width: var(--skill-size);
+  height: var(--skill-size);
+}
+.action-cluster :is(.action-reload, .action-swap) .hud-glyph {
+  width: 22px;
+  height: 22px;
+}
+.action-cluster .skill:active {
+  transform: scale(0.94);
+}
+:root[data-controls="touch"] .action-cluster .skill-key {
+  display: none;
+}
+.action-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.hud .attack-button {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--attack-size);
+  height: var(--attack-size);
+  padding: 0;
+  touch-action: none;
+  cursor: pointer;
+}
+.hud .attack-button:active {
+  transform: scale(0.94);
+}
+.hud .attack-button .hud-glyph {
+  width: 44%;
+  height: 44%;
+}
+/* The weapon render breaks out of the slot, up and to the right. */
+.attack-weapon {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 118%;
+  transform: translate(-46%, -60%);
+  image-rendering: auto;
+  filter: drop-shadow(0 4px 3px rgba(0, 0, 0, 0.6));
+  pointer-events: none;
+}
+/* Rounds left: bare numerals with a drop shadow over the button's bottom edge. */
+.ammo-badge {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translate(-50%, 50%);
+  color: var(--hud-text);
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-shadow:
+    0 2px 3px rgba(0, 0, 0, 0.95),
+    0 0 6px rgba(0, 0, 0, 0.75);
+  pointer-events: none;
+}
+.ammo-badge.reload {
+  color: #8fd8ff;
+}
+.ammo-badge.hot {
+  color: #f2c46b;
+}
+.ammo-badge:is(.over, .empty) {
+  color: #ff8a76;
+}
+/* Portrait phones: keep the skill rows clear of the joystick's rest spot. */
+@media (orientation: portrait) and (max-width: 430px) {
+  :root {
+    --attack-size: 80px;
+    --skill-size: 46px;
+    --cluster-gap: 6px;
+  }
+  .action-cluster {
+    gap: 10px;
+  }
+  .joystick-base {
+    left: calc(var(--safe-l) + var(--joystick-radius) + 6px);
+  }
+  .joystick-right .joystick-base {
+    left: calc(100% - var(--safe-r) - var(--joystick-radius) - 6px);
+  }
+}
+@media (orientation: portrait) and (max-width: 360px) {
+  :root {
+    --attack-size: 70px;
+    --cluster-gap: 5px;
+  }
+  .action-cluster {
+    gap: 6px;
+  }
+  .joystick-base {
+    left: calc(var(--safe-l) + var(--joystick-radius));
+  }
+  .joystick-right .joystick-base {
+    left: calc(100% - var(--safe-r) - var(--joystick-radius));
+  }
+}
+@media (max-height: 480px) {
+  :root {
+    --attack-size: 72px;
+    --skill-size: 46px;
+    --cluster-gap: 6px;
+  }
+  .action-main {
+    gap: 8px;
+  }
+}
+
+/* ---------- Target: avatar + tier badge, then HP (same look as the player) ---------- */
+.hud .target-hud {
+  position: absolute;
+  top: calc(max(10px, env(safe-area-inset-top)) + 28px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+.hud .target-hud button {
+  pointer-events: auto;
+}
+.hud .target-avatar .tier {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  bottom: -8px;
+  transform: translate(-50%, 50%);
+  margin: 0;
+  padding: 2px 6px;
+  border-radius: 0;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+.hud .target-name {
+  /* Clear of the avatar, which overlaps the bars' left end. */
+  padding-left: 12px;
+  overflow: hidden;
+  color: #f3f5f2;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.1;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.95),
+    0 0 4px rgba(0, 0, 0, 0.7);
+}
+@media (orientation: portrait) and (max-width: 600px) {
+  /* Under the player's avatar on the left. */
+  .hud .target-hud {
+    top: calc(max(10px, env(safe-area-inset-top)) + 122px);
+    left: max(10px, env(safe-area-inset-left));
+    transform: none;
+  }
+}
+
+/* ---------- Over-head names and the interact prompt ---------- */
+.hud .overhead-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.hud .overhead {
+  position: absolute;
+  left: 0;
+  top: 0;
+  will-change: transform;
+}
+/* Anchored at the head: the column grows upward from that point. */
+.hud .overhead > * {
+  position: relative;
+}
+.hud .overhead {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  translate: -50% -100%;
+}
+.hud .overhead-name {
+  color: #f3f5f2;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.95),
+    0 0 4px rgba(0, 0, 0, 0.7);
+}
+.hud .overhead-prompt {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 4px;
+  border: 8px solid transparent;
+  border-image: var(--fui-button) 16 fill / 8px stretch;
+  border-radius: 0;
+  background: none;
+  color: var(--hud-text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  image-rendering: pixelated;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.hud .overhead-prompt kbd {
+  min-width: 20px;
+  padding: 1px 5px;
+  border: 1px solid rgba(218, 233, 238, 0.6);
+  background: rgba(218, 233, 238, 0.12);
+  color: var(--hud-accent, #c4d58c);
+  font-weight: 700;
+  text-align: center;
+}
+:root[data-controls="touch"] .hud .overhead-prompt {
+  min-height: 44px;
+  padding: 0 10px;
+  font-size: 15px;
 }

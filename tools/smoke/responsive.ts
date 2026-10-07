@@ -46,22 +46,20 @@ const panels: [string, string][] = [
 
 /** HUD widgets that must not overlap each other while no window is open. */
 const widgets = [
-  '.frame-player',
-  '.frame-target',
+  '.player-hud',
+  '.target-hud',
   '.frame-boss',
   '.quest',
   '.chat',
   '.menu',
-  '.actionbar .skills',
   '.attack-button',
+  '.action-rows',
   '.joystick-zone .joystick-base',
   '.notices',
   '.help',
-  '.ammo',
-  '.interact',
   '.potion',
-  '.touch-reload',
-  '.touch-swap',
+  '.action-reload',
+  '.action-swap',
 ];
 
 const failures: string[] = [];
