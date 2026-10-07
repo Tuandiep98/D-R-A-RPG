@@ -216,3 +216,33 @@ Mỗi quyết định: ngày, bối cảnh, quyết định, hệ quả. Khi mâ
   - Sprite lấy từ Kenney Particle Pack (CC0, đã vendor). Mỗi loại sprite là 1 mesh thin instance, tức 1 draw call. Preset Low tắt vệt kiếm và giảm số hạt.
   - Clip one-shot chỉ kết thúc theo token của lần phát mới nhất: `AnimationGroup.stop()` cũng bắn `onAnimationGroupEndObservable`, nên trước đây đòn sau tự cắt mình về idle.
 - **Hệ quả:** thêm kiểu đòn mới chỉ cần YAML (clip, windup, trail, impact). Clip mới có root motion phải khai báo `inPlace`.
+
+## D-032 — Hiệu ứng skill Lôi Kiếm Tu (7 skill hệ lôi)
+- **Ngày:** 2026-10-07
+- **Quyết định:**
+  - Skill khai báo clip của người thi triển trong YAML: `anim: { cast, castSpeed, impact, impactSpeed }`. Model thiếu clip thì dùng role `cast` của appearance. Đây chỉ là phần hiển thị, sim không đọc.
+  - `vfx` của skill chọn kiểu hiển thị trong `packages/babylon-renderer/src/thunder-fx.ts`:
+
+    | Kiểu | Skill |
+    |---|---|
+    | `thunder_dash` | Lôi Bộ |
+    | `thunder_leap` | Lôi Ảnh Trảm |
+    | `thunder_arc` | Lôi Hoàn Kiếm |
+    | `thunder_field` | Lôi Vực |
+    | `thunder_projectile` | Lôi Kiếm Xuyên Tâm |
+    | `thunder_strike` | Tử Điện Trảm |
+    | `thunder_ultimate` | Cửu Thiên Lôi Kiếm |
+
+  - Hiệu ứng bám vào sự kiện của host:
+    - `CAST_START`: tay tụ sáng, điện chạy quanh người, trận pháp dưới đất cho skill chọn điểm.
+    - `SKILL_IMPACT`: cú đánh xuống. Dash vẽ đường sét từ điểm bắt đầu cast tới điểm đến.
+    - `DAMAGE`: tia lửa điện trên mục tiêu.
+    - Lôi Vực và tuyệt kỹ có các tia sét đánh lệch nhịp nhau. Phần lệch nhịp chỉ là hình ảnh, sát thương vẫn tính một lần.
+  - Tia sét vẽ bằng code (`lightning.ts`):
+    - tạo đường gãy khúc bằng midpoint displacement, sinh lại khoảng 14 lần/giây cho nhấp nháy;
+    - mỗi tia gồm 2 dải luôn quay về camera: glow mờ dần ra hai mép và lõi trắng;
+    - mọi tia gộp vào 1 mesh, cộng màu, không dùng texture, tức 1 draw call.
+  - Sprite bổ sung từ Kenney Particle Pack: `spark_02/06/07`, `magic_02`, `circle_02`.
+  - Clip KayKit mới cho Rogue/Ranger: `Dodge_Forward` (thêm bản `_InPlace`), `Ranged_Magic_Raise`, `Ranged_Magic_Spellcasting_Long`. Lấy từ `Rig_Medium_MovementAdvanced`, `Rig_Medium_CombatRanged`, không cần retarget.
+  - Preset Low: ít tia sét và hạt hơn, không có điện chạy quanh người, giới hạn 12 tia cùng lúc.
+- **Hệ quả:** thêm skill hệ khác (hoả, băng…) thì viết một module kiểu `thunder-fx.ts` và trỏ `vfx` tới nó. Âm thanh hiện tạm dùng Kenney Sci-Fi (`sfx_force_field`, `sfx_laser_*`, `sfx_explosion*`) cho tới khi có gói tiếng sấm CC0.

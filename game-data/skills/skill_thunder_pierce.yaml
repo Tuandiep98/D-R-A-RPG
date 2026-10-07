@@ -10,4 +10,6 @@ mpCost: 12
 effects:
   - { type: damage, multiplier: 2 }
 vfx: thunder_projectile
-sfx: { cast: [sfx_swing_02], impact: [sfx_hit_metal_02] }
+# Clip trong model của người thi triển (presentation, D-032).
+anim: { cast: Melee_1H_Attack_Stab, castSpeed: 2.2 }
+sfx: { cast: [sfx_laser_large], impact: [sfx_hit_metal_02] }

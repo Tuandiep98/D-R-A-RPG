@@ -129,6 +129,31 @@
       "id": "vfx_muzzle_01",
       "file": "originals/PNG (Transparent)/muzzle_01.png",
       "size": 256
+    },
+    {
+      "id": "vfx_spark_02",
+      "file": "originals/PNG (Transparent)/spark_02.png",
+      "size": 256
+    },
+    {
+      "id": "vfx_spark_06",
+      "file": "originals/PNG (Transparent)/spark_06.png",
+      "size": 256
+    },
+    {
+      "id": "vfx_spark_07",
+      "file": "originals/PNG (Transparent)/spark_07.png",
+      "size": 256
+    },
+    {
+      "id": "vfx_circle_02",
+      "file": "originals/PNG (Transparent)/circle_02.png",
+      "size": 256
+    },
+    {
+      "id": "vfx_magic_02",
+      "file": "originals/PNG (Transparent)/magic_02.png",
+      "size": 256
     }
   ]
 }

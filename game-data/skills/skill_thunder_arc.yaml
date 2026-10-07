@@ -9,4 +9,6 @@ mpCost: 20
 effects:
   - { type: damage, multiplier: 1.5, radius: 3.2 }
 vfx: thunder_arc
-sfx: { cast: [sfx_swing_01], impact: [sfx_chop] }
+# Clip trong model của người thi triển (presentation, D-032).
+anim: { cast: Melee_2H_Attack_Spinning, castSpeed: 1.1 }
+sfx: { cast: [sfx_swing_01], impact: [sfx_force_field] }

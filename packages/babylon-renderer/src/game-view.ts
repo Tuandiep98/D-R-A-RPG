@@ -44,8 +44,10 @@ import { DamageTextPool, MoveMarker, SelectionRing } from './effects';
 import { createEngine, type EngineKind } from './engine';
 import { EntityView, EntityViewPool, type PickMetadata } from './entity-view';
 import { EnvironmentView } from './environment';
+import { LightningBatch } from './lightning';
 import { QualityManager, type QualityMode, type QualityPreset } from './quality';
 import { type InterpolatedEntity, SnapshotBuffer } from './snapshot-buffer';
+import { type Feedback, isThunderStyle, ThunderFx } from './thunder-fx';
 import { ImpactPool, LootBeams, ProjectilePool, RARITY_COLORS, TelegraphPool } from './vfx';
 import type { GearAppearances } from './visuals';
 
@@ -283,6 +285,10 @@ export class GameView {
   private readonly quality: QualityManager;
   private preset: QualityPreset;
   private readonly fx: CombatFx;
+  private readonly bolts: LightningBatch;
+  private readonly thunder: ThunderFx;
+  /** Where each caster stood when its current cast began (dash skills travel from there). */
+  private readonly castFrom = new Map<EntityId, { x: number; z: number }>();
   /** Latest combo swing per attacker: impact style and one hit-stop per swing. */
   private readonly swings = new Map<
     EntityId,
@@ -312,6 +318,8 @@ export class GameView {
   ) {
     this.join = join;
     this.fx = new CombatFx(scene, rig.camera, opts.mediaUrl ?? (() => null));
+    this.bolts = new LightningBatch(scene, rig.camera);
+    this.thunder = new ThunderFx(this.fx, this.bolts);
     this.preset = { level: 'high' } as QualityPreset;
     this.quality = new QualityManager(opts.quality ?? 'auto', (p) => this.applyQuality(p), 'high');
   }
@@ -691,6 +699,8 @@ export class GameView {
     this.impacts.update(dt);
     this.projectiles.update(dt);
     this.fx.update(dt);
+    this.thunder.update(dt);
+    this.bolts.update(dt);
     this.scene.render();
     this.publish(now);
   }
@@ -704,6 +714,7 @@ export class GameView {
     this.impacts.capacity = p.vfxCap;
     this.projectiles.capacity = p.vfxCap;
     this.fx?.setQuality(p.level);
+    if (this.bolts) this.bolts.capacity = p.level === 'low' ? 12 : p.level === 'medium' ? 24 : 40;
     for (const [id, view] of this.views) {
       const e = this.sampled.get(id);
       if (e) view.setCastShadows(this.shouldCastShadow(e.state));
@@ -968,6 +979,10 @@ export class GameView {
           }
           view.play('hit');
           if (ev.hit) this.presentMeleeHit(ev.sourceId, view, ev.heavy === true, ev.crit, ev.hit);
+          else if (ev.skillId && !delayedReplay) {
+            const style = this.opts.content.skills.get(ev.skillId)?.vfx;
+            if (isThunderStyle(style)) this.thunder.hit(view, style);
+          }
           this.sfxAt(
             ev.crit ? DEFAULT_SFX.crit : (view.appearance.sfx.hit ?? DEFAULT_SFX.hit),
             ev.targetId,
@@ -1007,10 +1022,23 @@ export class GameView {
         case 'CAST_START': {
           const source = this.views.get(ev.sourceId);
           const skill = this.opts.content.skills.get(ev.skillId);
-          source?.play('cast');
+          if (skill?.anim?.cast) source?.playClip(skill.anim.cast, skill.anim.castSpeed, 'cast');
+          else source?.play('cast');
           this.sfxAt(skill?.sfx.cast, ev.sourceId);
-          if (source && skill?.vfx.startsWith('thunder_'))
-            this.impacts.spawn(source.root.position.x, source.root.position.z, 1.05, skill.vfx);
+          // Self casts carry the caster's position at the start (a dash's origin).
+          const self = skill?.targeting === 'self';
+          const from = self ? ev.point : source ? source.root.position : null;
+          if (from) this.castFrom.set(ev.sourceId, { x: from.x, z: from.z });
+          if (source && isThunderStyle(skill?.vfx)) {
+            const seconds = Math.max(0, (ev.endTick - tick) / TICK_RATE);
+            const p = source.root.position;
+            if (ev.point && !self)
+              source.faceYaw(Math.atan2(ev.point.x - p.x, ev.point.z - p.z), seconds + 0.2);
+            this.feedback(
+              ev.sourceId,
+              this.thunder.cast(skill.vfx, source, self ? null : ev.point, ev.radius, seconds),
+            );
+          }
           if (ev.telegraph && ev.point && ev.radius > 0) {
             const seconds = Math.max(0.1, (ev.endTick - tick) / TICK_RATE);
             this.telegraphs.show(`${ev.sourceId}`, ev.point.x, ev.point.z, ev.radius, seconds);
@@ -1024,15 +1052,22 @@ export class GameView {
           this.sfxAt(skill?.sfx.impact, ev.targetId ?? ev.sourceId);
           const src = this.views.get(ev.sourceId);
           const tgt = ev.targetId !== null ? this.views.get(ev.targetId) : undefined;
-          if ((vfx === 'projectile' || vfx === 'thunder_projectile') && src && tgt) {
+          if (skill?.anim?.impact) src?.playClip(skill.anim.impact, skill.anim.impactSpeed, 'cast');
+          const from = this.castFrom.get(ev.sourceId) ?? null;
+          this.castFrom.delete(ev.sourceId);
+          if (isThunderStyle(vfx)) {
+            this.feedback(
+              ev.sourceId,
+              this.thunder.impact(vfx, src, tgt, from, ev.point, ev.radius),
+              ev.point,
+            );
+          } else if (vfx === 'projectile' && src && tgt) {
             this.projectiles.fire(
               src.root.position.add(new Vector3(0, src.height * 0.6, 0)),
               tgt.root.position.add(new Vector3(0, tgt.height * 0.5, 0)),
               vfx,
             );
           } else if (ev.radius > 0) this.impacts.spawn(ev.point.x, ev.point.z, ev.radius, vfx);
-          else if (skill?.targeting === 'self' && vfx.startsWith('thunder_'))
-            this.impacts.spawn(ev.point.x, ev.point.z, 1.1, vfx);
           else if (tgt) this.impacts.spawn(tgt.root.position.x, tgt.root.position.z, 0.8, vfx);
           else if (src && vfx === 'heal')
             this.impacts.spawn(src.root.position.x, src.root.position.z, 1.2, vfx);
@@ -1169,6 +1204,18 @@ export class GameView {
     const pos = view.root.position.clone();
     pos.y += view.height + 0.3;
     this.damage.spawn(pos, text, color, scale);
+  }
+
+  /** Camera shake / zoom kick from a skill, strongest for the caster's own screen. */
+  private feedback(sourceId: EntityId, f: Feedback, at?: { x: number; z: number }): void {
+    if (f.shake <= 0 && f.kick <= 0) return;
+    const mine = sourceId === this.join.playerId;
+    const me = this.sampled.get(this.join.playerId);
+    const near = me && at ? Math.hypot(me.x - at.x, me.z - at.z) : 0;
+    if (!mine && near > 10) return;
+    const k = mine ? 1 : 0.5;
+    if (f.shake > 0) this.rig.shake(f.shake * k, Math.max(0.15, f.seconds), 0, 1);
+    if (f.kick > 0 && mine) this.rig.kick(f.kick);
   }
 
   /** Runs presentation `seconds` from now (animation contact frames). */

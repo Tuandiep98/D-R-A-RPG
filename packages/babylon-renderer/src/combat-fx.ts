@@ -42,7 +42,14 @@ export type FxSprite =
   | 'trace'
   | 'smoke'
   | 'scorch'
-  | 'spark';
+  | 'spark'
+  // Thunder skills (Lôi Kiếm Tu).
+  | 'zap'
+  | 'bolt'
+  | 'streak'
+  | 'rune'
+  | 'sigil'
+  | 'shock';
 
 const SPRITE_MEDIA: Record<FxSprite, string> = {
   slash: 'vfx_slash_02',
@@ -55,6 +62,12 @@ const SPRITE_MEDIA: Record<FxSprite, string> = {
   smoke: 'vfx_smoke_07',
   scorch: 'vfx_scorch_01',
   spark: 'vfx_flare_01',
+  zap: 'vfx_spark_02',
+  bolt: 'vfx_spark_06',
+  streak: 'vfx_spark_07',
+  rune: 'vfx_magic_01',
+  sigil: 'vfx_magic_02',
+  shock: 'vfx_circle_02',
 };
 
 /** How a sprite is oriented: facing the camera, lying on the ground, or standing along a heading. */
@@ -140,7 +153,8 @@ class SpriteBatch {
     this.mesh.thinInstanceSetBuffer('color', this.colors, 4, false);
     this.mesh.thinInstanceCount = 0;
     // Light flashes draw over bodies (a glow in the hand must not hide behind the arm).
-    if (kind === 'glow' || kind === 'star' || kind === 'spark') this.mesh.renderingGroupId = 1;
+    if (kind === 'glow' || kind === 'star' || kind === 'spark' || kind === 'zap')
+      this.mesh.renderingGroupId = 1;
     this.mesh.setEnabled(false);
   }
 
@@ -372,12 +386,16 @@ export class CombatFx {
     this.level = level;
   }
 
+  get quality(): QualityLevel {
+    return this.level;
+  }
+
   private get cap(): number {
     return this.level === 'low' ? 12 : this.level === 'medium' ? 32 : MAX_PER_KIND;
   }
 
   /** Multiplier for particle counts. */
-  private get density(): number {
+  get density(): number {
     return this.level === 'low' ? 0.35 : this.level === 'medium' ? 0.65 : 1;
   }
 
@@ -1022,6 +1040,47 @@ function proceduralTexture(scene: Scene, kind: FxSprite): DynamicTexture {
         ctx.restore();
       }
       break;
+    case 'zap':
+    case 'bolt':
+    case 'streak': {
+      // A jagged stroke (vertical for bolts, horizontal for streaks, a few for zaps).
+      const strokes = kind === 'zap' ? 3 : 1;
+      ctx.lineWidth = kind === 'zap' ? 3 : 5;
+      for (let k = 0; k < strokes; k++) {
+        const a = kind === 'streak' ? Math.PI / 2 : kind === 'zap' ? k * 2.1 : 0;
+        ctx.save();
+        ctx.translate(c, c);
+        ctx.rotate(a);
+        ctx.beginPath();
+        ctx.moveTo(0, -c * 0.9);
+        for (let i = 1; i <= 8; i++)
+          ctx.lineTo((Math.random() * 2 - 1) * c * 0.18, -c * 0.9 + i * c * 0.225);
+        ctx.stroke();
+        ctx.restore();
+      }
+      break;
+    }
+    case 'rune':
+    case 'sigil':
+    case 'shock': {
+      ctx.lineWidth = kind === 'shock' ? 8 : 4;
+      ctx.beginPath();
+      ctx.arc(c, c, c * 0.85, 0, Math.PI * 2);
+      ctx.stroke();
+      if (kind !== 'shock') {
+        const n = kind === 'rune' ? 5 : 6;
+        ctx.beginPath();
+        for (let i = 0; i <= n; i++) {
+          const a = ((i * (kind === 'rune' ? 2 : 1)) / n) * Math.PI * 2;
+          const x = c + Math.sin(a) * c * 0.8;
+          const y = c - Math.cos(a) * c * 0.8;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+      break;
+    }
     case 'trace':
       ctx.lineWidth = 10;
       ctx.beginPath();

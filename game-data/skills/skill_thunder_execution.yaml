@@ -10,4 +10,6 @@ mpCost: 22
 effects:
   - { type: damage, multiplier: 3.2 }
 vfx: thunder_strike
-sfx: { cast: [sfx_draw_blade], impact: [sfx_hit_heavy] }
+# Clip trong model của người thi triển (presentation, D-032).
+anim: { cast: Melee_1H_Attack_Jump_Chop_InPlace, castSpeed: 2.4 }
+sfx: { cast: [sfx_draw_blade], impact: [sfx_explosion_low] }

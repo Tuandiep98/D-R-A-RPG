@@ -95,7 +95,8 @@
         "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb",
         "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_MovementBasic.glb",
         "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_CombatMelee.glb",
-        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_CombatRanged.glb"
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_CombatRanged.glb",
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_MovementAdvanced.glb"
       ],
       "animationClips": [
         "Idle_A",
@@ -123,7 +124,10 @@
         "Melee_2H_Attack_Spinning",
         "Melee_Dualwield_Attack_Stab",
         "Melee_Dualwield_Attack_Slice",
-        "Melee_Unarmed_Attack_Kick"
+        "Melee_Unarmed_Attack_Kick",
+        "Dodge_Forward",
+        "Ranged_Magic_Raise",
+        "Ranged_Magic_Spellcasting_Long"
       ],
       "type": "character",
       "derivedClips": [
@@ -141,6 +145,11 @@
         {
           "name": "Melee_1H_Attack_Jump_Chop_InPlace",
           "from": "Melee_1H_Attack_Jump_Chop",
+          "inPlace": ["hips"]
+        },
+        {
+          "name": "Dodge_Forward_InPlace",
+          "from": "Dodge_Forward",
           "inPlace": ["hips"]
         }
       ]
@@ -161,7 +170,8 @@
         "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb",
         "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_MovementBasic.glb",
         "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_CombatMelee.glb",
-        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_CombatRanged.glb"
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_CombatRanged.glb",
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_MovementAdvanced.glb"
       ],
       "animationClips": [
         "Idle_A",
@@ -189,7 +199,10 @@
         "Melee_2H_Attack_Spinning",
         "Melee_Dualwield_Attack_Stab",
         "Melee_Dualwield_Attack_Slice",
-        "Melee_Unarmed_Attack_Kick"
+        "Melee_Unarmed_Attack_Kick",
+        "Dodge_Forward",
+        "Ranged_Magic_Raise",
+        "Ranged_Magic_Spellcasting_Long"
       ],
       "type": "character",
       "derivedClips": [
@@ -207,6 +220,11 @@
         {
           "name": "Melee_1H_Attack_Jump_Chop_InPlace",
           "from": "Melee_1H_Attack_Jump_Chop",
+          "inPlace": ["hips"]
+        },
+        {
+          "name": "Dodge_Forward_InPlace",
+          "from": "Dodge_Forward",
           "inPlace": ["hips"]
         }
       ]

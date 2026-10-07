@@ -30,7 +30,8 @@ export interface Visual {
   readonly shadowCasters: AbstractMesh[];
   setBase(role: BaseRole): void;
   oneShot(role: OneShotRole): void;
-  oneShotClip(clip: string, speed: number): void;
+  /** Plays a named clip once; `fallback` role when the model lacks it. */
+  oneShotClip(clip: string, speed: number, fallback?: OneShotRole): void;
   /** Hit-stop: holds the current pose for `seconds` (cosmetic, client only). */
   freeze(seconds: number): void;
   /** Node to hang effects on: a socket, or `weapon_tip` (main-hand blade tip, else right hand). */
@@ -230,8 +231,8 @@ export class PlaceholderVisual implements Visual {
     else this.hitT = 0.15;
   }
 
-  oneShotClip(_clip: string, _speed: number): void {
-    this.oneShot('attack');
+  oneShotClip(_clip: string, _speed: number, fallback: OneShotRole = 'attack'): void {
+    this.oneShot(fallback);
   }
 
   freeze(_seconds: number): void {}
@@ -382,14 +383,14 @@ export class ModelVisual implements Visual {
     this.playOneShot(g, role, 1);
   }
 
-  oneShotClip(clip: string, speed: number): void {
+  oneShotClip(clip: string, speed: number, fallback: OneShotRole = 'attack'): void {
     const g = this.clips.get(clip);
     if (!g) {
-      this.oneShot('attack');
+      this.oneShot(fallback);
       return;
     }
     if (this.base === 'death') return;
-    this.playOneShot(g, 'attack', speed);
+    this.playOneShot(g, fallback, speed);
   }
 
   freeze(seconds: number): void {

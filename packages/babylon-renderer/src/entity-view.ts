@@ -191,8 +191,8 @@ export class EntityView {
     this.visual.oneShot(role);
   }
 
-  playClip(clip: string, speed: number): void {
-    this.visual.oneShotClip(clip, speed);
+  playClip(clip: string, speed: number, fallback: OneShotRole = 'attack'): void {
+    this.visual.oneShotClip(clip, speed, fallback);
   }
 
   update(dt: number): void {

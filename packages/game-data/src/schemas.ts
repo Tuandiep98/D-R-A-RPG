@@ -113,6 +113,18 @@ export const SkillDefSchema = z.strictObject({
   telegraph: z.boolean().default(false),
   effects: z.array(SkillEffectSchema).min(1),
   vfx: z.string().default('slash'),
+  /**
+   * Presentation only: clips (names inside the caster's model) played when the
+   * cast starts and when it lands. Missing → the appearance's `cast` role.
+   */
+  anim: z
+    .strictObject({
+      cast: z.string().min(1).optional(),
+      castSpeed: positive.default(1),
+      impact: z.string().min(1).optional(),
+      impactSpeed: positive.default(1),
+    })
+    .optional(),
   /** Presentation only: sounds when the cast starts and when it lands. */
   sfx: z
     .strictObject({ cast: SfxListSchema.optional(), impact: SfxListSchema.optional() })

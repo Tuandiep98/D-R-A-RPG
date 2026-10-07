@@ -47,6 +47,7 @@
 !/kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_CombatMelee.glb
 !/kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_CombatRanged.glb
 !/kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb
+!/kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_MovementAdvanced.glb
 !/kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_MovementBasic.glb
 !/kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_Special.glb
 !/kaykit_character_animations/originals/Mannequin\ Character/characters/Mannequin_Large.glb
@@ -327,12 +328,14 @@
 !/kenney_interface_sounds/originals/Audio/select_001.ogg
 !/kenney_interface_sounds/originals/Audio/toggle_001.ogg
 !/kenney_particle_pack/originals/PNG\ (Transparent)/circle_01.png
+!/kenney_particle_pack/originals/PNG\ (Transparent)/circle_02.png
 !/kenney_particle_pack/originals/PNG\ (Transparent)/circle_05.png
 !/kenney_particle_pack/originals/PNG\ (Transparent)/fire_01.png
 !/kenney_particle_pack/originals/PNG\ (Transparent)/flame_01.png
 !/kenney_particle_pack/originals/PNG\ (Transparent)/flare_01.png
 !/kenney_particle_pack/originals/PNG\ (Transparent)/light_01.png
 !/kenney_particle_pack/originals/PNG\ (Transparent)/magic_01.png
+!/kenney_particle_pack/originals/PNG\ (Transparent)/magic_02.png
 !/kenney_particle_pack/originals/PNG\ (Transparent)/magic_03.png
 !/kenney_particle_pack/originals/PNG\ (Transparent)/magic_05.png
 !/kenney_particle_pack/originals/PNG\ (Transparent)/muzzle_01.png
@@ -343,7 +346,10 @@
 !/kenney_particle_pack/originals/PNG\ (Transparent)/smoke_01.png
 !/kenney_particle_pack/originals/PNG\ (Transparent)/smoke_07.png
 !/kenney_particle_pack/originals/PNG\ (Transparent)/spark_01.png
+!/kenney_particle_pack/originals/PNG\ (Transparent)/spark_02.png
 !/kenney_particle_pack/originals/PNG\ (Transparent)/spark_04.png
+!/kenney_particle_pack/originals/PNG\ (Transparent)/spark_06.png
+!/kenney_particle_pack/originals/PNG\ (Transparent)/spark_07.png
 !/kenney_particle_pack/originals/PNG\ (Transparent)/star_01.png
 !/kenney_particle_pack/originals/PNG\ (Transparent)/star_06.png
 !/kenney_particle_pack/originals/PNG\ (Transparent)/symbol_01.png

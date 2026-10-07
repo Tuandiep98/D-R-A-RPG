@@ -9,5 +9,7 @@ barRole: utility
 effects:
   - { type: dash, distance: 5 }
   - { type: damage, multiplier: 1.3, radius: 1.8 }
-vfx: thunder_dash
-sfx: { cast: [sfx_swing_02], impact: [sfx_hit_metal_02] }
+vfx: thunder_leap
+# Clip trong model của người thi triển (presentation, D-032).
+anim: { cast: Melee_1H_Attack_Slice_Horizontal, castSpeed: 1.6 }
+sfx: { cast: [sfx_laser_small], impact: [sfx_force_field] }

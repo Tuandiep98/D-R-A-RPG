@@ -132,12 +132,14 @@ Dùng id trong game-data: `iconImage` (skill/item), `sfx` (skill, appearance). V
 | `ui_divider` | image | 96×10 | 0.1 KB | kenney_fantasy_ui_borders |
 | `ui_panel` | image | 48×48 | 0.2 KB | kenney_fantasy_ui_borders |
 | `vfx_circle_01` | image | 256×256 | 14.3 KB | kenney_particle_pack |
+| `vfx_circle_02` | image | 256×256 | 10.1 KB | kenney_particle_pack |
 | `vfx_circle_05` | image | 256×256 | 11.0 KB | kenney_particle_pack |
 | `vfx_fire_01` | image | 256×256 | 23.6 KB | kenney_particle_pack |
 | `vfx_flame_01` | image | 256×256 | 10.1 KB | kenney_particle_pack |
 | `vfx_flare_01` | image | 256×256 | 7.4 KB | kenney_particle_pack |
 | `vfx_light_01` | image | 256×256 | 16.2 KB | kenney_particle_pack |
 | `vfx_magic_01` | image | 256×256 | 19.0 KB | kenney_particle_pack |
+| `vfx_magic_02` | image | 256×256 | 21.6 KB | kenney_particle_pack |
 | `vfx_magic_03` | image | 256×256 | 17.1 KB | kenney_particle_pack |
 | `vfx_magic_05` | image | 256×256 | 12.1 KB | kenney_particle_pack |
 | `vfx_muzzle_01` | image | 256×256 | 17.6 KB | kenney_particle_pack |
@@ -148,7 +150,10 @@ Dùng id trong game-data: `iconImage` (skill/item), `sfx` (skill, appearance). V
 | `vfx_smoke_01` | image | 256×256 | 17.8 KB | kenney_particle_pack |
 | `vfx_smoke_07` | image | 256×256 | 14.2 KB | kenney_particle_pack |
 | `vfx_spark_01` | image | 256×256 | 20.1 KB | kenney_particle_pack |
+| `vfx_spark_02` | image | 256×256 | 22.8 KB | kenney_particle_pack |
 | `vfx_spark_04` | image | 256×256 | 16.2 KB | kenney_particle_pack |
+| `vfx_spark_06` | image | 256×256 | 13.1 KB | kenney_particle_pack |
+| `vfx_spark_07` | image | 256×256 | 10.5 KB | kenney_particle_pack |
 | `vfx_star_01` | image | 256×256 | 6.7 KB | kenney_particle_pack |
 | `vfx_star_06` | image | 256×256 | 5.5 KB | kenney_particle_pack |
 | `vfx_symbol_01` | image | 256×256 | 3.9 KB | kenney_particle_pack |

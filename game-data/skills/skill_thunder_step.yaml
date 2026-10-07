@@ -9,4 +9,6 @@ barRole: utility
 effects:
   - { type: dash, distance: 4 }
 vfx: thunder_dash
-sfx: { cast: [sfx_swing_02] }
+# Clip trong model của người thi triển (presentation, D-032).
+anim: { cast: Dodge_Forward_InPlace }
+sfx: { cast: [sfx_laser_small] }

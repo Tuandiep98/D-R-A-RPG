@@ -10,4 +10,6 @@ mpCost: 55
 effects:
   - { type: damage, multiplier: 5.5, radius: 3.6 }
 vfx: thunder_ultimate
-sfx: { cast: [sfx_draw_blade], impact: [sfx_hit_heavy] }
+# Clip trong model của người thi triển (presentation, D-032).
+anim: { cast: Ranged_Magic_Spellcasting_Long, castSpeed: 1.6, impact: Melee_1H_Attack_Chop, impactSpeed: 1.5 }
+sfx: { cast: [sfx_force_field], impact: [sfx_explosion] }
