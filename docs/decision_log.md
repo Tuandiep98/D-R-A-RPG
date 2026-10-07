@@ -180,3 +180,9 @@ Mỗi quyết định: ngày, bối cảnh, quyết định, hệ quả. Khi mâ
 - **Bối cảnh:** chủ dự án chọn phong cách KayKit Adventurers sau khi so sánh trong game (`reports/smoke/kaykit_vs_ubc.png`): nhân vật đầu to đọc rõ ở camera 2.5D, hệ KayKit đồng bộ style (nhân vật, quái Skeletons, dungeon, rừng, 133 animation), nhẹ (~300 KB, 6–9k tris, 1 atlas).
 - **Quyết định:** `kaykit_rig_medium_v1` là rig chuẩn cho player/NPC; ghi đè mục "semi-mini ~5 đầu" của assets plan. Player = KayKit Rogue, NPC = Mage / Rogue Hooded / Knight / Barbarian (tạm, chờ mảnh Á Đông). Vũ khí KayKit gắn `handslot.*` không xoay ở scale 0.62. Modular Outfits → `rejected`; Quaternius Medieval Weapons, Ultimate Guns → `prototype_only`. Animation chiến đấu lấy từ KayKit Character Animations (FBX) qua `pnpm assets:convert` (FBX2glTF).
 - **Hệ quả:** cần mảnh trang phục Á Đông trên Rig_Medium (art); tạm dùng `Throw`/`Use_Item` cho attack/cast tới khi có gói combat; D-026 (xoay X +90°) chỉ còn đúng cho humanoid_v1.
+
+## D-028 — Commit file asset game dùng, không commit cả pack
+- **Ngày:** 2026-10-07
+- **Bối cảnh:** chủ dự án muốn clone ở máy khác là chạy được, không phải tải lại pack.
+- **Quyết định:** `pnpm assets:vendor` đọc mọi `SOURCE.json` có `status: approved` và sinh `art/third_party/.gitignore` dạng allowlist: chỉ các file được tham chiếu (model + `.bin` + ảnh, animation, `parts`, `textureDirs`, media, GLB đã convert). Phần còn lại của pack (OBJ, FBX Unity, model chưa dùng) ở máy local. Lần đầu: 464 file, ~44 MB. CI chạy `assets:vendor --check`, rồi `assets:build --allow-missing` + `media:build`.
+- **Hệ quả:** thêm asset mới = khai báo trong `SOURCE.json` → `pnpm assets:vendor` → commit. Pack còn thiếu file gốc (Quaternius Animated Mech, Ultimate Monsters) hiện bằng placeholder cho tới khi được tải và vendor.

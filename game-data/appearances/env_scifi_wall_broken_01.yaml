@@ -1,4 +1,6 @@
+# KayKit Space Base "structure_low" (D-027)
 id: env_scifi_wall_broken_01
 kind: environment
+scale: 1.6
 modelAssetId: env_scifi_wall_broken_01
 placeholder: { shape: box, color: "#46515e", height: 3, radius: 1.5 }

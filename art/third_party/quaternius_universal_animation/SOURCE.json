@@ -6,8 +6,8 @@
   "license": "CC0-1.0",
   "licenseVerified": true,
   "downloadedAt": "2026-10-07",
-  "status": "approved",
-  "notes": "43 clips on the UBC humanoid rig (same rig as char_player_default). Reference as animationSource \"../quaternius_universal_animation/originals/Unreal-Godot/UAL1_Standard.glb\". Combat: Sword_Attack, Sword_Idle, Punch_Jab, Punch_Cross, Spell_Simple_*, Pistol_*, Roll, Hit_Chest, Hit_Head, Death01. char_ual_mannequin = the grey UBC mannequin with all 43 clips, for socket/weapon fitting and animation previews. License approved by the project owner on 2026-10-07. Evidence: License.txt in the zip + quaternius.com page (CC0).",
+  "status": "prototype_only",
+  "notes": "Prototype only since D-027: humanoid_v1 rig retired; the fitting mannequin is now KayKit Mannequin_Medium. 43 clips on the UBC humanoid rig (same rig as char_player_default). Reference as animationSource \"../quaternius_universal_animation/originals/Unreal-Godot/UAL1_Standard.glb\". Combat: Sword_Attack, Sword_Idle, Punch_Jab, Punch_Cross, Spell_Simple_*, Pistol_*, Roll, Hit_Chest, Hit_Head, Death01. char_ual_mannequin = the grey UBC mannequin with all 43 clips, for socket/weapon fitting and animation previews. License approved by the project owner on 2026-10-07. Evidence: License.txt in the zip + quaternius.com page (CC0).",
   "kind": "animations",
   "assets": [
     {

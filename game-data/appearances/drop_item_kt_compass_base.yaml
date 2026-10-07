@@ -1,0 +1,6 @@
+# KayKit RPG Tools Bits "compass_base" — drop / display.
+id: drop_item_kt_compass_base
+kind: loot
+modelAssetId: item_kt_compass_base
+scale: 0.62
+placeholder: { shape: box, color: "#9c8a6a", height: 0.3, radius: 0.15 }

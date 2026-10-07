@@ -1,0 +1,89 @@
+{
+  "packId": "kaykit_forest_nature",
+  "author": "Kay Lousberg",
+  "pack": "KayKit Forest Nature Pack 1.0 (Free)",
+  "sourceUrl": "https://kaylousberg.itch.io/kaykit-forest",
+  "license": "CC0-1.0",
+  "licenseVerified": true,
+  "downloadedAt": "2026-10-07",
+  "status": "approved",
+  "notes": "Trees, rocks, bushes, grass in the KayKit style (Color1 variants; Color2–8 in the paid tier). License approved by the project owner on 2026-10-07 (License.txt in the zip states CC0).",
+  "kind": "models",
+  "assets": [
+    {
+      "assetId": "env_tree_01",
+      "file": "originals/Assets/gltf/Tree_1_A_Color1.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_tree_02",
+      "file": "originals/Assets/gltf/Tree_2_A_Color1.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_tree_03",
+      "file": "originals/Assets/gltf/Tree_3_A_Color1.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_tree_04",
+      "file": "originals/Assets/gltf/Tree_4_A_Color1.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_tree_dead_01",
+      "file": "originals/Assets/gltf/Tree_Bare_1_A_Color1.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_rock_01",
+      "file": "originals/Assets/gltf/Rock_3_A_Color1.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_rock_02",
+      "file": "originals/Assets/gltf/Rock_1_A_Color1.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_rock_03",
+      "file": "originals/Assets/gltf/Rock_3_E_Color1.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_bush_01",
+      "file": "originals/Assets/gltf/Bush_2_C_Color1.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_bush_02",
+      "file": "originals/Assets/gltf/Bush_1_C_Color1.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_grass_01",
+      "file": "originals/Assets/gltf/Grass_1_A_Color1.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_grass_02",
+      "file": "originals/Assets/gltf/Grass_2_A_Color1.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_fern_01",
+      "file": "originals/Assets/gltf/Grass_2_C_Color1.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_pebble_01",
+      "file": "originals/Assets/gltf/Rock_2_A_Color1.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_village_vine_01",
+      "file": "originals/Assets/gltf/Bush_4_A_Color1.gltf",
+      "type": "environment"
+    }
+  ]
+}

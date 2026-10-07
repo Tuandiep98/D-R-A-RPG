@@ -1,4 +1,6 @@
+# KayKit Dungeon "floor_tile_large" (D-027)
 id: env_village_floor_01
 kind: ground
+scale: 0.5
 modelAssetId: env_village_floor_01
 placeholder: { shape: box, color: "#8e7a63", height: 0.1, radius: 2 }

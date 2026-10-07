@@ -1,0 +1,74 @@
+{
+  "packId": "kaykit_rpg_tools",
+  "author": "Kay Lousberg",
+  "pack": "KayKit RPG Tools Bits 1.0 (Free)",
+  "sourceUrl": "https://kaylousberg.itch.io/rpg-tools-bits",
+  "license": "CC0-1.0",
+  "licenseVerified": true,
+  "downloadedAt": "2026-10-07",
+  "status": "approved",
+  "notes": "Smithy and adventurer tools; anvil and lantern replace the missing Quaternius Fantasy Props. License approved by the project owner on 2026-10-07 (License.txt in the zip states CC0).",
+  "kind": "models",
+  "assets": [
+    {
+      "assetId": "prop_anvil_01",
+      "file": "originals/Assets/gltf/anvil.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_lantern_wall_01",
+      "file": "originals/Assets/gltf/lantern.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_kt_pickaxe",
+      "file": "originals/Assets/gltf/pickaxe.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_kt_hammer",
+      "file": "originals/Assets/gltf/hammer.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_kt_tongs",
+      "file": "originals/Assets/gltf/tongs.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_kt_torch",
+      "file": "originals/Assets/gltf/torch.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_kt_map_rolled",
+      "file": "originals/Assets/gltf/map_rolled.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_kt_journal_closed",
+      "file": "originals/Assets/gltf/journal_closed.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_kt_compass_base",
+      "file": "originals/Assets/gltf/compass_base.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_kt_rope_bundle_a",
+      "file": "originals/Assets/gltf/rope_bundle_A.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_kt_bucket_metal",
+      "file": "originals/Assets/gltf/bucket_metal.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_kt_grindstone",
+      "file": "originals/Assets/gltf/grindstone.gltf",
+      "type": "prop"
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 /**
  * Close-up screenshots of the player for fitting weapon sockets/offsets.
  *   pnpm smoke:gear [url] [--real | --player=<appearanceId>]
- *   (default draws the UAL mannequin; --real uses the player model)
+ *   (default draws the KayKit mannequin; --real uses the player model)
  * Writes reports/smoke/gear_<angle>.png (front, side, back, top-down game view).
  */
 import { mkdirSync } from 'node:fs';
@@ -25,7 +25,7 @@ const player = args.find((a) => a.startsWith('--player='))?.slice('--player='.le
 const look = player ? `&player=${player}` : args.includes('--real') ? '' : '&mannequin';
 await page.goto(`${base}/?debug&quality=high${look}`);
 await page.waitForFunction(() => '__rpg' in window, null, { timeout: 60_000 });
-await page.waitForTimeout(3000);
+await page.waitForTimeout(6000); // models + clips finish loading
 
 const shots: [string, number, number, number][] = [
   // name, alpha offset from player facing, beta, radius
@@ -49,7 +49,7 @@ for (const [name, alpha, beta, radius] of shots) {
       cam.alpha = a;
       cam.beta = b;
       cam.radius = r;
-      cam.targetScreenOffset.y = r < 5 ? -0.35 : 0;
+      cam.targetScreenOffset.y = r < 5 ? 0.45 : 0;
     },
     [alpha, beta, radius] as const,
   );

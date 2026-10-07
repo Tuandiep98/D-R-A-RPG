@@ -1,0 +1,6 @@
+# KayKit RPG Tools Bits "bucket_metal" — drop / display.
+id: drop_item_kt_bucket_metal
+kind: loot
+modelAssetId: item_kt_bucket_metal
+scale: 0.62
+placeholder: { shape: box, color: "#9c8a6a", height: 0.3, radius: 0.15 }

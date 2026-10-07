@@ -1,0 +1,6 @@
+# KayKit Resource Bits "Parts_Pile_Small" — material drop / display.
+id: drop_item_kr_parts_pile_small
+kind: loot
+modelAssetId: item_kr_parts_pile_small
+scale: 0.62
+placeholder: { shape: box, color: "#b8a27a", height: 0.3, radius: 0.15 }

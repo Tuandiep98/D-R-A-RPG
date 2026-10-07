@@ -1,0 +1,12 @@
+{
+  "packId": "kaykit_block_bits",
+  "author": "Kay Lousberg",
+  "pack": "KayKit Block Bits 1.0 (Free)",
+  "sourceUrl": "https://kaylousberg.itch.io/block-bits",
+  "license": "CC0-1.0",
+  "licenseVerified": true,
+  "downloadedAt": "2026-10-07",
+  "status": "approved",
+  "notes": "Voxel-style blocks — terrain/building experiments. License approved by the project owner on 2026-10-07 (License.txt in the zip states CC0).",
+  "kind": "library"
+}

@@ -1,4 +1,6 @@
+# KayKit Space Base "structure_tall" (D-027)
 id: env_scifi_wall_01
 kind: environment
+scale: 1.6
 modelAssetId: env_scifi_wall_01
 placeholder: { shape: box, color: "#536272", height: 3, radius: 1.5 }

@@ -1,0 +1,6 @@
+# KayKit Resource Bits "Textiles_A" — material drop / display.
+id: drop_item_kr_textiles_a
+kind: loot
+modelAssetId: item_kr_textiles_a
+scale: 0.62
+placeholder: { shape: box, color: "#b8a27a", height: 0.3, radius: 0.15 }

@@ -1,4 +1,6 @@
+# KayKit Dungeon "banner_patternA_red" (D-027)
 id: prop_banner_01
 kind: environment
+scale: 0.62
 modelAssetId: prop_banner_01
 placeholder: { shape: box, color: "#9c3434", height: 2.2, radius: 0.5 }

@@ -1,8 +1,8 @@
-# Quaternius Stylized Nature MegaKit — Rock_Medium_1.gltf
+# KayKit Forest Nature "Rock_3_A_Color1" (D-027)
 id: env_rock_01
 kind: environment
 modelAssetId: env_rock_01
-scale: 0.6
+scale: 2.2
 placeholder:
   shape: sphere
   color: '#7d7f86'

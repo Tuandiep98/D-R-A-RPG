@@ -1,8 +1,8 @@
-# Quaternius Stylized Nature MegaKit — CommonTree_3.gltf
+# KayKit Forest Nature "Tree_3_A_Color1" (D-027)
 id: env_tree_03
 kind: environment
 modelAssetId: env_tree_03
-scale: 0.7
+scale: 1.3
 placeholder:
   shape: cone
   color: '#2f6b3a'

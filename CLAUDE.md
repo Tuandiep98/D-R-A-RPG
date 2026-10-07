@@ -26,7 +26,8 @@ pnpm test                # Vitest toàn repo (gồm integration server/API)
 pnpm typecheck && pnpm lint && pnpm depcruise
 pnpm content:build       # maps:build → nav:build → validate:data
 pnpm assets:build        # art/third_party → apps/game-web/public/assets + docs/asset_catalog.md
-pnpm assets:convert      # pack chỉ có OBJ (Quaternius cũ) → <pack>/converted/*.glb (chạy trước assets:build)
+pnpm assets:convert      # pack chỉ có OBJ/FBX → <pack>/converted/*.glb (chạy trước assets:build)
+pnpm assets:vendor       # sinh art/third_party/.gitignore: commit đúng các file game dùng (--check trong CI)
 pnpm media:build         # icon / khung UI / âm thanh / sprite VFX → public/media + docs/media_catalog.md
 pnpm assets:inspect <f>  # kích thước, tris, clip của glTF; --json để dùng trong script
 pnpm assets:sheet <out> <dir>  # ảnh ghép có nhãn để chọn icon/khung bằng mắt
@@ -36,7 +37,7 @@ pnpm smoke:login [url]   # đăng ký → tạo nhân vật → vào game → ba
 pnpm db:generate         # drizzle-kit migration sau khi sửa packages/persistence/src/schema.ts
 ```
 
-URL flags của web client: `?webgl`, `?noworker`, `?map=<id>`, `?quality=low|medium|high`, `?debug` (bật `window.__rpg` ở bản build), `?player=<appearanceId>` (vẽ player bằng appearance khác, chỉ phía client — vd `char_kk_knight`), `?mannequin` (hình nộm UAL), `?online` (đăng nhập qua API), `?online&dev=<tên>` (đăng nhập dev thẳng vào game server, cần `ALLOW_DEV_LOGIN=true`).
+URL flags của web client: `?webgl`, `?noworker`, `?map=<id>`, `?quality=low|medium|high`, `?debug` (bật `window.__rpg` ở bản build), `?player=<appearanceId>` (vẽ player bằng appearance khác, chỉ phía client — vd `char_kk_knight`), `?mannequin` (hình nộm KayKit Mannequin_Medium), `?online` (đăng nhập qua API), `?online&dev=<tên>` (đăng nhập dev thẳng vào game server, cần `ALLOW_DEV_LOGIN=true`).
 
 Lưu ý môi trường: hook `rtk` có thể làm sai output của biome/grep — dùng `rtk proxy npx biome check .` và kiểm tra exit code.
 
@@ -93,7 +94,8 @@ infra/                     docker (compose, Dockerfiles), deploy (Caddyfile)
 - Vượt budget tam giác phải có `budgetException` (lý do + owner).
 - ID dạng `snake_case` ổn định.
 - Không tuyên bố animation tương thích khi chưa chạy thử.
-- Output build (`apps/game-web/public/assets/`, `public/media/`, `<pack>/converted/`) không commit.
+- Output build (`apps/game-web/public/assets/`, `public/media/`) không commit.
+- File gốc pack **có trong git, nhưng chỉ những file game dùng**: `art/third_party/.gitignore` do `pnpm assets:vendor` sinh từ các `SOURCE.json` đã duyệt (model, `.bin`, texture, animation, media, GLB trong `converted/`). Sửa `SOURCE.json` xong phải chạy lại `pnpm assets:vendor` (CI kiểm `--check`). Máy mới chỉ cần clone → `pnpm assets:build && pnpm media:build`.
 - Pack chỉ có âm thanh/icon/UI/VFX dùng `kind` + `media` trong `SOURCE.json`; game-data trỏ tới media bằng `iconImage` / `sfx` (validator kiểm tra id).
 - Nhân vật chuẩn: KayKit `Rig_Medium` (chibi, scale 0.62, D-027). Vũ khí KayKit gắn `handslot.*` không xoay, `scale: 0.62`; vũ khí nguồn khác ghi rõ "NOT fitted" tới khi kiểm bằng `pnpm smoke:gear --player=char_kk_rogue`.
 - Pack chỉ có FBX/OBJ: thêm vào `FBX_PACKS`/`OBJ_PACKS` trong `tools/asset-processor/convert.ts`, chạy `pnpm assets:convert`, khai báo file trong `converted/`.

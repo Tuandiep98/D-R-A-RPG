@@ -1,4 +1,6 @@
+# KayKit Dungeon "chest_gold" (D-027)
 id: prop_dungeon_chest_01
 kind: environment
+scale: 0.62
 modelAssetId: prop_dungeon_chest_01
 placeholder: { shape: box, color: "#b68a39", height: 0.8, radius: 0.65 }

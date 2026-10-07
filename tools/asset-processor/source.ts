@@ -19,9 +19,12 @@ export const PackSourceSchema = z
     /**
      * `models` packs feed the glTF pipeline (`assets`). Other kinds only ship
      * `media` (sounds, icons, UI frames, particle textures) via `pnpm media:build`;
-     * `animations` packs are clip sources referenced by `animationSource`.
+     * `animations` packs are clip sources referenced by `animationSource`;
+     * `library` packs are approved but not wired into the game yet.
      */
-    kind: z.enum(['models', 'animations', 'audio', 'icons', 'ui', 'vfx']).default('models'),
+    kind: z
+      .enum(['models', 'animations', 'audio', 'icons', 'ui', 'vfx', 'library'])
+      .default('models'),
     /** Curated non-model files copied/optimised into the runtime media manifest. */
     media: z
       .array(

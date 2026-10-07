@@ -1,79 +1,154 @@
 {
   "packId": "kaykit_dungeon",
   "author": "Kay Lousberg",
-  "pack": "KayKit Dungeon Pack 1.1 FREE",
+  "pack": "KayKit Dungeon Remastered 1.1 (Free)",
   "sourceUrl": "https://kaylousberg.itch.io/kaykit-dungeon-remastered",
   "license": "CC0-1.0",
   "licenseVerified": true,
   "downloadedAt": "2026-10-06",
   "status": "approved",
-  "notes": "Fallback stone shell for the surface layer of Huyền Vũ Cổ Mộ.",
+  "notes": "4-unit modular grid (walls 4×4, floors 4×4) = the village/dungeon grid in metres, so walls/floors keep scale 1 and small props use 0.45–0.62 (D-027). Also replaces the missing Quaternius Medieval Village and Fantasy Props pieces. Fallback stone shell for the surface layer of Huyền Vũ Cổ Mộ.",
   "assets": [
     {
       "assetId": "env_dungeon_wall_01",
-      "file": "originals/wall.gltf",
+      "file": "originals/Assets/gltf/wall.gltf",
       "type": "environment",
       "modified": false
     },
     {
       "assetId": "env_dungeon_arch_01",
-      "file": "originals/wall_arched.gltf",
+      "file": "originals/Assets/gltf/wall_arched.gltf",
       "type": "environment",
       "modified": false
     },
     {
       "assetId": "env_dungeon_floor_01",
-      "file": "originals/floor_tile_large.gltf",
+      "file": "originals/Assets/gltf/floor_tile_large.gltf",
       "type": "ground",
       "modified": false
     },
     {
       "assetId": "env_ground_dirt_01",
-      "file": "originals/floor_dirt_large.gltf",
+      "file": "originals/Assets/gltf/floor_dirt_large.gltf",
       "type": "ground",
       "modified": false
     },
     {
       "assetId": "env_ground_dirt_rocky_01",
-      "file": "originals/floor_dirt_large_rocky.gltf",
+      "file": "originals/Assets/gltf/floor_dirt_large_rocky.gltf",
       "type": "ground",
       "modified": false
     },
     {
       "assetId": "env_ground_weeds_01",
-      "file": "originals/floor_dirt_small_weeds.gltf",
+      "file": "originals/Assets/gltf/floor_dirt_small_weeds.gltf",
       "type": "ground",
       "modified": false
     },
     {
       "assetId": "env_ground_stone_weeds_01",
-      "file": "originals/floor_tile_small_weeds_A.gltf",
+      "file": "originals/Assets/gltf/floor_tile_small_weeds_A.gltf",
       "type": "ground",
       "modified": false
     },
     {
       "assetId": "env_dungeon_pillar_01",
-      "file": "originals/pillar_decorated.gltf",
+      "file": "originals/Assets/gltf/pillar_decorated.gltf",
       "type": "environment",
       "modified": false
     },
     {
       "assetId": "prop_dungeon_torch_01",
-      "file": "originals/torch_mounted.gltf",
+      "file": "originals/Assets/gltf/torch_mounted.gltf",
       "type": "prop",
       "modified": false
     },
     {
       "assetId": "prop_dungeon_rubble_01",
-      "file": "originals/rubble_large.gltf",
+      "file": "originals/Assets/gltf/rubble_large.gltf",
       "type": "prop",
       "modified": false
     },
     {
       "assetId": "prop_dungeon_chest_01",
-      "file": "originals/chest_gold.gltf",
+      "file": "originals/Assets/gltf/chest_gold.gltf",
       "type": "prop",
       "modified": false
+    },
+    {
+      "assetId": "env_village_wall_01",
+      "file": "originals/Assets/gltf/wall.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_village_door_01",
+      "file": "originals/Assets/gltf/wall_doorway.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_village_corner_01",
+      "file": "originals/Assets/gltf/wall_corner.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_village_floor_01",
+      "file": "originals/Assets/gltf/floor_tile_large.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_village_floor_redbrick_01",
+      "file": "originals/Assets/gltf/floor_tile_large_rocks.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_village_floor_wood_01",
+      "file": "originals/Assets/gltf/floor_wood_large.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_village_roof_01",
+      "file": "originals/Assets/gltf/ceiling_tile.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_village_fence_01",
+      "file": "originals/Assets/gltf/barrier.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "prop_banner_01",
+      "file": "originals/Assets/gltf/banner_patternA_red.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_barrel_01",
+      "file": "originals/Assets/gltf/barrel_large.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_cauldron_01",
+      "file": "originals/Assets/gltf/keg_decorated.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_crate_01",
+      "file": "originals/Assets/gltf/box_large.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_market_stall_01",
+      "file": "originals/Assets/gltf/table_long_tablecloth_decorated_A.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_weapon_rack_01",
+      "file": "originals/Assets/gltf/sword_shield.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_workbench_01",
+      "file": "originals/Assets/gltf/table_medium_decorated_A.gltf",
+      "type": "prop"
     }
   ]
 }

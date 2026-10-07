@@ -7,83 +7,8 @@
   "licenseVerified": true,
   "downloadedAt": "2026-10-07",
   "status": "approved",
-  "notes": "Stylized Nature MegaKit (Standard) glTF folder restored into originals/ on 2026-10-07. License_Standard.txt states CC0 1.0.",
+  "notes": "Trees/rocks/bushes/grass moved to KayKit Forest Nature (D-027); flowers, mushrooms and ground textures stay here. Stylized Nature MegaKit (Standard) glTF folder restored into originals/ on 2026-10-07. License_Standard.txt states CC0 1.0.",
   "assets": [
-    {
-      "assetId": "env_tree_01",
-      "file": "originals/glTF/CommonTree_1.gltf",
-      "type": "environment",
-      "budgetException": {
-        "tris": 6500,
-        "reason": "Leaf cards are disconnected quads; simplifier cannot reduce them without visible holes. Revisit with a tree LOD/impostor in the optimization phase.",
-        "owner": "tech-art"
-      }
-    },
-    {
-      "assetId": "env_tree_02",
-      "file": "originals/glTF/Pine_1.gltf",
-      "type": "environment"
-    },
-    {
-      "assetId": "env_rock_01",
-      "file": "originals/glTF/Rock_Medium_1.gltf",
-      "type": "environment"
-    },
-    {
-      "assetId": "env_bush_01",
-      "file": "originals/glTF/Bush_Common.gltf",
-      "type": "environment"
-    },
-    {
-      "assetId": "env_tree_03",
-      "file": "originals/glTF/CommonTree_3.gltf",
-      "type": "environment"
-    },
-    {
-      "assetId": "env_tree_04",
-      "file": "originals/glTF/Pine_2.gltf",
-      "type": "environment"
-    },
-    {
-      "assetId": "env_tree_dead_01",
-      "file": "originals/glTF/DeadTree_1.gltf",
-      "type": "environment",
-      "budgetException": {
-        "tris": 6200,
-        "reason": "Bare branches lose their silhouette when simplified; used sparingly as a landmark.",
-        "owner": "tech-art"
-      }
-    },
-    {
-      "assetId": "env_rock_02",
-      "file": "originals/glTF/Rock_Medium_2.gltf",
-      "type": "environment"
-    },
-    {
-      "assetId": "env_rock_03",
-      "file": "originals/glTF/Rock_Medium_3.gltf",
-      "type": "environment"
-    },
-    {
-      "assetId": "env_pebble_01",
-      "file": "originals/glTF/Pebble_Round_1.gltf",
-      "type": "environment"
-    },
-    {
-      "assetId": "env_grass_01",
-      "file": "originals/glTF/Grass_Common_Short.gltf",
-      "type": "environment"
-    },
-    {
-      "assetId": "env_grass_02",
-      "file": "originals/glTF/Grass_Common_Tall.gltf",
-      "type": "environment"
-    },
-    {
-      "assetId": "env_fern_01",
-      "file": "originals/glTF/Fern_1.gltf",
-      "type": "environment"
-    },
     {
       "assetId": "env_flowers_01",
       "file": "originals/glTF/Flower_3_Group.gltf",
@@ -92,11 +17,6 @@
     {
       "assetId": "env_mushroom_01",
       "file": "originals/glTF/Mushroom_Common.gltf",
-      "type": "environment"
-    },
-    {
-      "assetId": "env_bush_02",
-      "file": "originals/glTF/Bush_Common_Flowers.gltf",
       "type": "environment"
     }
   ]

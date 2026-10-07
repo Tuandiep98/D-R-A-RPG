@@ -1,0 +1,32 @@
+{
+  "packId": "kaykit_character_animations",
+  "author": "Kay Lousberg",
+  "pack": "KayKit Character Animations 1.1",
+  "sourceUrl": "https://kaylousberg.itch.io/kaykit-character-animations",
+  "license": "CC0-1.0",
+  "licenseVerified": true,
+  "downloadedAt": "2026-10-07",
+  "status": "approved",
+  "notes": "133 clips for Rig_Medium/Rig_Large in FBX and glTF (glTF used directly — no FBX conversion needed). Mannequin_Medium is a neutral preview body. License approved by the project owner on 2026-10-07 (License.txt in the zip states CC0).",
+  "kind": "animations",
+  "assets": [
+    {
+      "assetId": "char_kk_mannequin",
+      "file": "originals/Mannequin Character/characters/Mannequin_Medium.glb",
+      "animationSource": [
+        "originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb",
+        "originals/Animations/gltf/Rig_Medium/Rig_Medium_MovementBasic.glb",
+        "originals/Animations/gltf/Rig_Medium/Rig_Medium_CombatMelee.glb"
+      ],
+      "animationClips": [
+        "Idle_A",
+        "Running_A",
+        "Hit_A",
+        "Death_A",
+        "Melee_1H_Attack_Slice_Diagonal",
+        "Use_Item"
+      ],
+      "type": "character"
+    }
+  ]
+}

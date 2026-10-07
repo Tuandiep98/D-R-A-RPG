@@ -1,4 +1,6 @@
+# KayKit Space Base "cargodepot_A" (D-027)
 id: prop_scifi_terminal_01
 kind: environment
+scale: 0.9
 modelAssetId: prop_scifi_terminal_01
 placeholder: { shape: box, color: "#36a7b5", height: 1.5, radius: 0.6 }

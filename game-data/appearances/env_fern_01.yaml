@@ -1,8 +1,8 @@
-# Quaternius Stylized Nature MegaKit — Fern_1.gltf
+# KayKit Forest Nature "Grass_2_C_Color1" (D-027)
 id: env_fern_01
 kind: environment
 modelAssetId: env_fern_01
-scale: 0.6
+scale: 1.0
 placeholder:
   shape: cone
   color: '#3e7a34'

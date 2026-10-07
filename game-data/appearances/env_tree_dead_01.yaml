@@ -1,8 +1,8 @@
-# Quaternius Stylized Nature MegaKit — DeadTree_1.gltf
+# KayKit Forest Nature "Tree_Bare_1_A_Color1" (D-027)
 id: env_tree_dead_01
 kind: environment
 modelAssetId: env_tree_dead_01
-scale: 0.6
+scale: 1.4
 placeholder:
   shape: cylinder
   color: '#6b5a46'

@@ -1,8 +1,8 @@
-# Quaternius Stylized Nature MegaKit — Bush_Common.gltf
+# KayKit Forest Nature "Bush_2_C_Color1" (D-027)
 id: env_bush_01
 kind: environment
 modelAssetId: env_bush_01
-scale: 0.6
+scale: 0.9
 placeholder:
   shape: sphere
   color: '#4c8c3c'

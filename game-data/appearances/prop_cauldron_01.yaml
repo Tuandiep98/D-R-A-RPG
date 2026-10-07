@@ -1,4 +1,6 @@
+# KayKit Dungeon "keg_decorated" (D-027)
 id: prop_cauldron_01
 kind: environment
+scale: 0.45
 modelAssetId: prop_cauldron_01
 placeholder: { shape: cylinder, color: "#34383c", height: 0.8, radius: 0.55 }

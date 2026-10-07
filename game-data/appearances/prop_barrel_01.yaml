@@ -1,4 +1,6 @@
+# KayKit Dungeon "barrel_large" (D-027)
 id: prop_barrel_01
 kind: environment
+scale: 0.5
 modelAssetId: prop_barrel_01
 placeholder: { shape: cylinder, color: "#765238", height: 1, radius: 0.45 }

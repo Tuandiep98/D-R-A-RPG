@@ -1,4 +1,6 @@
+# KayKit Space Base "lights" (D-027)
 id: env_scifi_column_01
 kind: environment
+scale: 2.0
 modelAssetId: env_scifi_column_01
 placeholder: { shape: cylinder, color: "#596978", height: 3.2, radius: 0.6 }

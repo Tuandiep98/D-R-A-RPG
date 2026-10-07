@@ -1,4 +1,6 @@
+# KayKit Dungeon "wall_doorway" (D-027)
 id: env_village_door_01
 kind: environment
+scale: 1
 modelAssetId: env_village_door_01
 placeholder: { shape: box, color: "#8b6548", height: 3.1, radius: 1 }

@@ -4,29 +4,75 @@
 
 | assetId | Loại | Pack | License | Đã xác minh | Trạng thái | Tris | Gốc → Build | Texture | Animations |
 |---|---|---|---|---|---|---:|---|---|---|
-| `char_kk_barbarian` | character | [KayKit Character Pack: Adventurers 2.0 (Free)](https://kaylousberg.itch.io/kaykit-adventurers) | CC0-1.0 | có | approved | 7123 | 569.4 KB → 305.6 KB | 1 × ≤1024px | Death_A, Hit_A, Idle_A, Interact, Throw, Use_Item, Running_A, Walking_A |
-| `char_kk_knight` | character | [KayKit Character Pack: Adventurers 2.0 (Free)](https://kaylousberg.itch.io/kaykit-adventurers) | CC0-1.0 | có | approved | 5800 | 525.3 KB → 299.9 KB | 1 × ≤1024px | Death_A, Hit_A, Idle_A, Interact, Throw, Use_Item, Running_A, Walking_A |
-| `char_kk_mage` | character | [KayKit Character Pack: Adventurers 2.0 (Free)](https://kaylousberg.itch.io/kaykit-adventurers) | CC0-1.0 | có | approved | 6668 | 535.9 KB → 300.8 KB | 1 × ≤1024px | Death_A, Hit_A, Idle_A, Interact, Throw, Use_Item, Running_A, Walking_A |
-| `char_kk_ranger` | character | [KayKit Character Pack: Adventurers 2.0 (Free)](https://kaylousberg.itch.io/kaykit-adventurers) | CC0-1.0 | có | approved | 8900 | 665.1 KB → 334.0 KB | 1 × ≤1024px | Death_A, Hit_A, Idle_A, Interact, Throw, Use_Item, Running_A, Walking_A |
-| `char_kk_rogue` | character | [KayKit Character Pack: Adventurers 2.0 (Free)](https://kaylousberg.itch.io/kaykit-adventurers) | CC0-1.0 | có | approved | 7562 | 591.4 KB → 313.3 KB | 1 × ≤1024px | Death_A, Hit_A, Idle_A, Interact, Throw, Use_Item, Running_A, Walking_A |
-| `char_kk_rogue_hooded` | character | [KayKit Character Pack: Adventurers 2.0 (Free)](https://kaylousberg.itch.io/kaykit-adventurers) | CC0-1.0 | có | approved | 7185 | 564.2 KB → 309.4 KB | 1 × ≤1024px | Death_A, Hit_A, Idle_A, Interact, Throw, Use_Item, Running_A, Walking_A |
-| `char_ual_mannequin` | character | [Universal Animation Library (Standard)](https://quaternius.com/packs/universalanimationlibrary.html) | CC0-1.0 | có | approved | 13744 | 7.0 MB → 2.2 MB | — | A_TPose, Crouch_Fwd_Loop, Crouch_Idle_Loop, Dance_Loop, Death01, Driving_Loop, Fixing_Kneeling, Hit_Chest, Hit_Head, Idle_Loop, Idle_Talking_Loop, Idle_Torch_Loop, Interact, Jog_Fwd_Loop, Jump_Land, Jump_Loop, Jump_Start, PickUp_Table, Pistol_Aim_Down, Pistol_Aim_Neutral, Pistol_Aim_Up, Pistol_Idle_Loop, Pistol_Reload, Pistol_Shoot, Punch_Cross, Punch_Jab, Push_Loop, Roll, Sitting_Enter, Sitting_Exit, Sitting_Idle_Loop, Sitting_Talking_Loop, Spell_Simple_Enter, Spell_Simple_Exit, Spell_Simple_Idle_Loop, Spell_Simple_Shoot, Sprint_Loop, Swim_Fwd_Loop, Swim_Idle_Loop, Sword_Attack, Sword_Idle, Walk_Formal_Loop, Walk_Loop |
-| `env_bush_01` | environment | [Stylized Nature MegaKit (Standard)](https://quaternius.com/packs/stylizednaturemegakit.html) | CC0-1.0 | có | approved | 900 | 159.8 KB → 68.1 KB | 1 × ≤512px | — |
-| `env_bush_02` | environment | [Stylized Nature MegaKit (Standard)](https://quaternius.com/packs/stylizednaturemegakit.html) | CC0-1.0 | có | approved | 1368 | 717.7 KB → 131.3 KB | 2 × ≤512px | — |
-| `env_fern_01` | environment | [Stylized Nature MegaKit (Standard)](https://quaternius.com/packs/stylizednaturemegakit.html) | CC0-1.0 | có | approved | 288 | 2.5 MB → 66.9 KB | 1 × ≤512px | — |
+| `char_kk_barbarian` | character | [KayKit Character Pack: Adventurers 2.0 (Free)](https://kaylousberg.itch.io/kaykit-adventurers) | CC0-1.0 | có | approved | 7123 | 458.2 KB → 210.0 KB | 1 × ≤1024px | Idle_A, Idle_B, Interact |
+| `char_kk_knight` | character | [KayKit Character Pack: Adventurers 2.0 (Free)](https://kaylousberg.itch.io/kaykit-adventurers) | CC0-1.0 | có | approved | 5800 | 414.1 KB → 204.3 KB | 1 × ≤1024px | Idle_A, Idle_B, Interact |
+| `char_kk_mage` | character | [KayKit Character Pack: Adventurers 2.0 (Free)](https://kaylousberg.itch.io/kaykit-adventurers) | CC0-1.0 | có | approved | 6668 | 424.7 KB → 205.2 KB | 1 × ≤1024px | Idle_A, Idle_B, Interact |
+| `char_kk_mannequin` | character | [KayKit Character Animations 1.1](https://kaylousberg.itch.io/kaykit-character-animations) | CC0-1.0 | có | approved | 6916 | 547.4 KB → 252.6 KB | 1 × ≤512px | Death_A, Hit_A, Idle_A, Use_Item, Running_A, Melee_1H_Attack_Slice_Diagonal |
+| `char_kk_ranger` | character | [KayKit Character Pack: Adventurers 2.0 (Free)](https://kaylousberg.itch.io/kaykit-adventurers) | CC0-1.0 | có | approved | 8900 | 977.4 KB → 584.4 KB | 1 × ≤1024px | Death_A, Hit_A, Idle_A, Idle_B, Interact, PickUp, Use_Item, Running_A, Walking_A, Melee_1H_Attack_Chop, Melee_1H_Attack_Slice_Diagonal, Melee_1H_Attack_Stab, Melee_2H_Attack_Slice, Melee_2H_Attack_Spin, Melee_Block, Melee_Unarmed_Attack_Punch_A, Ranged_1H_Shoot, Ranged_Bow_Release, Ranged_Magic_Shoot, Ranged_Magic_Spellcasting |
+| `char_kk_rogue` | character | [KayKit Character Pack: Adventurers 2.0 (Free)](https://kaylousberg.itch.io/kaykit-adventurers) | CC0-1.0 | có | approved | 7562 | 903.7 KB → 563.6 KB | 1 × ≤1024px | Death_A, Hit_A, Idle_A, Idle_B, Interact, PickUp, Use_Item, Running_A, Walking_A, Melee_1H_Attack_Chop, Melee_1H_Attack_Slice_Diagonal, Melee_1H_Attack_Stab, Melee_2H_Attack_Slice, Melee_2H_Attack_Spin, Melee_Block, Melee_Unarmed_Attack_Punch_A, Ranged_1H_Shoot, Ranged_Bow_Release, Ranged_Magic_Shoot, Ranged_Magic_Spellcasting |
+| `char_kk_rogue_hooded` | character | [KayKit Character Pack: Adventurers 2.0 (Free)](https://kaylousberg.itch.io/kaykit-adventurers) | CC0-1.0 | có | approved | 7185 | 452.9 KB → 213.8 KB | 1 × ≤1024px | Idle_A, Idle_B, Interact |
+| `char_ual_mannequin` | character | [Universal Animation Library (Standard)](https://quaternius.com/packs/universalanimationlibrary.html) | CC0-1.0 | có | prototype_only | 13744 | 7.0 MB → 2.2 MB | — | A_TPose, Crouch_Fwd_Loop, Crouch_Idle_Loop, Dance_Loop, Death01, Driving_Loop, Fixing_Kneeling, Hit_Chest, Hit_Head, Idle_Loop, Idle_Talking_Loop, Idle_Torch_Loop, Interact, Jog_Fwd_Loop, Jump_Land, Jump_Loop, Jump_Start, PickUp_Table, Pistol_Aim_Down, Pistol_Aim_Neutral, Pistol_Aim_Up, Pistol_Idle_Loop, Pistol_Reload, Pistol_Shoot, Punch_Cross, Punch_Jab, Push_Loop, Roll, Sitting_Enter, Sitting_Exit, Sitting_Idle_Loop, Sitting_Talking_Loop, Spell_Simple_Enter, Spell_Simple_Exit, Spell_Simple_Idle_Loop, Spell_Simple_Shoot, Sprint_Loop, Swim_Fwd_Loop, Swim_Idle_Loop, Sword_Attack, Sword_Idle, Walk_Formal_Loop, Walk_Loop |
+| `env_bush_01` | environment | [KayKit Forest Nature Pack 1.0 (Free)](https://kaylousberg.itch.io/kaykit-forest) | CC0-1.0 | có | approved | 108 | 51.3 KB → 11.0 KB | 1 × ≤512px | — |
+| `env_bush_02` | environment | [KayKit Forest Nature Pack 1.0 (Free)](https://kaylousberg.itch.io/kaykit-forest) | CC0-1.0 | có | approved | 168 | 53.4 KB → 11.9 KB | 1 × ≤512px | — |
+| `env_dungeon_arch_01` | environment | [KayKit Dungeon Remastered 1.1 (Free)](https://kaylousberg.itch.io/kaykit-dungeon-remastered) | CC0-1.0 | có | approved | 724 | 67.5 KB → 26.3 KB | 1 × ≤512px | — |
+| `env_dungeon_floor_01` | ground | [KayKit Dungeon Remastered 1.1 (Free)](https://kaylousberg.itch.io/kaykit-dungeon-remastered) | CC0-1.0 | có | approved | 188 | 27.6 KB → 14.9 KB | 1 × ≤1024px | — |
+| `env_dungeon_pillar_01` | environment | [KayKit Dungeon Remastered 1.1 (Free)](https://kaylousberg.itch.io/kaykit-dungeon-remastered) | CC0-1.0 | có | approved | 761 | 60.9 KB → 23.8 KB | 1 × ≤512px | — |
+| `env_dungeon_wall_01` | environment | [KayKit Dungeon Remastered 1.1 (Free)](https://kaylousberg.itch.io/kaykit-dungeon-remastered) | CC0-1.0 | có | approved | 494 | 52.3 KB → 20.4 KB | 1 × ≤512px | — |
+| `env_fern_01` | environment | [KayKit Forest Nature Pack 1.0 (Free)](https://kaylousberg.itch.io/kaykit-forest) | CC0-1.0 | có | approved | 528 | 73.0 KB → 19.6 KB | 1 × ≤512px | — |
 | `env_flowers_01` | environment | [Stylized Nature MegaKit (Standard)](https://quaternius.com/packs/stylizednaturemegakit.html) | CC0-1.0 | có | approved | 755 | 2.9 MB → 122.9 KB | 2 × ≤512px | — |
-| `env_grass_01` | environment | [Stylized Nature MegaKit (Standard)](https://quaternius.com/packs/stylizednaturemegakit.html) | CC0-1.0 | có | approved | 155 | 41.1 KB → 6.4 KB | 1 × ≤512px | — |
-| `env_grass_02` | environment | [Stylized Nature MegaKit (Standard)](https://quaternius.com/packs/stylizednaturemegakit.html) | CC0-1.0 | có | approved | 326 | 48.0 KB → 8.2 KB | 1 × ≤512px | — |
+| `env_grass_01` | environment | [KayKit Forest Nature Pack 1.0 (Free)](https://kaylousberg.itch.io/kaykit-forest) | CC0-1.0 | có | approved | 44 | 50.9 KB → 10.9 KB | 1 × ≤512px | — |
+| `env_grass_02` | environment | [KayKit Forest Nature Pack 1.0 (Free)](https://kaylousberg.itch.io/kaykit-forest) | CC0-1.0 | có | approved | 44 | 50.9 KB → 10.8 KB | 1 × ≤512px | — |
+| `env_ground_dirt_01` | ground | [KayKit Dungeon Remastered 1.1 (Free)](https://kaylousberg.itch.io/kaykit-dungeon-remastered) | CC0-1.0 | có | approved | 104 | 24.7 KB → 14.7 KB | 1 × ≤1024px | — |
+| `env_ground_dirt_rocky_01` | ground | [KayKit Dungeon Remastered 1.1 (Free)](https://kaylousberg.itch.io/kaykit-dungeon-remastered) | CC0-1.0 | có | approved | 187 | 29.7 KB → 16.9 KB | 1 × ≤1024px | — |
+| `env_ground_stone_weeds_01` | ground | [KayKit Dungeon Remastered 1.1 (Free)](https://kaylousberg.itch.io/kaykit-dungeon-remastered) | CC0-1.0 | có | approved | 589 | 44.3 KB → 22.5 KB | 1 × ≤1024px | — |
+| `env_ground_weeds_01` | ground | [KayKit Dungeon Remastered 1.1 (Free)](https://kaylousberg.itch.io/kaykit-dungeon-remastered) | CC0-1.0 | có | approved | 416 | 37.1 KB → 20.0 KB | 1 × ≤1024px | — |
 | `env_mushroom_01` | environment | [Stylized Nature MegaKit (Standard)](https://quaternius.com/packs/stylizednaturemegakit.html) | CC0-1.0 | có | approved | 880 | 1.2 MB → 53.3 KB | 1 × ≤512px | — |
-| `env_pebble_01` | environment | [Stylized Nature MegaKit (Standard)](https://quaternius.com/packs/stylizednaturemegakit.html) | CC0-1.0 | có | approved | 136 | 804.0 KB → 34.7 KB | 1 × ≤512px | — |
-| `env_rock_01` | environment | [Stylized Nature MegaKit (Standard)](https://quaternius.com/packs/stylizednaturemegakit.html) | CC0-1.0 | có | approved | 342 | 2.4 MB → 41.3 KB | 1 × ≤512px | — |
-| `env_rock_02` | environment | [Stylized Nature MegaKit (Standard)](https://quaternius.com/packs/stylizednaturemegakit.html) | CC0-1.0 | có | approved | 244 | 2.4 MB → 39.7 KB | 1 × ≤512px | — |
-| `env_rock_03` | environment | [Stylized Nature MegaKit (Standard)](https://quaternius.com/packs/stylizednaturemegakit.html) | CC0-1.0 | có | approved | 522 | 2.4 MB → 44.2 KB | 1 × ≤512px | — |
-| `env_tree_01` | environment | [Stylized Nature MegaKit (Standard)](https://quaternius.com/packs/stylizednaturemegakit.html) | CC0-1.0 | có | approved | 6265 | 8.5 MB → 234.9 KB | 3 × ≤512px | — |
-| `env_tree_02` | environment | [Stylized Nature MegaKit (Standard)](https://quaternius.com/packs/stylizednaturemegakit.html) | CC0-1.0 | có | approved | 3947 | 8.2 MB → 143.5 KB | 3 × ≤512px | — |
-| `env_tree_03` | environment | [Stylized Nature MegaKit (Standard)](https://quaternius.com/packs/stylizednaturemegakit.html) | CC0-1.0 | có | approved | 3505 | 8.3 MB → 171.8 KB | 3 × ≤512px | — |
-| `env_tree_04` | environment | [Stylized Nature MegaKit (Standard)](https://quaternius.com/packs/stylizednaturemegakit.html) | CC0-1.0 | có | approved | 3648 | 8.2 MB → 137.8 KB | 3 × ≤512px | — |
-| `env_tree_dead_01` | environment | [Stylized Nature MegaKit (Standard)](https://quaternius.com/packs/stylizednaturemegakit.html) | CC0-1.0 | có | approved | 6169 | 9.9 MB → 190.9 KB | 2 × ≤512px | — |
+| `env_pebble_01` | environment | [KayKit Forest Nature Pack 1.0 (Free)](https://kaylousberg.itch.io/kaykit-forest) | CC0-1.0 | có | approved | 12 | 49.7 KB → 10.2 KB | 1 × ≤512px | — |
+| `env_rock_01` | environment | [KayKit Forest Nature Pack 1.0 (Free)](https://kaylousberg.itch.io/kaykit-forest) | CC0-1.0 | có | approved | 84 | 53.2 KB → 12.0 KB | 1 × ≤512px | — |
+| `env_rock_02` | environment | [KayKit Forest Nature Pack 1.0 (Free)](https://kaylousberg.itch.io/kaykit-forest) | CC0-1.0 | có | approved | 48 | 51.6 KB → 10.9 KB | 1 × ≤512px | — |
+| `env_rock_03` | environment | [KayKit Forest Nature Pack 1.0 (Free)](https://kaylousberg.itch.io/kaykit-forest) | CC0-1.0 | có | approved | 84 | 53.2 KB → 11.9 KB | 1 × ≤512px | — |
+| `env_scifi_column_01` | environment | [KayKit Space Base Bits 1.0 (Free)](https://kaylousberg.itch.io/space-base-bits) | CC0-1.0 | có | approved | 356 | 44.3 KB → 15.3 KB | 1 × ≤512px | — |
+| `env_scifi_door_01` | environment | [KayKit Space Base Bits 1.0 (Free)](https://kaylousberg.itch.io/space-base-bits) | CC0-1.0 | có | approved | 454 | 52.4 KB → 17.8 KB | 1 × ≤512px | — |
+| `env_scifi_door_frame_01` | environment | [KayKit Space Base Bits 1.0 (Free)](https://kaylousberg.itch.io/space-base-bits) | CC0-1.0 | có | approved | 770 | 75.5 KB → 24.8 KB | 1 × ≤512px | — |
+| `env_scifi_wall_01` | environment | [KayKit Space Base Bits 1.0 (Free)](https://kaylousberg.itch.io/space-base-bits) | CC0-1.0 | có | approved | 670 | 67.0 KB → 23.4 KB | 1 × ≤512px | — |
+| `env_scifi_wall_broken_01` | environment | [KayKit Space Base Bits 1.0 (Free)](https://kaylousberg.itch.io/space-base-bits) | CC0-1.0 | có | approved | 422 | 51.9 KB → 17.8 KB | 1 × ≤512px | — |
+| `env_tree_01` | environment | [KayKit Forest Nature Pack 1.0 (Free)](https://kaylousberg.itch.io/kaykit-forest) | CC0-1.0 | có | approved | 530 | 66.0 KB → 17.0 KB | 1 × ≤512px | — |
+| `env_tree_02` | environment | [KayKit Forest Nature Pack 1.0 (Free)](https://kaylousberg.itch.io/kaykit-forest) | CC0-1.0 | có | approved | 336 | 56.9 KB → 13.2 KB | 1 × ≤512px | — |
+| `env_tree_03` | environment | [KayKit Forest Nature Pack 1.0 (Free)](https://kaylousberg.itch.io/kaykit-forest) | CC0-1.0 | có | approved | 978 | 77.9 KB → 21.6 KB | 1 × ≤512px | — |
+| `env_tree_04` | environment | [KayKit Forest Nature Pack 1.0 (Free)](https://kaylousberg.itch.io/kaykit-forest) | CC0-1.0 | có | approved | 404 | 61.2 KB → 14.9 KB | 1 × ≤512px | — |
+| `env_tree_dead_01` | environment | [KayKit Forest Nature Pack 1.0 (Free)](https://kaylousberg.itch.io/kaykit-forest) | CC0-1.0 | có | approved | 324 | 60.4 KB → 14.7 KB | 1 × ≤512px | — |
+| `env_village_corner_01` | environment | [KayKit Dungeon Remastered 1.1 (Free)](https://kaylousberg.itch.io/kaykit-dungeon-remastered) | CC0-1.0 | có | approved | 443 | 48.4 KB → 18.8 KB | 1 × ≤512px | — |
+| `env_village_door_01` | environment | [KayKit Dungeon Remastered 1.1 (Free)](https://kaylousberg.itch.io/kaykit-dungeon-remastered) | CC0-1.0 | có | approved | 1068 | 69.8 KB → 26.6 KB | 1 × ≤512px | — |
+| `env_village_fence_01` | environment | [KayKit Dungeon Remastered 1.1 (Free)](https://kaylousberg.itch.io/kaykit-dungeon-remastered) | CC0-1.0 | có | approved | 90 | 24.1 KB → 9.4 KB | 1 × ≤512px | — |
+| `env_village_floor_01` | environment | [KayKit Dungeon Remastered 1.1 (Free)](https://kaylousberg.itch.io/kaykit-dungeon-remastered) | CC0-1.0 | có | approved | 188 | 27.6 KB → 10.9 KB | 1 × ≤512px | — |
+| `env_village_floor_redbrick_01` | environment | [KayKit Dungeon Remastered 1.1 (Free)](https://kaylousberg.itch.io/kaykit-dungeon-remastered) | CC0-1.0 | có | approved | 338 | 37.1 KB → 15.3 KB | 1 × ≤512px | — |
+| `env_village_floor_wood_01` | environment | [KayKit Dungeon Remastered 1.1 (Free)](https://kaylousberg.itch.io/kaykit-dungeon-remastered) | CC0-1.0 | có | approved | 272 | 36.0 KB → 12.9 KB | 1 × ≤512px | — |
+| `env_village_roof_01` | environment | [KayKit Dungeon Remastered 1.1 (Free)](https://kaylousberg.itch.io/kaykit-dungeon-remastered) | CC0-1.0 | có | approved | 60 | 21.4 KB → 8.6 KB | 1 × ≤512px | — |
+| `env_village_vine_01` | environment | [KayKit Forest Nature Pack 1.0 (Free)](https://kaylousberg.itch.io/kaykit-forest) | CC0-1.0 | có | approved | 44 | 49.9 KB → 10.4 KB | 1 × ≤512px | — |
+| `env_village_wall_01` | environment | [KayKit Dungeon Remastered 1.1 (Free)](https://kaylousberg.itch.io/kaykit-dungeon-remastered) | CC0-1.0 | có | approved | 494 | 52.3 KB → 20.4 KB | 1 × ≤512px | — |
+| `item_kr_copper_nugget_medium` | prop | [KayKit Resource Bits 1.0 (Free)](https://kaylousberg.itch.io/resource-bits) | CC0-1.0 | có | approved | 40 | 29.3 KB → 9.3 KB | 1 × ≤512px | — |
+| `item_kr_gold_bars` | prop | [KayKit Resource Bits 1.0 (Free)](https://kaylousberg.itch.io/resource-bits) | CC0-1.0 | có | approved | 936 | 60.3 KB → 21.9 KB | 1 × ≤512px | — |
+| `item_kr_gold_nugget_medium` | prop | [KayKit Resource Bits 1.0 (Free)](https://kaylousberg.itch.io/resource-bits) | CC0-1.0 | có | approved | 40 | 29.4 KB → 9.3 KB | 1 × ≤512px | — |
+| `item_kr_iron_bar` | prop | [KayKit Resource Bits 1.0 (Free)](https://kaylousberg.itch.io/resource-bits) | CC0-1.0 | có | approved | 108 | 30.2 KB → 9.5 KB | 1 × ≤512px | — |
+| `item_kr_iron_nugget_medium` | prop | [KayKit Resource Bits 1.0 (Free)](https://kaylousberg.itch.io/resource-bits) | CC0-1.0 | có | approved | 40 | 29.3 KB → 9.3 KB | 1 × ≤512px | — |
+| `item_kr_parts_cog` | prop | [KayKit Resource Bits 1.0 (Free)](https://kaylousberg.itch.io/resource-bits) | CC0-1.0 | có | approved | 192 | 35.1 KB → 10.8 KB | 1 × ≤512px | — |
+| `item_kr_parts_pile_small` | prop | [KayKit Resource Bits 1.0 (Free)](https://kaylousberg.itch.io/resource-bits) | CC0-1.0 | có | approved | 1148 | 76.2 KB → 26.0 KB | 1 × ≤512px | — |
+| `item_kr_silver_nugget_medium` | prop | [KayKit Resource Bits 1.0 (Free)](https://kaylousberg.itch.io/resource-bits) | CC0-1.0 | có | approved | 40 | 29.3 KB → 9.3 KB | 1 × ≤512px | — |
+| `item_kr_stone_bricks_stack_small` | prop | [KayKit Resource Bits 1.0 (Free)](https://kaylousberg.itch.io/resource-bits) | CC0-1.0 | có | approved | 282 | 41.7 KB → 12.9 KB | 1 × ≤512px | — |
+| `item_kr_stone_chunks_small` | prop | [KayKit Resource Bits 1.0 (Free)](https://kaylousberg.itch.io/resource-bits) | CC0-1.0 | có | approved | 554 | 57.9 KB → 22.0 KB | 1 × ≤512px | — |
+| `item_kr_textiles_a` | prop | [KayKit Resource Bits 1.0 (Free)](https://kaylousberg.itch.io/resource-bits) | CC0-1.0 | có | approved | 424 | 41.6 KB → 14.1 KB | 1 × ≤512px | — |
+| `item_kr_wood_log_a` | prop | [KayKit Resource Bits 1.0 (Free)](https://kaylousberg.itch.io/resource-bits) | CC0-1.0 | có | approved | 756 | 65.8 KB → 23.7 KB | 1 × ≤512px | — |
+| `item_kr_wood_planks_stack_small` | prop | [KayKit Resource Bits 1.0 (Free)](https://kaylousberg.itch.io/resource-bits) | CC0-1.0 | có | approved | 248 | 41.5 KB → 13.3 KB | 1 × ≤512px | — |
+| `item_kt_bucket_metal` | prop | [KayKit RPG Tools Bits 1.0 (Free)](https://kaylousberg.itch.io/rpg-tools-bits) | CC0-1.0 | có | approved | 466 | 47.9 KB → 15.9 KB | 1 × ≤512px | — |
+| `item_kt_compass_base` | prop | [KayKit RPG Tools Bits 1.0 (Free)](https://kaylousberg.itch.io/rpg-tools-bits) | CC0-1.0 | có | approved | 1320 | 86.0 KB → 30.6 KB | 1 × ≤512px | — |
+| `item_kt_grindstone` | prop | [KayKit RPG Tools Bits 1.0 (Free)](https://kaylousberg.itch.io/rpg-tools-bits) | CC0-1.0 | có | approved | 1114 | 81.2 KB → 25.9 KB | 1 × ≤512px | — |
+| `item_kt_hammer` | prop | [KayKit RPG Tools Bits 1.0 (Free)](https://kaylousberg.itch.io/rpg-tools-bits) | CC0-1.0 | có | approved | 396 | 43.2 KB → 13.5 KB | 1 × ≤512px | — |
+| `item_kt_journal_closed` | prop | [KayKit RPG Tools Bits 1.0 (Free)](https://kaylousberg.itch.io/rpg-tools-bits) | CC0-1.0 | có | approved | 657 | 60.9 KB → 18.9 KB | 1 × ≤512px | — |
+| `item_kt_map_rolled` | prop | [KayKit RPG Tools Bits 1.0 (Free)](https://kaylousberg.itch.io/rpg-tools-bits) | CC0-1.0 | có | approved | 348 | 39.8 KB → 11.9 KB | 1 × ≤512px | — |
+| `item_kt_pickaxe` | prop | [KayKit RPG Tools Bits 1.0 (Free)](https://kaylousberg.itch.io/rpg-tools-bits) | CC0-1.0 | có | approved | 508 | 49.4 KB → 15.4 KB | 1 × ≤512px | — |
+| `item_kt_rope_bundle_a` | prop | [KayKit RPG Tools Bits 1.0 (Free)](https://kaylousberg.itch.io/rpg-tools-bits) | CC0-1.0 | có | approved | 1248 | 59.0 KB → 18.3 KB | 1 × ≤512px | — |
+| `item_kt_tongs` | prop | [KayKit RPG Tools Bits 1.0 (Free)](https://kaylousberg.itch.io/rpg-tools-bits) | CC0-1.0 | có | approved | 340 | 44.5 KB → 14.8 KB | 1 × ≤512px | — |
+| `item_kt_torch` | prop | [KayKit RPG Tools Bits 1.0 (Free)](https://kaylousberg.itch.io/rpg-tools-bits) | CC0-1.0 | có | approved | 474 | 46.1 KB → 14.7 KB | 1 × ≤512px | — |
 | `item_qa_book` | prop | [LowPoly RPG Pack (May 2017)](https://quaternius.com/packs/rpg.html) | CC0-1.0 | có | approved | 184 | 11.6 KB → 4.4 KB | — | — |
 | `item_qa_gems` | prop | [LowPoly RPG Pack (May 2017)](https://quaternius.com/packs/rpg.html) | CC0-1.0 | có | approved | 412 | 33.9 KB → 17.2 KB | — | — |
 | `item_qa_knighthelmet` | prop | [LowPoly RPG Pack (May 2017)](https://quaternius.com/packs/rpg.html) | CC0-1.0 | có | approved | 987 | 55.1 KB → 23.3 KB | — | — |
@@ -60,11 +106,29 @@
 | `item_qr_skull` | prop | [Ultimate RPG Items Pack (Aug 2019)](https://quaternius.com/packs/ultimaterpg.html) | CC0-1.0 | có | approved | 336 | 19.4 KB → 8.6 KB | — | — |
 | `item_qr_sword_big_golden` | prop | [Ultimate RPG Items Pack (Aug 2019)](https://quaternius.com/packs/ultimaterpg.html) | CC0-1.0 | có | approved | 830 | 43.2 KB → 18.0 KB | — | — |
 | `mob_fox_01` | monster | [Ultimate Animated Animal Pack (July 2021)](https://quaternius.com/packs/ultimateanimatedanimals.html) | CC0-1.0 | có | approved | 1848 | 1.8 MB → 540.1 KB | — | Attack, Death, Eating, Gallop, Gallop_Jump, Idle, Idle_2, Idle_2_HeadLow, Idle_HitReact1, Idle_HitReact2, Jump_ToIdle, Walk |
+| `mob_skeleton_mage` | monster | [KayKit Character Pack: Skeletons 1.1 (Free)](https://kaylousberg.itch.io/kaykit-skeletons) | CC0-1.0 | có | approved | 4588 | 475.9 KB → 300.4 KB | 1 × ≤1024px | Hit_A, Running_A, Melee_1H_Attack_Chop, Melee_2H_Attack_Slice, Skeletons_Awaken_Standing, Skeletons_Death, Skeletons_Idle, Skeletons_Walking |
+| `mob_skeleton_minion` | monster | [KayKit Character Pack: Skeletons 1.1 (Free)](https://kaylousberg.itch.io/kaykit-skeletons) | CC0-1.0 | có | approved | 5288 | 527.5 KB → 316.0 KB | 1 × ≤1024px | Hit_A, Running_A, Melee_1H_Attack_Chop, Melee_2H_Attack_Slice, Skeletons_Awaken_Standing, Skeletons_Death, Skeletons_Idle, Skeletons_Walking |
+| `mob_skeleton_rogue` | monster | [KayKit Character Pack: Skeletons 1.1 (Free)](https://kaylousberg.itch.io/kaykit-skeletons) | CC0-1.0 | có | approved | 5278 | 539.8 KB → 323.1 KB | 1 × ≤1024px | Hit_A, Running_A, Melee_1H_Attack_Chop, Melee_2H_Attack_Slice, Skeletons_Awaken_Standing, Skeletons_Death, Skeletons_Idle, Skeletons_Walking |
+| `mob_skeleton_warrior` | monster | [KayKit Character Pack: Skeletons 1.1 (Free)](https://kaylousberg.itch.io/kaykit-skeletons) | CC0-1.0 | có | approved | 5934 | 575.2 KB → 336.5 KB | 1 × ≤1024px | Hit_A, Running_A, Melee_1H_Attack_Chop, Melee_2H_Attack_Slice, Skeletons_Awaken_Standing, Skeletons_Death, Skeletons_Idle, Skeletons_Walking |
 | `mob_stag_elite_01` | monster | [Ultimate Animated Animal Pack (July 2021)](https://quaternius.com/packs/ultimateanimatedanimals.html) | CC0-1.0 | có | approved | 3670 | 1.9 MB → 481.3 KB | — | Attack_Headbutt, Attack_Kick, Death, Eating, Gallop, Gallop_Jump, Idle, Idle_2, Idle_Headlow, Idle_HitReact1, Idle_HitReact2, Jump_toIdle, Walk |
 | `mob_wolf_01` | monster | [Ultimate Animated Animal Pack (July 2021)](https://quaternius.com/packs/ultimateanimatedanimals.html) | CC0-1.0 | có | approved | 1962 | 1.8 MB → 541.0 KB | — | Attack, Death, Eating, Gallop, Gallop_Jump, Idle, Idle_2, Idle_2_HeadLow, Idle_HitReact1, Idle_HitReact2, Jump_ToIdle, Walk |
 | `offhand_kk_shield_round` | prop | [KayKit Character Pack: Adventurers 2.0 (Free)](https://kaylousberg.itch.io/kaykit-adventurers) | CC0-1.0 | có | approved | 284 | 25.7 KB → 10.8 KB | 1 × ≤512px | — |
 | `offhand_kk_shield_square` | prop | [KayKit Character Pack: Adventurers 2.0 (Free)](https://kaylousberg.itch.io/kaykit-adventurers) | CC0-1.0 | có | approved | 262 | 24.4 KB → 10.3 KB | 1 × ≤512px | — |
 | `offhand_kk_spellbook` | prop | [KayKit Character Pack: Adventurers 2.0 (Free)](https://kaylousberg.itch.io/kaykit-adventurers) | CC0-1.0 | có | approved | 292 | 30.5 KB → 11.9 KB | 1 × ≤512px | — |
+| `prop_anvil_01` | prop | [KayKit RPG Tools Bits 1.0 (Free)](https://kaylousberg.itch.io/rpg-tools-bits) | CC0-1.0 | có | approved | 316 | 43.2 KB → 12.7 KB | 1 × ≤512px | — |
+| `prop_banner_01` | prop | [KayKit Dungeon Remastered 1.1 (Free)](https://kaylousberg.itch.io/kaykit-dungeon-remastered) | CC0-1.0 | có | approved | 110 | 25.5 KB → 10.5 KB | 1 × ≤512px | — |
+| `prop_barrel_01` | prop | [KayKit Dungeon Remastered 1.1 (Free)](https://kaylousberg.itch.io/kaykit-dungeon-remastered) | CC0-1.0 | có | approved | 561 | 43.2 KB → 16.8 KB | 1 × ≤512px | — |
+| `prop_cauldron_01` | prop | [KayKit Dungeon Remastered 1.1 (Free)](https://kaylousberg.itch.io/kaykit-dungeon-remastered) | CC0-1.0 | có | approved | 2058 | 130.6 KB → 48.2 KB | 1 × ≤512px | — |
+| `prop_crate_01` | prop | [KayKit Dungeon Remastered 1.1 (Free)](https://kaylousberg.itch.io/kaykit-dungeon-remastered) | CC0-1.0 | có | approved | 188 | 29.1 KB → 11.6 KB | 1 × ≤512px | — |
+| `prop_dungeon_chest_01` | prop | [KayKit Dungeon Remastered 1.1 (Free)](https://kaylousberg.itch.io/kaykit-dungeon-remastered) | CC0-1.0 | có | approved | 1568 | 97.4 KB → 38.5 KB | 1 × ≤512px | — |
+| `prop_dungeon_rubble_01` | prop | [KayKit Dungeon Remastered 1.1 (Free)](https://kaylousberg.itch.io/kaykit-dungeon-remastered) | CC0-1.0 | có | approved | 788 | 60.1 KB → 24.4 KB | 1 × ≤512px | — |
+| `prop_dungeon_torch_01` | prop | [KayKit Dungeon Remastered 1.1 (Free)](https://kaylousberg.itch.io/kaykit-dungeon-remastered) | CC0-1.0 | có | approved | 278 | 31.8 KB → 13.3 KB | 1 × ≤512px | — |
+| `prop_lantern_wall_01` | prop | [KayKit RPG Tools Bits 1.0 (Free)](https://kaylousberg.itch.io/rpg-tools-bits) | CC0-1.0 | có | approved | 772 | 62.6 KB → 22.7 KB | 1 × ≤512px | — |
+| `prop_market_stall_01` | prop | [KayKit Dungeon Remastered 1.1 (Free)](https://kaylousberg.itch.io/kaykit-dungeon-remastered) | CC0-1.0 | có | approved | 2035 | 110.3 KB → 40.5 KB | 1 × ≤512px | — |
+| `prop_scifi_access_point_01` | prop | [KayKit Space Base Bits 1.0 (Free)](https://kaylousberg.itch.io/space-base-bits) | CC0-1.0 | có | approved | 826 | 70.3 KB → 27.7 KB | 1 × ≤512px | — |
+| `prop_scifi_terminal_01` | prop | [KayKit Space Base Bits 1.0 (Free)](https://kaylousberg.itch.io/space-base-bits) | CC0-1.0 | có | approved | 924 | 79.4 KB → 26.4 KB | 1 × ≤512px | — |
+| `prop_weapon_rack_01` | prop | [KayKit Dungeon Remastered 1.1 (Free)](https://kaylousberg.itch.io/kaykit-dungeon-remastered) | CC0-1.0 | có | approved | 542 | 46.2 KB → 19.6 KB | 1 × ≤512px | — |
+| `prop_workbench_01` | prop | [KayKit Dungeon Remastered 1.1 (Free)](https://kaylousberg.itch.io/kaykit-dungeon-remastered) | CC0-1.0 | có | approved | 1186 | 74.2 KB → 28.2 KB | 1 × ≤512px | — |
 | `weapon_kb_blaster_a` | prop | [Blaster Kit 2.1](https://kenney.nl/assets/blaster-kit) | CC0-1.0 | có | approved | 470 | 53.3 KB → 14.9 KB | 1 × ≤512px | — |
 | `weapon_kb_blaster_b` | prop | [Blaster Kit 2.1](https://kenney.nl/assets/blaster-kit) | CC0-1.0 | có | approved | 368 | 43.3 KB → 11.6 KB | 1 × ≤512px | — |
 | `weapon_kb_blaster_c` | prop | [Blaster Kit 2.1](https://kenney.nl/assets/blaster-kit) | CC0-1.0 | có | approved | 388 | 45.1 KB → 12.1 KB | 1 × ≤512px | — |
@@ -74,6 +138,31 @@
 | `weapon_kb_blaster_g` | prop | [Blaster Kit 2.1](https://kenney.nl/assets/blaster-kit) | CC0-1.0 | có | approved | 618 | 64.6 KB → 15.6 KB | 1 × ≤512px | — |
 | `weapon_kb_blaster_h` | prop | [Blaster Kit 2.1](https://kenney.nl/assets/blaster-kit) | CC0-1.0 | có | approved | 296 | 37.4 KB → 10.3 KB | 1 × ≤512px | — |
 | `weapon_kb_grenade` | prop | [Blaster Kit 2.1](https://kenney.nl/assets/blaster-kit) | CC0-1.0 | có | approved | 200 | 28.6 KB → 8.9 KB | 1 × ≤512px | — |
+| `weapon_kf_axe_a` | prop | [KayKit Fantasy Weapons Bits 1.0 (Free)](https://kaylousberg.itch.io/fantasy-weapons-bits) | CC0-1.0 | có | approved | 1206 | 64.3 KB → 24.7 KB | 1 × ≤512px | — |
+| `weapon_kf_axe_b` | prop | [KayKit Fantasy Weapons Bits 1.0 (Free)](https://kaylousberg.itch.io/fantasy-weapons-bits) | CC0-1.0 | có | approved | 1246 | 66.7 KB → 25.3 KB | 1 × ≤512px | — |
+| `weapon_kf_axe_c` | prop | [KayKit Fantasy Weapons Bits 1.0 (Free)](https://kaylousberg.itch.io/fantasy-weapons-bits) | CC0-1.0 | có | approved | 890 | 54.0 KB → 20.8 KB | 1 × ≤512px | — |
+| `weapon_kf_bow_a_withstring` | prop | [KayKit Fantasy Weapons Bits 1.0 (Free)](https://kaylousberg.itch.io/fantasy-weapons-bits) | CC0-1.0 | có | approved | 700 | 66.0 KB → 25.1 KB | 1 × ≤512px | — |
+| `weapon_kf_bow_b_withstring` | prop | [KayKit Fantasy Weapons Bits 1.0 (Free)](https://kaylousberg.itch.io/fantasy-weapons-bits) | CC0-1.0 | có | approved | 2368 | 188.3 KB → 67.7 KB | 1 × ≤512px | — |
+| `weapon_kf_dagger_a` | prop | [KayKit Fantasy Weapons Bits 1.0 (Free)](https://kaylousberg.itch.io/fantasy-weapons-bits) | CC0-1.0 | có | approved | 374 | 35.5 KB → 13.7 KB | 1 × ≤512px | — |
+| `weapon_kf_dagger_b` | prop | [KayKit Fantasy Weapons Bits 1.0 (Free)](https://kaylousberg.itch.io/fantasy-weapons-bits) | CC0-1.0 | có | approved | 502 | 38.0 KB → 14.9 KB | 1 × ≤512px | — |
+| `weapon_kf_fistweapon_a` | prop | [KayKit Fantasy Weapons Bits 1.0 (Free)](https://kaylousberg.itch.io/fantasy-weapons-bits) | CC0-1.0 | có | approved | 218 | 28.5 KB → 11.2 KB | 1 × ≤512px | — |
+| `weapon_kf_fistweapon_b` | prop | [KayKit Fantasy Weapons Bits 1.0 (Free)](https://kaylousberg.itch.io/fantasy-weapons-bits) | CC0-1.0 | có | approved | 220 | 29.1 KB → 11.1 KB | 1 × ≤512px | — |
+| `weapon_kf_halberd` | prop | [KayKit Fantasy Weapons Bits 1.0 (Free)](https://kaylousberg.itch.io/fantasy-weapons-bits) | CC0-1.0 | có | approved | 1496 | 81.0 KB → 30.7 KB | 1 × ≤512px | — |
+| `weapon_kf_hammer_a` | prop | [KayKit Fantasy Weapons Bits 1.0 (Free)](https://kaylousberg.itch.io/fantasy-weapons-bits) | CC0-1.0 | có | approved | 524 | 41.1 KB → 15.7 KB | 1 × ≤512px | — |
+| `weapon_kf_hammer_b` | prop | [KayKit Fantasy Weapons Bits 1.0 (Free)](https://kaylousberg.itch.io/fantasy-weapons-bits) | CC0-1.0 | có | approved | 712 | 46.7 KB → 17.7 KB | 1 × ≤512px | — |
+| `weapon_kf_hammer_c` | prop | [KayKit Fantasy Weapons Bits 1.0 (Free)](https://kaylousberg.itch.io/fantasy-weapons-bits) | CC0-1.0 | có | approved | 840 | 50.1 KB → 18.7 KB | 1 × ≤512px | — |
+| `weapon_kf_shield_a` | prop | [KayKit Fantasy Weapons Bits 1.0 (Free)](https://kaylousberg.itch.io/fantasy-weapons-bits) | CC0-1.0 | có | approved | 354 | 32.7 KB → 12.4 KB | 1 × ≤512px | — |
+| `weapon_kf_shield_b` | prop | [KayKit Fantasy Weapons Bits 1.0 (Free)](https://kaylousberg.itch.io/fantasy-weapons-bits) | CC0-1.0 | có | approved | 368 | 33.9 KB → 13.4 KB | 1 × ≤512px | — |
+| `weapon_kf_shield_c` | prop | [KayKit Fantasy Weapons Bits 1.0 (Free)](https://kaylousberg.itch.io/fantasy-weapons-bits) | CC0-1.0 | có | approved | 584 | 45.7 KB → 16.8 KB | 1 × ≤512px | — |
+| `weapon_kf_spear_a` | prop | [KayKit Fantasy Weapons Bits 1.0 (Free)](https://kaylousberg.itch.io/fantasy-weapons-bits) | CC0-1.0 | có | approved | 1216 | 69.9 KB → 26.8 KB | 1 × ≤512px | — |
+| `weapon_kf_staff_a` | prop | [KayKit Fantasy Weapons Bits 1.0 (Free)](https://kaylousberg.itch.io/fantasy-weapons-bits) | CC0-1.0 | có | approved | 500 | 38.9 KB → 15.0 KB | 1 × ≤512px | — |
+| `weapon_kf_staff_b` | prop | [KayKit Fantasy Weapons Bits 1.0 (Free)](https://kaylousberg.itch.io/fantasy-weapons-bits) | CC0-1.0 | có | approved | 664 | 50.2 KB → 19.5 KB | 1 × ≤512px | — |
+| `weapon_kf_sword_a` | prop | [KayKit Fantasy Weapons Bits 1.0 (Free)](https://kaylousberg.itch.io/fantasy-weapons-bits) | CC0-1.0 | có | approved | 292 | 31.6 KB → 11.9 KB | 1 × ≤512px | — |
+| `weapon_kf_sword_b` | prop | [KayKit Fantasy Weapons Bits 1.0 (Free)](https://kaylousberg.itch.io/fantasy-weapons-bits) | CC0-1.0 | có | approved | 460 | 38.2 KB → 14.7 KB | 1 × ≤512px | — |
+| `weapon_kf_sword_c` | prop | [KayKit Fantasy Weapons Bits 1.0 (Free)](https://kaylousberg.itch.io/fantasy-weapons-bits) | CC0-1.0 | có | approved | 349 | 35.0 KB → 13.0 KB | 1 × ≤512px | — |
+| `weapon_kf_sword_d` | prop | [KayKit Fantasy Weapons Bits 1.0 (Free)](https://kaylousberg.itch.io/fantasy-weapons-bits) | CC0-1.0 | có | approved | 730 | 43.8 KB → 16.5 KB | 1 × ≤512px | — |
+| `weapon_kf_sword_e` | prop | [KayKit Fantasy Weapons Bits 1.0 (Free)](https://kaylousberg.itch.io/fantasy-weapons-bits) | CC0-1.0 | có | approved | 616 | 47.6 KB → 18.0 KB | 1 × ≤512px | — |
+| `weapon_kf_wand_a` | prop | [KayKit Fantasy Weapons Bits 1.0 (Free)](https://kaylousberg.itch.io/fantasy-weapons-bits) | CC0-1.0 | có | approved | 442 | 37.6 KB → 14.5 KB | 1 × ≤512px | — |
 | `weapon_kk_axe_1h` | prop | [KayKit Character Pack: Adventurers 2.0 (Free)](https://kaylousberg.itch.io/kaykit-adventurers) | CC0-1.0 | có | approved | 274 | 27.7 KB → 11.1 KB | 1 × ≤512px | — |
 | `weapon_kk_axe_2h` | prop | [KayKit Character Pack: Adventurers 2.0 (Free)](https://kaylousberg.itch.io/kaykit-adventurers) | CC0-1.0 | có | approved | 508 | 36.9 KB → 14.9 KB | 1 × ≤512px | — |
 | `weapon_kk_bow` | prop | [KayKit Character Pack: Adventurers 2.0 (Free)](https://kaylousberg.itch.io/kaykit-adventurers) | CC0-1.0 | có | approved | 684 | 62.6 KB → 24.3 KB | 1 × ≤512px | — |
@@ -84,6 +173,12 @@
 | `weapon_kk_sword_2h` | prop | [KayKit Character Pack: Adventurers 2.0 (Free)](https://kaylousberg.itch.io/kaykit-adventurers) | CC0-1.0 | có | approved | 412 | 33.4 KB → 13.4 KB | 1 × ≤512px | — |
 | `weapon_kk_sword_2h_color` | prop | [KayKit Character Pack: Adventurers 2.0 (Free)](https://kaylousberg.itch.io/kaykit-adventurers) | CC0-1.0 | có | approved | 412 | 33.4 KB → 13.3 KB | 1 × ≤512px | — |
 | `weapon_kk_wand` | prop | [KayKit Character Pack: Adventurers 2.0 (Free)](https://kaylousberg.itch.io/kaykit-adventurers) | CC0-1.0 | có | approved | 150 | 21.5 KB → 8.7 KB | 1 × ≤512px | — |
+| `weapon_ks_axe` | prop | [KayKit Character Pack: Skeletons 1.1 (Free)](https://kaylousberg.itch.io/kaykit-skeletons) | CC0-1.0 | có | approved | 534 | 42.7 KB → 17.6 KB | 1 × ≤512px | — |
+| `weapon_ks_blade` | prop | [KayKit Character Pack: Skeletons 1.1 (Free)](https://kaylousberg.itch.io/kaykit-skeletons) | CC0-1.0 | có | approved | 457 | 37.6 KB → 16.0 KB | 1 × ≤512px | — |
+| `weapon_ks_crossbow` | prop | [KayKit Character Pack: Skeletons 1.1 (Free)](https://kaylousberg.itch.io/kaykit-skeletons) | CC0-1.0 | có | approved | 584 | 45.9 KB → 19.6 KB | 1 × ≤512px | — |
+| `weapon_ks_shield_large_a` | prop | [KayKit Character Pack: Skeletons 1.1 (Free)](https://kaylousberg.itch.io/kaykit-skeletons) | CC0-1.0 | có | approved | 626 | 50.5 KB → 21.7 KB | 1 × ≤512px | — |
+| `weapon_ks_shield_small_a` | prop | [KayKit Character Pack: Skeletons 1.1 (Free)](https://kaylousberg.itch.io/kaykit-skeletons) | CC0-1.0 | có | approved | 500 | 39.2 KB → 16.6 KB | 1 × ≤512px | — |
+| `weapon_ks_staff` | prop | [KayKit Character Pack: Skeletons 1.1 (Free)](https://kaylousberg.itch.io/kaykit-skeletons) | CC0-1.0 | có | approved | 1519 | 85.6 KB → 35.6 KB | 1 × ≤512px | — |
 | `weapon_qa_dagger` | prop | [LowPoly RPG Pack (May 2017)](https://quaternius.com/packs/rpg.html) | CC0-1.0 | có | approved | 524 | 15.6 KB → 6.1 KB | — | — |
 | `weapon_qa_icestaff` | prop | [LowPoly RPG Pack (May 2017)](https://quaternius.com/packs/rpg.html) | CC0-1.0 | có | approved | 396 | 23.7 KB → 9.9 KB | — | — |
 | `weapon_qa_staff` | prop | [LowPoly RPG Pack (May 2017)](https://quaternius.com/packs/rpg.html) | CC0-1.0 | có | approved | 256 | 17.3 KB → 8.2 KB | — | — |
@@ -119,26 +214,72 @@
 - `char_kk_barbarian`: `art/third_party/kaykit_adventurers/originals/Characters/gltf/Barbarian.glb`
 - `char_kk_knight`: `art/third_party/kaykit_adventurers/originals/Characters/gltf/Knight.glb`
 - `char_kk_mage`: `art/third_party/kaykit_adventurers/originals/Characters/gltf/Mage.glb`
+- `char_kk_mannequin`: `art/third_party/kaykit_character_animations/originals/Mannequin Character/characters/Mannequin_Medium.glb`
 - `char_kk_ranger`: `art/third_party/kaykit_adventurers/originals/Characters/gltf/Ranger.glb`
 - `char_kk_rogue`: `art/third_party/kaykit_adventurers/originals/Characters/gltf/Rogue.glb`
 - `char_kk_rogue_hooded`: `art/third_party/kaykit_adventurers/originals/Characters/gltf/Rogue_Hooded.glb`
 - `char_ual_mannequin`: `art/third_party/quaternius_universal_animation/originals/Unreal-Godot/UAL1_Standard.glb`
-- `env_bush_01`: `art/third_party/quaternius_nature_megakit/originals/glTF/Bush_Common.gltf`
-- `env_bush_02`: `art/third_party/quaternius_nature_megakit/originals/glTF/Bush_Common_Flowers.gltf`
-- `env_fern_01`: `art/third_party/quaternius_nature_megakit/originals/glTF/Fern_1.gltf`
+- `env_bush_01`: `art/third_party/kaykit_forest_nature/originals/Assets/gltf/Bush_2_C_Color1.gltf`
+- `env_bush_02`: `art/third_party/kaykit_forest_nature/originals/Assets/gltf/Bush_1_C_Color1.gltf`
+- `env_dungeon_arch_01`: `art/third_party/kaykit_dungeon/originals/Assets/gltf/wall_arched.gltf`
+- `env_dungeon_floor_01`: `art/third_party/kaykit_dungeon/originals/Assets/gltf/floor_tile_large.gltf`
+- `env_dungeon_pillar_01`: `art/third_party/kaykit_dungeon/originals/Assets/gltf/pillar_decorated.gltf`
+- `env_dungeon_wall_01`: `art/third_party/kaykit_dungeon/originals/Assets/gltf/wall.gltf`
+- `env_fern_01`: `art/third_party/kaykit_forest_nature/originals/Assets/gltf/Grass_2_C_Color1.gltf`
 - `env_flowers_01`: `art/third_party/quaternius_nature_megakit/originals/glTF/Flower_3_Group.gltf`
-- `env_grass_01`: `art/third_party/quaternius_nature_megakit/originals/glTF/Grass_Common_Short.gltf`
-- `env_grass_02`: `art/third_party/quaternius_nature_megakit/originals/glTF/Grass_Common_Tall.gltf`
+- `env_grass_01`: `art/third_party/kaykit_forest_nature/originals/Assets/gltf/Grass_1_A_Color1.gltf`
+- `env_grass_02`: `art/third_party/kaykit_forest_nature/originals/Assets/gltf/Grass_2_A_Color1.gltf`
+- `env_ground_dirt_01`: `art/third_party/kaykit_dungeon/originals/Assets/gltf/floor_dirt_large.gltf`
+- `env_ground_dirt_rocky_01`: `art/third_party/kaykit_dungeon/originals/Assets/gltf/floor_dirt_large_rocky.gltf`
+- `env_ground_stone_weeds_01`: `art/third_party/kaykit_dungeon/originals/Assets/gltf/floor_tile_small_weeds_A.gltf`
+- `env_ground_weeds_01`: `art/third_party/kaykit_dungeon/originals/Assets/gltf/floor_dirt_small_weeds.gltf`
 - `env_mushroom_01`: `art/third_party/quaternius_nature_megakit/originals/glTF/Mushroom_Common.gltf`
-- `env_pebble_01`: `art/third_party/quaternius_nature_megakit/originals/glTF/Pebble_Round_1.gltf`
-- `env_rock_01`: `art/third_party/quaternius_nature_megakit/originals/glTF/Rock_Medium_1.gltf`
-- `env_rock_02`: `art/third_party/quaternius_nature_megakit/originals/glTF/Rock_Medium_2.gltf`
-- `env_rock_03`: `art/third_party/quaternius_nature_megakit/originals/glTF/Rock_Medium_3.gltf`
-- `env_tree_01`: `art/third_party/quaternius_nature_megakit/originals/glTF/CommonTree_1.gltf`
-- `env_tree_02`: `art/third_party/quaternius_nature_megakit/originals/glTF/Pine_1.gltf`
-- `env_tree_03`: `art/third_party/quaternius_nature_megakit/originals/glTF/CommonTree_3.gltf`
-- `env_tree_04`: `art/third_party/quaternius_nature_megakit/originals/glTF/Pine_2.gltf`
-- `env_tree_dead_01`: `art/third_party/quaternius_nature_megakit/originals/glTF/DeadTree_1.gltf`
+- `env_pebble_01`: `art/third_party/kaykit_forest_nature/originals/Assets/gltf/Rock_2_A_Color1.gltf`
+- `env_rock_01`: `art/third_party/kaykit_forest_nature/originals/Assets/gltf/Rock_3_A_Color1.gltf`
+- `env_rock_02`: `art/third_party/kaykit_forest_nature/originals/Assets/gltf/Rock_1_A_Color1.gltf`
+- `env_rock_03`: `art/third_party/kaykit_forest_nature/originals/Assets/gltf/Rock_3_E_Color1.gltf`
+- `env_scifi_column_01`: `art/third_party/kaykit_space_base/originals/Assets/gltf/lights.gltf`
+- `env_scifi_door_01`: `art/third_party/kaykit_space_base/originals/Assets/gltf/landingpad_small.gltf`
+- `env_scifi_door_frame_01`: `art/third_party/kaykit_space_base/originals/Assets/gltf/basemodule_garage.gltf`
+- `env_scifi_wall_01`: `art/third_party/kaykit_space_base/originals/Assets/gltf/structure_tall.gltf`
+- `env_scifi_wall_broken_01`: `art/third_party/kaykit_space_base/originals/Assets/gltf/structure_low.gltf`
+- `env_tree_01`: `art/third_party/kaykit_forest_nature/originals/Assets/gltf/Tree_1_A_Color1.gltf`
+- `env_tree_02`: `art/third_party/kaykit_forest_nature/originals/Assets/gltf/Tree_2_A_Color1.gltf`
+- `env_tree_03`: `art/third_party/kaykit_forest_nature/originals/Assets/gltf/Tree_3_A_Color1.gltf`
+- `env_tree_04`: `art/third_party/kaykit_forest_nature/originals/Assets/gltf/Tree_4_A_Color1.gltf`
+- `env_tree_dead_01`: `art/third_party/kaykit_forest_nature/originals/Assets/gltf/Tree_Bare_1_A_Color1.gltf`
+- `env_village_corner_01`: `art/third_party/kaykit_dungeon/originals/Assets/gltf/wall_corner.gltf`
+- `env_village_door_01`: `art/third_party/kaykit_dungeon/originals/Assets/gltf/wall_doorway.gltf`
+- `env_village_fence_01`: `art/third_party/kaykit_dungeon/originals/Assets/gltf/barrier.gltf`
+- `env_village_floor_01`: `art/third_party/kaykit_dungeon/originals/Assets/gltf/floor_tile_large.gltf`
+- `env_village_floor_redbrick_01`: `art/third_party/kaykit_dungeon/originals/Assets/gltf/floor_tile_large_rocks.gltf`
+- `env_village_floor_wood_01`: `art/third_party/kaykit_dungeon/originals/Assets/gltf/floor_wood_large.gltf`
+- `env_village_roof_01`: `art/third_party/kaykit_dungeon/originals/Assets/gltf/ceiling_tile.gltf`
+- `env_village_vine_01`: `art/third_party/kaykit_forest_nature/originals/Assets/gltf/Bush_4_A_Color1.gltf`
+- `env_village_wall_01`: `art/third_party/kaykit_dungeon/originals/Assets/gltf/wall.gltf`
+- `item_kr_copper_nugget_medium`: `art/third_party/kaykit_resource_bits/originals/Assets/gltf/Copper_Nugget_Medium.gltf`
+- `item_kr_gold_bars`: `art/third_party/kaykit_resource_bits/originals/Assets/gltf/Gold_Bars.gltf`
+- `item_kr_gold_nugget_medium`: `art/third_party/kaykit_resource_bits/originals/Assets/gltf/Gold_Nugget_Medium.gltf`
+- `item_kr_iron_bar`: `art/third_party/kaykit_resource_bits/originals/Assets/gltf/Iron_Bar.gltf`
+- `item_kr_iron_nugget_medium`: `art/third_party/kaykit_resource_bits/originals/Assets/gltf/Iron_Nugget_Medium.gltf`
+- `item_kr_parts_cog`: `art/third_party/kaykit_resource_bits/originals/Assets/gltf/Parts_Cog.gltf`
+- `item_kr_parts_pile_small`: `art/third_party/kaykit_resource_bits/originals/Assets/gltf/Parts_Pile_Small.gltf`
+- `item_kr_silver_nugget_medium`: `art/third_party/kaykit_resource_bits/originals/Assets/gltf/Silver_Nugget_Medium.gltf`
+- `item_kr_stone_bricks_stack_small`: `art/third_party/kaykit_resource_bits/originals/Assets/gltf/Stone_Bricks_Stack_Small.gltf`
+- `item_kr_stone_chunks_small`: `art/third_party/kaykit_resource_bits/originals/Assets/gltf/Stone_Chunks_Small.gltf`
+- `item_kr_textiles_a`: `art/third_party/kaykit_resource_bits/originals/Assets/gltf/Textiles_A.gltf`
+- `item_kr_wood_log_a`: `art/third_party/kaykit_resource_bits/originals/Assets/gltf/Wood_Log_A.gltf`
+- `item_kr_wood_planks_stack_small`: `art/third_party/kaykit_resource_bits/originals/Assets/gltf/Wood_Planks_Stack_Small.gltf`
+- `item_kt_bucket_metal`: `art/third_party/kaykit_rpg_tools/originals/Assets/gltf/bucket_metal.gltf`
+- `item_kt_compass_base`: `art/third_party/kaykit_rpg_tools/originals/Assets/gltf/compass_base.gltf`
+- `item_kt_grindstone`: `art/third_party/kaykit_rpg_tools/originals/Assets/gltf/grindstone.gltf`
+- `item_kt_hammer`: `art/third_party/kaykit_rpg_tools/originals/Assets/gltf/hammer.gltf`
+- `item_kt_journal_closed`: `art/third_party/kaykit_rpg_tools/originals/Assets/gltf/journal_closed.gltf`
+- `item_kt_map_rolled`: `art/third_party/kaykit_rpg_tools/originals/Assets/gltf/map_rolled.gltf`
+- `item_kt_pickaxe`: `art/third_party/kaykit_rpg_tools/originals/Assets/gltf/pickaxe.gltf`
+- `item_kt_rope_bundle_a`: `art/third_party/kaykit_rpg_tools/originals/Assets/gltf/rope_bundle_A.gltf`
+- `item_kt_tongs`: `art/third_party/kaykit_rpg_tools/originals/Assets/gltf/tongs.gltf`
+- `item_kt_torch`: `art/third_party/kaykit_rpg_tools/originals/Assets/gltf/torch.gltf`
 - `item_qa_book`: `art/third_party/quaternius_rpg_asset_pack/converted/OBJ/Book.glb`
 - `item_qa_gems`: `art/third_party/quaternius_rpg_asset_pack/converted/OBJ/Gems.glb`
 - `item_qa_knighthelmet`: `art/third_party/quaternius_rpg_asset_pack/converted/OBJ/KnightHelmet.glb`
@@ -172,11 +313,29 @@
 - `item_qr_skull`: `art/third_party/quaternius_ultimate_rpg_items/converted/OBJ/Skull.glb`
 - `item_qr_sword_big_golden`: `art/third_party/quaternius_ultimate_rpg_items/converted/OBJ/Sword_big_Golden.glb`
 - `mob_fox_01`: `art/third_party/quaternius_animated_animals/originals/glTF/Fox.gltf`
+- `mob_skeleton_mage`: `art/third_party/kaykit_skeletons/originals/characters/gltf/Skeleton_Mage.glb`
+- `mob_skeleton_minion`: `art/third_party/kaykit_skeletons/originals/characters/gltf/Skeleton_Minion.glb`
+- `mob_skeleton_rogue`: `art/third_party/kaykit_skeletons/originals/characters/gltf/Skeleton_Rogue.glb`
+- `mob_skeleton_warrior`: `art/third_party/kaykit_skeletons/originals/characters/gltf/Skeleton_Warrior.glb`
 - `mob_stag_elite_01`: `art/third_party/quaternius_animated_animals/originals/glTF/Stag.gltf`
 - `mob_wolf_01`: `art/third_party/quaternius_animated_animals/originals/glTF/Wolf.gltf`
 - `offhand_kk_shield_round`: `art/third_party/kaykit_adventurers/originals/Assets/gltf/shield_round.gltf`
 - `offhand_kk_shield_square`: `art/third_party/kaykit_adventurers/originals/Assets/gltf/shield_square.gltf`
 - `offhand_kk_spellbook`: `art/third_party/kaykit_adventurers/originals/Assets/gltf/spellbook_open.gltf`
+- `prop_anvil_01`: `art/third_party/kaykit_rpg_tools/originals/Assets/gltf/anvil.gltf`
+- `prop_banner_01`: `art/third_party/kaykit_dungeon/originals/Assets/gltf/banner_patternA_red.gltf`
+- `prop_barrel_01`: `art/third_party/kaykit_dungeon/originals/Assets/gltf/barrel_large.gltf`
+- `prop_cauldron_01`: `art/third_party/kaykit_dungeon/originals/Assets/gltf/keg_decorated.gltf`
+- `prop_crate_01`: `art/third_party/kaykit_dungeon/originals/Assets/gltf/box_large.gltf`
+- `prop_dungeon_chest_01`: `art/third_party/kaykit_dungeon/originals/Assets/gltf/chest_gold.gltf`
+- `prop_dungeon_rubble_01`: `art/third_party/kaykit_dungeon/originals/Assets/gltf/rubble_large.gltf`
+- `prop_dungeon_torch_01`: `art/third_party/kaykit_dungeon/originals/Assets/gltf/torch_mounted.gltf`
+- `prop_lantern_wall_01`: `art/third_party/kaykit_rpg_tools/originals/Assets/gltf/lantern.gltf`
+- `prop_market_stall_01`: `art/third_party/kaykit_dungeon/originals/Assets/gltf/table_long_tablecloth_decorated_A.gltf`
+- `prop_scifi_access_point_01`: `art/third_party/kaykit_space_base/originals/Assets/gltf/windturbine_low.gltf`
+- `prop_scifi_terminal_01`: `art/third_party/kaykit_space_base/originals/Assets/gltf/cargodepot_A.gltf`
+- `prop_weapon_rack_01`: `art/third_party/kaykit_dungeon/originals/Assets/gltf/sword_shield.gltf`
+- `prop_workbench_01`: `art/third_party/kaykit_dungeon/originals/Assets/gltf/table_medium_decorated_A.gltf`
 - `weapon_kb_blaster_a`: `art/third_party/kenney_blaster_kit/originals/Models/GLB format/blaster-a.glb`
 - `weapon_kb_blaster_b`: `art/third_party/kenney_blaster_kit/originals/Models/GLB format/blaster-b.glb`
 - `weapon_kb_blaster_c`: `art/third_party/kenney_blaster_kit/originals/Models/GLB format/blaster-c.glb`
@@ -186,6 +345,31 @@
 - `weapon_kb_blaster_g`: `art/third_party/kenney_blaster_kit/originals/Models/GLB format/blaster-g.glb`
 - `weapon_kb_blaster_h`: `art/third_party/kenney_blaster_kit/originals/Models/GLB format/blaster-h.glb`
 - `weapon_kb_grenade`: `art/third_party/kenney_blaster_kit/originals/Models/GLB format/grenade-a.glb`
+- `weapon_kf_axe_a`: `art/third_party/kaykit_fantasy_weapons/originals/Assets/gltf/axe_A.gltf`
+- `weapon_kf_axe_b`: `art/third_party/kaykit_fantasy_weapons/originals/Assets/gltf/axe_B.gltf`
+- `weapon_kf_axe_c`: `art/third_party/kaykit_fantasy_weapons/originals/Assets/gltf/axe_C.gltf`
+- `weapon_kf_bow_a_withstring`: `art/third_party/kaykit_fantasy_weapons/originals/Assets/gltf/bow_A_withString.gltf`
+- `weapon_kf_bow_b_withstring`: `art/third_party/kaykit_fantasy_weapons/originals/Assets/gltf/bow_B_withString.gltf`
+- `weapon_kf_dagger_a`: `art/third_party/kaykit_fantasy_weapons/originals/Assets/gltf/dagger_A.gltf`
+- `weapon_kf_dagger_b`: `art/third_party/kaykit_fantasy_weapons/originals/Assets/gltf/dagger_B.gltf`
+- `weapon_kf_fistweapon_a`: `art/third_party/kaykit_fantasy_weapons/originals/Assets/gltf/fistweapon_A.gltf`
+- `weapon_kf_fistweapon_b`: `art/third_party/kaykit_fantasy_weapons/originals/Assets/gltf/fistweapon_B.gltf`
+- `weapon_kf_halberd`: `art/third_party/kaykit_fantasy_weapons/originals/Assets/gltf/halberd.gltf`
+- `weapon_kf_hammer_a`: `art/third_party/kaykit_fantasy_weapons/originals/Assets/gltf/hammer_A.gltf`
+- `weapon_kf_hammer_b`: `art/third_party/kaykit_fantasy_weapons/originals/Assets/gltf/hammer_B.gltf`
+- `weapon_kf_hammer_c`: `art/third_party/kaykit_fantasy_weapons/originals/Assets/gltf/hammer_C.gltf`
+- `weapon_kf_shield_a`: `art/third_party/kaykit_fantasy_weapons/originals/Assets/gltf/shield_A.gltf`
+- `weapon_kf_shield_b`: `art/third_party/kaykit_fantasy_weapons/originals/Assets/gltf/shield_B.gltf`
+- `weapon_kf_shield_c`: `art/third_party/kaykit_fantasy_weapons/originals/Assets/gltf/shield_C.gltf`
+- `weapon_kf_spear_a`: `art/third_party/kaykit_fantasy_weapons/originals/Assets/gltf/spear_A.gltf`
+- `weapon_kf_staff_a`: `art/third_party/kaykit_fantasy_weapons/originals/Assets/gltf/staff_A.gltf`
+- `weapon_kf_staff_b`: `art/third_party/kaykit_fantasy_weapons/originals/Assets/gltf/staff_B.gltf`
+- `weapon_kf_sword_a`: `art/third_party/kaykit_fantasy_weapons/originals/Assets/gltf/sword_A.gltf`
+- `weapon_kf_sword_b`: `art/third_party/kaykit_fantasy_weapons/originals/Assets/gltf/sword_B.gltf`
+- `weapon_kf_sword_c`: `art/third_party/kaykit_fantasy_weapons/originals/Assets/gltf/sword_C.gltf`
+- `weapon_kf_sword_d`: `art/third_party/kaykit_fantasy_weapons/originals/Assets/gltf/sword_D.gltf`
+- `weapon_kf_sword_e`: `art/third_party/kaykit_fantasy_weapons/originals/Assets/gltf/sword_E.gltf`
+- `weapon_kf_wand_a`: `art/third_party/kaykit_fantasy_weapons/originals/Assets/gltf/wand_A.gltf`
 - `weapon_kk_axe_1h`: `art/third_party/kaykit_adventurers/originals/Assets/gltf/axe_1handed.gltf`
 - `weapon_kk_axe_2h`: `art/third_party/kaykit_adventurers/originals/Assets/gltf/axe_2handed.gltf`
 - `weapon_kk_bow`: `art/third_party/kaykit_adventurers/originals/Assets/gltf/bow_withString.gltf`
@@ -196,6 +380,12 @@
 - `weapon_kk_sword_2h`: `art/third_party/kaykit_adventurers/originals/Assets/gltf/sword_2handed.gltf`
 - `weapon_kk_sword_2h_color`: `art/third_party/kaykit_adventurers/originals/Assets/gltf/sword_2handed_color.gltf`
 - `weapon_kk_wand`: `art/third_party/kaykit_adventurers/originals/Assets/gltf/wand.gltf`
+- `weapon_ks_axe`: `art/third_party/kaykit_skeletons/originals/assets/gltf/Skeleton_Axe.gltf`
+- `weapon_ks_blade`: `art/third_party/kaykit_skeletons/originals/assets/gltf/Skeleton_Blade.gltf`
+- `weapon_ks_crossbow`: `art/third_party/kaykit_skeletons/originals/assets/gltf/Skeleton_Crossbow.gltf`
+- `weapon_ks_shield_large_a`: `art/third_party/kaykit_skeletons/originals/assets/gltf/Skeleton_Shield_Large_A.gltf`
+- `weapon_ks_shield_small_a`: `art/third_party/kaykit_skeletons/originals/assets/gltf/Skeleton_Shield_Small_A.gltf`
+- `weapon_ks_staff`: `art/third_party/kaykit_skeletons/originals/assets/gltf/Skeleton_Staff.gltf`
 - `weapon_qa_dagger`: `art/third_party/quaternius_rpg_asset_pack/converted/OBJ/Dagger.glb`
 - `weapon_qa_icestaff`: `art/third_party/quaternius_rpg_asset_pack/converted/OBJ/IceStaff.glb`
 - `weapon_qa_staff`: `art/third_party/quaternius_rpg_asset_pack/converted/OBJ/Staff.glb`

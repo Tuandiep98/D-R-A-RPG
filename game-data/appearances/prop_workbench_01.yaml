@@ -1,4 +1,6 @@
+# KayKit Dungeon "table_medium_decorated_A" (D-027)
 id: prop_workbench_01
 kind: environment
+scale: 0.62
 modelAssetId: prop_workbench_01
 placeholder: { shape: box, color: "#765238", height: 1, radius: 0.9 }

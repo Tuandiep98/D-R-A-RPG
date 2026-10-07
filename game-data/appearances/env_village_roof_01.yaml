@@ -1,4 +1,6 @@
+# KayKit Dungeon "ceiling_tile" (D-027)
 id: env_village_roof_01
 kind: environment
+scale: 1
 modelAssetId: env_village_roof_01
 placeholder: { shape: box, color: "#71483d", height: 1, radius: 2.8 }

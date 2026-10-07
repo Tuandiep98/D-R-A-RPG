@@ -1,0 +1,6 @@
+# KayKit Resource Bits "Copper_Nugget_Medium" — material drop / display.
+id: drop_item_kr_copper_nugget_medium
+kind: loot
+modelAssetId: item_kr_copper_nugget_medium
+scale: 0.62
+placeholder: { shape: box, color: "#b8a27a", height: 0.3, radius: 0.15 }

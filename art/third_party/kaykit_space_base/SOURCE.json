@@ -1,0 +1,49 @@
+{
+  "packId": "kaykit_space_base",
+  "author": "Kay Lousberg",
+  "pack": "KayKit Space Base Bits 1.0 (Free)",
+  "sourceUrl": "https://kaylousberg.itch.io/space-base-bits",
+  "license": "CC0-1.0",
+  "licenseVerified": true,
+  "downloadedAt": "2026-10-07",
+  "status": "approved",
+  "notes": "Mechanical/sci-fi pieces for Cửa Hợp Kim and the Cổ Mộ machine layer; replaces the missing Quaternius Modular Sci-Fi kit. License approved by the project owner on 2026-10-07 (License.txt in the zip states CC0).",
+  "kind": "models",
+  "assets": [
+    {
+      "assetId": "env_scifi_wall_01",
+      "file": "originals/Assets/gltf/structure_tall.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_scifi_wall_broken_01",
+      "file": "originals/Assets/gltf/structure_low.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_scifi_door_frame_01",
+      "file": "originals/Assets/gltf/basemodule_garage.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_scifi_door_01",
+      "file": "originals/Assets/gltf/landingpad_small.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_scifi_column_01",
+      "file": "originals/Assets/gltf/lights.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "prop_scifi_terminal_01",
+      "file": "originals/Assets/gltf/cargodepot_A.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_scifi_access_point_01",
+      "file": "originals/Assets/gltf/windturbine_low.gltf",
+      "type": "prop"
+    }
+  ]
+}

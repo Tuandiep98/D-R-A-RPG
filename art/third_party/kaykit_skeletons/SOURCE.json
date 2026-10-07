@@ -1,0 +1,136 @@
+{
+  "packId": "kaykit_skeletons",
+  "author": "Kay Lousberg",
+  "pack": "KayKit Character Pack: Skeletons 1.1 (Free)",
+  "sourceUrl": "https://kaylousberg.itch.io/kaykit-skeletons",
+  "license": "CC0-1.0",
+  "licenseVerified": true,
+  "downloadedAt": "2026-10-07",
+  "status": "approved",
+  "notes": "Skeleton enemies on Rig_Medium (same rig as the heroes) + their weapons; Huyền Vũ Cổ Mộ undead. License approved by the project owner on 2026-10-07 (License.txt in the zip states CC0).",
+  "kind": "models",
+  "assets": [
+    {
+      "assetId": "mob_skeleton_minion",
+      "file": "originals/characters/gltf/Skeleton_Minion.glb",
+      "animationSource": [
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb",
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_MovementBasic.glb",
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_CombatMelee.glb",
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_Special.glb"
+      ],
+      "animationClips": [
+        "Skeletons_Idle",
+        "Skeletons_Walking",
+        "Running_A",
+        "Hit_A",
+        "Skeletons_Death",
+        "Skeletons_Awaken_Standing",
+        "Melee_1H_Attack_Chop",
+        "Melee_2H_Attack_Slice",
+        "Ranged_Magic_Shoot",
+        "Ranged_1H_Shoot"
+      ],
+      "type": "monster"
+    },
+    {
+      "assetId": "mob_skeleton_warrior",
+      "file": "originals/characters/gltf/Skeleton_Warrior.glb",
+      "animationSource": [
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb",
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_MovementBasic.glb",
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_CombatMelee.glb",
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_Special.glb"
+      ],
+      "animationClips": [
+        "Skeletons_Idle",
+        "Skeletons_Walking",
+        "Running_A",
+        "Hit_A",
+        "Skeletons_Death",
+        "Skeletons_Awaken_Standing",
+        "Melee_1H_Attack_Chop",
+        "Melee_2H_Attack_Slice",
+        "Ranged_Magic_Shoot",
+        "Ranged_1H_Shoot"
+      ],
+      "type": "monster"
+    },
+    {
+      "assetId": "mob_skeleton_rogue",
+      "file": "originals/characters/gltf/Skeleton_Rogue.glb",
+      "animationSource": [
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb",
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_MovementBasic.glb",
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_CombatMelee.glb",
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_Special.glb"
+      ],
+      "animationClips": [
+        "Skeletons_Idle",
+        "Skeletons_Walking",
+        "Running_A",
+        "Hit_A",
+        "Skeletons_Death",
+        "Skeletons_Awaken_Standing",
+        "Melee_1H_Attack_Chop",
+        "Melee_2H_Attack_Slice",
+        "Ranged_Magic_Shoot",
+        "Ranged_1H_Shoot"
+      ],
+      "type": "monster"
+    },
+    {
+      "assetId": "mob_skeleton_mage",
+      "file": "originals/characters/gltf/Skeleton_Mage.glb",
+      "animationSource": [
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb",
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_MovementBasic.glb",
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_CombatMelee.glb",
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_Special.glb"
+      ],
+      "animationClips": [
+        "Skeletons_Idle",
+        "Skeletons_Walking",
+        "Running_A",
+        "Hit_A",
+        "Skeletons_Death",
+        "Skeletons_Awaken_Standing",
+        "Melee_1H_Attack_Chop",
+        "Melee_2H_Attack_Slice",
+        "Ranged_Magic_Shoot",
+        "Ranged_1H_Shoot"
+      ],
+      "type": "monster"
+    },
+    {
+      "assetId": "weapon_ks_blade",
+      "file": "originals/assets/gltf/Skeleton_Blade.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_ks_axe",
+      "file": "originals/assets/gltf/Skeleton_Axe.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_ks_staff",
+      "file": "originals/assets/gltf/Skeleton_Staff.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_ks_crossbow",
+      "file": "originals/assets/gltf/Skeleton_Crossbow.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_ks_shield_small_a",
+      "file": "originals/assets/gltf/Skeleton_Shield_Small_A.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_ks_shield_large_a",
+      "file": "originals/assets/gltf/Skeleton_Shield_Large_A.gltf",
+      "type": "prop"
+    }
+  ]
+}

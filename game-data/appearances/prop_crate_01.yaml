@@ -1,4 +1,6 @@
+# KayKit Dungeon "box_large" (D-027)
 id: prop_crate_01
 kind: environment
+scale: 0.6
 modelAssetId: prop_crate_01
 placeholder: { shape: box, color: "#805b3f", height: 0.9, radius: 0.55 }

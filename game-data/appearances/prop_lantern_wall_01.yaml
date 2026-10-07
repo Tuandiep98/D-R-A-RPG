@@ -1,4 +1,6 @@
+# KayKit RPG Tools "lantern" (D-027)
 id: prop_lantern_wall_01
 kind: environment
+scale: 0.6
 modelAssetId: prop_lantern_wall_01
 placeholder: { shape: box, color: "#efb849", height: 0.6, radius: 0.25 }

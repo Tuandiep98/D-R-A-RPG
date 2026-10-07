@@ -1,0 +1,6 @@
+# KayKit RPG Tools Bits "torch" — drop / display.
+id: drop_item_kt_torch
+kind: loot
+modelAssetId: item_kt_torch
+scale: 0.62
+placeholder: { shape: box, color: "#9c8a6a", height: 0.3, radius: 0.15 }

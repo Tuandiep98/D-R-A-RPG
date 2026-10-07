@@ -1,0 +1,6 @@
+# KayKit Resource Bits "Stone_Bricks_Stack_Small" — material drop / display.
+id: drop_item_kr_stone_bricks_stack_small
+kind: loot
+modelAssetId: item_kr_stone_bricks_stack_small
+scale: 0.62
+placeholder: { shape: box, color: "#b8a27a", height: 0.3, radius: 0.15 }

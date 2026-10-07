@@ -269,6 +269,13 @@ writeFileSync(
 );
 writeFileSync(catalogPath, renderCatalog(catalog, warnings));
 
+// `--allow-missing`: packs whose originals are not on this machine (or not in
+// git yet) fall back to placeholders instead of failing the build (CI).
+if (process.argv.includes('--allow-missing')) {
+  const missing = errors.filter((e) => e.endsWith('not found'));
+  warnings.push(...missing.map((e) => `${e} (placeholder)`));
+  errors.splice(0, errors.length, ...errors.filter((e) => !e.endsWith('not found')));
+}
 for (const w of warnings) console.warn(`WARN  ${w}`);
 for (const e of errors) console.error(`ERROR ${e}`);
 console.log(`\n${Object.keys(assets).length} assets → ${outDir}`);

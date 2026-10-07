@@ -74,56 +74,50 @@
       "assetId": "char_kk_knight",
       "file": "originals/Characters/gltf/Knight.glb",
       "animationSource": [
-        "originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb",
-        "originals/Animations/gltf/Rig_Medium/Rig_Medium_MovementBasic.glb"
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb"
       ],
-      "animationClips": [
-        "Idle_A",
-        "Running_A",
-        "Walking_A",
-        "Hit_A",
-        "Death_A",
-        "Throw",
-        "Use_Item",
-        "Interact"
-      ],
+      "animationClips": ["Idle_A", "Idle_B", "Interact"],
       "type": "character"
     },
     {
       "assetId": "char_kk_mage",
       "file": "originals/Characters/gltf/Mage.glb",
       "animationSource": [
-        "originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb",
-        "originals/Animations/gltf/Rig_Medium/Rig_Medium_MovementBasic.glb"
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb"
       ],
-      "animationClips": [
-        "Idle_A",
-        "Running_A",
-        "Walking_A",
-        "Hit_A",
-        "Death_A",
-        "Throw",
-        "Use_Item",
-        "Interact"
-      ],
+      "animationClips": ["Idle_A", "Idle_B", "Interact"],
       "type": "character"
     },
     {
       "assetId": "char_kk_rogue",
       "file": "originals/Characters/gltf/Rogue.glb",
       "animationSource": [
-        "originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb",
-        "originals/Animations/gltf/Rig_Medium/Rig_Medium_MovementBasic.glb"
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb",
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_MovementBasic.glb",
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_CombatMelee.glb",
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_CombatRanged.glb"
       ],
       "animationClips": [
         "Idle_A",
+        "Idle_B",
         "Running_A",
         "Walking_A",
         "Hit_A",
         "Death_A",
-        "Throw",
+        "Interact",
         "Use_Item",
-        "Interact"
+        "PickUp",
+        "Melee_1H_Attack_Slice_Diagonal",
+        "Melee_1H_Attack_Chop",
+        "Melee_1H_Attack_Stab",
+        "Melee_2H_Attack_Slice",
+        "Melee_2H_Attack_Spin",
+        "Melee_Block",
+        "Melee_Unarmed_Attack_Punch_A",
+        "Ranged_Magic_Shoot",
+        "Ranged_Magic_Spellcasting",
+        "Ranged_1H_Shoot",
+        "Ranged_Bow_Release"
       ],
       "type": "character"
     },
@@ -131,37 +125,41 @@
       "assetId": "char_kk_barbarian",
       "file": "originals/Characters/gltf/Barbarian.glb",
       "animationSource": [
-        "originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb",
-        "originals/Animations/gltf/Rig_Medium/Rig_Medium_MovementBasic.glb"
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb"
       ],
-      "animationClips": [
-        "Idle_A",
-        "Running_A",
-        "Walking_A",
-        "Hit_A",
-        "Death_A",
-        "Throw",
-        "Use_Item",
-        "Interact"
-      ],
+      "animationClips": ["Idle_A", "Idle_B", "Interact"],
       "type": "character"
     },
     {
       "assetId": "char_kk_ranger",
       "file": "originals/Characters/gltf/Ranger.glb",
       "animationSource": [
-        "originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb",
-        "originals/Animations/gltf/Rig_Medium/Rig_Medium_MovementBasic.glb"
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb",
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_MovementBasic.glb",
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_CombatMelee.glb",
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_CombatRanged.glb"
       ],
       "animationClips": [
         "Idle_A",
+        "Idle_B",
         "Running_A",
         "Walking_A",
         "Hit_A",
         "Death_A",
-        "Throw",
+        "Interact",
         "Use_Item",
-        "Interact"
+        "PickUp",
+        "Melee_1H_Attack_Slice_Diagonal",
+        "Melee_1H_Attack_Chop",
+        "Melee_1H_Attack_Stab",
+        "Melee_2H_Attack_Slice",
+        "Melee_2H_Attack_Spin",
+        "Melee_Block",
+        "Melee_Unarmed_Attack_Punch_A",
+        "Ranged_Magic_Shoot",
+        "Ranged_Magic_Spellcasting",
+        "Ranged_1H_Shoot",
+        "Ranged_Bow_Release"
       ],
       "type": "character"
     },
@@ -169,19 +167,9 @@
       "assetId": "char_kk_rogue_hooded",
       "file": "originals/Characters/gltf/Rogue_Hooded.glb",
       "animationSource": [
-        "originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb",
-        "originals/Animations/gltf/Rig_Medium/Rig_Medium_MovementBasic.glb"
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb"
       ],
-      "animationClips": [
-        "Idle_A",
-        "Running_A",
-        "Walking_A",
-        "Hit_A",
-        "Death_A",
-        "Throw",
-        "Use_Item",
-        "Interact"
-      ],
+      "animationClips": ["Idle_A", "Idle_B", "Interact"],
       "type": "character"
     },
     {

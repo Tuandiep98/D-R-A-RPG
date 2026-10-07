@@ -1,0 +1,6 @@
+# KayKit RPG Tools Bits "map_rolled" — drop / display.
+id: drop_item_kt_map_rolled
+kind: loot
+modelAssetId: item_kt_map_rolled
+scale: 0.62
+placeholder: { shape: box, color: "#9c8a6a", height: 0.3, radius: 0.15 }

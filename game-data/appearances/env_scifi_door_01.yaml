@@ -1,4 +1,6 @@
+# KayKit Space Base "landingpad_small" (D-027)
 id: env_scifi_door_01
 kind: environment
+scale: 1.0
 modelAssetId: env_scifi_door_01
 placeholder: { shape: box, color: "#384451", height: 3, radius: 1.4 }

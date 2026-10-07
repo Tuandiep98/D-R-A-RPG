@@ -1,8 +1,8 @@
-# Quaternius Stylized Nature MegaKit — Grass_Common_Short.gltf
+# KayKit Forest Nature "Grass_1_A_Color1" (D-027)
 id: env_grass_01
 kind: environment
 modelAssetId: env_grass_01
-scale: 0.6
+scale: 1.2
 placeholder:
   shape: cone
   color: '#5c8f3d'

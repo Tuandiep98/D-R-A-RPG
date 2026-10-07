@@ -1,0 +1,6 @@
+# KayKit Resource Bits "Iron_Bar" — material drop / display.
+id: drop_item_kr_iron_bar
+kind: loot
+modelAssetId: item_kr_iron_bar
+scale: 0.62
+placeholder: { shape: box, color: "#b8a27a", height: 0.3, radius: 0.15 }

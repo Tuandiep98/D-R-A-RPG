@@ -1,0 +1,6 @@
+# KayKit RPG Tools Bits "rope_bundle_A" — drop / display.
+id: drop_item_kt_rope_bundle_a
+kind: loot
+modelAssetId: item_kt_rope_bundle_a
+scale: 0.62
+placeholder: { shape: box, color: "#9c8a6a", height: 0.3, radius: 0.15 }

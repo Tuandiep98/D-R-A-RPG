@@ -41,11 +41,18 @@ jobs:
           git diff --exit-code -- game-data/maps
       - name: Baked navmeshes are up to date
         run: pnpm nav:build --check
+      - name: Committed art matches SOURCE.json
+        run: pnpm assets:vendor --check
+
+      # Pack files the game uses are in git (art/third_party/.gitignore allowlist).
+      - name: Build runtime assets and media
+        run: |
+          pnpm assets:build --allow-missing
+          pnpm media:build
 
       - name: Build web
         run: pnpm --filter @rpg/game-web build
 
-      # Third-party art is not in git, so the smoke test runs with placeholders.
       - name: Smoke test (headless Chromium)
         run: |
           pnpm exec playwright-core install --with-deps chromium

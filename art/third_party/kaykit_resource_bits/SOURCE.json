@@ -1,0 +1,79 @@
+{
+  "packId": "kaykit_resource_bits",
+  "author": "Kay Lousberg",
+  "pack": "KayKit Resource Bits 1.0 (Free)",
+  "sourceUrl": "https://kaylousberg.itch.io/resource-bits",
+  "license": "CC0-1.0",
+  "licenseVerified": true,
+  "downloadedAt": "2026-10-07",
+  "status": "approved",
+  "notes": "Crafting materials: ore nuggets, bars, wood, stone, cloth, machine parts (loot drops, smithy dressing). License approved by the project owner on 2026-10-07 (License.txt in the zip states CC0).",
+  "kind": "models",
+  "assets": [
+    {
+      "assetId": "item_kr_iron_nugget_medium",
+      "file": "originals/Assets/gltf/Iron_Nugget_Medium.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_kr_gold_nugget_medium",
+      "file": "originals/Assets/gltf/Gold_Nugget_Medium.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_kr_copper_nugget_medium",
+      "file": "originals/Assets/gltf/Copper_Nugget_Medium.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_kr_silver_nugget_medium",
+      "file": "originals/Assets/gltf/Silver_Nugget_Medium.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_kr_iron_bar",
+      "file": "originals/Assets/gltf/Iron_Bar.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_kr_gold_bars",
+      "file": "originals/Assets/gltf/Gold_Bars.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_kr_wood_log_a",
+      "file": "originals/Assets/gltf/Wood_Log_A.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_kr_wood_planks_stack_small",
+      "file": "originals/Assets/gltf/Wood_Planks_Stack_Small.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_kr_stone_chunks_small",
+      "file": "originals/Assets/gltf/Stone_Chunks_Small.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_kr_stone_bricks_stack_small",
+      "file": "originals/Assets/gltf/Stone_Bricks_Stack_Small.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_kr_textiles_a",
+      "file": "originals/Assets/gltf/Textiles_A.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_kr_parts_cog",
+      "file": "originals/Assets/gltf/Parts_Cog.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "item_kr_parts_pile_small",
+      "file": "originals/Assets/gltf/Parts_Pile_Small.gltf",
+      "type": "prop"
+    }
+  ]
+}

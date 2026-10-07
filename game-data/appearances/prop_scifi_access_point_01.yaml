@@ -1,4 +1,6 @@
+# KayKit Space Base "windturbine_low" (D-027)
 id: prop_scifi_access_point_01
 kind: environment
+scale: 1.0
 modelAssetId: prop_scifi_access_point_01
 placeholder: { shape: box, color: "#47bfd1", height: 0.8, radius: 0.35 }

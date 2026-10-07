@@ -35,7 +35,8 @@
     "assets:sheet": "tsx tools/asset-processor/contact-sheet.ts",
     "media:build": "tsx tools/asset-processor/media.ts",
     "smoke:gear": "tsx tools/smoke/gear-fit.ts",
-    "assets:proportions": "tsx tools/asset-processor/proportions.ts"
+    "assets:proportions": "tsx tools/asset-processor/proportions.ts",
+    "assets:vendor": "tsx tools/asset-processor/vendor.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

@@ -1,0 +1,139 @@
+{
+  "packId": "kaykit_fantasy_weapons",
+  "author": "Kay Lousberg",
+  "pack": "KayKit Fantasy Weapons Bits 1.0 (Free)",
+  "sourceUrl": "https://kaylousberg.itch.io/fantasy-weapons-bits",
+  "license": "CC0-1.0",
+  "licenseVerified": true,
+  "downloadedAt": "2026-10-07",
+  "status": "approved",
+  "notes": "Extra chunky weapons in the Adventurers style; same handslot convention. License approved by the project owner on 2026-10-07 (License.txt in the zip states CC0).",
+  "kind": "models",
+  "assets": [
+    {
+      "assetId": "weapon_kf_sword_a",
+      "file": "originals/Assets/gltf/sword_A.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kf_sword_b",
+      "file": "originals/Assets/gltf/sword_B.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kf_sword_c",
+      "file": "originals/Assets/gltf/sword_C.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kf_sword_d",
+      "file": "originals/Assets/gltf/sword_D.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kf_sword_e",
+      "file": "originals/Assets/gltf/sword_E.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kf_axe_a",
+      "file": "originals/Assets/gltf/axe_A.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kf_axe_b",
+      "file": "originals/Assets/gltf/axe_B.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kf_axe_c",
+      "file": "originals/Assets/gltf/axe_C.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kf_dagger_a",
+      "file": "originals/Assets/gltf/dagger_A.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kf_dagger_b",
+      "file": "originals/Assets/gltf/dagger_B.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kf_hammer_a",
+      "file": "originals/Assets/gltf/hammer_A.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kf_hammer_b",
+      "file": "originals/Assets/gltf/hammer_B.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kf_hammer_c",
+      "file": "originals/Assets/gltf/hammer_C.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kf_halberd",
+      "file": "originals/Assets/gltf/halberd.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kf_spear_a",
+      "file": "originals/Assets/gltf/spear_A.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kf_staff_a",
+      "file": "originals/Assets/gltf/staff_A.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kf_staff_b",
+      "file": "originals/Assets/gltf/staff_B.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kf_wand_a",
+      "file": "originals/Assets/gltf/wand_A.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kf_bow_a_withstring",
+      "file": "originals/Assets/gltf/bow_A_withString.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kf_bow_b_withstring",
+      "file": "originals/Assets/gltf/bow_B_withString.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kf_fistweapon_a",
+      "file": "originals/Assets/gltf/fistweapon_A.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kf_fistweapon_b",
+      "file": "originals/Assets/gltf/fistweapon_B.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kf_shield_a",
+      "file": "originals/Assets/gltf/shield_A.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kf_shield_b",
+      "file": "originals/Assets/gltf/shield_B.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "weapon_kf_shield_c",
+      "file": "originals/Assets/gltf/shield_C.gltf",
+      "type": "prop"
+    }
+  ]
+}

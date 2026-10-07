@@ -75,7 +75,7 @@ chunks:
       - { appearanceId: env_village_corner_01, position: [ -15, 0, -13 ], rotationY: 3.14, scale: 1, colliderRadius: 0.25 }
       - { appearanceId: env_village_corner_01, position: [ -11, 0, -13 ], rotationY: 4.71, scale: 1, colliderRadius: 0.25 }
       - { appearanceId: env_village_corner_01, position: [ -11, 0, -9 ], rotationY: 0, scale: 1, colliderRadius: 0.25 }
-      - { appearanceId: env_village_roof_01, position: [ -13, 0, -11 ], rotationY: 1.57, scale: 1 }
+      - { appearanceId: env_village_roof_01, position: [ -13, 4, -11 ], rotationY: 1.57, scale: 1 }
       - { appearanceId: prop_lantern_wall_01, position: [ -15.1, 0, -11.9 ], rotationY: 1.57, scale: 1 }
       - { appearanceId: env_village_wall_01, position: [ 11, 0, -11 ], rotationY: -1.57, scale: 1, colliderRadius: 0.8 }
       - { appearanceId: env_village_corner_01, position: [ 11, 0, -9 ], rotationY: 1.57, scale: 1, colliderRadius: 0.25 }
@@ -176,14 +176,14 @@ chunks:
       - { appearanceId: env_village_wall_01, position: [ 13, 0, -9 ], rotationY: 0, scale: 1, colliderRadius: 0.8 }
       - { appearanceId: env_village_corner_01, position: [ 15, 0, -13 ], rotationY: -1.57, scale: 1, colliderRadius: 0.25 }
       - { appearanceId: env_village_corner_01, position: [ 15, 0, -9 ], rotationY: 0, scale: 1, colliderRadius: 0.25 }
-      - { appearanceId: env_village_roof_01, position: [ 13, 0, -11 ], rotationY: -1.57, scale: 1 }
+      - { appearanceId: env_village_roof_01, position: [ 13, 4, -11 ], rotationY: -1.57, scale: 1 }
       - { appearanceId: prop_lantern_wall_01, position: [ 15.1, 0, -10.1 ], rotationY: -1.57, scale: 1 }
       - { appearanceId: env_village_floor_wood_01, position: [ 12, 0.03, 3 ], rotationY: -1.57, scale: 2 }
       - { appearanceId: env_village_door_01, position: [ 14, 0, 3 ], rotationY: -1.57, scale: 1, colliderRadius: 0.8 }
       - { appearanceId: env_village_wall_01, position: [ 12, 0, 1 ], rotationY: 0, scale: 1, colliderRadius: 0.8 }
       - { appearanceId: env_village_corner_01, position: [ 14, 0, 1 ], rotationY: -1.57, scale: 1, colliderRadius: 0.25 }
       - { appearanceId: env_village_corner_01, position: [ 14, 0, 5 ], rotationY: 0, scale: 1, colliderRadius: 0.25 }
-      - { appearanceId: env_village_roof_01, position: [ 12, 0, 3 ], rotationY: -1.57, scale: 1 }
+      - { appearanceId: env_village_roof_01, position: [ 12, 4, 3 ], rotationY: -1.57, scale: 1 }
       - { appearanceId: prop_lantern_wall_01, position: [ 14.1, 0, 3.9 ], rotationY: -1.57, scale: 1 }
       - { appearanceId: env_bush_02, position: [ 14.33, 0.01, -5.9 ], rotationY: 1.43, scale: 0.74 }
       - { appearanceId: env_flowers_01, position: [ 12.34, 0.01, 9.48 ], rotationY: 3.26, scale: 0.99 }

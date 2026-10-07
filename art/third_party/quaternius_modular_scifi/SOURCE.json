@@ -6,8 +6,8 @@
   "license": "CC0-1.0",
   "licenseVerified": true,
   "downloadedAt": "2026-10-06",
-  "status": "approved",
-  "notes": "Mechanical deep-layer kit for Cửa Hợp Kim and Huyền Vũ Cổ Mộ.",
+  "status": "rejected",
+  "notes": "Superseded (D-027): sci-fi kit replaced by KayKit Space Base Bits; the asset ids now live in the KayKit pack. Mechanical deep-layer kit for Cửa Hợp Kim and Huyền Vũ Cổ Mộ.",
   "assets": [
     {
       "assetId": "env_scifi_door_frame_01",

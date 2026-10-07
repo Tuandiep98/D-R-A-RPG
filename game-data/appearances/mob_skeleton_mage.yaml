@@ -1,0 +1,21 @@
+# KayKit Skeleton Mage (Rig_Medium) — ready for Cổ Mộ spawns; not placed in a map yet.
+id: mob_skeleton_mage
+kind: monster
+modelAssetId: mob_skeleton_mage
+scale: 0.62
+animations:
+  idle: Skeletons_Idle
+  run: Skeletons_Walking
+  attack: Ranged_Magic_Shoot
+  cast: Ranged_Magic_Shoot
+  hit: Hit_A
+  death: Skeletons_Death
+sockets:
+  hand_r: handslot.r
+  hand_l: handslot.l
+  head: head
+hitDelay: 0.35
+sfx:
+  hit: [sfx_hit_wood, sfx_hit_soft]
+  death: [sfx_hit_plate]
+placeholder: { shape: capsule, color: "#d8d2c4", height: 1.4, radius: 0.4 }

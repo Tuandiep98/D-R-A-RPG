@@ -1,4 +1,6 @@
+# KayKit Dungeon "sword_shield" (D-027)
 id: prop_weapon_rack_01
 kind: environment
+scale: 0.62
 modelAssetId: prop_weapon_rack_01
 placeholder: { shape: box, color: "#72523b", height: 1.6, radius: 0.8 }

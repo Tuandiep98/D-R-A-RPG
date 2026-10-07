@@ -1,0 +1,23 @@
+# KayKit Character Animations Mannequin_Medium — neutral Rig_Medium body for
+# fitting gear and previewing clips (`?mannequin`, `pnpm smoke:gear`).
+id: char_kk_mannequin
+kind: character
+modelAssetId: char_kk_mannequin
+scale: 0.62
+animations:
+  idle: Idle_A
+  run: Running_A
+  attack: Melee_1H_Attack_Slice_Diagonal
+  cast: Use_Item
+  hit: Hit_A
+  death: Death_A
+sockets:
+  hand_r: handslot.r
+  hand_l: handslot.l
+  head: head
+hitDelay: 0.35
+placeholder:
+  shape: capsule
+  color: "#9aa0a8"
+  height: 1.5
+  radius: 0.42

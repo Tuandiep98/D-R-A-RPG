@@ -1,0 +1,7 @@
+# KayKit Fantasy Weapons Bits "axe_C" — native handslot transform at the character scale (D-027).
+id: gear_weapon_kf_axe_c
+kind: equipment
+modelAssetId: weapon_kf_axe_c
+scale: 0.62
+attach: { socket: hand_r, position: [0, 0, 0], rotation: [0, 0, 0] }
+placeholder: { shape: box, color: "#c9ced6", height: 0.9, radius: 0.06 }

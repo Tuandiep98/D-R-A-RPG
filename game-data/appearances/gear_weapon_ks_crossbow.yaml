@@ -1,0 +1,7 @@
+# KayKit Skeletons weapon — native handslot transform at the character scale (D-027).
+id: gear_weapon_ks_crossbow
+kind: equipment
+modelAssetId: weapon_ks_crossbow
+scale: 0.62
+attach: { socket: hand_r, position: [0, 0, 0], rotation: [0, 0, 0] }
+placeholder: { shape: box, color: "#c9c2b0", height: 0.8, radius: 0.06 }

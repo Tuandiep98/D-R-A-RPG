@@ -1,8 +1,8 @@
-# Quaternius Stylized Nature MegaKit — Pebble_Round_1.gltf
+# KayKit Forest Nature "Rock_2_A_Color1" (D-027)
 id: env_pebble_01
 kind: environment
 modelAssetId: env_pebble_01
-scale: 1
+scale: 2.0
 placeholder:
   shape: sphere
   color: '#8a8c92'

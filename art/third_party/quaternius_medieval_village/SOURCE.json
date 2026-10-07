@@ -6,8 +6,8 @@
   "license": "CC0-1.0",
   "licenseVerified": true,
   "downloadedAt": "2026-10-06",
-  "status": "approved",
-  "notes": "A compact modular subset used for Tân Nguyên Trấn and the forward camp.",
+  "status": "rejected",
+  "notes": "Superseded (D-027): village kit replaced by KayKit Dungeon modular walls/floors; the asset ids now live in the KayKit pack. A compact modular subset used for Tân Nguyên Trấn and the forward camp.",
   "assets": [
     {
       "assetId": "env_village_wall_01",

@@ -116,7 +116,7 @@ prefabs:
           rotationY: -1.5708,
           colliderRadius: 0.25,
         }
-      - { appearanceId: env_village_roof_01, offset: { x: 0, z: 0 } }
+      - { appearanceId: env_village_roof_01, offset: { x: 0, y: 4, z: 0 } }
       - { appearanceId: prop_lantern_wall_01, offset: { x: 0.9, z: -2.1 } }
   - id: market
     members:

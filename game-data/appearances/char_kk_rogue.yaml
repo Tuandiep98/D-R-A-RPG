@@ -1,6 +1,4 @@
 # KayKit Adventurers (rogue) on Rig_Medium — chibi ~2.2 heads. Preview: /?player=char_kk_rogue
-# Free tier has no attack/cast clips: attack/cast borrow Throw/Use_Item until
-# KayKit Character Animations (combat, FBX) is converted.
 id: char_kk_rogue
 kind: character
 modelAssetId: char_kk_rogue
@@ -8,15 +6,15 @@ scale: 0.62
 animations:
   idle: Idle_A
   run: Running_A
-  attack: Throw
-  cast: Use_Item
+  attack: Melee_1H_Attack_Slice_Diagonal
+  cast: Ranged_Magic_Shoot
   hit: Hit_A
   death: Death_A
 sockets:
   hand_r: handslot.r
   hand_l: handslot.l
   head: head
-hitDelay: 0.3
+hitDelay: 0.35
 placeholder:
   shape: capsule
   color: "#d9a066"
