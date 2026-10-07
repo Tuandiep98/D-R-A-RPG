@@ -33,11 +33,24 @@ function add(abs: string): void {
   bytes += statSync(abs).size;
 }
 
-/** A model file plus what a .gltf points at (buffers, images). */
+/** A model file plus external buffers and images referenced by glTF or GLB JSON. */
 function addModel(abs: string, textureDirs: readonly string[] = []): void {
   add(abs);
-  if (!abs.toLowerCase().endsWith('.gltf') || !existsSync(abs)) return;
-  const gltf = JSON.parse(readFileSync(abs, 'utf8')) as {
+  if (!existsSync(abs)) return;
+  const lower = abs.toLowerCase();
+  if (!lower.endsWith('.gltf') && !lower.endsWith('.glb')) return;
+  const bytes = readFileSync(abs);
+  // GLB starts with a 12-byte header, followed by a length/type header and
+  // JSON chunk. Some packs keep textures outside the binary container.
+  if (lower.endsWith('.glb')) {
+    if (bytes.length < 20 || bytes.toString('ascii', 0, 4) !== 'glTF') return;
+    const jsonLength = bytes.readUInt32LE(12);
+    if (bytes.readUInt32LE(16) !== 0x4e4f534a || 20 + jsonLength > bytes.length) return;
+  }
+  const json = lower.endsWith('.glb')
+    ? bytes.toString('utf8', 20, 20 + bytes.readUInt32LE(12))
+    : bytes.toString('utf8');
+  const gltf = JSON.parse(json) as {
     buffers?: { uri?: string }[];
     images?: { uri?: string }[];
   };
