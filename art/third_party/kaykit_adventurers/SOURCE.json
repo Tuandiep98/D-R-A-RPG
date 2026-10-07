@@ -137,6 +137,11 @@
           "name": "Melee_Unarmed_Attack_Punch_A_Mirror",
           "from": "Melee_Unarmed_Attack_Punch_A",
           "mirror": true
+        },
+        {
+          "name": "Melee_1H_Attack_Jump_Chop_InPlace",
+          "from": "Melee_1H_Attack_Jump_Chop",
+          "inPlace": ["hips"]
         }
       ]
     },
@@ -198,6 +203,11 @@
           "name": "Melee_Unarmed_Attack_Punch_A_Mirror",
           "from": "Melee_Unarmed_Attack_Punch_A",
           "mirror": true
+        },
+        {
+          "name": "Melee_1H_Attack_Jump_Chop_InPlace",
+          "from": "Melee_1H_Attack_Jump_Chop",
+          "inPlace": ["hips"]
         }
       ]
     },

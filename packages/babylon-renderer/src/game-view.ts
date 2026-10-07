@@ -1,6 +1,7 @@
 import { AssetLibrary, type LoadProgress } from '@rpg/asset-runtime';
 import {
   type AppearanceDef,
+  type ComboVariant,
   type ContentBundle,
   type EquipSlot,
   type MonsterTier,
@@ -38,6 +39,7 @@ import {
   Vector3,
 } from './babylon';
 import { CameraRig } from './camera-rig';
+import { CombatFx } from './combat-fx';
 import { DamageTextPool, MoveMarker, SelectionRing } from './effects';
 import { createEngine, type EngineKind } from './engine';
 import { EntityView, EntityViewPool, type PickMetadata } from './entity-view';
@@ -87,6 +89,7 @@ export interface UnitFrame {
 
 export interface SkillSlot {
   skillId: string;
+  barRole: 'primary' | 'utility';
   name: string;
   icon: string;
   /** Media id of the painted icon, null → emoji. */
@@ -211,6 +214,8 @@ export interface GameViewOptions {
   onChat?: (message: ChatMessage) => void;
   onPartyInvite?: (invite: { fromId: EntityId; fromName: string }) => void;
   onToggleDebug?: (scene: Scene) => void;
+  /** URL of a built media id (Kenney VFX sprites); null → procedural stand-ins. */
+  mediaUrl?: (id: string) => string | null;
 }
 
 const NOTICE_TEXT: Record<NoticeCode, string> = {
@@ -246,6 +251,7 @@ const NOTICE_TEXT: Record<NoticeCode, string> = {
  * Holds no gameplay authority — every outcome comes from the SimHost.
  */
 export class GameView {
+  private skillBindings: (string | null)[] = [];
   private buffer = new SnapshotBuffer(100);
   private readonly views = new Map<EntityId, EntityView>();
   private readonly gearKeys = new Map<EntityId, string>();
@@ -276,6 +282,12 @@ export class GameView {
   private readonly delayed: { at: number; run: () => void }[] = [];
   private readonly quality: QualityManager;
   private preset: QualityPreset;
+  private readonly fx: CombatFx;
+  /** Latest combo swing per attacker: impact style and one hit-stop per swing. */
+  private readonly swings = new Map<
+    EntityId,
+    { variant: ComboVariant; yaw: number; stopped: boolean }
+  >();
 
   private constructor(
     private readonly opts: GameViewOptions,
@@ -299,6 +311,7 @@ export class GameView {
     join: JoinInfo,
   ) {
     this.join = join;
+    this.fx = new CombatFx(scene, rig.camera, opts.mediaUrl ?? (() => null));
     this.preset = { level: 'high' } as QualityPreset;
     this.quality = new QualityManager(opts.quality ?? 'auto', (p) => this.applyQuality(p), 'high');
   }
@@ -373,6 +386,16 @@ export class GameView {
   addInput(adapter: InputAdapter): () => void {
     this.input.use(adapter);
     return () => this.input.remove(adapter);
+  }
+
+  /** HUD loadout controls the four keyboard/gamepad skill positions. */
+  setSkillBindings(skillIds: readonly (string | null)[]): void {
+    this.skillBindings = skillIds.slice(0, 4);
+  }
+
+  castSkillById(skillId: string): void {
+    const index = this.playerState?.skills.findIndex((s) => s.skillId === skillId) ?? -1;
+    if (index >= 0) this.castSkill(index);
   }
 
   castSkill(index: number): void {
@@ -667,6 +690,7 @@ export class GameView {
     this.telegraphs.update(dt);
     this.impacts.update(dt);
     this.projectiles.update(dt);
+    this.fx.update(dt);
     this.scene.render();
     this.publish(now);
   }
@@ -679,6 +703,7 @@ export class GameView {
     this.shadows.getShadowMap()?.resize(p.shadowMapSize);
     this.impacts.capacity = p.vfxCap;
     this.projectiles.capacity = p.vfxCap;
+    this.fx?.setQuality(p.level);
     for (const [id, view] of this.views) {
       const e = this.sampled.get(id);
       if (e) view.setCastShadows(this.shouldCastShadow(e.state));
@@ -761,7 +786,10 @@ export class GameView {
         this.opts.host.sendIntent({ type: 'STOP' });
         break;
       case 'SKILL':
-        this.castSkill(action.index);
+        {
+          const skillId = this.skillBindings[action.index];
+          if (skillId) this.castSkillById(skillId);
+        }
         break;
       case 'INTERACT':
         this.interact();
@@ -913,9 +941,15 @@ export class GameView {
           const variant = ev.combo
             ? combo?.steps[ev.combo.step]?.variants.find((v) => v.id === ev.combo?.variantId)
             : undefined;
-          if (variant) view?.playClip(variant.clip, variant.animSpeed);
-          else view?.play('attack');
-          this.sfxAt(view?.appearance.sfx.attack ?? DEFAULT_SFX.attack, ev.sourceId, 0.7);
+          if (variant && view && ev.combo) {
+            view.playClip(variant.clip, variant.animSpeed);
+            this.presentSwing(ev.sourceId, view, variant, ev.combo.yaw);
+          } else view?.play('attack');
+          this.sfxAt(
+            variant?.sfx ?? view?.appearance.sfx.attack ?? DEFAULT_SFX.attack,
+            ev.sourceId,
+            variant?.heavy ? 0.9 : 0.7,
+          );
           break;
         }
         case 'DAMAGE': {
@@ -933,6 +967,7 @@ export class GameView {
             break;
           }
           view.play('hit');
+          if (ev.hit) this.presentMeleeHit(ev.sourceId, view, ev.heavy === true, ev.crit, ev.hit);
           this.sfxAt(
             ev.crit ? DEFAULT_SFX.crit : (view.appearance.sfx.hit ?? DEFAULT_SFX.hit),
             ev.targetId,
@@ -955,6 +990,7 @@ export class GameView {
                   ? `${ev.amount}!`
                   : `${ev.amount}`,
             color,
+            ev.heavy ? 1.6 : ev.crit ? 1.25 : 1,
           );
           break;
         }
@@ -1129,10 +1165,109 @@ export class GameView {
     }
   }
 
-  private floatText(view: EntityView, text: string, color: string): void {
+  private floatText(view: EntityView, text: string, color: string, scale = 1): void {
     const pos = view.root.position.clone();
     pos.y += view.height + 0.3;
-    this.damage.spawn(pos, text, color);
+    this.damage.spawn(pos, text, color, scale);
+  }
+
+  /** Runs presentation `seconds` from now (animation contact frames). */
+  private after(seconds: number, run: () => void): void {
+    this.delayed.push({ at: performance.now() + Math.max(0, seconds) * 1000, run });
+  }
+
+  /**
+   * One combo swing (D-031): face the aim at once, blade/fist trail across
+   * the contact, charge glow for finishers, then the arc and the finisher's
+   * impact signature on the contact frame.
+   */
+  private presentSwing(id: EntityId, view: EntityView, v: ComboVariant, yaw: number): void {
+    view.faceYaw(yaw, v.windup + v.recovery * 0.6);
+    this.swings.set(id, { variant: v, yaw, stopped: false });
+    const alive = () => view.entityId === id;
+    const color = Color3.FromHexString(v.trail.color);
+    const mine = id === this.join.playerId;
+    const lead = Math.min(0.24, v.windup * 0.6);
+    this.after(v.windup - lead, () => {
+      if (!alive()) return;
+      const hand = view.anchor('hand_r');
+      const tip = view.anchor('weapon_tip');
+      const trailColor = v.heavy ? color : Color3.Lerp(color, Color3.White(), 0.4);
+      if (tip && tip !== hand) this.fx.trail(hand, tip, trailColor, lead + 0.1);
+      else {
+        this.fx.trail(hand, null, trailColor, lead + 0.1, v.heavy ? 0.22 : 0.14);
+        this.fx.trail(view.anchor('hand_l'), null, trailColor, lead + 0.1, v.heavy ? 0.22 : 0.14);
+      }
+    });
+    if (v.heavy)
+      for (const socket of v.trail.glow)
+        this.fx.chargeGlow(view.anchor(socket), color, Math.max(0.15, v.windup - 0.05));
+    if (v.heavy && mine) this.rig.kick(0.25);
+    this.after(v.windup, () => {
+      if (!alive()) return;
+      const origin = { x: view.root.position.x, z: view.root.position.z, yaw };
+      this.fx.swingArc(origin, v);
+      const { shake, kick } = this.fx.impact(origin, v);
+      if (v.impactSfx) this.sfxAt(v.impactSfx, id, 0.9);
+      const me = this.sampled.get(this.join.playerId);
+      const near = me ? Math.hypot(me.x - origin.x, me.z - origin.z) : 99;
+      // Ground-shaking finishers shake the screen even on a miss; others only when they land.
+      if (shake > 0 && (v.trail.impact === 'quake' || v.trail.impact === 'cyclone') && near < 8) {
+        const k = mine ? 1 : 0.5;
+        this.rig.shake(shake * k, 0.35, Math.sin(yaw), Math.cos(yaw));
+        if (mine) this.rig.kick(kick);
+      }
+    });
+  }
+
+  /** A combo swing connecting: sparks, recoil, hit-stop and shake. */
+  private presentMeleeHit(
+    sourceId: EntityId,
+    target: EntityView,
+    heavy: boolean,
+    crit: boolean,
+    hit: 'solid' | 'graze' | 'weak',
+  ): void {
+    const src = this.views.get(sourceId);
+    const swing = this.swings.get(sourceId);
+    const sx = src?.root.position.x ?? target.root.position.x;
+    const sz = src?.root.position.z ?? target.root.position.z - 1;
+    const dx = target.root.position.x - sx;
+    const dz = target.root.position.z - sz;
+    const yaw = Math.atan2(dx, dz);
+    const strength = heavy ? 1 : crit ? 0.65 : hit === 'graze' ? 0.15 : hit === 'weak' ? 0.5 : 0.35;
+    const color = Color3.FromHexString(
+      swing?.variant.trail.color ?? (crit ? '#ffd23f' : '#ffffff'),
+    );
+    this.fx.hit(
+      target.root.position.x - Math.sin(yaw) * target.radius * 0.6,
+      target.height * 0.55,
+      target.root.position.z - Math.cos(yaw) * target.radius * 0.6,
+      yaw,
+      color,
+      strength,
+    );
+    target.knock(dx, dz, heavy ? 0.32 : hit === 'graze' ? 0.04 : 0.12);
+    // Hit-stop (both bodies hold the pose a beat): 50 ms light, 120 ms heavy.
+    const stop = heavy ? 0.12 : crit ? 0.08 : hit === 'graze' ? 0 : 0.05;
+    if (stop > 0) {
+      target.freeze(stop);
+      if (src && swing && !swing.stopped) {
+        swing.stopped = true;
+        src.freeze(stop);
+      }
+    }
+    const involved = sourceId === this.join.playerId || target.entityId === this.join.playerId;
+    if (involved && hit !== 'graze') {
+      const side = swing?.variant.trail.shape === 'thrust' ? yaw : yaw + Math.PI / 2;
+      this.rig.shake(
+        heavy ? 0.16 : crit ? 0.08 : 0.035,
+        heavy ? 0.3 : 0.15,
+        Math.sin(side),
+        Math.cos(side),
+      );
+      if (heavy) this.rig.kick(0.5);
+    }
   }
 
   // ---- Lookups ----------------------------------------------------------
@@ -1362,6 +1497,7 @@ export class GameView {
         const remaining = Math.max(0, (s.readyAtTick - tick) / TICK_RATE);
         return {
           skillId: s.skillId,
+          barRole: def?.barRole ?? 'primary',
           name: def?.name ?? s.skillId,
           icon: def?.icon ?? '?',
           iconImage: def?.iconImage ?? null,

@@ -230,7 +230,7 @@ export class MouseKeyboardAdapter implements InputAdapter {
       return;
     }
     if (e.repeat) return;
-    const digit = /^Digit([1-8])$/.exec(e.code);
+    const digit = /^Digit([1-4])$/.exec(e.code);
     if (digit) this.emit({ type: 'SKILL', index: Number(digit[1]) - 1 });
     else if (e.code === 'Escape') this.emit({ type: 'STOP' });
     else if (e.code === 'Space') {

@@ -104,6 +104,8 @@ export const SkillDefSchema = z.strictObject({
   castTime: nonNegative.default(0),
   cooldown: seconds,
   mpCost: z.number().int().nonnegative().default(0),
+  /** Which mobile action slot may show this skill. Desktop slots accept either. */
+  barRole: z.enum(['primary', 'utility']).default('primary'),
   /**
    * Show the impact area to everyone while casting (boss telegraphs, assets plan §7).
    * The impact point is locked when the cast starts, so it can be dodged.
@@ -132,6 +134,13 @@ export const SwingTrailSchema = z.strictObject({
   size: positive.default(1),
   /** Sockets that glow during the wind-up (heavy hits): "hand_r", "hand_l". */
   glow: z.array(z.enum(['hand_r', 'hand_l'])).default([]),
+  /**
+   * What the impact looks like: `spark` (light hits), `burst` (shock flash +
+   * sparks), `quake` (ground ring, dust, debris), `pierce` (a line through the
+   * target), `cyclone` (a ring of wind around the attacker). Anything but
+   * `spark` also adds camera shake and hit-stop.
+   */
+  impact: z.enum(['spark', 'burst', 'quake', 'pierce', 'cyclone']).default('spark'),
 });
 
 export const ComboVariantSchema = z.strictObject({
@@ -157,11 +166,22 @@ export const ComboVariantSchema = z.strictObject({
   critBonus: chance.default(0),
   /** Metres dashed forward during the wind-up (jumping chop). */
   lunge: nonNegative.default(0),
+  /**
+   * Part of the wind-up the lunge happens in, as fractions [start, end]. Ending
+   * it before the impact lets the (interpolated) body land with the clip.
+   */
+  lungeWindow: z
+    .tuple([z.number().min(0).max(1), z.number().min(0).max(1)])
+    .refine(([a, b]) => b > a, 'lungeWindow end must be after start')
+    .default([0, 1]),
   /** Random pick weight among a step's variants. */
   weight: positive.default(1),
   heavy: z.boolean().default(false),
   trail: SwingTrailSchema,
+  /** Swing sound (default: the appearance's attack sound). */
   sfx: SfxListSchema.optional(),
+  /** Extra sound when the swing connects (heavy finishers). */
+  impactSfx: SfxListSchema.optional(),
 });
 export type ComboVariant = z.infer<typeof ComboVariantSchema>;
 

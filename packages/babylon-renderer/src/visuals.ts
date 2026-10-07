@@ -31,6 +31,10 @@ export interface Visual {
   setBase(role: BaseRole): void;
   oneShot(role: OneShotRole): void;
   oneShotClip(clip: string, speed: number): void;
+  /** Hit-stop: holds the current pose for `seconds` (cosmetic, client only). */
+  freeze(seconds: number): void;
+  /** Node to hang effects on: a socket, or `weapon_tip` (main-hand blade tip, else right hand). */
+  anchor(name: Socket | 'weapon_tip'): TransformNode | null;
   setGear(gear: GearAppearances): void;
   update(dt: number): void;
   reset(): void;
@@ -43,7 +47,10 @@ export interface Visual {
  * real model (appearance.modelAssetId) when it has loaded.
  */
 class GearAttachments {
-  private readonly attached = new Map<EquipSlot, { appearanceId: string; mesh: TransformNode }>();
+  private readonly attached = new Map<
+    EquipSlot,
+    { appearanceId: string; mesh: TransformNode; length: number; tip?: TransformNode }
+  >();
   private floatTime = 0;
 
   constructor(
@@ -82,7 +89,7 @@ class GearAttachments {
       const [rx, ry, rz] = target.attach.rotation;
       mesh.position.set(px / s, py / s, pz / s);
       mesh.rotation.set(rx, ry, rz);
-      this.attached.set(slot, { appearanceId: target.id, mesh });
+      this.attached.set(slot, { appearanceId: target.id, mesh, length: target.placeholder.height });
     }
   }
 
@@ -101,6 +108,21 @@ class GearAttachments {
       model.parent = holder;
       placeholder.dispose();
     });
+  }
+
+  /**
+   * Near the tip of the main-hand weapon (holders are in world metres and
+   * KayKit blades run along +Y), for swing trails. Null when bare-handed.
+   */
+  weaponTip(): TransformNode | null {
+    const main = this.attached.get('main_hand');
+    if (!main) return null;
+    if (!main.tip) {
+      main.tip = new TransformNode(`${main.mesh.name}_tip`, this.scene);
+      main.tip.parent = main.mesh;
+      main.tip.position.y = main.length * 0.85;
+    }
+    return main.tip;
   }
 
   /** Artifacts (flying swords) hover and bob next to the owner. */
@@ -212,6 +234,13 @@ export class PlaceholderVisual implements Visual {
     this.oneShot('attack');
   }
 
+  freeze(_seconds: number): void {}
+
+  anchor(name: Socket | 'weapon_tip'): TransformNode | null {
+    if (name === 'weapon_tip') return this.gear.weaponTip() ?? this.sockets.get('hand_r') ?? null;
+    return this.sockets.get(name) ?? null;
+  }
+
   setGear(gear: GearAppearances): void {
     this.gear.apply(gear);
   }
@@ -268,11 +297,16 @@ export class ModelVisual implements Visual {
   private readonly gear: GearAttachments;
   private base: BaseRole | null = null;
   private oneShotActive: OneShotRole | null = null;
+  /** Bumped on every play; end callbacks of older plays are ignored. */
+  private playToken = 0;
+  private current: AnimationGroup | null = null;
+  private currentSpeed = 1;
+  private frozen = 0;
 
   constructor(
     scene: Scene,
     container: AssetContainer,
-    appearance: AppearanceDef,
+    private readonly appearance: AppearanceDef,
     name: string,
     assets: AssetLibrary | null = null,
   ) {
@@ -345,14 +379,7 @@ export class ModelVisual implements Visual {
     if (role === 'hit' && this.oneShotActive && this.oneShotActive !== 'hit') return;
     const g = this.groups.get(role) ?? (role === 'cast' ? this.groups.get('attack') : undefined);
     if (!g) return;
-    this.oneShotActive = role;
-    this.playGroup(g, false);
-    g.onAnimationGroupEndObservable.addOnce(() => {
-      if (this.oneShotActive !== role) return;
-      this.oneShotActive = null;
-      const base = this.base ?? 'idle';
-      this.playOnly(base, base !== 'death');
-    });
+    this.playOneShot(g, role, 1);
   }
 
   oneShotClip(clip: string, speed: number): void {
@@ -362,14 +389,20 @@ export class ModelVisual implements Visual {
       return;
     }
     if (this.base === 'death') return;
-    this.oneShotActive = 'attack';
-    this.playGroup(g, false, speed);
-    g.onAnimationGroupEndObservable.addOnce(() => {
-      if (this.oneShotActive !== 'attack') return;
-      this.oneShotActive = null;
-      const base = this.base ?? 'idle';
-      this.playOnly(base, base !== 'death');
-    });
+    this.playOneShot(g, 'attack', speed);
+  }
+
+  freeze(seconds: number): void {
+    if (!this.current || this.base === 'death') return;
+    this.frozen = Math.max(this.frozen, seconds);
+    this.current.speedRatio = this.currentSpeed * 0.04;
+  }
+
+  anchor(name: Socket | 'weapon_tip'): TransformNode | null {
+    if (name === 'weapon_tip') return this.gear.weaponTip() ?? this.anchor('hand_r');
+    const bone = this.appearance.sockets[name];
+    const node = bone ? this.nodesByName.get(bone) : undefined;
+    return node instanceof TransformNode ? node : null;
   }
 
   setGear(gear: GearAppearances): void {
@@ -377,12 +410,17 @@ export class ModelVisual implements Visual {
   }
 
   update(dt: number): void {
+    if (this.frozen > 0) {
+      this.frozen -= dt;
+      if (this.frozen <= 0 && this.current) this.current.speedRatio = this.currentSpeed;
+    }
     this.gear.update(dt);
   }
 
   reset(): void {
     this.base = null;
     this.oneShotActive = null;
+    this.frozen = 0;
     this.setBase('idle');
   }
 
@@ -398,8 +436,31 @@ export class ModelVisual implements Visual {
     else for (const other of this.allGroups) if (other.isPlaying) other.stop();
   }
 
+  /**
+   * One-shot clip, then back to the base loop. Only the latest play may end
+   * the one-shot: AnimationGroup.stop() fires the end observable too, so a
+   * chained swing stopping the previous clip used to cut itself to idle.
+   */
+  private playOneShot(g: AnimationGroup, role: OneShotRole, speed: number): void {
+    this.oneShotActive = role;
+    this.playGroup(g, false, speed);
+    const token = this.playToken;
+    g.onAnimationGroupEndObservable.addOnce(() => {
+      if (token !== this.playToken || this.oneShotActive !== role) return;
+      this.oneShotActive = null;
+      const base = this.base ?? 'idle';
+      this.playOnly(base, base !== 'death');
+    });
+  }
+
   private playGroup(g: AnimationGroup, loop: boolean, speed = 1): void {
-    for (const other of this.allGroups) if (other !== g && other.isPlaying) other.stop();
+    this.playToken++;
+    // skipOnAnimationEnd: stopping for a new clip is not the old clip ending.
+    for (const other of this.allGroups) if (other !== g && other.isPlaying) other.stop(true);
+    if (g.isPlaying) g.stop(true);
+    this.frozen = 0;
+    this.current = g;
+    this.currentSpeed = speed;
     g.start(loop, speed, g.from, g.to);
   }
 }

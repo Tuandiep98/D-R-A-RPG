@@ -5,6 +5,7 @@ icon: "⚡"
 targeting: self
 cooldown: 4
 mpCost: 8
+barRole: utility
 effects:
   - { type: dash, distance: 4 }
 vfx: thunder_dash

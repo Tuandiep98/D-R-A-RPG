@@ -28,13 +28,14 @@ export class DamageTextPool {
     private readonly capacity = 24,
   ) {}
 
-  spawn(position: Vector3, text: string, color: string): void {
+  spawn(position: Vector3, text: string, color: string, scale = 1): void {
     const item = this.items.find((i) => !i.active) ?? this.createOrRecycle();
     const ctx = item.texture.getContext();
     ctx.clearRect(0, 0, 256, 128);
     item.texture.drawText(text, null, 88, 'bold 72px sans-serif', color, null, true, true);
     item.plane.position.copyFrom(position);
     item.plane.position.x += (Math.random() - 0.5) * 0.4;
+    item.plane.scaling.setAll(scale);
     item.material.alpha = 1;
     item.age = 0;
     item.active = true;

@@ -64,6 +64,10 @@ async function desktop(browser: Browser): Promise<void> {
   check(scheme === 'desktop', `desktop: scheme is desktop (${scheme})`);
   check((await page.locator('.joystick-zone').count()) === 0, 'desktop: no joystick');
   check(await page.locator('.help').isVisible(), 'desktop: key help visible');
+  check(
+    (await page.locator('.actionbar .skills .skill').count()) === 4,
+    'desktop: four equal skill slots',
+  );
 
   await page.locator('canvas').focus();
   const a = await player(page);
@@ -108,6 +112,21 @@ async function phone(browser: Browser, w: number, h: number, label: string): Pro
   check(scheme === 'touch', `${label}: scheme is touch (${scheme})`);
   check(await page.locator('.joystick-zone').isVisible(), `${label}: joystick zone shown`);
   check(await page.locator('.attack-button').isVisible(), `${label}: attack button shown`);
+  check(
+    (await page.locator('.touch-actions > .touch-slot').count()) === 4,
+    `${label}: four skill slots shown`,
+  );
+  const attackBox = await page.locator('.attack-button').boundingBox();
+  const primaryBox = await page.locator('.touch-slot-1').boundingBox();
+  const utilityBox = await page.locator('.touch-slot-4').boundingBox();
+  check(
+    !!attackBox && !!primaryBox && attackBox.width > primaryBox.width,
+    `${label}: basic attack is largest`,
+  );
+  check(
+    !!utilityBox && !!primaryBox && utilityBox.width < primaryBox.width,
+    `${label}: utility skill is smaller`,
+  );
   check(!(await page.locator('.help').isVisible()), `${label}: key help hidden`);
 
   // Real touch drag via CDP: Chrome turns it into pointer events (pointerType touch).
@@ -154,6 +173,24 @@ async function phone(browser: Browser, w: number, h: number, label: string): Pro
     await page.waitForTimeout(400);
     check((await player(page))?.action === 'cast', `${label}: attack button starts a swing`);
   }
+  if (label === 'portrait') {
+    await page.locator('.menu button[title="Kỹ năng"]').tap();
+    await page.locator('.loadout-group').nth(1).locator('.loadout-slot').last().tap();
+    check(
+      (await page.locator('.skill-list-item').count()) === 2,
+      `${label}: utility slot offers only mobility skills`,
+    );
+    await page
+      .locator('.skill-list-item', { hasText: 'Lôi Ảnh Trảm' })
+      .getByRole('button', { name: 'Gán' })
+      .tap();
+    await page.locator('.skill-panel .panel-head button').last().tap();
+    check(
+      (await page.locator('.touch-slot-4').getAttribute('title'))?.includes('Lôi Ảnh Trảm') ??
+        false,
+      `${label}: utility assignment updates the compact slot`,
+    );
+  }
   await page.screenshot({ path: resolve(outDir, `controls_${label}.png`) });
   check(errors.length === 0, `${label}: no console errors ${errors.slice(0, 3).join(' | ')}`);
   await ctx.close();
@@ -166,6 +203,7 @@ const browser = await chromium.launch({
 try {
   await desktop(browser);
   await phone(browser, 390, 844, 'portrait');
+  await phone(browser, 320, 640, 'small-portrait');
   await phone(browser, 844, 390, 'landscape');
 } catch (err) {
   failures.push(String(err));

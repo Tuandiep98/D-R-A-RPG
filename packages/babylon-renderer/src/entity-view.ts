@@ -56,6 +56,13 @@ export class EntityView {
   private gear: GearAppearances = {};
   private hpBar: { root: TransformNode; fg: Mesh } | null = null;
   private castShadows = false;
+  /** Swing facing that overrides the (100 ms late) snapshot yaw for a while. */
+  private face: { yaw: number; left: number } | null = null;
+  private shownYaw: number | null = null;
+  /** Knock-back offset of the visual (world metres), springs back to 0. */
+  private readonly knockOffset = { x: 0, z: 0 };
+  private punch = 0;
+  private visualScale = 1;
 
   constructor(
     private readonly scene: Scene,
@@ -103,6 +110,10 @@ export class EntityView {
 
   bind(entityId: EntityId): void {
     this.entityId = entityId;
+    this.face = null;
+    this.shownYaw = null;
+    this.knockOffset.x = this.knockOffset.z = 0;
+    this.punch = 0;
     this.pick.metadata = { entityId } satisfies PickMetadata;
     this.action = null;
     this.visual.reset();
@@ -117,7 +128,32 @@ export class EntityView {
 
   setTransform(x: number, z: number, yaw: number): void {
     this.root.position.set(x, 0, z);
-    this.root.rotation.y = yaw;
+    this.root.rotation.y = this.face ? (this.shownYaw ?? yaw) : yaw;
+    if (!this.face) this.shownYaw = yaw;
+  }
+
+  /**
+   * Turn to a swing's facing now instead of when the interpolated snapshot
+   * gets there, so the clip plays toward the aim from its first frame.
+   */
+  faceYaw(yaw: number, seconds: number): void {
+    this.face = { yaw, left: seconds };
+  }
+
+  /** Cosmetic recoil of a struck body: pushed along (dx, dz) and a size pop. */
+  knock(dx: number, dz: number, metres: number): void {
+    const len = Math.hypot(dx, dz) || 1;
+    this.knockOffset.x += (dx / len) * metres;
+    this.knockOffset.z += (dz / len) * metres;
+    this.punch = Math.max(this.punch, Math.min(0.12, metres * 0.5));
+  }
+
+  freeze(seconds: number): void {
+    this.visual.freeze(seconds);
+  }
+
+  anchor(name: Parameters<Visual['anchor']>[0]): TransformNode | null {
+    return this.visual.anchor(name);
   }
 
   setAction(action: EntityAction): void {
@@ -160,6 +196,27 @@ export class EntityView {
   }
 
   update(dt: number): void {
+    if (this.face) {
+      const from = this.shownYaw ?? this.face.yaw;
+      let d = (this.face.yaw - from) % (Math.PI * 2);
+      if (d > Math.PI) d -= Math.PI * 2;
+      if (d < -Math.PI) d += Math.PI * 2;
+      this.shownYaw = from + d * (1 - Math.exp(-dt * 28));
+      this.root.rotation.y = this.shownYaw;
+      this.face.left -= dt;
+      if (this.face.left <= 0) this.face = null;
+    }
+    const k = Math.exp(-dt * 14);
+    this.knockOffset.x *= k;
+    this.knockOffset.z *= k;
+    this.punch *= Math.exp(-dt * 18);
+    // The visual is under the yawed root: rotate the world-space offset into it.
+    const c = Math.cos(this.root.rotation.y);
+    const sn = Math.sin(this.root.rotation.y);
+    const v = this.visual.root;
+    v.position.x = this.knockOffset.x * c - this.knockOffset.z * sn;
+    v.position.z = this.knockOffset.x * sn + this.knockOffset.z * c;
+    v.scaling.setAll(this.visualScale * (1 + this.punch));
     this.visual.update(dt);
   }
 
@@ -193,6 +250,7 @@ export class EntityView {
 
   private attachVisual(v: Visual): void {
     v.root.parent = this.root;
+    this.visualScale = v.root.scaling.x;
     if (this.appearance.kind === 'loot' || this.appearance.kind === 'portal') return;
     if (this.shadows && this.castShadows) {
       for (const m of v.shadowCasters) this.shadows.addShadowCaster(m);

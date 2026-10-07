@@ -9,6 +9,9 @@ import type { Accessor, Animation, Document, Node } from '@gltf-transform/core';
  *   YZ plane (Punch_A with the right hand → the same punch with the left).
  *   Correct for rigs whose left/right rest frames mirror each other, which
  *   KayKit's do; verify new rigs with the FK check in derive-clips.test.ts.
+ * - `inPlace`: pins the horizontal (x/z) translation of the named joints to
+ *   their first key. Jump_Chop drifts the hips 0.57 m forward and back; the
+ *   sim's lunge moves the character instead, so the clip must stay in place.
  *
  * Only LINEAR / STEP samplers are supported (KayKit exports LINEAR).
  */
@@ -19,6 +22,8 @@ export interface DerivedClip {
   mirror?: boolean;
   /** Seconds cut from the start (after reversing), e.g. a reversed clip's idle tail. */
   trimStart?: number;
+  /** Joints whose x/z translation is pinned to the first key (root motion off). */
+  inPlace?: string[];
 }
 
 const SIDE = /\.(l|r)$/;
@@ -75,6 +80,7 @@ function derive(
     const k = output.getElementSize();
     const values = Array.from(output.getArray() as ArrayLike<number>);
     if (clip.mirror) mirrorValues(values, k, path);
+    if (path === 'translation' && clip.inPlace?.includes(node.getName())) pinXZ(values, k);
     let outTimes = times;
     let outValues = values;
     if (clip.reverse) {
@@ -123,6 +129,15 @@ function trim(
     outValues.splice(0, k);
   }
   return [outTimes, outValues];
+}
+
+function pinXZ(values: number[], k: number): void {
+  const x = values[0] as number;
+  const z = values[2] as number;
+  for (let i = 0; i < values.length; i += k) {
+    values[i] = x;
+    values[i + 2] = z;
+  }
 }
 
 /** Reflection across X: translations negate x, rotations keep x/w and negate y/z. */

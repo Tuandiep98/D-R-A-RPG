@@ -58,7 +58,8 @@ export function movementSystem(ctx: SimContext): void {
       const step = Math.min(remaining, budget);
       e.pos.x += (dx / dist) * step;
       e.pos.z += (dz / dist) * step;
-      e.yaw = yawOf({ x: dx, z: dz });
+      // A swing keeps its facing; walking only drifts the body (D-031).
+      if (!e.swing) e.yaw = yawOf({ x: dx, z: dz });
       e.movement.moved = true;
       budget -= step;
       if (step >= remaining) {
@@ -79,7 +80,7 @@ export function movementSystem(ctx: SimContext): void {
 /** One tick along a held direction; on a navmesh the step slides along edges. */
 function steer(ctx: SimContext, e: Entity, dir: Vec2): void {
   const step = e.movement.speed * (e.swing?.variant.moveMultiplier ?? 1) * TICK_DT;
-  e.yaw = yawOf(dir);
+  if (!e.swing) e.yaw = yawOf(dir);
   const next = { x: e.pos.x + dir.x * step, z: e.pos.z + dir.z * step };
   const p = ctx.nav ? ctx.nav.closest(next) : next;
   const moved = distance(p, e.pos);

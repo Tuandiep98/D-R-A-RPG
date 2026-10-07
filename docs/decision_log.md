@@ -202,3 +202,17 @@ Mỗi quyết định: ngày, bối cảnh, quyết định, hệ quả. Khi mâ
   - Cảm ứng: nút Đánh lớn ở góc đối diện joystick, chiêu xếp vòng cung quanh nó. Toàn màn hình qua Fullscreen API (nút ⛶, tuỳ chọn tự bật khi chạm); iPhone Safari không hỗ trợ → hướng dẫn "Thêm vào Màn hình chính" (PWA `display: fullscreen`).
 - **Lý do:** mobile cần thao tác bằng ngón cái; click-to-move vẫn giữ cho chuột. Sim authoritative không đổi: client chỉ gửi hướng.
 - **Kiểm tra:** `pnpm smoke:controls` (desktop WASD, điện thoại dọc/ngang bằng touch thật qua CDP).
+
+## D-031 — Đánh thường combo 3 nhịp và hiệu ứng đòn đánh
+- **Ngày:** 2026-10-07
+- **Quyết định:**
+  - Đánh thường không cần chọn mục tiêu: `game-data/combos/*.yaml` khai báo từng nhịp (phải → trái → đòn mạnh). Mỗi nhịp có `windup` (giây tới lúc chạm, đo theo frame chạm của clip / `animSpeed`), tầm, nón, `moveMultiplier`. Nhịp 3 chọn ngẫu nhiên theo `weight` giữa nhiều kiểu.
+  - Trong lúc vung đòn, thân giữ hướng của đòn: đi lại chỉ làm trôi người, không xoay. `lunge` chỉ chạy trong `lungeWindow` của wind-up và xong trước cú chạm, để thân (vẽ trễ 100 ms do nội suy) tiếp đất cùng clip.
+  - Clip có root motion (Jump_Chop đẩy hông 0.57 m rồi kéo lại) dùng bản `derivedClips` với `inPlace: [hips]`: sim lo phần di chuyển. Không có bước này, nhân vật trông như nhảy lùi sau khi đáp.
+  - Hiển thị (`packages/babylon-renderer/src/combat-fx.ts`):
+    - vệt kiếm (ribbon chuôi→mũi) hoặc vệt nắm đấm;
+    - cung chém theo `trail.shape`;
+    - đòn mạnh có: tay phát sáng lúc gồng, chữ số to; dấu ấn riêng theo `trail.impact` (`burst` / `quake` / `pierce` / `cyclone`); rung camera theo hướng đòn; zoom giật; hit-stop 50–120 ms cho cả hai bên; quái bị đẩy lùi.
+  - Sprite lấy từ Kenney Particle Pack (CC0, đã vendor). Mỗi loại sprite là 1 mesh thin instance, tức 1 draw call. Preset Low tắt vệt kiếm và giảm số hạt.
+  - Clip one-shot chỉ kết thúc theo token của lần phát mới nhất: `AnimationGroup.stop()` cũng bắn `onAnimationGroupEndObservable`, nên trước đây đòn sau tự cắt mình về idle.
+- **Hệ quả:** thêm kiểu đòn mới chỉ cần YAML (clip, windup, trail, impact). Clip mới có root motion phải khai báo `inPlace`.

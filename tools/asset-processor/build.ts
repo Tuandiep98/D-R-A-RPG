@@ -85,7 +85,9 @@ const warnings: string[] = [];
 const assets: Record<string, ManifestEntry> = {};
 const catalog: CatalogRow[] = [];
 
-rmSync(outDir, { recursive: true, force: true });
+// Not wiped up front: a dev server reloading mid-build would find no manifest
+// and show placeholders for the whole session. Hashed files are written next
+// to the old ones, the manifest is swapped in last, then stale files go.
 mkdirSync(outDir, { recursive: true });
 
 const decoders: Record<string, string> = {};
@@ -266,10 +268,19 @@ for (const dir of packs) {
   }
 }
 
+// Written in place (rename-over fails on Windows while the dev server reads it);
+// clients retry a manifest that is briefly unreadable.
 writeFileSync(
   join(outDir, 'assets.manifest.json'),
   `${JSON.stringify({ version: 1, generatedAt: new Date().toISOString(), decoders, assets }, null, 2)}\n`,
 );
+const keep = new Set([
+  'assets.manifest.json',
+  ...Object.values(decoders),
+  ...Object.values(assets).flatMap((a) => (a.lod1 ? [a.url, a.lod1.url] : [a.url])),
+]);
+for (const f of readdirSync(outDir))
+  if (!keep.has(f)) rmSync(join(outDir, f), { recursive: true, force: true });
 writeFileSync(catalogPath, renderCatalog(catalog, warnings));
 
 // `--allow-missing`: packs whose originals are not on this machine (or not in

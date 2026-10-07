@@ -34,6 +34,9 @@ export const AssetManifestSchema = z.object({
 export type AssetManifest = z.infer<typeof AssetManifestSchema>;
 export type AssetEntry = AssetManifest['assets'][string];
 
+/** Manifest fetches before falling back to placeholders (1.5 s apart). */
+const MANIFEST_ATTEMPTS = 3;
+
 const EMPTY_MANIFEST: AssetManifest = {
   version: 1,
   generatedAt: '',
@@ -70,18 +73,26 @@ export class AssetLibrary {
 
   async loadManifest(url: string): Promise<AssetManifest> {
     this.baseUrl = new URL('.', new URL(url, window.location.href)).href;
-    try {
-      const res = await fetch(url, { cache: 'no-cache' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      // Dev servers answer unknown paths with index.html; treat that as "not built yet".
-      if (!res.headers.get('content-type')?.includes('json')) {
-        console.info(`[assets] ${url} not found (run \`pnpm assets:build\`); using placeholders`);
-        return this.manifest;
+    // A few tries: the manifest can be missing for a moment while
+    // `pnpm assets:build` runs, and one miss would mean placeholders all session.
+    for (let attempt = 1; ; attempt++) {
+      try {
+        const res = await fetch(url, { cache: 'no-cache' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        // Dev servers answer unknown paths with index.html; treat that as "not built yet".
+        if (!res.headers.get('content-type')?.includes('json'))
+          throw new Error('not built (run `pnpm assets:build`)');
+        this.manifest = AssetManifestSchema.parse(await res.json());
+        break;
+      } catch (err) {
+        if (attempt < MANIFEST_ATTEMPTS) {
+          await new Promise((r) => setTimeout(r, 1500));
+          continue;
+        }
+        console.warn(`[assets] no usable manifest at ${url}; using placeholders`, err);
+        this.manifest = EMPTY_MANIFEST;
+        break;
       }
-      this.manifest = AssetManifestSchema.parse(await res.json());
-    } catch (err) {
-      console.warn(`[assets] no usable manifest at ${url}; using placeholders`, err);
-      this.manifest = EMPTY_MANIFEST;
     }
     const meshopt = this.manifest.decoders.meshopt;
     if (meshopt) {

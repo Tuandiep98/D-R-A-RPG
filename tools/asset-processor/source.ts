@@ -74,6 +74,7 @@ export const PackSourceSchema = z
                 reverse: z.boolean().optional(),
                 mirror: z.boolean().optional(),
                 trimStart: z.number().nonnegative().optional(),
+                inPlace: z.array(z.string().min(1)).optional(),
               }),
             )
             .default([]),

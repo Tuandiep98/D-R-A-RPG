@@ -1,6 +1,7 @@
 import type { DebugStats, Notice, QualityMode, UiState } from '@rpg/babylon-renderer';
 import type { ChatMessage } from '@rpg/game-protocol';
 import { create } from 'zustand';
+import type { SkillPosition } from './skill-loadout';
 
 export type Panel =
   | 'skills'
@@ -26,6 +27,7 @@ interface UiStore {
   debug: DebugStats | null;
   notices: ToastNotice[];
   panel: Panel;
+  skillEditPosition: SkillPosition | null;
   npc: { npcEntityId: number; npcId: string } | null;
   chat: ChatMessage[];
   invite: { fromId: number; fromName: string } | null;
@@ -46,6 +48,8 @@ interface UiStore {
   pushNotice(n: Notice): void;
   pruneNotices(now: number): void;
   togglePanel(panel: Exclude<Panel, null>): void;
+  openSkillAssignment(position: SkillPosition): void;
+  setSkillEditPosition(position: SkillPosition): void;
   closePanel(): void;
   toggleDebug(): void;
   setQuality(q: QualityMode): void;
@@ -60,6 +64,7 @@ export const useUiStore = create<UiStore>((set) => ({
   debug: null,
   notices: [],
   panel: null,
+  skillEditPosition: null,
   npc: null,
   chat: [],
   invite: null,
@@ -91,7 +96,10 @@ export const useUiStore = create<UiStore>((set) => ({
         ? { notices: s.notices.filter((n) => n.expires > now) }
         : s,
     ),
-  togglePanel: (panel) => set((s) => ({ panel: s.panel === panel ? null : panel })),
+  togglePanel: (panel) =>
+    set((s) => ({ panel: s.panel === panel ? null : panel, skillEditPosition: null })),
+  openSkillAssignment: (position) => set({ panel: 'skills', skillEditPosition: position }),
+  setSkillEditPosition: (skillEditPosition) => set({ skillEditPosition }),
   closePanel: () => set({ panel: null, npc: null }),
   toggleDebug: () => set((s) => ({ showDebug: !s.showDebug })),
   setQuality: (quality) => set({ quality }),

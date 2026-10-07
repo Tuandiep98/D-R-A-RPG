@@ -1,6 +1,6 @@
 import type { ItemView, QualityMode, SkillSlot, UnitFrame } from '@rpg/babylon-renderer';
 import { type EquipSlot, realmLadder } from '@rpg/game-data';
-import { type CSSProperties, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getSfxVolume, playSfx, setSfxVolume } from '../audio';
 import { sharedContent } from '../content';
 import {
@@ -15,13 +15,21 @@ import {
   useControls,
 } from '../controls';
 import { game } from '../game';
+import {
+  allowedInPosition,
+  DESKTOP_POSITIONS,
+  resolveLoadout,
+  type SkillPosition,
+  TOUCH_POSITIONS,
+  useSkillLoadout,
+} from '../skill-loadout';
 import { useUiStore } from '../store';
 import { CultivationPanel } from './CultivationPanel';
 import { GameIcon } from './GameIcon';
 import { NpcPanel } from './NpcPanel';
 import { ChatBox, LeaderboardPanel, QuestTracker } from './Social';
 import { SocialPanel } from './SocialPanel';
-import { arcOffset, TouchJoystick } from './TouchControls';
+import { TouchJoystick } from './TouchControls';
 
 const ONLINE = new URLSearchParams(window.location.search).has('online');
 
@@ -137,23 +145,22 @@ function PlayerPanel() {
 
 function SkillButton({
   slot,
-  index,
-  style,
+  hotkey,
+  className = '',
 }: {
   slot: SkillSlot;
-  index: number;
-  style?: CSSProperties;
+  hotkey?: number;
+  className?: string;
 }) {
   const sweep = slot.remaining > 0 ? Math.min(1, slot.remaining / slot.cooldown) : 0;
   return (
     <button
       type="button"
-      style={style}
-      className={`skill ${slot.skillId.startsWith('skill_thunder_') ? 'skill-thunder' : ''} ${slot.skillId === 'skill_thunder_judgement' ? 'skill-ultimate' : ''} ${slot.usable ? '' : 'skill-disabled'}`}
+      className={`skill ${className} ${slot.skillId.startsWith('skill_thunder_') ? 'skill-thunder' : ''} ${slot.skillId === 'skill_thunder_judgement' ? 'skill-ultimate' : ''} ${slot.usable ? '' : 'skill-disabled'}`}
       title={`${slot.name}${slot.mpCost ? ` · ${slot.mpCost} MP` : ''}\n${slot.description}`}
       onPointerDown={(e) => {
         e.stopPropagation();
-        game()?.castSkill(index);
+        game()?.castSkillById(slot.skillId);
       }}
     >
       <GameIcon className="skill-icon" icon={slot.icon} image={slot.iconImage} />
@@ -167,7 +174,33 @@ function SkillButton({
           {Math.ceil(slot.remaining)}
         </span>
       )}
-      <span className="skill-key">{index + 1}</span>
+      {hotkey && <span className="skill-key">{hotkey}</span>}
+    </button>
+  );
+}
+
+function EmptySkillButton({
+  position,
+  className = '',
+  hotkey,
+}: {
+  position: SkillPosition;
+  className?: string;
+  hotkey?: number;
+}) {
+  const open = useUiStore((s) => s.openSkillAssignment);
+  return (
+    <button
+      type="button"
+      className={`skill skill-empty ${className}`}
+      title="Gán kỹ năng"
+      onPointerDown={(e) => {
+        e.stopPropagation();
+        open(position);
+      }}
+      data-position={position}
+    >
+      +{hotkey && <span className="skill-key">{hotkey}</span>}
     </button>
   );
 }
@@ -226,14 +259,13 @@ function InvitePrompt() {
   );
 }
 
-function PotionButton({ style }: { style?: CSSProperties }) {
+function PotionButton({ className = '' }: { className?: string }) {
   const potion = useUiStore((s) => s.ui?.potion);
   if (!potion) return null;
   return (
     <button
       type="button"
-      style={style}
-      className={`skill potion ${potion.remaining > 0 ? 'skill-disabled' : ''}`}
+      className={`skill potion ${className} ${potion.remaining > 0 ? 'skill-disabled' : ''}`}
       title="Dùng thuốc (Q)"
       onPointerDown={(e) => {
         e.stopPropagation();
@@ -265,42 +297,30 @@ function InteractButton() {
   );
 }
 
-/** Desktop: one row centred at the bottom, hotkeys printed on the buttons. */
-function DesktopActionBar() {
-  const ui = useUiStore((s) => s.ui);
-  if (!ui?.player) return null;
+/** Desktop: four equal, assignable slots centred at the bottom. */
+function DesktopActionBar({ slots }: { slots: (SkillSlot | null)[] }) {
   return (
     <div className="actionbar">
       <InteractButton />
       <div className="skills">
-        {ui.skills.slice(0, 8).map((s, i) => (
-          <SkillButton key={s.skillId} slot={s} index={i} />
-        ))}
-        <PotionButton />
+        {DESKTOP_POSITIONS.map((position, i) =>
+          slots[i] ? (
+            <SkillButton key={position} slot={slots[i]} hotkey={i + 1} />
+          ) : (
+            <EmptySkillButton key={position} position={position} hotkey={i + 1} />
+          ),
+        )}
       </div>
+      <PotionButton className="desktop-potion" />
     </div>
   );
 }
 
 /**
- * Touch: big attack button in the corner opposite the joystick, skills on a
- * quarter arc around it (thumb reach), with potion in the final arc slot.
- * Slot positions are static — computed per render, never per frame.
+ * Touch: three equal primary skills around the large basic attack, with a
+ * smaller mobility/defense slot below them.
  */
-function TouchActionBar() {
-  const ui = useUiStore((s) => s.ui);
-  const mirrored = useControls((s) => s.joystickSide === 'right');
-  if (!ui?.player) return null;
-  const at = (i: number): CSSProperties => {
-    const o = arcOffset(i, mirrored);
-    // --arc-scale (CSS) tightens the arc on narrow portrait screens.
-    return {
-      transform: `translate(calc(${o.x}px * var(--arc-scale) - 50%), calc(${o.y}px * var(--arc-scale) - 50%))`,
-    };
-  };
-  // Keep the touch cluster within two rings on portrait phones.
-  const visible = ui.skills.slice(0, 7);
-  const next = visible.length;
+function TouchActionBar({ slots }: { slots: (SkillSlot | null)[] }) {
   return (
     <div className="touch-actions">
       <div className="touch-interact">
@@ -309,7 +329,7 @@ function TouchActionBar() {
       <button
         type="button"
         className="attack-button"
-        title="Đánh mục tiêu gần nhất (Space)"
+        title="Đánh thường"
         onPointerDown={(e) => {
           e.stopPropagation();
           game()?.attack();
@@ -317,22 +337,54 @@ function TouchActionBar() {
       >
         ⚔
       </button>
-      {visible.map((s, i) => (
-        <SkillButton key={s.skillId} slot={s} index={i} style={at(i)} />
-      ))}
-      <PotionButton style={at(next)} />
+      {TOUCH_POSITIONS.map((position, i) =>
+        slots[i] ? (
+          <SkillButton
+            key={position}
+            slot={slots[i]}
+            className={`touch-slot touch-slot-${i + 1}`}
+          />
+        ) : (
+          <EmptySkillButton
+            key={position}
+            position={position}
+            className={`touch-slot touch-slot-${i + 1}`}
+          />
+        ),
+      )}
+      <PotionButton className="touch-potion" />
     </div>
   );
 }
 
 function ActionBar() {
+  const ui = useUiStore((s) => s.ui);
+  const assignments = useSkillLoadout((s) => s.assignments);
   const touch = useControls((s) => effectiveScheme(s) === 'touch');
-  return touch ? <TouchActionBar /> : <DesktopActionBar />;
+  const slots = resolveLoadout(ui?.skills ?? [], assignments, touch ? 'touch' : 'desktop');
+  const bindingKey = slots.map((slot) => slot?.skillId ?? '').join('|');
+  useEffect(() => {
+    game()?.setSkillBindings(bindingKey.split('|').map((id) => id || null));
+  }, [bindingKey, ui]);
+  if (!ui?.player) return null;
+  return touch ? <TouchActionBar slots={slots} /> : <DesktopActionBar slots={slots} />;
 }
 
 function SkillPanel() {
   const skills = useUiStore((s) => s.ui?.skills ?? []);
   const close = useUiStore((s) => s.closePanel);
+  const touch = useControls((s) => effectiveScheme(s) === 'touch');
+  const assignments = useSkillLoadout((s) => s.assignments);
+  const assign = useSkillLoadout((s) => s.assign);
+  const editedPosition = useUiStore((s) => s.skillEditPosition);
+  const setPosition = useUiStore((s) => s.setSkillEditPosition);
+  const position = editedPosition ?? (touch ? 'touch-1' : 'desktop-1');
+  const desktopSlots = resolveLoadout(skills, assignments, 'desktop');
+  const touchSlots = resolveLoadout(skills, assignments, 'touch');
+  const activeSlot = position.startsWith('desktop-')
+    ? desktopSlots[DESKTOP_POSITIONS.indexOf(position)]
+    : touchSlots[TOUCH_POSITIONS.indexOf(position)];
+  const eligible = skills.filter((slot) => allowedInPosition(slot, position));
   return (
     <div className="panel skill-panel" onPointerDown={(e) => e.stopPropagation()}>
       <div className="panel-head">
@@ -346,28 +398,72 @@ function SkillPanel() {
           </button>
         </span>
       </div>
-      <p className="muted">Chọn chiêu để thi triển. Phím 1–8 dùng các ô đầu trên thanh kỹ năng.</p>
+      <p className="muted">
+        Chọn một ô, rồi chọn kỹ năng để gán. Phím 1–4 dùng bốn ô đang hiển thị.
+      </p>
+      <div className="loadout-group">
+        <strong>Desktop · 4 ô bằng nhau</strong>
+        <div className="loadout-slots">
+          {DESKTOP_POSITIONS.map((id, i) => (
+            <button
+              key={id}
+              type="button"
+              className={`loadout-slot ${position === id ? 'selected' : ''}`}
+              onClick={() => setPosition(id)}
+              aria-pressed={position === id}
+            >
+              <span>{i + 1}</span>
+              <span>{desktopSlots[i]?.icon ?? '+'}</span>
+              <small>{desktopSlots[i]?.name ?? 'Trống'}</small>
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="loadout-group">
+        <strong>Mobile · 3 chính + 1 lướt/khiên</strong>
+        <div className="loadout-slots">
+          {TOUCH_POSITIONS.map((id, i) => (
+            <button
+              key={id}
+              type="button"
+              className={`loadout-slot ${position === id ? 'selected' : ''}`}
+              onClick={() => setPosition(id)}
+              aria-pressed={position === id}
+            >
+              <span>{i === 3 ? '↯' : i + 1}</span>
+              <span>{touchSlots[i]?.icon ?? '+'}</span>
+              <small>{touchSlots[i]?.name ?? 'Trống'}</small>
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="skill-assign-heading">
+        <strong>
+          {position === 'touch-utility' ? 'Chọn kỹ năng lướt / khiên' : 'Chọn kỹ năng'}
+        </strong>
+        <button type="button" onClick={() => assign(position, null)}>
+          Để trống
+        </button>
+      </div>
       <div className="skill-list">
-        {skills.map((slot, index) => (
-          <button
-            key={slot.skillId}
-            type="button"
-            className={`skill-list-item ${slot.usable ? '' : 'skill-disabled'}`}
-            onClick={() => {
-              game()?.castSkill(index);
-              close();
-            }}
-          >
+        {eligible.map((slot) => (
+          <div key={slot.skillId} className="skill-list-item">
             <GameIcon icon={slot.icon} image={slot.iconImage} />
             <span className="skill-list-copy">
               <strong>{slot.name}</strong>
               <small>{slot.description}</small>
             </span>
-            <span className="skill-list-cost">
-              {slot.remaining > 0 ? `${Math.ceil(slot.remaining)}s` : `${slot.mpCost} MP`}
-            </span>
-          </button>
+            <span className="skill-list-cost">{slot.mpCost} MP</span>
+            <button
+              type="button"
+              className="skill-assign"
+              onClick={() => assign(position, slot.skillId)}
+            >
+              {activeSlot?.skillId === slot.skillId ? 'Đang dùng' : 'Gán'}
+            </button>
+          </div>
         ))}
+        {eligible.length === 0 && <p>Chưa có kỹ năng phù hợp với ô này.</p>}
       </div>
     </div>
   );
@@ -699,7 +795,7 @@ function HelpLine() {
   if (touch) return null;
   return (
     <div className="help">
-      WASD/↑↓←→: di chuyển · Click trái: đánh/chọn/nhặt/nói chuyện · Space: đánh · 1–8: chiêu · Q:
+      WASD/↑↓←→: di chuyển · Click trái: đánh/chọn/nhặt/nói chuyện · Space: đánh · 1–4: chiêu · Q:
       thuốc · F: tương tác · Tab: đổi mục tiêu · I: túi đồ · K: tu luyện · Enter: chat · Chuột phải:
       xoay
     </div>

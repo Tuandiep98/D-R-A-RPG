@@ -6,6 +6,7 @@ import { playSfx } from './audio';
 import { loadContent } from './content';
 import { setGame } from './game';
 import type { OnlineChoice } from './Login';
+import { loadMedia, mediaUrl } from './media';
 import { navFor } from './nav';
 import { startSession } from './online';
 import { useUiStore } from './store';
@@ -114,8 +115,10 @@ export function GameCanvas({ online = null }: { online?: OnlineChoice | null }) 
         const quality =
           (params.get('quality') as 'auto' | 'low' | 'medium' | 'high' | null) ?? 'auto';
         store.setQuality(quality);
+        await loadMedia();
         const created = await GameView.create({
           canvas,
+          mediaUrl,
           host,
           content,
           manifestUrl: `${import.meta.env.BASE_URL}assets/assets.manifest.json`,

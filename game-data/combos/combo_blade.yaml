@@ -50,7 +50,8 @@ steps:
         moveMultiplier: 0.15
         critBonus: 0.15
         heavy: true
-        trail: { shape: smash, from: top, color: "#ffcf5a", size: 1.2, glow: [hand_r] }
+        trail: { shape: smash, from: top, color: "#ffcf5a", size: 1.2, glow: [hand_r], impact: burst }
+        impactSfx: [sfx_hit_heavy]
       - id: stab_heavy
         name: Xuyên Tâm Thứ
         clip: Melee_1H_Attack_Stab
@@ -64,10 +65,12 @@ steps:
         moveMultiplier: 0.2
         critBonus: 0.3
         heavy: true
-        trail: { shape: thrust, color: "#8fe3ff", size: 1.2, glow: [hand_r] }
+        trail: { shape: thrust, color: "#8fe3ff", size: 1.2, glow: [hand_r], impact: pierce }
+        impactSfx: [sfx_hit_metal_01]
       - id: leap_heavy
         name: Phi Thân Bổ
-        clip: Melee_1H_Attack_Jump_Chop
+        # Clip đứng tại chỗ (hông không trôi tới/lui); sim lo phần lướt về phía trước.
+        clip: Melee_1H_Attack_Jump_Chop_InPlace
         animSpeed: 1.2
         windup: 0.62
         recovery: 0.4
@@ -76,11 +79,14 @@ steps:
         arc: 100
         maxTargets: 4
         moveMultiplier: 0
-        lunge: 2.2
+        lunge: 2.4
+        # Lướt trong lúc nhân vật ở trên không, xong trước cú chạm để thân và clip tiếp đất cùng lúc.
+        lungeWindow: [0.25, 0.8]
         critBonus: 0.1
         weight: 0.8
         heavy: true
-        trail: { shape: smash, from: top, color: "#ff8a3d", size: 1.4, glow: [hand_r] }
+        trail: { shape: smash, from: top, color: "#ff8a3d", size: 1.4, glow: [hand_r], impact: quake }
+        impactSfx: [sfx_slam]
       - id: spin_heavy
         name: Toàn Phong Trảm
         clip: Melee_2H_Attack_Spinning
@@ -93,4 +99,5 @@ steps:
         maxTargets: 6
         moveMultiplier: 0.6
         heavy: true
-        trail: { shape: spin, color: "#c9b6ff", size: 1.1, glow: [hand_r] }
+        trail: { shape: spin, color: "#c9b6ff", size: 1.1, glow: [hand_r], impact: cyclone }
+        impactSfx: [sfx_hit_heavy]

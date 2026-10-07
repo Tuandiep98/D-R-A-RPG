@@ -111,9 +111,15 @@ export function meleeSystem(ctx: SimContext): void {
       continue;
     }
     if (swing.lungeLeft > 0 && ctx.tick < swing.impactTick) {
-      const ticks = Math.max(1, swing.impactTick - swing.startTick);
-      lunge(ctx, e, swing.yaw, Math.min(swing.lungeLeft, swing.variant.lunge / ticks));
-      swing.lungeLeft -= swing.variant.lunge / ticks;
+      const windup = swing.impactTick - swing.startTick;
+      const [from, to] = swing.variant.lungeWindow;
+      const start = swing.startTick + Math.floor(windup * from);
+      const end = Math.max(start + 1, swing.startTick + Math.round(windup * to));
+      if (ctx.tick >= start && ctx.tick < end) {
+        const perTick = swing.variant.lunge / (end - start);
+        lunge(ctx, e, swing.yaw, Math.min(swing.lungeLeft, perTick));
+        swing.lungeLeft -= perTick;
+      }
     }
     if (!swing.impacted && ctx.tick >= swing.impactTick) {
       swing.impacted = true;

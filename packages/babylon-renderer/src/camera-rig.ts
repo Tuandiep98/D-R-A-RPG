@@ -17,7 +17,18 @@ export interface CameraRigOptions {
 export class CameraRig {
   readonly camera: ArcRotateCamera;
   private readonly focus = new Vector3();
+  /** Followed point before shake is added. */
+  private readonly smooth = new Vector3();
   private readonly opts: Required<CameraRigOptions>;
+  private shakeAmp = 0;
+  private shakeTime = 0;
+  private shakeDecay = 1;
+  private readonly shakeDir = new Vector3(1, 0, 0);
+  /** Extra radius that springs back to 0 (negative = punch in). */
+  private kickRadius = 0;
+  private kickApplied = 0;
+  /** User multiplier for shake (0 turns it off; accessibility). */
+  shakeScale = 1;
 
   constructor(scene: Scene, opts: CameraRigOptions = {}) {
     this.opts = {
@@ -49,15 +60,53 @@ export class CameraRig {
     );
   }
 
+  /**
+   * Impact shake: a decaying wobble of the look-at point, biased along `dir`
+   * (world XZ, e.g. a slash's sweep) so the screen moves with the blow.
+   */
+  shake(strength: number, seconds: number, dirX = 0, dirZ = 0): void {
+    const amp = strength * this.shakeScale;
+    if (amp <= this.shakeAmp) return;
+    this.shakeAmp = amp;
+    this.shakeDecay = 1 / Math.max(0.05, seconds);
+    this.shakeTime = 0;
+    const len = Math.hypot(dirX, dirZ);
+    if (len > 1e-4) this.shakeDir.set(dirX / len, 0, dirZ / len);
+    else
+      this.shakeDir.set(
+        Math.cos(this.camera.alpha + Math.PI / 2),
+        0,
+        Math.sin(this.camera.alpha + Math.PI / 2),
+      );
+  }
+
+  /** Brief zoom punch toward the player (heavy finishers). */
+  kick(metres: number): void {
+    this.kickRadius = Math.min(this.kickRadius, -Math.abs(metres) * this.shakeScale);
+  }
+
   /** Smoothly follows `x,z`; call once per frame. */
   follow(x: number, z: number, dt: number, snap = false): void {
     this.focus.set(x, 1, z);
-    if (snap) {
-      this.camera.target.copyFrom(this.focus);
-      return;
+    if (snap) this.smooth.copyFrom(this.focus);
+    else Vector3.LerpToRef(this.smooth, this.focus, 1 - Math.exp(-dt * 10), this.smooth);
+    this.camera.target.copyFrom(this.smooth);
+    if (this.shakeAmp > 0.001) {
+      this.shakeTime += dt;
+      const a = this.shakeAmp;
+      // Two incommensurate sines read as noise without any per-frame randomness.
+      const along = Math.sin(this.shakeTime * 61) * a;
+      const up = Math.sin(this.shakeTime * 47 + 1.3) * a * 0.6;
+      this.camera.target.x += this.shakeDir.x * along;
+      this.camera.target.z += this.shakeDir.z * along;
+      this.camera.target.y += up;
+      this.shakeAmp *= Math.exp(-dt * this.shakeDecay * 4);
+    } else this.shakeAmp = 0;
+    if (this.kickRadius !== 0 || this.kickApplied !== 0) {
+      this.kickRadius = this.kickRadius < -0.01 ? this.kickRadius * Math.exp(-dt * 7) : 0;
+      this.camera.radius += this.kickRadius - this.kickApplied;
+      this.kickApplied = this.kickRadius;
     }
-    const t = 1 - Math.exp(-dt * 10);
-    Vector3.LerpToRef(this.camera.target, this.focus, t, this.camera.target);
   }
 }
 

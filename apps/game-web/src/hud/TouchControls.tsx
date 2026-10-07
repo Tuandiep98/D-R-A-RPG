@@ -42,24 +42,3 @@ export function TouchJoystick() {
 
   return <div ref={layer} className="joystick-layer" />;
 }
-
-/** Offset (px) of slot `i` on quarter arcs around the attack button. */
-export function arcOffset(i: number, mirrored: boolean): { x: number; y: number } {
-  // Inner ring: 3 slots from "left of the button" to "above it" (45° apart, so
-  // 58px buttons never touch); outer ring: 5 more, then a third ring.
-  const rings = [
-    { slots: 3, r: 104 },
-    { slots: 5, r: 172 },
-    { slots: 6, r: 240 },
-  ];
-  let k = i;
-  let ring = rings[0] as { slots: number; r: number };
-  for (const r of rings) {
-    ring = r;
-    if (k < r.slots) break;
-    k -= r.slots;
-  }
-  const angle = Math.PI - (Math.min(k, ring.slots - 1) / (ring.slots - 1)) * (Math.PI / 2);
-  const x = Math.cos(angle) * ring.r;
-  return { x: mirrored ? -x : x, y: -Math.sin(angle) * ring.r };
-}

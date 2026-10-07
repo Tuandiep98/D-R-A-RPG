@@ -78,8 +78,8 @@ try {
   if (!player) throw new Error('no player');
 
   check(
-    (await page.locator('.actionbar .skill:not(.potion)').count()) === 7,
-    'seven default sword skills shown',
+    (await page.locator('.actionbar .skills .skill').count()) === 4,
+    'desktop action bar has four skill slots',
   );
   await page.locator('.menu button[title="Kỹ năng"]').click();
   check(
@@ -87,7 +87,17 @@ try {
     'skill menu lists the full default kit',
   );
   await page.screenshot({ path: resolve(outDir, '01b_skills.png') });
+  await page
+    .locator('.skill-list-item', { hasText: 'Lôi Ảnh Trảm' })
+    .getByRole('button', { name: 'Gán' })
+    .click();
   await page.locator('.skill-panel .panel-head button').last().click();
+  check(
+    (await page.locator('.actionbar .skills .skill').first().getAttribute('title'))?.includes(
+      'Lôi Ảnh Trảm',
+    ) ?? false,
+    'desktop skill slot accepts an assignment',
+  );
   // Desktop ground click starts a basic swing instead of walking to the point.
   const start = { x: player.wx, z: player.wz };
   await page.mouse.click(player.x + 120, player.y + 60);
@@ -109,14 +119,14 @@ try {
   const dist = afterClick ? Math.hypot(afterClick.wx - start.x, afterClick.wz - start.z) : 0;
   check(dist < 1, `ground click did not issue movement (${dist.toFixed(2)} m)`);
 
-  await page.locator('.actionbar .skill:not(.potion)').first().click();
+  await page.keyboard.press('Digit1');
   const cooldown = await page
-    .locator('.actionbar .skill:not(.potion) .skill-cd')
+    .locator('.actionbar .skills .skill-cd')
     .first()
     .waitFor({ timeout: 1500 })
     .then(() => true)
     .catch(() => false);
-  check(cooldown, 'mobility skill enters cooldown');
+  check(cooldown, 'assigned skill casts with key 1 and enters cooldown');
 
   // Walk forward until a monster is on screen, then click-to-attack the nearest one.
   const onScreen = (e: DebugEntity) => e.x > 40 && e.x < 1240 && e.y > 90 && e.y < 660;
