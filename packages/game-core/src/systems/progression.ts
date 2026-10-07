@@ -111,6 +111,14 @@ export function recomputePlayerStats(ctx: SimContext, e: Entity): void {
   e.stats.critChance = Math.min(1, def.stats.critChance + bonus.critChance);
   e.movement.baseSpeed = def.movement.speed + bonus.speed;
   e.movement.speed = e.movement.baseSpeed;
+  // A main-hand ranged weapon replaces swings with shots (systems/ranged.ts);
+  // auto-attacks then hold position inside its range instead of closing in.
+  const mainId = p.equipment.main_hand;
+  const main = mainId ? p.inventory.find((i) => i.instanceId === mainId) : undefined;
+  const rangedId = main ? ctx.content.items.get(main.itemId)?.ranged : undefined;
+  const ranged = rangedId ? ctx.content.ranged.get(rangedId) : undefined;
+  p.ranged = mainId && ranged ? { instanceId: mainId, def: ranged } : null;
+  e.combat.range = ranged ? ranged.projectile.range * 0.8 : def.combat.range;
   if (e.life.alive) {
     e.stats.hp = Math.min(e.stats.maxHp, Math.max(1, Math.round(hpRatio * e.stats.maxHp)));
     e.stats.mp = Math.min(e.stats.maxMp, Math.round(mpRatio * e.stats.maxMp));

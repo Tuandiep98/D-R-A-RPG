@@ -13,7 +13,9 @@ import '@babylonjs/core/Lights/Shadows/shadowGeneratorSceneComponent';
 import '@babylonjs/core/Loading/loadingScreen';
 import '@babylonjs/core/Meshes/thinInstanceMesh';
 
+export type { Animation } from '@babylonjs/core/Animations/animation';
 export { AnimationGroup } from '@babylonjs/core/Animations/animationGroup';
+export { AnimationGroupMask } from '@babylonjs/core/Animations/animationGroupMask';
 export { AssetContainer } from '@babylonjs/core/assetContainer';
 export { VertexBuffer, VertexBufferDeduceStride } from '@babylonjs/core/Buffers/buffer.pure';
 export { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
@@ -36,5 +38,6 @@ export { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 export { Mesh } from '@babylonjs/core/Meshes/mesh';
 export { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder';
 export { TransformNode } from '@babylonjs/core/Meshes/transformNode';
+export type { Observer } from '@babylonjs/core/Misc/observable';
 export type { Node } from '@babylonjs/core/node';
 export { Scene } from '@babylonjs/core/scene';

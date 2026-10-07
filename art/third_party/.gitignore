@@ -294,6 +294,11 @@
 !/kenney_blaster_kit/originals/Models/GLB\ format/blaster-g.glb
 !/kenney_blaster_kit/originals/Models/GLB\ format/blaster-h.glb
 !/kenney_blaster_kit/originals/Models/GLB\ format/grenade-a.glb
+!/kenney_blaster_kit/originals/Previews/blaster-a.png
+!/kenney_blaster_kit/originals/Previews/blaster-c.png
+!/kenney_blaster_kit/originals/Previews/blaster-d.png
+!/kenney_blaster_kit/originals/Previews/blaster-e.png
+!/kenney_blaster_kit/originals/Previews/blaster-h.png
 !/kenney_fantasy_ui_borders/originals/PNG/Default/Border/panel-border-011.png
 !/kenney_fantasy_ui_borders/originals/PNG/Default/Border/panel-border-025.png
 !/kenney_fantasy_ui_borders/originals/PNG/Default/Divider/divider-002.png
@@ -306,6 +311,8 @@
 !/kenney_impact_sounds/originals/Audio/footstep_grass_002.ogg
 !/kenney_impact_sounds/originals/Audio/footstep_wood_000.ogg
 !/kenney_impact_sounds/originals/Audio/impactBell_heavy_000.ogg
+!/kenney_impact_sounds/originals/Audio/impactGeneric_light_000.ogg
+!/kenney_impact_sounds/originals/Audio/impactGeneric_light_001.ogg
 !/kenney_impact_sounds/originals/Audio/impactMetal_medium_000.ogg
 !/kenney_impact_sounds/originals/Audio/impactMetal_medium_001.ogg
 !/kenney_impact_sounds/originals/Audio/impactMining_000.ogg
@@ -339,6 +346,8 @@
 !/kenney_particle_pack/originals/PNG\ (Transparent)/magic_03.png
 !/kenney_particle_pack/originals/PNG\ (Transparent)/magic_05.png
 !/kenney_particle_pack/originals/PNG\ (Transparent)/muzzle_01.png
+!/kenney_particle_pack/originals/PNG\ (Transparent)/muzzle_02.png
+!/kenney_particle_pack/originals/PNG\ (Transparent)/muzzle_04.png
 !/kenney_particle_pack/originals/PNG\ (Transparent)/scorch_01.png
 !/kenney_particle_pack/originals/PNG\ (Transparent)/slash_01.png
 !/kenney_particle_pack/originals/PNG\ (Transparent)/slash_02.png
@@ -354,6 +363,7 @@
 !/kenney_particle_pack/originals/PNG\ (Transparent)/star_06.png
 !/kenney_particle_pack/originals/PNG\ (Transparent)/symbol_01.png
 !/kenney_particle_pack/originals/PNG\ (Transparent)/trace_01.png
+!/kenney_particle_pack/originals/PNG\ (Transparent)/trace_06.png
 !/kenney_particle_pack/originals/PNG\ (Transparent)/twirl_01.png
 !/kenney_particle_pack/originals/PNG\ (Transparent)/twirl_02.png
 !/kenney_rpg_audio/originals/Audio/beltHandle1.ogg
@@ -373,17 +383,23 @@
 !/kenney_rpg_audio/originals/Audio/handleCoins2.ogg
 !/kenney_rpg_audio/originals/Audio/knifeSlice.ogg
 !/kenney_rpg_audio/originals/Audio/knifeSlice2.ogg
+!/kenney_rpg_audio/originals/Audio/metalClick.ogg
 !/kenney_rpg_audio/originals/Audio/metalLatch.ogg
 !/kenney_rpg_audio/originals/Audio/metalPot1.ogg
 !/kenney_scifi_sounds/originals/Audio/computerNoise_000.ogg
 !/kenney_scifi_sounds/originals/Audio/doorOpen_000.ogg
 !/kenney_scifi_sounds/originals/Audio/explosionCrunch_000.ogg
 !/kenney_scifi_sounds/originals/Audio/forceField_000.ogg
+!/kenney_scifi_sounds/originals/Audio/forceField_002.ogg
 !/kenney_scifi_sounds/originals/Audio/impactMetal_000.ogg
 !/kenney_scifi_sounds/originals/Audio/laserLarge_000.ogg
+!/kenney_scifi_sounds/originals/Audio/laserLarge_002.ogg
 !/kenney_scifi_sounds/originals/Audio/laserRetro_000.ogg
+!/kenney_scifi_sounds/originals/Audio/laserRetro_002.ogg
 !/kenney_scifi_sounds/originals/Audio/laserSmall_000.ogg
+!/kenney_scifi_sounds/originals/Audio/laserSmall_002.ogg
 !/kenney_scifi_sounds/originals/Audio/lowFrequency_explosion_000.ogg
+!/kenney_scifi_sounds/originals/Audio/lowFrequency_explosion_001.ogg
 !/quaternius_nature_megakit/originals/glTF/Flower_3_Group.bin
 !/quaternius_nature_megakit/originals/glTF/Flower_3_Group.gltf
 !/quaternius_nature_megakit/originals/glTF/Flowers.png

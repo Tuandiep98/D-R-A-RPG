@@ -1,0 +1,29 @@
+# Tán pháo (shotgun): 6 viên toả 28°, mạnh ở gần, yếu dần sau 30% tầm. Nạp từng viên
+# (0.4 s/viên); bóp cò lúc đang nạp sẽ bắn số viên đã có và dừng nạp.
+id: ranged_shotgun
+name: Tán pháo
+kind: gun
+fireMode: semi
+fireInterval: 0.8
+windup: 0.12
+magazine: 6
+reload: { mode: round, seconds: 0.4, moveMultiplier: 0.8 }
+projectile: { speed: 38, range: 8, radius: 0.12, pellets: 6, spread: 28, jitter: 3 }
+damage: 0.3
+falloffFrom: 0.3
+falloffMultiplier: 0.35
+moveMultiplier: 0.7
+anim:
+  aim: Ranged_2H_Aiming
+  aimFrom: 0.3
+  shoot: Ranged_2H_Shoot
+  shootFrom: 0.27
+  shootTo: 0.62
+  shootSpeed: 1.2
+  reload: Ranged_2H_Reload
+fx: { color: "#ffe2a8", tracer: pellet, size: 1.1, kick: 0.22 }
+sfx:
+  shoot: [sfx_blast_low]
+  reload: [sfx_gun_click]
+  empty: [sfx_gun_click]
+  hit: [sfx_hit_light_01, sfx_hit_light_02]

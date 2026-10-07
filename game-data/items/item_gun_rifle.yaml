@@ -1,0 +1,12 @@
+id: item_gun_rifle
+name: Liên Châu Hoả Thương
+kind: equipment
+slot: main_hand
+rarity: rare
+icon: "🔫"
+iconImage: icon_gun_rifle
+description: Giữ cò để bắn liên thanh. Bắn quá lâu sẽ quá tải và phải chờ nguội.
+bonus: { attack: 10 }
+sellPrice: 110
+appearanceId: gear_weapon_kb_blaster_d
+ranged: ranged_rifle

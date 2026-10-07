@@ -1,8 +1,10 @@
 # Generated from art/third_party/kenney_blaster_kit/originals/Models/GLB format/blaster-d.glb (486 tris, longest z 0.91 → 0.5 m).
-# barrel along the long axis — rotation NOT fitted yet, check with pnpm smoke:gear
+# Liên Châu Hoả Thương (liên thanh) — fitted for Rig_Medium aim poses (D-033): Kenney barrels run along -Z, the hand's +X
+# points forward while aiming → yaw -90°; `position` puts the grip in the hand, `tip` = muzzle.
 id: gear_weapon_kb_blaster_d
 kind: equipment
 modelAssetId: weapon_kb_blaster_d
-scale: 0.5507
-attach: { socket: hand_r, position: [0, 0, 0], rotation: [0, 0, 0] }
-placeholder: { shape: box, color: "#c9ced6", height: 0.205, radius: 0.25 }
+scale: 0.62
+attach: { socket: hand_r, position: [0.047, 0.032, 0], rotation: [0, -1.5708, 0] }
+tip: [0, 0.035, -0.281]
+placeholder: { shape: box, color: "#c9ced6", height: 0.197, radius: 0.12 }

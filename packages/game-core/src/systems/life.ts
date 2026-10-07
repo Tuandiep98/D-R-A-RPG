@@ -1,4 +1,5 @@
 import { inAttackRange, type SimContext } from '../context';
+import { newTriggerState } from '../entity';
 import { TICK_RATE } from '../time';
 import { OUT_OF_COMBAT_TICKS } from './combat';
 
@@ -23,8 +24,12 @@ export function lifeSystem(ctx: SimContext): void {
       e.combat.nextAttackTick = 0;
       e.cast = null;
       e.swing = null;
-      if (e.player)
+      if (e.player) {
         e.player.combo = { nextStep: 0, lastEndTick: -1_000_000, buffered: false, aim: null };
+        // Back with full magazines and cold weapons.
+        e.player.weapons.clear();
+        e.player.trigger = newTriggerState();
+      }
       e.pending = null;
       if (e.ai) {
         e.ai.state = 'idle';

@@ -55,5 +55,27 @@
       "file": "originals/Models/GLB format/grenade-a.glb",
       "type": "prop"
     }
+  ],
+  "media": [
+    {
+      "id": "icon_gun_pistol",
+      "file": "originals/Previews/blaster-c.png"
+    },
+    {
+      "id": "icon_gun_carbine",
+      "file": "originals/Previews/blaster-a.png"
+    },
+    {
+      "id": "icon_gun_rifle",
+      "file": "originals/Previews/blaster-d.png"
+    },
+    {
+      "id": "icon_gun_shotgun",
+      "file": "originals/Previews/blaster-h.png"
+    },
+    {
+      "id": "icon_gun_sniper",
+      "file": "originals/Previews/blaster-e.png"
+    }
   ]
 }

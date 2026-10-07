@@ -23,6 +23,8 @@ import {
   ProgressionRulesSchema,
   type QuestDef,
   QuestDefSchema,
+  type RangedDef,
+  RangedDefSchema,
   type RealmDef,
   RealmDefSchema,
   type RecipeDef,
@@ -42,6 +44,7 @@ export interface ContentBundle {
   appearances: ReadonlyMap<string, AppearanceDef>;
   skills: ReadonlyMap<string, SkillDef>;
   combos: ReadonlyMap<string, ComboDef>;
+  ranged: ReadonlyMap<string, RangedDef>;
   items: ReadonlyMap<string, ItemDef>;
   loot: ReadonlyMap<string, LootTableDef>;
   progression: ReadonlyMap<string, ProgressionRules>;
@@ -82,6 +85,7 @@ const FOLDERS = {
   appearances: AppearanceDefSchema,
   skills: SkillDefSchema,
   combos: ComboDefSchema,
+  ranged: RangedDefSchema,
   items: ItemDefSchema,
   loot: LootTableDefSchema,
   progression: ProgressionRulesSchema,
@@ -121,6 +125,7 @@ export function buildContentBundle(files: readonly ContentFile[]): ContentBundle
     appearances: new Map(),
     skills: new Map(),
     combos: new Map(),
+    ranged: new Map(),
     items: new Map(),
     loot: new Map(),
     progression: new Map(),
@@ -226,6 +231,9 @@ function checkReferences(bundle: ContentBundle, issues: ContentIssue[]): void {
 
   for (const it of bundle.items.values()) {
     if (it.combo) need(bundle.combos, 'combo')(`items/${it.id}`, it.combo);
+    if (it.ranged) need(bundle.ranged, 'ranged')(`items/${it.id}`, it.ranged);
+    if (it.combo && it.ranged)
+      issues.push({ path: `items/${it.id}`, message: 'a weapon is either `combo` or `ranged`' });
   }
 
   for (const c of bundle.characters.values()) {

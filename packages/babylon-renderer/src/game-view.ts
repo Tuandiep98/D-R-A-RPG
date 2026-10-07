@@ -5,6 +5,7 @@ import {
   type ContentBundle,
   type EquipSlot,
   type MonsterTier,
+  type RangedDef,
   realmLadder,
 } from '@rpg/game-data';
 import type {
@@ -46,6 +47,7 @@ import { EntityView, EntityViewPool, type PickMetadata } from './entity-view';
 import { EnvironmentView } from './environment';
 import { LightningBatch } from './lightning';
 import { QualityManager, type QualityMode, type QualityPreset } from './quality';
+import { GunFx } from './ranged-fx';
 import { type InterpolatedEntity, SnapshotBuffer } from './snapshot-buffer';
 import { type Feedback, isThunderStyle, ThunderFx } from './thunder-fx';
 import { ImpactPool, LootBeams, ProjectilePool, RARITY_COLORS, TelegraphPool } from './vfx';
@@ -65,6 +67,11 @@ const DEFAULT_SFX = {
   breakthrough: ['sfx_bell'],
   backlash: ['sfx_explosion_low'],
 } as const;
+/** Ranged trigger (D-033): aim updates at most this often, keepalive while held. */
+const AIM_SEND_MS = 200;
+const TRIGGER_KEEPALIVE_MS = 500;
+/** Aim point changes smaller than this (metres) are not worth an intent. */
+const AIM_EPSILON = 0.4;
 /** Auto-target and interaction search radii (tech plan §25 "nearest target"). */
 const AUTO_TARGET_RANGE = 14;
 /** Direct movement: directions snap to this many headings (fewer intents). */
@@ -122,8 +129,26 @@ export interface ItemView {
   enhance: number;
 }
 
+/** Equipped ranged weapon for the HUD (ammo, heat, reload). */
+export interface RangedView {
+  name: string;
+  fireMode: RangedDef['fireMode'];
+  ammo: number;
+  magazine: number;
+  /** 0…1 (warming up). */
+  heat: number;
+  /** Seconds of overheat lockout left (0 = none). */
+  overheat: number;
+  /** Reload progress 0…1, or null when not reloading. */
+  reload: number | null;
+}
+
 export interface UiState {
   mapName: string;
+  /** Main-hand ranged weapon, null with a melee weapon (D-033). */
+  ranged: RangedView | null;
+  /** Main-hand weapons in the bag (the swap button shows from 2). */
+  weaponCount: number;
   zoneName: string | null;
   player:
     | (UnitFrame & {
@@ -246,6 +271,8 @@ const NOTICE_TEXT: Record<NoticeCode, string> = {
   max_realm: 'Chưa thể đột phá cảnh giới tiếp theo',
   not_in_safe_zone: 'Chỉ đột phá được trong vùng an toàn',
   backlash: 'Đang bị phản phệ, chưa thể đột phá lại',
+  reloading: 'Đang nạp đạn',
+  overheated: 'Súng quá tải — chờ nguội',
 };
 
 /**
@@ -294,6 +321,22 @@ export class GameView {
     EntityId,
     { variant: ComboVariant; yaw: number; stopped: boolean }
   >();
+  private readonly gun: GunFx;
+  /** SHOT id → ranged profile, so bullet DAMAGE knows its weapon (bounded). */
+  private readonly shots = new Map<number, string>();
+  /** Desktop cursor over the canvas (CSS px), for aiming guns. */
+  private pointer: { x: number; y: number } | null = null;
+  /** Held trigger of an auto weapon (mouse / Space / attack button). */
+  private trigger = {
+    held: false,
+    cursor: false,
+    sentAt: 0,
+    aimAt: 0,
+    aim: null as { x: number; z: number } | null,
+    releaseRepeatAt: 0,
+  };
+  /** The last left press fired a gun: its click must not also attack/select. */
+  private primaryFired = false;
 
   private constructor(
     private readonly opts: GameViewOptions,
@@ -320,6 +363,7 @@ export class GameView {
     this.fx = new CombatFx(scene, rig.camera, opts.mediaUrl ?? (() => null));
     this.bolts = new LightningBatch(scene, rig.camera);
     this.thunder = new ThunderFx(this.fx, this.bolts);
+    this.gun = new GunFx(this.fx);
     this.preset = { level: 'high' } as QualityPreset;
     this.quality = new QualityManager(opts.quality ?? 'auto', (p) => this.applyQuality(p), 'high');
   }
@@ -467,6 +511,72 @@ export class GameView {
         ? { type: 'PICKUP', lootId: near.state.id }
         : { type: 'INTERACT', entityId: near.state.id },
     );
+  }
+
+  /**
+   * Attack pressed (button / Space / left click). Melee: one combo swing. Guns:
+   * semi / burst fire one press; auto weapons hold the trigger until attackUp().
+   * `aim` is a world point (desktop); without it the cursor (desktop) or the
+   * selected target / aim assist (touch) decides.
+   */
+  attackDown(aim?: { x: number; z: number } | null): void {
+    const def = this.gunDef();
+    if (!def) {
+      if (aim) this.opts.host.sendIntent({ type: 'BASIC_ATTACK', aim });
+      else this.attack();
+      return;
+    }
+    const desktop = document.documentElement.dataset.controls !== 'touch';
+    const point = aim ?? (desktop ? this.cursorPoint() : null) ?? this.selectedPoint(def);
+    const r = this.playerState?.ranged;
+    const me = this.views.get(this.join.playerId);
+    const tick = this.buffer.latest?.tick ?? 0;
+    if (r && r.magazine > 0 && r.ammo === 0) this.sfxAt(def.sfx.empty, null, 0.7);
+    else if (me && (!r || (r.overheatEndTick <= tick && r.reloadEndTick <= tick)))
+      this.gun.raise(this.join.playerId, me, def);
+    if (def.fireMode !== 'auto') {
+      this.opts.host.sendIntent({ type: 'BASIC_ATTACK', aim: point });
+      return;
+    }
+    if (this.trigger.held) return;
+    const now = performance.now();
+    this.trigger = {
+      held: true,
+      cursor: desktop && !aim,
+      sentAt: now,
+      aimAt: now,
+      aim: point,
+      releaseRepeatAt: 0,
+    };
+    this.sendTrigger(true);
+  }
+
+  /** Attack released: lets go of an auto weapon's trigger. */
+  attackUp(): void {
+    if (!this.trigger.held) return;
+    this.trigger.held = false;
+    this.sendTrigger(false);
+    // Once more shortly after: a dropped (rate-limited) release would fire on until the timeout.
+    this.trigger.releaseRepeatAt = performance.now() + 250;
+  }
+
+  /** Reload the equipped gun (R / reload button). */
+  reload(): void {
+    if (this.playerState?.ranged) this.opts.host.sendIntent({ type: 'RELOAD' });
+  }
+
+  /** Equip the next main-hand weapon in the bag (X / swap button). */
+  swapWeapon(): void {
+    const ps = this.playerState;
+    if (!ps) return;
+    const weapons = ps.inventory.filter(
+      (i) => this.opts.content.items.get(i.itemId)?.slot === 'main_hand',
+    );
+    if (weapons.length < 2) return;
+    const current = weapons.findIndex((i) => i.instanceId === ps.equipment.main_hand);
+    const next = weapons[(current + 1) % weapons.length];
+    if (next) this.equip(next.instanceId);
+    this.attackUp();
   }
 
   /** Basic attack button / Space: one combo swing, including when no target is selected. */
@@ -632,6 +742,7 @@ export class GameView {
     const now = performance.now();
     this.gamepad.poll(dt);
     this.steer(now);
+    this.steerTrigger(now);
     if (this.delayed.length > 0) {
       for (let i = this.delayed.length - 1; i >= 0; i--) {
         const d = this.delayed[i];
@@ -673,6 +784,7 @@ export class GameView {
       if (e.state.gear) {
         const key = JSON.stringify(e.state.gear);
         if (this.gearKeys.get(id) !== key) {
+          if (this.gearKeys.has(id)) this.gun.forget(id);
           this.gearKeys.set(id, key);
           view.setGear(this.withDefaultGear(view.appearance, this.gearAppearances(e.state.gear)));
         }
@@ -698,6 +810,7 @@ export class GameView {
     this.telegraphs.update(dt);
     this.impacts.update(dt);
     this.projectiles.update(dt);
+    this.gun.update(dt, this.fx.density);
     this.fx.update(dt);
     this.thunder.update(dt);
     this.bolts.update(dt);
@@ -809,7 +922,24 @@ export class GameView {
         this.targetNext();
         break;
       case 'ATTACK':
-        this.attack();
+        this.attackDown();
+        break;
+      case 'ATTACK_RELEASE':
+        this.attackUp();
+        break;
+      case 'PRIMARY':
+        this.pointer = { x: action.x, y: action.y };
+        if (action.down) this.primaryDown(action.x, action.y);
+        else this.attackUp();
+        break;
+      case 'POINTER':
+        this.pointer = { x: action.x, y: action.y };
+        break;
+      case 'RELOAD':
+        this.reload();
+        break;
+      case 'SWAP_WEAPON':
+        this.swapWeapon();
         break;
       case 'USE_POTION':
         this.usePotion();
@@ -825,7 +955,117 @@ export class GameView {
     }
   }
 
+  /**
+   * Desktop left press with a gun: fire at once (at the monster under the
+   * cursor, else the ground point). Loot / NPCs / portals keep their click.
+   */
+  private primaryDown(x: number, y: number): void {
+    this.primaryFired = false;
+    if (document.documentElement.dataset.controls === 'touch' || !this.gunDef()) return;
+    const hitId = this.pickEntity(x, y);
+    const hit = hitId ? this.sampled.get(hitId) : undefined;
+    if (hit && hit.state.kind !== 'monster' && hit.state.kind !== 'player') return;
+    if (hit?.state.kind === 'monster') this.select(hit.state.id);
+    this.primaryFired = true;
+    this.attackDown(hit?.state.kind === 'monster' ? { x: hit.x, z: hit.z } : this.groundAt(x, y));
+  }
+
+  private pickEntity(x: number, y: number): EntityId | undefined {
+    const hit = this.scene.pick(
+      x,
+      y,
+      (m) => !!(m.metadata as PickMetadata | null)?.entityId && m.isPickable && m.isEnabled(),
+    );
+    const id = (hit?.pickedMesh?.metadata as PickMetadata | null)?.entityId;
+    return id && id !== this.join.playerId ? id : undefined;
+  }
+
+  private groundAt(x: number, y: number): { x: number; z: number } | null {
+    const hit = this.scene.pick(
+      x,
+      y,
+      (m) => (m.metadata as { ground?: boolean } | null)?.ground === true,
+    );
+    const p = hit?.pickedPoint;
+    return p ? { x: p.x, z: p.z } : null;
+  }
+
+  /** Ground point under the desktop cursor, if it is over the canvas. */
+  private cursorPoint(): { x: number; z: number } | null {
+    return this.pointer ? this.groundAt(this.pointer.x, this.pointer.y) : null;
+  }
+
+  /** Touch aim: the selected living monster within the weapon's reach. */
+  private selectedPoint(def: RangedDef): { x: number; z: number } | null {
+    const sel = this.selectedId !== null ? this.sampled.get(this.selectedId) : undefined;
+    const me = this.sampled.get(this.join.playerId);
+    if (!sel || !me || sel.state.kind !== 'monster' || sel.state.action === 'dead') return null;
+    return Math.hypot(sel.x - me.x, sel.z - me.z) <= def.projectile.range + 1
+      ? { x: sel.x, z: sel.z }
+      : null;
+  }
+
+  private gunDef(): RangedDef | null {
+    const id = this.playerState?.ranged?.rangedId;
+    return id ? (this.opts.content.ranged.get(id) ?? null) : null;
+  }
+
+  private sendTrigger(held: boolean): void {
+    const t = this.trigger;
+    t.sentAt = performance.now();
+    const target =
+      this.selectedId !== null && this.sampled.get(this.selectedId)?.state.kind === 'monster'
+        ? this.selectedId
+        : undefined;
+    this.opts.host.sendIntent(
+      held
+        ? {
+            type: 'TRIGGER',
+            held: true,
+            aim: t.aim,
+            ...(target && !t.aim ? { targetId: target } : {}),
+          }
+        : { type: 'TRIGGER', held: false },
+    );
+  }
+
+  /**
+   * While an auto trigger is held: follow the cursor (≥ 200 ms apart, only
+   * when the point moved) and keep the trigger alive; resend a release once.
+   * Never per frame (CLAUDE.md rule 10).
+   */
+  private steerTrigger(now: number): void {
+    const t = this.trigger;
+    if (!t.held) {
+      if (t.releaseRepeatAt > 0 && now >= t.releaseRepeatAt) {
+        t.releaseRepeatAt = 0;
+        this.opts.host.sendIntent({ type: 'TRIGGER', held: false });
+      }
+      return;
+    }
+    const me = this.sampled.get(this.join.playerId);
+    if (!this.gunDef() || !me || me.state.action === 'dead') {
+      this.attackUp();
+      return;
+    }
+    if (t.cursor && now - t.aimAt >= AIM_SEND_MS) {
+      t.aimAt = now;
+      const p = this.cursorPoint();
+      if (p && (!t.aim || Math.hypot(p.x - t.aim.x, p.z - t.aim.z) > AIM_EPSILON)) {
+        t.aim = p;
+        this.sendTrigger(true);
+        return;
+      }
+    }
+    if (now - t.sentAt >= TRIGGER_KEEPALIVE_MS) this.sendTrigger(true);
+  }
+
   private handleSelect(x: number, y: number, source: 'mouse' | 'touch'): void {
+    if (source === 'mouse' && this.primaryFired) {
+      // The press already fired; the click only keeps its target selection.
+      this.primaryFired = false;
+      return;
+    }
     const entityHit = this.scene.pick(
       x,
       y,
@@ -978,15 +1218,24 @@ export class GameView {
             break;
           }
           view.play('hit');
-          if (ev.hit) this.presentMeleeHit(ev.sourceId, view, ev.heavy === true, ev.crit, ev.hit);
+          const shotDef = ev.shot
+            ? this.opts.content.ranged.get(this.shots.get(ev.shot.id) ?? '')
+            : undefined;
+          if (ev.shot) {
+            const src = this.views.get(ev.sourceId)?.root.position ?? view.root.position;
+            this.gun.hit(view, { x: src.x, z: src.z }, shotDef, ev.shot, ev.crit);
+          } else if (ev.hit)
+            this.presentMeleeHit(ev.sourceId, view, ev.heavy === true, ev.crit, ev.hit);
           else if (ev.skillId && !delayedReplay) {
             const style = this.opts.content.skills.get(ev.skillId)?.vfx;
             if (isThunderStyle(style)) this.thunder.hit(view, style);
           }
           this.sfxAt(
-            ev.crit ? DEFAULT_SFX.crit : (view.appearance.sfx.hit ?? DEFAULT_SFX.hit),
+            ev.crit
+              ? DEFAULT_SFX.crit
+              : (shotDef?.sfx.hit ?? view.appearance.sfx.hit ?? DEFAULT_SFX.hit),
             ev.targetId,
-            ev.crit ? 1 : 0.8,
+            ev.crit ? 1 : shotDef ? 0.5 : 0.8,
           );
           const color = mine(ev.targetId)
             ? '#ff5a4f'
@@ -1007,6 +1256,42 @@ export class GameView {
             color,
             ev.heavy ? 1.6 : ev.crit ? 1.25 : 1,
           );
+          break;
+        }
+        case 'SHOT': {
+          this.shots.set(ev.shotId, ev.rangedId);
+          if (this.shots.size > 256) {
+            const oldest = this.shots.keys().next().value;
+            if (oldest !== undefined) this.shots.delete(oldest);
+          }
+          const view = this.views.get(ev.sourceId);
+          const def = this.opts.content.ranged.get(ev.rangedId);
+          if (!view || !def) break;
+          const kick = this.gun.shot(view, def, ev, this.fx.density);
+          this.sfxAt(def.sfx.shoot ?? DEFAULT_SFX.attack, ev.sourceId, 0.55);
+          if (mine(ev.sourceId) && kick > 0) {
+            this.rig.kick(kick);
+            const yaw = ev.yaws[0] ?? 0;
+            if (kick >= 0.15) this.rig.shake(kick * 0.35, 0.14, Math.sin(yaw), Math.cos(yaw));
+          }
+          break;
+        }
+        case 'RELOAD': {
+          const view = this.views.get(ev.sourceId);
+          const def = this.rangedOf(ev.sourceId);
+          if (!view || !def) break;
+          const seconds = Math.max(0, (ev.endTick - Math.max(ev.startTick, tick)) / TICK_RATE);
+          this.gun.reload(ev.sourceId, view, def, ev.endTick > ev.startTick ? seconds : 0);
+          if (ev.endTick > ev.startTick) this.sfxAt(def.sfx.reload, ev.sourceId, 0.7);
+          break;
+        }
+        case 'OVERHEAT': {
+          const view = this.views.get(ev.sourceId);
+          const def = this.rangedOf(ev.sourceId);
+          if (!view || !def) break;
+          this.gun.overheat(ev.sourceId, view, def, Math.max(0.1, (ev.endTick - tick) / TICK_RATE));
+          this.sfxAt(def.sfx.overheat, ev.sourceId, 0.8);
+          if (mine(ev.sourceId)) this.floatText(view, 'Quá tải!', '#ffffff', 1.2);
           break;
         }
         case 'MISS': {
@@ -1319,6 +1604,18 @@ export class GameView {
 
   // ---- Lookups ----------------------------------------------------------
 
+  /** Ranged profile of what an entity holds (local player: private state; others: gear). */
+  private rangedOf(id: EntityId): RangedDef | undefined {
+    const c = this.opts.content;
+    if (id === this.join.playerId) {
+      const r = this.playerState?.ranged;
+      if (r) return c.ranged.get(r.rangedId);
+    }
+    const itemId = this.sampled.get(id)?.state.gear?.main_hand;
+    const rangedId = itemId ? c.items.get(itemId)?.ranged : undefined;
+    return rangedId ? c.ranged.get(rangedId) : undefined;
+  }
+
   private appearanceFor(e: EntitySnapshot): AppearanceDef | undefined {
     const c = this.opts.content;
     switch (e.kind) {
@@ -1495,6 +1792,12 @@ export class GameView {
     }
     const potion = this.bestPotion();
     const potionDef = potion ? c.items.get(potion.itemId) : undefined;
+    const r = ps?.ranged ?? null;
+    const rangedDef = r ? c.ranged.get(r.rangedId) : undefined;
+    this.gun.setOwnHeat(this.join.playerId, r && r.overheatEndTick <= tick ? r.heat : 0);
+    const mainItem = ps?.equipment.main_hand
+      ? inventory.find((i) => i.instanceId === ps.equipment.main_hand)
+      : undefined;
 
     // Boss frame: the nearest living boss/elite that is fighting someone.
     let boss: UnitFrame | null = null;
@@ -1524,6 +1827,24 @@ export class GameView {
 
     const ui: UiState = {
       mapName: map?.name ?? this.join.mapId,
+      ranged:
+        r && rangedDef
+          ? {
+              name: mainItem?.name ?? rangedDef.name,
+              fireMode: rangedDef.fireMode,
+              ammo: r.ammo,
+              magazine: r.magazine,
+              heat: r.overheatEndTick > tick ? 1 : r.heat,
+              overheat: Math.max(0, Math.round((r.overheatEndTick - tick) / 2) / 10),
+              reload:
+                r.reloadEndTick > tick && r.reloadEndTick > r.reloadStartTick
+                  ? Math.round(
+                      ((tick - r.reloadStartTick) / (r.reloadEndTick - r.reloadStartTick)) * 20,
+                    ) / 20
+                  : null,
+            }
+          : null,
+      weaponCount: inventory.filter((i) => i.slot === 'main_hand').length,
       zoneName: zone,
       player:
         meFrame && ps

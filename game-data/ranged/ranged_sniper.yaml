@@ -1,0 +1,31 @@
+# Trường thương ngắm (bolt-action): hitscan, xuyên 2 mục tiêu, băng 1 viên → bắn xong nạp
+# ngay (1.3 s). Nâng súng chậm, đi rất chậm khi ngắm bắn.
+id: ranged_sniper
+name: Trường thương ngắm
+kind: gun
+fireMode: semi
+fireInterval: 0.2
+windup: 0.25
+holdAim: 1.2
+magazine: 1
+reload: { seconds: 1.3, moveMultiplier: 0.6 }
+projectile: { speed: 0, range: 26, radius: 0.08, pierce: 2 }
+damage: 3
+critBonus: 0.2
+falloffFrom: 1
+moveMultiplier: 0.35
+assistAngle: 25
+anim:
+  aim: Ranged_2H_Aiming
+  aimFrom: 0.3
+  shoot: Ranged_2H_Shoot
+  shootFrom: 0.27
+  shootTo: 0.62
+  shootSpeed: 1.1
+  reload: Ranged_2H_Reload
+fx: { color: "#c49bff", tracer: beam, size: 1.2, kick: 0.35 }
+sfx:
+  shoot: [sfx_laser_large_2, sfx_laser_large]
+  reload: [sfx_equip_metal]
+  empty: [sfx_gun_click]
+  hit: [sfx_hit_metal_01, sfx_hit_metal_02]

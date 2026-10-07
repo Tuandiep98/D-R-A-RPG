@@ -2,16 +2,21 @@ import type { AssetLibrary } from '@rpg/asset-runtime';
 import type { AnimationRole, AppearanceDef, EquipSlot, Socket } from '@rpg/game-data';
 import {
   type AbstractMesh,
+  type Animation,
   type AnimationGroup,
+  AnimationGroupMask,
   type AssetContainer,
   Color3,
   type Material,
   type Mesh,
   MeshBuilder,
   type Node,
+  type Observer,
+  Quaternion,
   type Scene,
   StandardMaterial,
   TransformNode,
+  Vector3,
 } from './babylon';
 import { createPlaceholderMesh } from './placeholder';
 
@@ -34,12 +39,29 @@ export interface Visual {
   oneShotClip(clip: string, speed: number, fallback?: OneShotRole): void;
   /** Hit-stop: holds the current pose for `seconds` (cosmetic, client only). */
   freeze(seconds: number): void;
-  /** Node to hang effects on: a socket, or `weapon_tip` (main-hand blade tip, else right hand). */
+  /**
+   * Upper-body clip over the base loop (shooting, aiming, reloading — D-033):
+   * the legs keep walking. `from`/`to` are clip seconds. A newer overlay or
+   * endOverlay() replaces it; `onEnd` runs when a non-looping one finishes.
+   */
+  overlay(clip: string, speed: number, opts?: OverlayOptions): boolean;
+  /** Drops the upper-body clip; the base loop blends back in. */
+  endOverlay(): void;
+  /** Length of a clip in seconds (0 when the model lacks it). */
+  clipSeconds(clip: string): number;
+  /** Node to hang effects on: a socket, or `weapon_tip` (main-hand blade tip / muzzle, else right hand). */
   anchor(name: Socket | 'weapon_tip'): TransformNode | null;
   setGear(gear: GearAppearances): void;
   update(dt: number): void;
   reset(): void;
   dispose(): void;
+}
+
+export interface OverlayOptions {
+  loop?: boolean;
+  from?: number;
+  to?: number;
+  onEnd?: () => void;
 }
 
 /**
@@ -50,7 +72,13 @@ export interface Visual {
 class GearAttachments {
   private readonly attached = new Map<
     EquipSlot,
-    { appearanceId: string; mesh: TransformNode; length: number; tip?: TransformNode }
+    {
+      appearanceId: string;
+      mesh: TransformNode;
+      length: number;
+      tipAt: readonly [number, number, number] | null;
+      tip?: TransformNode;
+    }
   >();
   private floatTime = 0;
 
@@ -90,7 +118,12 @@ class GearAttachments {
       const [rx, ry, rz] = target.attach.rotation;
       mesh.position.set(px / s, py / s, pz / s);
       mesh.rotation.set(rx, ry, rz);
-      this.attached.set(slot, { appearanceId: target.id, mesh, length: target.placeholder.height });
+      this.attached.set(slot, {
+        appearanceId: target.id,
+        mesh,
+        length: target.placeholder.height,
+        tipAt: target.tip ?? null,
+      });
     }
   }
 
@@ -112,8 +145,9 @@ class GearAttachments {
   }
 
   /**
-   * Near the tip of the main-hand weapon (holders are in world metres and
-   * KayKit blades run along +Y), for swing trails. Null when bare-handed.
+   * Tip of the main-hand weapon for swing trails and muzzle flashes: the
+   * appearance's `tip`, else near the end of a KayKit blade (holders are in
+   * world metres and blades run along +Y). Null when bare-handed.
    */
   weaponTip(): TransformNode | null {
     const main = this.attached.get('main_hand');
@@ -121,7 +155,8 @@ class GearAttachments {
     if (!main.tip) {
       main.tip = new TransformNode(`${main.mesh.name}_tip`, this.scene);
       main.tip.parent = main.mesh;
-      main.tip.position.y = main.length * 0.85;
+      if (main.tipAt) main.tip.position.set(main.tipAt[0], main.tipAt[1], main.tipAt[2]);
+      else main.tip.position.y = main.length * 0.85;
     }
     return main.tip;
   }
@@ -237,6 +272,18 @@ export class PlaceholderVisual implements Visual {
 
   freeze(_seconds: number): void {}
 
+  overlay(_clip: string, _speed: number, opts?: OverlayOptions): boolean {
+    // Primitives have no arms: a tiny lunge reads as recoil.
+    if (!opts?.loop) this.attackT = Math.max(this.attackT, 0.12);
+    return false;
+  }
+
+  endOverlay(): void {}
+
+  clipSeconds(_clip: string): number {
+    return 0;
+  }
+
   anchor(name: Socket | 'weapon_tip'): TransformNode | null {
     if (name === 'weapon_tip') return this.gear.weaponTip() ?? this.sockets.get('hand_r') ?? null;
     return this.sockets.get(name) ?? null;
@@ -303,6 +350,27 @@ export class ModelVisual implements Visual {
   private current: AnimationGroup | null = null;
   private currentSpeed = 1;
   private frozen = 0;
+  /** Upper-body overlay (D-033) and the mask that keeps it off the legs. */
+  private overlayGroup: AnimationGroup | null = null;
+  private overlayToken = 0;
+  /**
+   * End of a one-shot overlay, timed here: masked-out animatables stay paused,
+   * so the group's own end observable never fires.
+   */
+  private overlayEnd: { left: number; onEnd?: () => void } | null = null;
+  /**
+   * Aim clips turn `root` + `hips` too, but those bones belong to the walk.
+   * After the animations run, the yaw they would have added is put back on the
+   * spine so the weapon points where the clip intended (D-033).
+   */
+  private upperYaw: {
+    group: AnimationGroup;
+    root: Animation | undefined;
+    hips: Animation | undefined;
+  } | null = null;
+  private upperYawObserver: Observer<Scene> | null = null;
+  private readonly scene: Scene;
+  private readonly upperMask: AnimationGroupMask | null;
 
   constructor(
     scene: Scene,
@@ -311,6 +379,7 @@ export class ModelVisual implements Visual {
     name: string,
     assets: AssetLibrary | null = null,
   ) {
+    this.scene = scene;
     this.root = new TransformNode(`${name}_visual`, scene);
     const entries = container.instantiateModelsToScene((n) => `${name}_${n}`, !!appearance.tint, {
       doNotInstantiate: true,
@@ -347,6 +416,11 @@ export class ModelVisual implements Visual {
       g.enableBlending = true;
       g.blendingSpeed = 0.12;
     }
+    // Upper body = the spine and everything under it (chest, head, arms, hand slots).
+    const spine = this.nodesByName.get('spine');
+    this.upperMask = spine
+      ? new AnimationGroupMask([spine.name, ...spine.getDescendants(false).map((n) => n.name)])
+      : null;
 
     this.gear = new GearAttachments(
       scene,
@@ -393,6 +467,45 @@ export class ModelVisual implements Visual {
     this.playOneShot(g, fallback, speed);
   }
 
+  overlay(clip: string, speed: number, opts: OverlayOptions = {}): boolean {
+    const g = this.clips.get(clip);
+    if (!g || !this.upperMask || this.base === 'death') return false;
+    const prev = this.overlayGroup;
+    if (prev && prev !== g) this.clearOverlayGroup(prev);
+    if (g === this.current) return false; // already playing full-body
+    if (g.isPlaying) g.stop(true);
+    // Drawn after the base loop (playOrder), so it wins on the bones it owns.
+    g.mask = this.upperMask;
+    g.playOrder = 1;
+    const fps = g.targetedAnimations[0]?.animation.framePerSecond ?? 60;
+    const from = opts.from !== undefined ? Math.min(g.to, g.from + opts.from * fps) : g.from;
+    const to = opts.to !== undefined ? Math.min(g.to, g.from + opts.to * fps) : g.to;
+    this.overlayToken++;
+    this.overlayGroup = g;
+    g.start(opts.loop === true, speed, from, Math.max(from, to));
+    this.trackUpperYaw(g);
+    this.overlayEnd = opts.loop
+      ? null
+      : { left: Math.max(0, to - from) / fps / Math.max(0.01, speed), onEnd: opts.onEnd };
+    return true;
+  }
+
+  endOverlay(): void {
+    const g = this.overlayGroup;
+    this.overlayEnd = null;
+    if (!g) return;
+    this.overlayToken++;
+    this.clearOverlayGroup(g);
+    this.reblendBase();
+  }
+
+  clipSeconds(clip: string): number {
+    const g = this.clips.get(clip);
+    if (!g) return 0;
+    const fps = g.targetedAnimations[0]?.animation.framePerSecond ?? 60;
+    return (g.to - g.from) / fps;
+  }
+
   freeze(seconds: number): void {
     if (!this.current || this.base === 'death') return;
     this.frozen = Math.max(this.frozen, seconds);
@@ -415,6 +528,17 @@ export class ModelVisual implements Visual {
       this.frozen -= dt;
       if (this.frozen <= 0 && this.current) this.current.speedRatio = this.currentSpeed;
     }
+    const end = this.overlayEnd;
+    if (end) {
+      end.left -= dt;
+      if (end.left <= 0) {
+        this.overlayEnd = null;
+        const token = this.overlayToken;
+        end.onEnd?.();
+        // Nothing followed it: hand the arms back to the base loop.
+        if (token === this.overlayToken) this.endOverlay();
+      }
+    }
     this.gear.update(dt);
   }
 
@@ -422,19 +546,93 @@ export class ModelVisual implements Visual {
     this.base = null;
     this.oneShotActive = null;
     this.frozen = 0;
+    if (this.overlayGroup) this.clearOverlayGroup(this.overlayGroup);
     this.setBase('idle');
   }
 
   dispose(): void {
+    this.upperYawObserver?.remove();
+    this.upperYawObserver = null;
     this.gear.dispose();
     for (const g of this.allGroups) g.dispose();
     this.root.dispose();
   }
 
+  private trackUpperYaw(g: AnimationGroup): void {
+    const rotationOf = (bone: string) => {
+      const node = this.nodesByName.get(bone);
+      return g.targetedAnimations.find(
+        (t) => t.target === node && t.animation.targetProperty === 'rotationQuaternion',
+      )?.animation;
+    };
+    const root = rotationOf('root');
+    const hips = rotationOf('hips');
+    this.upperYaw = root || hips ? { group: g, root, hips } : null;
+    if (this.upperYaw && !this.upperYawObserver)
+      this.upperYawObserver = this.scene.onAfterAnimationsObservable.add(() => this.fixUpperYaw());
+  }
+
+  /** Runs after the scene's animations: twist the spine by the clip's missing root+hips yaw. */
+  private fixUpperYaw(): void {
+    const fix = this.upperYaw;
+    const g = this.overlayGroup;
+    if (!fix || !g || fix.group !== g) return;
+    const spine = this.nodesByName.get('spine');
+    const hips = this.nodesByName.get('hips');
+    const root = this.nodesByName.get('root');
+    if (!(spine instanceof TransformNode) || !(hips instanceof TransformNode)) return;
+    const live = g.animatables.find((a) => !a.paused);
+    if (!live || !spine.rotationQuaternion) return;
+    const frame = live.masterFrame;
+    const rootNow = root instanceof TransformNode ? root.rotationQuaternion : null;
+    const clip = chainYaw(
+      fix.root ? (fix.root.evaluate(frame) as Quaternion) : rootNow,
+      fix.hips ? (fix.hips.evaluate(frame) as Quaternion) : hips.rotationQuaternion,
+    );
+    let delta = clip - chainYaw(rootNow, hips.rotationQuaternion);
+    if (delta > Math.PI) delta -= Math.PI * 2;
+    if (delta < -Math.PI) delta += Math.PI * 2;
+    if (Math.abs(delta) < 0.005) return;
+    // World up in the hips' frame (the spine's parent space).
+    const inv = hips.computeWorldMatrix(true).clone().invert();
+    const axis = Vector3.TransformNormal(Vector3.Up(), inv).normalize();
+    spine.rotationQuaternion = Quaternion.RotationAxis(axis, delta).multiply(
+      spine.rotationQuaternion,
+    );
+  }
+
   private playOnly(role: AnimationRole, loop: boolean): void {
+    if (role === 'death' && this.overlayGroup) this.clearOverlayGroup(this.overlayGroup);
     const g = this.groups.get(role);
     if (g) this.playGroup(g, loop);
-    else for (const other of this.allGroups) if (other.isPlaying) other.stop();
+    else
+      for (const other of this.allGroups)
+        if (other.isPlaying && other !== this.overlayGroup) other.stop();
+  }
+
+  private clearOverlayGroup(g: AnimationGroup): void {
+    if (this.overlayGroup === g) {
+      this.overlayGroup = null;
+      this.overlayEnd = null;
+      this.upperYaw = null;
+    }
+    g.stop(true);
+    g.mask = null;
+    g.playOrder = 0;
+  }
+
+  /**
+   * Restarts the base clip at its current frame so its blending eases the
+   * arms back from the overlay pose instead of snapping (D-033).
+   */
+  private reblendBase(): void {
+    const g = this.current;
+    if (!g?.isPlaying) return;
+    const frame = g.getCurrentFrame();
+    const loop = g.loopAnimation;
+    g.stop(true);
+    g.start(loop, this.currentSpeed, g.from, g.to);
+    g.goToFrame(frame);
   }
 
   /**
@@ -456,14 +654,28 @@ export class ModelVisual implements Visual {
 
   private playGroup(g: AnimationGroup, loop: boolean, speed = 1): void {
     this.playToken++;
+    // A clip asked for full-body stops being an upper-body overlay.
+    if (g === this.overlayGroup) this.clearOverlayGroup(g);
     // skipOnAnimationEnd: stopping for a new clip is not the old clip ending.
-    for (const other of this.allGroups) if (other !== g && other.isPlaying) other.stop(true);
+    for (const other of this.allGroups)
+      if (other !== g && other !== this.overlayGroup && other.isPlaying) other.stop(true);
     if (g.isPlaying) g.stop(true);
     this.frozen = 0;
     this.current = g;
     this.currentSpeed = speed;
     g.start(loop, speed, g.from, g.to);
   }
+}
+
+const FORWARD = new Vector3(0, 0, 1);
+const tmpDir = new Vector3();
+
+/** Heading of hips-forward after the hips and root rotations (radians, atan2(x, z)). */
+function chainYaw(root: Quaternion | null, hips: Quaternion | null): number {
+  tmpDir.copyFrom(FORWARD);
+  if (hips) tmpDir.applyRotationQuaternionInPlace(hips);
+  if (root) tmpDir.applyRotationQuaternionInPlace(root);
+  return Math.atan2(tmpDir.x, tmpDir.z);
 }
 
 /** instantiateModelsToScene names clones through our name function; recover the original name. */

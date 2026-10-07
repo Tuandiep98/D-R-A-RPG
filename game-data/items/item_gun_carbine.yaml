@@ -1,0 +1,12 @@
+id: item_gun_carbine
+name: Tam Liên Cơ Nỏ
+kind: equipment
+slot: main_hand
+rarity: rare
+icon: "🔫"
+iconImage: icon_gun_carbine
+description: Mỗi lần bóp cò bắn loạt ba viên. Băng 24 viên.
+bonus: { attack: 10, critChance: 0.03 }
+sellPrice: 90
+appearanceId: gear_weapon_kb_blaster_a
+ranged: ranged_carbine

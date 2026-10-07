@@ -223,6 +223,161 @@ export const ComboDefSchema = z.strictObject({
 export type ComboDef = z.infer<typeof ComboDefSchema>;
 
 // ---------------------------------------------------------------------------
+// Ranged basic attacks (đánh tầm xa, D-033): guns now; bows, magic, thrown later
+// ---------------------------------------------------------------------------
+
+const HexColorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'colour must be #rrggbb');
+
+/**
+ * How a main-hand ranged weapon shoots. The sim reads timing, ammo, heat and
+ * projectile rules; `anim`, `fx` and `sfx` are presentation only.
+ *
+ * - `auto`: fires every `fireInterval` while the trigger is held.
+ * - `semi`: one shot per press, at most every `fireInterval` (pistol, shotgun,
+ *   a bolt-action sniper is `semi` with `magazine: 1`).
+ * - `burst`: `burst.count` shots `burst.interval` apart per press.
+ */
+export const RangedDefSchema = z
+  .strictObject({
+    id: IdSchema,
+    name: z.string().min(1),
+    /** Weapon family: drives presentation and future rules (bows draw, magic channels). */
+    kind: z.enum(['gun', 'bow', 'magic', 'thrown']).default('gun'),
+    fireMode: z.enum(['auto', 'semi', 'burst']),
+    /** Seconds between shots (auto cadence; minimum gap between semi presses / after a burst). */
+    fireInterval: seconds,
+    /** Seconds to raise the weapon before the first shot; a raised weapon fires at once. */
+    windup: nonNegative.default(0),
+    /** The weapon stays raised (body faces the aim, no windup) this long after a shot. */
+    holdAim: nonNegative.default(0.8),
+    burst: z.strictObject({ count: z.number().int().min(2).max(8), interval: seconds }).optional(),
+    /** Rounds per magazine; 0 = no magazine (energy weapons limited by heat only). */
+    magazine: z.number().int().min(0).max(200),
+    reload: z
+      .strictObject({
+        /** magazine: refill at once after `seconds`; round: one round every `seconds`, firing interrupts. */
+        mode: z.enum(['magazine', 'round']).default('magazine'),
+        seconds,
+        /** Start reloading by itself when the magazine runs dry. */
+        auto: z.boolean().default(true),
+        moveMultiplier: z.number().min(0).max(1).default(0.85),
+      })
+      .optional(),
+    /**
+     * Quá tải: each shot adds `perShot` heat; heat cools at `coolPerSecond` once
+     * `coolDelay` passed since the last shot. Reaching 1 locks the weapon for
+     * `overheatSeconds` (the bar drains from full to empty).
+     */
+    heat: z
+      .strictObject({
+        perShot: z.number().min(0.01).max(1),
+        coolPerSecond: positive,
+        coolDelay: nonNegative.default(0.3),
+        overheatSeconds: seconds,
+      })
+      .optional(),
+    projectile: z.strictObject({
+      /** Metres per second; 0 = hitscan (lands the same tick). */
+      speed: nonNegative,
+      /** Max travel from the muzzle, metres. */
+      range: positive,
+      /** Bullet radius for hit tests, metres. */
+      radius: z.number().min(0).max(1).default(0.1),
+      /** Bullets per shot (shotgun pellets). */
+      pellets: z.number().int().min(1).max(12).default(1),
+      /** Cone the pellets fan across, degrees. */
+      spread: z.number().min(0).max(90).default(0),
+      /** Random deviation per bullet, degrees (inaccuracy). */
+      jitter: z.number().min(0).max(30).default(0),
+      /** Extra bodies a bullet passes through after the first. */
+      pierce: z.number().int().min(0).max(8).default(0),
+    }),
+    /** Multiplier on attack per bullet. */
+    damage: positive,
+    critBonus: chance.default(0),
+    /** Past `falloffFrom × range` damage drops linearly to `falloffMultiplier` at max range. */
+    falloffFrom: z.number().min(0).max(1).default(0.6),
+    falloffMultiplier: z.number().min(0.1).max(1).default(0.6),
+    weakPoint: z
+      .strictObject({
+        back: z.number().min(1).default(1.4),
+        flank: z.number().min(1).default(1.15),
+      })
+      .default({ back: 1.4, flank: 1.15 }),
+    /** Without an aim point (touch / gamepad / Space), turn toward a hostile within this cone. */
+    assistAngle: z.number().min(0).max(180).default(40),
+    /** Movement speed multiplier while the weapon is firing (0 = rooted). */
+    moveMultiplier: z.number().min(0).max(1),
+    /**
+     * Presentation: clips of the shooter's model, played on the upper body only
+     * so the legs keep walking (seconds are clip time at speed 1).
+     * - `shoot` from `shootFrom` to `shootTo` per shot (semi / burst);
+     * - `loop` repeats while an auto weapon fires, `loop.shots` recoils per cycle;
+     * - `aim` from `aimFrom` loops to hold the weapon up between shots;
+     * - `reload` is stretched over the reload time;
+     * - lowering plays `shoot` from `lowerFrom` to its end, or blends back when unset.
+     */
+    anim: z
+      .strictObject({
+        aim: z.string().min(1).default('Ranged_1H_Aiming'),
+        aimFrom: nonNegative.default(0.4),
+        shoot: z.string().min(1).default('Ranged_1H_Shoot'),
+        shootFrom: nonNegative.default(0.27),
+        shootTo: nonNegative.default(0.73),
+        shootSpeed: positive.default(1.4),
+        loop: z
+          .strictObject({ clip: z.string().min(1), shots: z.number().int().min(1) })
+          .optional(),
+        reload: z.string().min(1).default('Ranged_1H_Reload'),
+        lowerFrom: nonNegative.optional(),
+      })
+      .default({
+        aim: 'Ranged_1H_Aiming',
+        aimFrom: 0.4,
+        shoot: 'Ranged_1H_Shoot',
+        shootFrom: 0.27,
+        shootTo: 0.73,
+        shootSpeed: 1.4,
+        reload: 'Ranged_1H_Reload',
+        lowerFrom: 0.73,
+      }),
+    /** Presentation: muzzle flash, tracer and impact style. */
+    fx: z
+      .strictObject({
+        color: HexColorSchema.default('#ffd27a'),
+        /** streak: fast slug · bolt: glowing energy bolt · pellet: small shot · beam: instant line. */
+        tracer: z.enum(['streak', 'bolt', 'pellet', 'beam']).default('streak'),
+        /** Muzzle flash / tracer size multiplier. */
+        size: positive.default(1),
+        /** Camera kick on the shooter's own screen per shot. */
+        kick: nonNegative.default(0),
+      })
+      .default({ color: '#ffd27a', tracer: 'streak', size: 1, kick: 0 }),
+    sfx: z
+      .strictObject({
+        shoot: SfxListSchema.optional(),
+        reload: SfxListSchema.optional(),
+        empty: SfxListSchema.optional(),
+        overheat: SfxListSchema.optional(),
+        hit: SfxListSchema.optional(),
+      })
+      .default({}),
+  })
+  .refine((r) => r.fireMode !== 'burst' || r.burst, {
+    message: 'burst fire needs `burst`',
+    path: ['burst'],
+  })
+  .refine((r) => r.magazine === 0 || r.reload, {
+    message: 'a magazine needs `reload`',
+    path: ['reload'],
+  })
+  .refine((r) => r.magazine > 0 || r.heat, {
+    message: 'without a magazine the weapon needs `heat` (otherwise it never stops)',
+    path: ['heat'],
+  });
+export type RangedDef = z.infer<typeof RangedDefSchema>;
+
+// ---------------------------------------------------------------------------
 // Items, loot, progression
 // ---------------------------------------------------------------------------
 
@@ -265,6 +420,12 @@ export const ItemDefSchema = z
     appearanceId: IdSchema.optional(),
     /** Main-hand weapons: basic-attack combo used while equipped (default: character's armed). */
     combo: IdSchema.optional(),
+    /** Main-hand ranged weapons (game-data/ranged): basic attacks shoot instead of swinging. */
+    ranged: IdSchema.optional(),
+  })
+  .refine((i) => !i.ranged || i.slot === 'main_hand', {
+    message: 'ranged weapons go in main_hand',
+    path: ['ranged'],
   })
   .refine((i) => i.kind !== 'equipment' || i.slot, {
     message: 'equipment needs a slot',
@@ -637,7 +798,7 @@ export const MapZoneSchema = z.strictObject({
 });
 export type MapZone = z.infer<typeof MapZoneSchema>;
 
-const HexColor = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'colour must be #rrggbb');
+const HexColor = HexColorSchema;
 
 /**
  * Ground painting (presentation only): the flat ground is one subdivided mesh
@@ -767,6 +928,12 @@ export const AppearanceDefSchema = z.strictObject({
       rotation: Vec3Tuple.default([0, 0, 0]),
     })
     .optional(),
+  /**
+   * Equipment: blade tip / muzzle in the attachment's local space (metres, before
+   * `attach.rotation`). Swing trails and muzzle flashes start there. Missing →
+   * along +Y at 85% of the placeholder height (KayKit blades).
+   */
+  tip: Vec3Tuple.optional(),
   /**
    * Characters: equipment already modelled into the mesh (e.g. Warrior_Sword).
    * Shown while the slot holds an item with this appearance; hidden otherwise

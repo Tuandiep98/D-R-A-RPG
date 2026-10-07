@@ -1,8 +1,10 @@
 # Generated from art/third_party/kenney_blaster_kit/originals/Models/GLB format/blaster-h.glb (296 tris, longest z 0.65 → 0.5 m).
-# barrel along the long axis — rotation NOT fitted yet, check with pnpm smoke:gear
+# Tán Phong Pháo (shotgun) — fitted for Rig_Medium aim poses (D-033): Kenney barrels run along -Z, the hand's +X
+# points forward while aiming → yaw -90°; `position` puts the grip in the hand, `tip` = muzzle.
 id: gear_weapon_kb_blaster_h
 kind: equipment
 modelAssetId: weapon_kb_blaster_h
-scale: 0.7716
-attach: { socket: hand_r, position: [0, 0, 0], rotation: [0, 0, 0] }
-placeholder: { shape: box, color: "#c9ced6", height: 0.212, radius: 0.25 }
+scale: 0.8
+attach: { socket: hand_r, position: [0.168, 0.044, 0], rotation: [0, -1.5708, 0] }
+tip: [0, 0.063, -0.259]
+placeholder: { shape: box, color: "#c9ced6", height: 0.181, radius: 0.12 }

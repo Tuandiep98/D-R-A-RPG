@@ -36,7 +36,7 @@ export function movementSystem(ctx: SimContext): void {
     }
     if (ctx.nav) updatePath(ctx, e);
 
-    let budget = e.movement.speed * (e.swing?.variant.moveMultiplier ?? 1) * TICK_DT;
+    let budget = e.movement.speed * moveFactor(e) * TICK_DT;
     while (budget > 1e-6) {
       const path = e.movement.path;
       const isFinal = !path || path.length <= 1;
@@ -58,8 +58,8 @@ export function movementSystem(ctx: SimContext): void {
       const step = Math.min(remaining, budget);
       e.pos.x += (dx / dist) * step;
       e.pos.z += (dz / dist) * step;
-      // A swing keeps its facing; walking only drifts the body (D-031).
-      if (!e.swing) e.yaw = yawOf({ x: dx, z: dz });
+      // A swing / raised weapon keeps its facing; walking only drifts the body (D-031).
+      if (!faceLocked(ctx, e)) e.yaw = yawOf({ x: dx, z: dz });
       e.movement.moved = true;
       budget -= step;
       if (step >= remaining) {
@@ -77,10 +77,18 @@ export function movementSystem(ctx: SimContext): void {
   for (const e of bodies) resolveStatic(ctx, e);
 }
 
+/** Walk speed factor while swinging, shooting or reloading. */
+const moveFactor = (e: Entity): number =>
+  e.swing ? e.swing.variant.moveMultiplier : (e.player?.trigger.move ?? 1);
+
+/** Swings and a raised ranged weapon (systems/ranged.ts) own the facing. */
+const faceLocked = (ctx: SimContext, e: Entity): boolean =>
+  e.swing !== null || (!!e.player?.ranged && ctx.tick < e.player.trigger.raisedUntil);
+
 /** One tick along a held direction; on a navmesh the step slides along edges. */
 function steer(ctx: SimContext, e: Entity, dir: Vec2): void {
-  const step = e.movement.speed * (e.swing?.variant.moveMultiplier ?? 1) * TICK_DT;
-  if (!e.swing) e.yaw = yawOf(dir);
+  const step = e.movement.speed * moveFactor(e) * TICK_DT;
+  if (!faceLocked(ctx, e)) e.yaw = yawOf(dir);
   const next = { x: e.pos.x + dir.x * step, z: e.pos.z + dir.z * step };
   const p = ctx.nav ? ctx.nav.closest(next) : next;
   const moved = distance(p, e.pos);

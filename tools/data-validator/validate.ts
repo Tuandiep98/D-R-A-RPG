@@ -109,6 +109,9 @@ function validateMediaRefs(bundle: ReturnType<typeof buildContentBundle>): void 
     for (const sfx of [...(s.sfx.cast ?? []), ...(s.sfx.impact ?? [])]) check(`skill "${id}"`, sfx);
   }
   for (const [id, item] of bundle.items) check(`item "${id}"`, item.iconImage);
+  for (const [id, r] of bundle.ranged)
+    for (const list of Object.values(r.sfx))
+      for (const sfx of list ?? []) check(`ranged "${id}"`, sfx);
   for (const [id, a] of bundle.appearances)
     for (const list of Object.values(a.sfx))
       for (const sfx of list ?? []) check(`appearance "${id}"`, sfx);

@@ -7,6 +7,7 @@ import { equip, unequip, useItem } from './inventory';
 import { tryPickup } from './loot';
 import { requestBasicAttack } from './melee';
 import { acceptQuest, craft, openNpc, shopBuy, shopSell, turnInQuest, upgrade } from './npc';
+import { releaseTrigger, requestReload, setTrigger, tapTrigger } from './ranged';
 import { requestCast } from './skills';
 
 export interface QueuedIntent {
@@ -35,6 +36,14 @@ export function applyIntents(ctx: SimContext, queue: readonly QueuedIntent[]): n
     if (!apply(ctx, actor, intent)) rejected++;
   }
   return rejected;
+}
+
+/** Attacking at will drops auto-attack, queued actions and click-to-move. */
+function dropAutoAttack(e: Entity): void {
+  e.combat.targetId = null;
+  e.pending = null;
+  e.movement.goal = null;
+  e.movement.path = null;
 }
 
 function clearActions(e: Entity): void {
@@ -74,14 +83,27 @@ function apply(ctx: SimContext, actor: Entity, intent: Intent): boolean {
       clearActions(actor);
       actor.movement.dir = null;
       actor.swing = null;
+      releaseTrigger(actor);
       return true;
     case 'BASIC_ATTACK':
       // Swinging at nothing in particular drops auto-attack/queued actions.
-      actor.combat.targetId = null;
-      actor.pending = null;
-      actor.movement.goal = null;
-      actor.movement.path = null;
-      return requestBasicAttack(ctx, actor, intent.aim ?? null);
+      dropAutoAttack(actor);
+      return actor.player?.ranged
+        ? tapTrigger(ctx, actor, intent.aim ?? null)
+        : requestBasicAttack(ctx, actor, intent.aim ?? null);
+    case 'TRIGGER': {
+      const trigger = actor.player?.trigger;
+      if (!trigger) return false;
+      const pressed = intent.held && !trigger.held;
+      if (pressed) dropAutoAttack(actor);
+      if (actor.player?.ranged)
+        return setTrigger(ctx, actor, intent.held, intent.aim ?? null, intent.targetId ?? null);
+      // Melee weapon: a press is one swing; keepalives and releases do nothing.
+      trigger.held = intent.held;
+      return pressed ? requestBasicAttack(ctx, actor, intent.aim ?? null) : true;
+    }
+    case 'RELOAD':
+      return requestReload(ctx, actor);
     case 'ATTACK_TARGET': {
       const target = ctx.entities.get(intent.targetId);
       if (!isAlive(target) || target.id === actor.id || !areHostile(actor, target)) return false;

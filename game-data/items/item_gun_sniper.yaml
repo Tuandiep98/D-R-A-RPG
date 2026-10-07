@@ -1,0 +1,12 @@
+id: item_gun_sniper
+name: Thiên Nhãn Trường Thương
+kind: equipment
+slot: main_hand
+rarity: epic
+icon: "🔫"
+iconImage: icon_gun_sniper
+description: Một phát xuyên thấu tầm xa, bắn xong phải lên đạn.
+bonus: { attack: 18, critChance: 0.1 }
+sellPrice: 260
+appearanceId: gear_weapon_kb_blaster_e
+ranged: ranged_sniper

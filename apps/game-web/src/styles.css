@@ -1482,3 +1482,144 @@ kbd {
   font-size: 12px;
   pointer-events: auto;
 }
+
+/* ---- Ranged weapons (D-033) ---------------------------------------------- */
+
+.ammo {
+  min-width: 220px;
+  padding: 6px 10px 5px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(10, 14, 22, 0.72);
+  font-size: 12px;
+  pointer-events: auto;
+}
+
+.ammo-head,
+.ammo-foot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ammo-name {
+  opacity: 0.85;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ammo-count {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.8;
+}
+
+.ammo-count b {
+  font-size: 18px;
+  opacity: 1;
+  color: #ffe6a8;
+}
+
+.ammo-empty b {
+  color: #ff6b5e;
+}
+
+.ammo-track {
+  position: relative;
+  height: 5px;
+  margin: 4px 0 3px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.ammo-bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 3px;
+  transition: width 0.1s linear;
+}
+
+.ammo-heat {
+  background: linear-gradient(90deg, #ffc84d, #ff8a3c);
+}
+
+.ammo-heat.hot {
+  background: linear-gradient(90deg, #ff8a3c, #ff3b2f);
+}
+
+.ammo-overheat {
+  background: #fff;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.7);
+}
+
+.ammo-reload {
+  background: #8fd8ff;
+}
+
+.ammo-foot {
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+.ammo-warn {
+  color: #fff;
+  font-weight: 600;
+}
+
+.ammo-keys {
+  display: flex;
+  gap: 4px;
+}
+
+.ammo-key {
+  min-width: 20px;
+  padding: 0 4px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+/* Touch: the panel sits above the attack cluster, toward the screen centre. */
+.touch-actions > .ammo-touch {
+  position: absolute;
+  right: calc(60px * var(--cluster-scale));
+  bottom: calc(150px * var(--cluster-scale));
+  min-width: 170px;
+}
+
+:root[data-hand="right"] .touch-actions > .ammo-touch {
+  right: auto;
+  left: calc(60px * var(--cluster-scale));
+}
+
+.attack-gun {
+  border-color: rgba(143, 216, 255, 0.75);
+  background: radial-gradient(circle at 35% 30%, #2f5670, #0e1c2a);
+}
+
+.touch-actions > .touch-reload,
+.touch-actions > .touch-swap {
+  width: 42px;
+  height: 42px;
+  font-size: 20px;
+  color: #dff4ff;
+}
+
+.touch-actions > .touch-reload {
+  left: calc(4px * var(--cluster-scale));
+  top: calc(66px * var(--cluster-scale));
+}
+
+.touch-actions > .touch-swap {
+  left: calc(-50px * var(--cluster-scale));
+  top: calc(70px * var(--cluster-scale));
+}
+
+:root[data-hand="right"] .touch-actions > .touch-swap {
+  left: calc(50px * var(--cluster-scale));
+}

@@ -14,9 +14,46 @@ import {
   type GearAppearances,
   ModelVisual,
   type OneShotRole,
+  type OverlayOptions,
   PlaceholderVisual,
   type Visual,
 } from './visuals';
+
+/**
+ * Overhead gauge tones (D-033): weapon heat (warms from amber to red), the
+ * white overheat cool-down that drains to empty, and reload progress.
+ */
+export type GaugeTone = 'heat' | 'overheat' | 'reload';
+
+const GAUGE_COLORS = {
+  bg: new Color3(0.06, 0.06, 0.07),
+  heat0: new Color3(1, 0.78, 0.3),
+  heat1: new Color3(1, 0.5, 0.15),
+  heat2: new Color3(1, 0.2, 0.12),
+  overheat: new Color3(1, 1, 1),
+  reload: new Color3(0.55, 0.85, 1),
+} as const;
+type GaugeMaterial = keyof typeof GAUGE_COLORS;
+const gaugeMaterials = new WeakMap<Scene, Map<GaugeMaterial, StandardMaterial>>();
+
+function gaugeMaterial(scene: Scene, key: GaugeMaterial): StandardMaterial {
+  let mats = gaugeMaterials.get(scene);
+  if (!mats) {
+    mats = new Map();
+    gaugeMaterials.set(scene, mats);
+  }
+  let m = mats.get(key);
+  if (!m) {
+    m = new StandardMaterial(`gauge_${key}`, scene);
+    m.emissiveColor = GAUGE_COLORS[key];
+    m.diffuseColor = Color3.Black();
+    m.specularColor = Color3.Black();
+    m.disableLighting = true;
+    m.fogEnabled = false;
+    mats.set(key, m);
+  }
+  return m;
+}
 
 export interface PickMetadata {
   entityId: EntityId;
@@ -55,6 +92,8 @@ export class EntityView {
   private action: EntityAction | null = null;
   private gear: GearAppearances = {};
   private hpBar: { root: TransformNode; fg: Mesh } | null = null;
+  /** Created on first use: only shooters ever show it. */
+  private gauge: { root: TransformNode; fg: Mesh; material: GaugeMaterial | null } | null = null;
   private castShadows = false;
   /** Swing facing that overrides the (100 ms late) snapshot yaw for a while. */
   private face: { yaw: number; left: number } | null = null;
@@ -122,6 +161,7 @@ export class EntityView {
 
   release(): void {
     this.entityId = 0;
+    this.setGauge(null, 'heat');
     this.pick.metadata = null;
     this.root.setEnabled(false);
   }
@@ -195,6 +235,39 @@ export class EntityView {
     this.visual.oneShotClip(clip, speed, fallback);
   }
 
+  /** Upper-body clip over the walk (shooting, aiming, reloading). */
+  overlay(clip: string, speed: number, opts?: OverlayOptions): boolean {
+    return this.visual.overlay(clip, speed, opts);
+  }
+
+  endOverlay(): void {
+    this.visual.endOverlay();
+  }
+
+  clipSeconds(clip: string): number {
+    return this.visual.clipSeconds(clip);
+  }
+
+  /** Bar above the head, 0…1 (null hides it). Updated by the caller every frame it changes. */
+  setGauge(value: number | null, tone: GaugeTone): void {
+    if (value === null || value <= 0.001) {
+      this.gauge?.root.setEnabled(false);
+      return;
+    }
+    if (!this.gauge) this.gauge = this.createGauge();
+    const g = this.gauge;
+    const key: GaugeMaterial =
+      tone === 'heat' ? (value < 0.5 ? 'heat0' : value < 0.8 ? 'heat1' : 'heat2') : tone;
+    if (g.material !== key) {
+      g.fg.material = gaugeMaterial(this.scene, key);
+      g.material = key;
+    }
+    const f = Math.min(1, value);
+    g.fg.scaling.x = f;
+    g.fg.position.x = -(1 - f) * 0.5;
+    g.root.setEnabled(true);
+  }
+
   update(dt: number): void {
     if (this.face) {
       const from = this.shownYaw ?? this.face.yaw;
@@ -246,6 +319,28 @@ export class EntityView {
     for (const m of [bg, fg]) m.renderingGroupId = 1;
     root.setEnabled(false);
     return { root, fg };
+  }
+
+  private createGauge(): { root: TransformNode; fg: Mesh; material: GaugeMaterial | null } {
+    const name = `${this.root.name}_gauge`;
+    const root = new TransformNode(name, this.scene);
+    root.parent = this.root;
+    root.position.y = this.height + 0.28;
+    root.billboardMode = TransformNode.BILLBOARDMODE_ALL;
+    root.scaling.set(0.75, 0.075, 1);
+    const bg = MeshBuilder.CreatePlane(`${name}_bg`, { size: 1 }, this.scene);
+    bg.material = gaugeMaterial(this.scene, 'bg');
+    bg.parent = root;
+    bg.scaling.set(1.06, 1.5, 1);
+    const fg = MeshBuilder.CreatePlane(`${name}_fg`, { size: 1 }, this.scene);
+    fg.parent = root;
+    fg.position.z = -0.01;
+    for (const m of [bg, fg]) {
+      m.isPickable = false;
+      m.renderingGroupId = 1;
+    }
+    root.setEnabled(false);
+    return { root, fg, material: null };
   }
 
   private attachVisual(v: Visual): void {

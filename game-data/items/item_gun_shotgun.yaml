@@ -1,0 +1,12 @@
+id: item_gun_shotgun
+name: Tán Phong Pháo
+kind: equipment
+slot: main_hand
+rarity: rare
+icon: "🔫"
+iconImage: icon_gun_shotgun
+description: Bắn toả 6 viên, cực mạnh ở cự ly gần. Nạp từng viên.
+bonus: { attack: 14 }
+sellPrice: 110
+appearanceId: gear_weapon_kb_blaster_h
+ranged: ranged_shotgun

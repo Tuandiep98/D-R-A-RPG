@@ -1,0 +1,20 @@
+# Đoản thương bán tự động (D-033): mỗi lần bóp cò một phát, nhịp chậm, băng 12 viên.
+# Nhịp hình ảnh: Ranged_1H_Shoot giật ở 0.30 s → đoạn 0.27–0.73 s (mặc định của `anim`).
+id: ranged_pistol
+name: Đoản thương
+kind: gun
+fireMode: semi
+fireInterval: 0.28
+windup: 0.1
+magazine: 12
+reload: { seconds: 1.1 }
+projectile: { speed: 42, range: 13, radius: 0.12, jitter: 1.5 }
+damage: 0.75
+critBonus: 0.05
+moveMultiplier: 0.85
+fx: { color: "#ffd27a", tracer: streak, size: 0.8, kick: 0.04 }
+sfx:
+  shoot: [sfx_laser_small, sfx_laser_small_2]
+  reload: [sfx_equip_belt]
+  empty: [sfx_gun_click]
+  hit: [sfx_hit_light_01, sfx_hit_light_02]

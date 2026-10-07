@@ -154,6 +154,21 @@
       "id": "vfx_magic_02",
       "file": "originals/PNG (Transparent)/magic_02.png",
       "size": 256
+    },
+    {
+      "size": 256,
+      "id": "vfx_muzzle_02",
+      "file": "originals/PNG (Transparent)/muzzle_02.png"
+    },
+    {
+      "size": 256,
+      "id": "vfx_muzzle_04",
+      "file": "originals/PNG (Transparent)/muzzle_04.png"
+    },
+    {
+      "size": 256,
+      "id": "vfx_trace_06",
+      "file": "originals/PNG (Transparent)/trace_06.png"
     }
   ]
 }

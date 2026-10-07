@@ -11,6 +11,7 @@ import {
   NpcDefSchema,
   ProgressionRulesSchema,
   QuestDefSchema,
+  RangedDefSchema,
   RealmDefSchema,
   RecipeDefSchema,
   ShopDefSchema,
@@ -27,6 +28,8 @@ export interface FixtureOverrides {
   extraMonsters?: Raw[];
   extraMaps?: Raw[];
   realm1?: Raw;
+  /** Extra ranged profiles; each gets a main-hand item `gun_<id>`. */
+  ranged?: Raw[];
 }
 
 /** Small in-memory content set for unit tests. Overrides are raw (pre-schema) objects. */
@@ -176,6 +179,17 @@ export function makeContent(o: FixtureOverrides = {}): ContentBundle {
       bonus: { attack: 10 },
     },
   ].map((i) => ItemDefSchema.parse(i));
+  const ranged = (o.ranged ?? []).map((r) => RangedDefSchema.parse(r));
+  for (const r of ranged)
+    items.push(
+      ItemDefSchema.parse({
+        id: `gun_${r.id}`,
+        name: r.name,
+        kind: 'equipment',
+        slot: 'main_hand',
+        ranged: r.id,
+      }),
+    );
   const npc = NpcDefSchema.parse({
     id: 'elder',
     name: 'Elder',
@@ -318,6 +332,7 @@ export function makeContent(o: FixtureOverrides = {}): ContentBundle {
     maps: new Map(maps.map((m) => [m.id, m])),
     skills: new Map(skills.map((s) => [s.id, s])),
     combos: new Map([[combo.id, combo]]),
+    ranged: new Map(ranged.map((r) => [r.id, r])),
     items: new Map(items.map((i) => [i.id, i])),
     loot: new Map([[loot.id, loot]]),
     progression: new Map([[progression.id, progression]]),

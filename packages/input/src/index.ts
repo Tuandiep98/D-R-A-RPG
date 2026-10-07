@@ -17,8 +17,17 @@ export type GameAction =
   | { type: 'SKILL'; index: number }
   | { type: 'INTERACT' }
   | { type: 'TARGET_NEXT' }
-  /** Auto-attack the selected (or nearest) hostile. */
+  /** Basic attack pressed (Space / attack button); with a gun the trigger is held until ATTACK_RELEASE. */
   | { type: 'ATTACK' }
+  | { type: 'ATTACK_RELEASE' }
+  /** Desktop left button pressed / released over the canvas (guns fire while it is held). */
+  | { type: 'PRIMARY'; down: boolean; x: number; y: number }
+  /** Desktop cursor position over the canvas (aiming); the game picks the ground only when needed. */
+  | { type: 'POINTER'; x: number; y: number }
+  /** Reload the ranged weapon (R). */
+  | { type: 'RELOAD' }
+  /** Cycle main-hand weapons in the bag (X). */
+  | { type: 'SWAP_WEAPON' }
   | { type: 'USE_POTION' }
   | {
       type: 'TOGGLE_PANEL';
@@ -150,6 +159,11 @@ export class MouseKeyboardAdapter implements InputAdapter {
   private readonly held = new Set<string>();
 
   private readonly releaseAll = () => {
+    // A trigger held when the tab loses focus would never see its keyup/pointerup.
+    if (this.held.has('Space') || this.down?.button === 0) {
+      this.emit({ type: 'ATTACK_RELEASE' });
+      this.down = null;
+    }
     if (this.held.size === 0) return;
     this.held.clear();
     this.emitAxis();
@@ -174,18 +188,32 @@ export class MouseKeyboardAdapter implements InputAdapter {
   }
 
   private readonly onKeyUp = (e: KeyboardEvent) => {
+    if (e.code === 'Space') {
+      this.held.delete('Space');
+      this.emit({ type: 'ATTACK_RELEASE' });
+      return;
+    }
     if (this.held.delete(e.code)) this.emitAxis();
   };
+
+  private local(e: PointerEvent): { x: number; y: number } {
+    const rect = this.target?.getBoundingClientRect();
+    return { x: e.clientX - (rect?.left ?? 0), y: e.clientY - (rect?.top ?? 0) };
+  }
 
   private readonly onDown = (e: PointerEvent) => {
     if (e.pointerType !== 'mouse') return;
     this.down = { x: e.clientX, y: e.clientY, button: e.button };
     this.last = { x: e.clientX, y: e.clientY };
     this.rotating = e.button === 2;
+    if (e.button === 0) this.emit({ type: 'PRIMARY', down: true, ...this.local(e) });
   };
 
   private readonly onMove = (e: PointerEvent) => {
-    if (e.pointerType !== 'mouse' || !this.rotating) return;
+    if (e.pointerType !== 'mouse') return;
+    if (e.target === this.target || this.down?.button === 0)
+      this.emit({ type: 'POINTER', ...this.local(e) });
+    if (!this.rotating) return;
     this.emit({
       type: 'CAMERA_ROTATE',
       dx: e.clientX - this.last.x,
@@ -196,6 +224,7 @@ export class MouseKeyboardAdapter implements InputAdapter {
 
   private readonly onUp = (e: PointerEvent) => {
     if (e.pointerType !== 'mouse' || !this.down) return;
+    if (this.down.button === 0) this.emit({ type: 'PRIMARY', down: false, ...this.local(e) });
     const moved = Math.hypot(e.clientX - this.down.x, e.clientY - this.down.y);
     if (this.down.button === 0 && moved < CLICK_SLOP && this.target) {
       const rect = this.target.getBoundingClientRect();
@@ -230,6 +259,7 @@ export class MouseKeyboardAdapter implements InputAdapter {
       return;
     }
     if (e.repeat) return;
+    if (e.code === 'Space') this.held.add('Space');
     const digit = /^Digit([1-4])$/.exec(e.code);
     if (digit) this.emit({ type: 'SKILL', index: Number(digit[1]) - 1 });
     else if (e.code === 'Escape') this.emit({ type: 'STOP' });
@@ -238,6 +268,8 @@ export class MouseKeyboardAdapter implements InputAdapter {
       this.emit({ type: 'ATTACK' });
     } else if (e.code === 'KeyF') this.emit({ type: 'INTERACT' });
     else if (e.code === 'KeyQ') this.emit({ type: 'USE_POTION' });
+    else if (e.code === 'KeyR') this.emit({ type: 'RELOAD' });
+    else if (e.code === 'KeyX') this.emit({ type: 'SWAP_WEAPON' });
     else if (e.code === 'KeyI' || e.code === 'KeyB')
       this.emit({ type: 'TOGGLE_PANEL', panel: 'inventory' });
     else if (e.code === 'KeyC') this.emit({ type: 'TOGGLE_PANEL', panel: 'character' });

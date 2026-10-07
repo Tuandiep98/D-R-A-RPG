@@ -103,7 +103,12 @@ export function applyDamage(
   amount: number,
   crit: boolean,
   skillId: string | null,
-  melee?: { hit: 'solid' | 'graze' | 'weak'; heavy: boolean },
+  detail?: {
+    hit: 'solid' | 'graze' | 'weak';
+    heavy: boolean;
+    /** Ranged hits: the SHOT and bullet that landed. */
+    shot?: { id: number; pellet: number };
+  },
 ): void {
   if (!target.life.alive) return;
   const dealt = Math.min(amount, target.stats.hp);
@@ -119,7 +124,8 @@ export function applyDamage(
     amount: dealt,
     crit,
     skillId,
-    ...(melee ? { hit: melee.hit, heavy: melee.heavy } : {}),
+    ...(detail ? { hit: detail.hit, heavy: detail.heavy } : {}),
+    ...(detail?.shot ? { shot: detail.shot } : {}),
   });
   if (target.stats.hp <= 0) kill(ctx, target, source);
   else updatePhase(ctx, target);

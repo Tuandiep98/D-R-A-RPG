@@ -246,7 +246,12 @@ export async function buildApi(deps: ApiDeps) {
     const existing = await deps.repo.listCharacters(c.sub);
     if (existing.length >= MAX_CHARACTERS)
       throw new HttpError(409, `at most ${MAX_CHARACTERS} characters`);
-    const defId = body.characterDefId ?? [...deps.content.characters.keys()][0];
+    // Default class: player_default when present (test kits like player_gunner sort after it anyway).
+    const defId =
+      body.characterDefId ??
+      (deps.content.characters.has('player_default')
+        ? 'player_default'
+        : [...deps.content.characters.keys()][0]);
     if (!defId || !deps.content.characters.has(defId))
       throw new HttpError(400, 'unknown character type');
     const startMap = deps.content.maps.has('map_sandbox_01')

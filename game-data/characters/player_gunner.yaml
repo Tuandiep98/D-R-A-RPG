@@ -1,0 +1,32 @@
+# Nhân vật thử súng (D-033): Ranger KayKit mang đủ 5 kiểu súng + kiếm để so sánh.
+# Offline: /?char=player_gunner (hoặc Cài đặt → Thử nghiệm). X đổi vũ khí, R nạp đạn.
+id: player_gunner
+name: Cơ Giới Xạ Thủ
+appearanceId: char_player_gunner
+stats:
+  hp: 750
+  mp: 120
+  attack: 36
+  defense: 10
+  critChance: 0.15
+  critMultiplier: 1.6
+  hpRegen: 12
+  mpRegen: 4
+movement:
+  speed: 5
+  radius: 0.4
+combat:
+  range: 1.4
+  attackInterval: 0.9
+combos: { unarmed: combo_unarmed, armed: combo_blade }
+respawnSeconds: 5
+skills:
+  - skill_thunder_step
+starterItems:
+  - { itemId: item_gun_pistol, equip: true }
+  - { itemId: item_gun_carbine }
+  - { itemId: item_gun_rifle }
+  - { itemId: item_gun_shotgun }
+  - { itemId: item_gun_sniper }
+  - { itemId: item_sword_iron }
+  - { itemId: item_potion_hp_small, count: 5 }

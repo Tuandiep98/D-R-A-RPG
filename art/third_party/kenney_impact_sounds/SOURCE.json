@@ -72,6 +72,14 @@
     {
       "id": "sfx_step_wood_01",
       "file": "originals/Audio/footstep_wood_000.ogg"
+    },
+    {
+      "id": "sfx_hit_light_01",
+      "file": "originals/Audio/impactGeneric_light_000.ogg"
+    },
+    {
+      "id": "sfx_hit_light_02",
+      "file": "originals/Audio/impactGeneric_light_001.ogg"
     }
   ],
   "notes": "License approved by the project owner on 2026-10-07. Evidence: License.txt in the zip (CC0)."

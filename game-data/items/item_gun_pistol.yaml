@@ -1,0 +1,12 @@
+id: item_gun_pistol
+name: Linh Quang Đoản Thương
+kind: equipment
+slot: main_hand
+rarity: uncommon
+icon: "🔫"
+iconImage: icon_gun_pistol
+description: Súng ngắn cơ giới, bắn từng phát. Băng 12 viên.
+bonus: { attack: 8 }
+sellPrice: 40
+appearanceId: gear_weapon_kb_blaster_c
+ranged: ranged_pistol

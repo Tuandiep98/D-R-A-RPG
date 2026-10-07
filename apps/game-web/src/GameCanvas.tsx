@@ -3,7 +3,7 @@ import { ColyseusSimHost } from '@rpg/net-client';
 import { LocalSimHost, type MessageEndpoint, type SimHost, WorkerSimHost } from '@rpg/sim-host';
 import { useEffect, useRef } from 'react';
 import { playSfx } from './audio';
-import { loadContent } from './content';
+import { loadContent, sharedContent } from './content';
 import { setGame } from './game';
 import type { OnlineChoice } from './Login';
 import { loadMedia, mediaUrl } from './media';
@@ -12,7 +12,7 @@ import { startSession } from './online';
 import { useUiStore } from './store';
 
 const DEFAULT_MAP = 'map_sandbox_01';
-const CHARACTER_ID = 'player_default';
+const DEFAULT_CHARACTER = 'player_default';
 
 /**
  * Picks the simulation host. Default: Web Worker. `?noworker` runs it on the
@@ -23,6 +23,9 @@ function createHost(
   online: OnlineChoice | null,
 ): { host: SimHost; kind: string } {
   const map = params.get('map') ?? DEFAULT_MAP;
+  // Offline only: `?char=player_gunner` starts as another character (test kits, D-033).
+  const wanted = params.get('char');
+  const character = wanted && sharedContent().characters.has(wanted) ? wanted : DEFAULT_CHARACTER;
   const onDisconnect = (code: number) =>
     useUiStore
       .getState()
@@ -60,7 +63,7 @@ function createHost(
     try {
       const worker = new Worker(new URL('./sim.worker.ts', import.meta.url), {
         type: 'module',
-        name: JSON.stringify({ map, character: CHARACTER_ID }),
+        name: JSON.stringify({ map, character }),
       });
       return {
         host: new WorkerSimHost(worker as unknown as MessageEndpoint, () => worker.terminate()),
@@ -74,7 +77,7 @@ function createHost(
     host: new LocalSimHost({
       content: loadContent(),
       mapId: map,
-      characterId: CHARACTER_ID,
+      characterId: character,
       navFor,
     }),
     kind: 'main-thread',

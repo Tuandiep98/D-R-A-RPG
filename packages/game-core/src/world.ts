@@ -9,7 +9,15 @@ import type {
   Snapshot,
 } from '@rpg/game-protocol';
 import type { NavQuery, SimContext } from './context';
-import type { CircleObstacle, Entity, EquipSlot, LedgerEntry, PlayerSave } from './entity';
+import {
+  type CircleObstacle,
+  type Entity,
+  type EquipSlot,
+  type LedgerEntry,
+  newTriggerState,
+  type PlayerSave,
+  type Projectile,
+} from './entity';
 import { type Bounds, clampToBounds, type Vec2 } from './math';
 import { Rng } from './rng';
 import { aiSystem } from './systems/ai';
@@ -24,6 +32,7 @@ import { movementSystem } from './systems/movement';
 import { questProgress } from './systems/npc';
 import { Parties } from './systems/party';
 import { cultivationLoad, realmRank, recomputePlayerStats } from './systems/progression';
+import { rangedState, rangedSystem } from './systems/ranged';
 import { skillSystem } from './systems/skills';
 import { secondsToTicks } from './time';
 
@@ -67,6 +76,8 @@ export class World implements SimContext {
   readonly realms: readonly RealmDef[];
   readonly nav: NavQuery | null;
   readonly parties = new Parties();
+  readonly projectiles: Projectile[] = [];
+  private shotCounter = 0;
   private readonly entityMap = new Map<EntityId, Entity>();
   private intents: QueuedIntent[] = [];
   private pendingEvents: SimEvent[] = [];
@@ -169,6 +180,10 @@ export class World implements SimContext {
     return true;
   }
 
+  nextShotId(): number {
+    return ++this.shotCounter;
+  }
+
   inSafeZone(p: Vec2): boolean {
     return this.map.zones.some(
       (z) => z.kind === 'safe' && Math.hypot(p.x - z.center.x, p.z - z.center.z) <= z.radius,
@@ -245,6 +260,9 @@ export class World implements SimContext {
         equipment: save ? { ...save.equipment } : {},
         itemReadyAtTick: 0,
         combo: { nextStep: 0, lastEndTick: -1_000_000, buffered: false, aim: null },
+        ranged: null,
+        weapons: new Map(),
+        trigger: newTriggerState(),
         quests: (save?.quests ?? []).map((q) => ({
           ...q,
           progress: [...q.progress],
@@ -327,6 +345,7 @@ export class World implements SimContext {
       inventoryCapacity: INVENTORY_CAPACITY,
       equipment: { ...p.equipment },
       itemReadyAtTick: p.itemReadyAtTick,
+      ranged: rangedState(this, e),
       inSafeZone: this.inSafeZone(e.pos),
       party: this.partyView(p.partyId),
       quests: p.quests.map((q) => ({
@@ -381,6 +400,7 @@ export class World implements SimContext {
     skillSystem(this);
     combatSystem(this);
     meleeSystem(this);
+    rangedSystem(this);
     movementSystem(this);
     pendingSystem(this);
     lootSystem(this);

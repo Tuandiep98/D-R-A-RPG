@@ -5,6 +5,11 @@ Dùng id trong game-data: `iconImage` (skill/item), `sfx` (skill, appearance). V
 
 | id | loại | kích thước | dung lượng | pack |
 | --- | --- | --- | --- | --- |
+| `icon_gun_carbine` | image | 64×64 | 1.0 KB | kenney_blaster_kit |
+| `icon_gun_pistol` | image | 64×64 | 1.2 KB | kenney_blaster_kit |
+| `icon_gun_rifle` | image | 64×64 | 1.2 KB | kenney_blaster_kit |
+| `icon_gun_shotgun` | image | 64×64 | 1.2 KB | kenney_blaster_kit |
+| `icon_gun_sniper` | image | 64×64 | 1.1 KB | kenney_blaster_kit |
 | `icon_item_armor_black` | image | 128×128 | 4.9 KB | quaternius_ultimate_rpg_items |
 | `icon_item_armor_golden` | image | 128×128 | 6.0 KB | quaternius_ultimate_rpg_items |
 | `icon_item_armor_leather` | image | 128×128 | 2.9 KB | quaternius_ultimate_rpg_items |
@@ -72,6 +77,7 @@ Dùng id trong game-data: `iconImage` (skill/item), `sfx` (skill, appearance). V
 | `icon_skill_whirlwind` | image | 128×128 | 6.3 KB | kdrn_ability_icons |
 | `sfx_anvil` | audio | — | 18.4 KB | kenney_rpg_audio |
 | `sfx_bell` | audio | — | 18.6 KB | kenney_impact_sounds |
+| `sfx_blast_low` | audio | — | 12.7 KB | kenney_scifi_sounds |
 | `sfx_book_close` | audio | — | 3.6 KB | kenney_rpg_audio |
 | `sfx_book_open` | audio | — | 2.7 KB | kenney_rpg_audio |
 | `sfx_chop` | audio | — | 3.8 KB | kenney_rpg_audio |
@@ -90,19 +96,26 @@ Dùng id trong game-data: `iconImage` (skill/item), `sfx` (skill, appearance). V
 | `sfx_footstep_02` | audio | — | 4.3 KB | kenney_rpg_audio |
 | `sfx_footstep_03` | audio | — | 3.8 KB | kenney_rpg_audio |
 | `sfx_force_field` | audio | — | 12.6 KB | kenney_scifi_sounds |
+| `sfx_gun_click` | audio | — | 6.2 KB | kenney_rpg_audio |
 | `sfx_hit_flesh_01` | audio | — | 6.2 KB | kenney_impact_sounds |
 | `sfx_hit_flesh_02` | audio | — | 6.0 KB | kenney_impact_sounds |
 | `sfx_hit_heavy` | audio | — | 8.8 KB | kenney_impact_sounds |
+| `sfx_hit_light_01` | audio | — | 2.8 KB | kenney_impact_sounds |
+| `sfx_hit_light_02` | audio | — | 2.4 KB | kenney_impact_sounds |
 | `sfx_hit_metal_01` | audio | — | 4.3 KB | kenney_impact_sounds |
 | `sfx_hit_metal_02` | audio | — | 2.6 KB | kenney_impact_sounds |
 | `sfx_hit_plate` | audio | — | 6.7 KB | kenney_impact_sounds |
 | `sfx_hit_soft` | audio | — | 6.9 KB | kenney_impact_sounds |
 | `sfx_hit_wood` | audio | — | 4.9 KB | kenney_impact_sounds |
 | `sfx_laser_large` | audio | — | 9.6 KB | kenney_scifi_sounds |
+| `sfx_laser_large_2` | audio | — | 10.0 KB | kenney_scifi_sounds |
 | `sfx_laser_retro` | audio | — | 4.0 KB | kenney_scifi_sounds |
+| `sfx_laser_retro_2` | audio | — | 4.3 KB | kenney_scifi_sounds |
 | `sfx_laser_small` | audio | — | 3.8 KB | kenney_scifi_sounds |
+| `sfx_laser_small_2` | audio | — | 4.9 KB | kenney_scifi_sounds |
 | `sfx_loot_drop` | audio | — | 5.9 KB | kenney_rpg_audio |
 | `sfx_mech_door` | audio | — | 7.7 KB | kenney_scifi_sounds |
+| `sfx_overheat` | audio | — | 12.7 KB | kenney_scifi_sounds |
 | `sfx_page` | audio | — | 10.1 KB | kenney_rpg_audio |
 | `sfx_robot_hit` | audio | — | 8.7 KB | kenney_scifi_sounds |
 | `sfx_slam` | audio | — | 11.9 KB | kenney_impact_sounds |
@@ -143,6 +156,8 @@ Dùng id trong game-data: `iconImage` (skill/item), `sfx` (skill, appearance). V
 | `vfx_magic_03` | image | 256×256 | 17.1 KB | kenney_particle_pack |
 | `vfx_magic_05` | image | 256×256 | 12.1 KB | kenney_particle_pack |
 | `vfx_muzzle_01` | image | 256×256 | 17.6 KB | kenney_particle_pack |
+| `vfx_muzzle_02` | image | 256×256 | 10.4 KB | kenney_particle_pack |
+| `vfx_muzzle_04` | image | 256×256 | 11.5 KB | kenney_particle_pack |
 | `vfx_scorch_01` | image | 256×256 | 13.9 KB | kenney_particle_pack |
 | `vfx_slash_01` | image | 256×256 | 4.1 KB | kenney_particle_pack |
 | `vfx_slash_02` | image | 256×256 | 6.1 KB | kenney_particle_pack |
@@ -158,5 +173,6 @@ Dùng id trong game-data: `iconImage` (skill/item), `sfx` (skill, appearance). V
 | `vfx_star_06` | image | 256×256 | 5.5 KB | kenney_particle_pack |
 | `vfx_symbol_01` | image | 256×256 | 3.9 KB | kenney_particle_pack |
 | `vfx_trace_01` | image | 256×256 | 5.2 KB | kenney_particle_pack |
+| `vfx_trace_06` | image | 256×256 | 5.6 KB | kenney_particle_pack |
 | `vfx_twirl_01` | image | 256×256 | 9.6 KB | kenney_particle_pack |
 | `vfx_twirl_02` | image | 256×256 | 12.4 KB | kenney_particle_pack |

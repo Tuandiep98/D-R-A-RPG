@@ -36,6 +36,7 @@
     "media:build": "tsx tools/asset-processor/media.ts",
     "smoke:gear": "tsx tools/smoke/gear-fit.ts",
     "smoke:controls": "tsx tools/smoke/controls.ts",
+    "smoke:gun": "tsx tools/smoke/gun.ts",
     "assets:proportions": "tsx tools/asset-processor/proportions.ts",
     "assets:vendor": "tsx tools/asset-processor/vendor.ts"
   },

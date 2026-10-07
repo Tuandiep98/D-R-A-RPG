@@ -49,7 +49,11 @@ export type FxSprite =
   | 'streak'
   | 'rune'
   | 'sigil'
-  | 'shock';
+  | 'shock'
+  // Ranged weapons (D-033).
+  | 'muzzle'
+  | 'blast'
+  | 'tracer';
 
 const SPRITE_MEDIA: Record<FxSprite, string> = {
   slash: 'vfx_slash_02',
@@ -68,6 +72,9 @@ const SPRITE_MEDIA: Record<FxSprite, string> = {
   rune: 'vfx_magic_01',
   sigil: 'vfx_magic_02',
   shock: 'vfx_circle_02',
+  muzzle: 'vfx_muzzle_02',
+  blast: 'vfx_muzzle_04',
+  tracer: 'vfx_trace_06',
 };
 
 /** How a sprite is oriented: facing the camera, lying on the ground, or standing along a heading. */
@@ -108,9 +115,13 @@ export interface SpriteSpec {
   fadeIn?: number;
   /** Pulses (glows charging up). */
   pulse?: number;
+  /** Lets cut() end it early (a bullet tracer stopped by a body). */
+  tag?: number;
 }
 
-interface Sprite extends Required<Omit<SpriteSpec, 'follow' | 'h' | 'yaw' | 'roll' | 'rollEnd'>> {
+interface Sprite
+  extends Required<Omit<SpriteSpec, 'follow' | 'h' | 'yaw' | 'roll' | 'rollEnd' | 'tag'>> {
+  tag: number;
   h: number;
   yaw: number;
   roll: number;
@@ -153,7 +164,14 @@ class SpriteBatch {
     this.mesh.thinInstanceSetBuffer('color', this.colors, 4, false);
     this.mesh.thinInstanceCount = 0;
     // Light flashes draw over bodies (a glow in the hand must not hide behind the arm).
-    if (kind === 'glow' || kind === 'star' || kind === 'spark' || kind === 'zap')
+    if (
+      kind === 'glow' ||
+      kind === 'star' ||
+      kind === 'spark' ||
+      kind === 'zap' ||
+      kind === 'muzzle' ||
+      kind === 'blast'
+    )
       this.mesh.renderingGroupId = 1;
     this.mesh.setEnabled(false);
   }
@@ -168,6 +186,12 @@ class SpriteBatch {
       return;
     }
     this.items.push(sprite);
+  }
+
+  /** Ends tagged sprites within `fade` seconds. */
+  cut(tag: number, fade: number): void {
+    for (const it of this.items)
+      if (it.tag === tag && it.delay <= 0) it.life = Math.min(it.life, it.age + fade);
   }
 
   update(dt: number, cameraRotation: Quaternion): void {
@@ -428,10 +452,17 @@ export class CombatFx {
         delay: spec.delay ?? 0,
         fadeIn: spec.fadeIn ?? 0,
         pulse: spec.pulse ?? 0,
+        tag: spec.tag ?? 0,
         age: 0,
       },
       this.cap,
     );
+  }
+
+  /** Ends every sprite carrying `tag` (it fades over `fade` seconds). */
+  cut(tag: number, fade = 0.03): void {
+    if (tag === 0) return;
+    for (const b of this.batches.values()) b.cut(tag, fade);
   }
 
   /** Burst of glowing sparks flying out of a point (hits, clashes). */
@@ -993,6 +1024,8 @@ function proceduralTexture(scene: Scene, kind: FxSprite): DynamicTexture {
   switch (kind) {
     case 'glow':
     case 'spark':
+    case 'muzzle':
+    case 'blast':
       radial(0, c, [
         [0, 1],
         [0.3, 0.6],
@@ -1082,7 +1115,8 @@ function proceduralTexture(scene: Scene, kind: FxSprite): DynamicTexture {
       break;
     }
     case 'trace':
-      ctx.lineWidth = 10;
+    case 'tracer':
+      ctx.lineWidth = kind === 'tracer' ? 18 : 10;
       ctx.beginPath();
       ctx.moveTo(c, 6);
       ctx.lineTo(c, size - 6);

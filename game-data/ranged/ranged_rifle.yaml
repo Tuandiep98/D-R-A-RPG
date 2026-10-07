@@ -1,0 +1,31 @@
+# Hoả thương liên thanh (auto): giữ cò để bắn 10 viên/giây. Bắn liên tục sẽ quá tải
+# (≈17 viên) và khoá 2.2 s; nhả cò sớm để súng nguội (0.6/s sau 0.3 s).
+# Ranged_2H_Shooting giật 4 lần / 1.07 s → tốc độ clip theo fireInterval.
+id: ranged_rifle
+name: Hoả thương liên thanh
+kind: gun
+fireMode: auto
+fireInterval: 0.1
+windup: 0.15
+magazine: 36
+reload: { seconds: 1.6, moveMultiplier: 0.75 }
+heat: { perShot: 0.06, coolPerSecond: 0.6, coolDelay: 0.3, overheatSeconds: 2.2 }
+projectile: { speed: 55, range: 16, radius: 0.1, jitter: 3.5 }
+damage: 0.3
+moveMultiplier: 0.6
+anim:
+  aim: Ranged_2H_Aiming
+  aimFrom: 0.3
+  shoot: Ranged_2H_Shoot
+  shootFrom: 0.27
+  shootTo: 0.6
+  shootSpeed: 1.6
+  loop: { clip: Ranged_2H_Shooting, shots: 4 }
+  reload: Ranged_2H_Reload
+fx: { color: "#ff9a4c", tracer: bolt, size: 0.7, kick: 0.02 }
+sfx:
+  shoot: [sfx_laser_retro_2, sfx_laser_small_2]
+  reload: [sfx_equip_metal]
+  empty: [sfx_gun_click]
+  overheat: [sfx_overheat]
+  hit: [sfx_hit_light_01, sfx_hit_light_02]

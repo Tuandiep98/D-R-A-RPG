@@ -298,10 +298,87 @@ function InteractButton() {
   );
 }
 
+const FIRE_MODE_LABEL = { auto: 'Liên thanh', semi: 'Bán tự động', burst: 'Loạt' } as const;
+
+/**
+ * Equipped gun (D-033): rounds left, fire mode, heat (amber → red), the
+ * overheat cool-down and reload progress. Only shown with a ranged weapon.
+ */
+function AmmoPanel({ touch }: { touch: boolean }) {
+  const r = useUiStore((s) => s.ui?.ranged ?? null);
+  const weapons = useUiStore((s) => s.ui?.weaponCount ?? 0);
+  if (!r) return null;
+  const empty = r.magazine > 0 && r.ammo === 0;
+  const status =
+    r.overheat > 0
+      ? `Quá tải ${r.overheat.toFixed(1)}s`
+      : r.reload !== null
+        ? 'Đang nạp đạn…'
+        : empty
+          ? 'Hết đạn — R để nạp'
+          : FIRE_MODE_LABEL[r.fireMode];
+  const bar =
+    r.overheat > 0 ? (
+      <div className="ammo-bar ammo-overheat" style={{ width: `${r.heat * 100}%` }} />
+    ) : r.reload !== null ? (
+      <div className="ammo-bar ammo-reload" style={{ width: `${r.reload * 100}%` }} />
+    ) : (
+      <div
+        className={`ammo-bar ammo-heat ${r.heat > 0.8 ? 'hot' : ''}`}
+        style={{ width: `${r.heat * 100}%` }}
+      />
+    );
+  return (
+    <div className={`ammo ${touch ? 'ammo-touch' : ''}`} onPointerDown={(e) => e.stopPropagation()}>
+      <div className="ammo-head">
+        <span className="ammo-name">{r.name}</span>
+        <span className={`ammo-count ${empty ? 'ammo-empty' : ''}`}>
+          {r.magazine > 0 ? (
+            <>
+              <b>{r.ammo}</b>/{r.magazine}
+            </>
+          ) : (
+            '∞'
+          )}
+        </span>
+      </div>
+      <div className="ammo-track">{bar}</div>
+      <div className="ammo-foot">
+        <span className={r.overheat > 0 ? 'ammo-warn' : ''}>{status}</span>
+        {!touch && (
+          <span className="ammo-keys">
+            {r.magazine > 0 && (
+              <button
+                type="button"
+                className="ammo-key"
+                title="Nạp đạn (R)"
+                onClick={() => game()?.reload()}
+              >
+                R
+              </button>
+            )}
+            {weapons > 1 && (
+              <button
+                type="button"
+                className="ammo-key"
+                title="Đổi vũ khí (X)"
+                onClick={() => game()?.swapWeapon()}
+              >
+                X
+              </button>
+            )}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /** Desktop: four equal, assignable slots centred at the bottom. */
 function DesktopActionBar({ slots }: { slots: (SkillSlot | null)[] }) {
   return (
     <div className="actionbar">
+      <AmmoPanel touch={false} />
       <InteractButton />
       <div className="skills">
         {DESKTOP_POSITIONS.map((position, i) =>
@@ -322,22 +399,57 @@ function DesktopActionBar({ slots }: { slots: (SkillSlot | null)[] }) {
  * smaller mobility/defense slot below them.
  */
 function TouchActionBar({ slots }: { slots: (SkillSlot | null)[] }) {
+  const gun = useUiStore((s) => !!s.ui?.ranged);
+  const canReload = useUiStore((s) => (s.ui?.ranged?.magazine ?? 0) > 0);
+  const weapons = useUiStore((s) => s.ui?.weaponCount ?? 0);
   return (
     <div className="touch-actions">
       <div className="touch-interact">
         <InteractButton />
       </div>
+      <AmmoPanel touch />
       <button
         type="button"
-        className="attack-button"
-        title="Đánh thường"
+        className={`attack-button ${gun ? 'attack-gun' : ''}`}
+        title={gun ? 'Bắn (giữ để bắn liên tục)' : 'Đánh thường'}
         onPointerDown={(e) => {
           e.stopPropagation();
-          game()?.attack();
+          // Keep receiving the release even if the thumb slides off the button.
+          e.currentTarget.setPointerCapture(e.pointerId);
+          game()?.attackDown();
         }}
+        onPointerUp={() => game()?.attackUp()}
+        onPointerCancel={() => game()?.attackUp()}
+        onLostPointerCapture={() => game()?.attackUp()}
       >
-        ⚔
+        {gun ? '🎯' : '⚔'}
       </button>
+      {gun && canReload && (
+        <button
+          type="button"
+          className="skill touch-reload"
+          title="Nạp đạn"
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            game()?.reload();
+          }}
+        >
+          ⟳
+        </button>
+      )}
+      {weapons > 1 && (
+        <button
+          type="button"
+          className="skill touch-swap"
+          title="Đổi vũ khí"
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            game()?.swapWeapon();
+          }}
+        >
+          ⇄
+        </button>
+      )}
       {TOUCH_POSITIONS.map((position, i) =>
         slots[i] ? (
           <SkillButton
@@ -364,9 +476,10 @@ function ActionBar() {
   const touch = useControls((s) => effectiveScheme(s) === 'touch');
   const slots = resolveLoadout(ui?.skills ?? [], assignments, touch ? 'touch' : 'desktop');
   const bindingKey = slots.map((slot) => slot?.skillId ?? '').join('|');
+  const currentGame = game();
   useEffect(() => {
-    game()?.setSkillBindings(bindingKey.split('|').map((id) => id || null));
-  }, [bindingKey, ui]);
+    currentGame?.setSkillBindings(bindingKey.split('|').map((id) => id || null));
+  }, [bindingKey, currentGame]);
   if (!ui?.player) return null;
   return touch ? <TouchActionBar slots={slots} /> : <DesktopActionBar slots={slots} />;
 }
@@ -655,9 +768,46 @@ function SettingsPanel() {
         />
       </div>
       <ControlSettings />
+      <TestCharacters />
       <button type="button" className="wide" onClick={toggleDebug}>
         Bật/tắt thông số debug
       </button>
+    </div>
+  );
+}
+
+/**
+ * Offline test characters (D-033): reloads the page with `?char=<id>` — the
+ * local sim spawns that character. Online characters come from the server.
+ */
+function TestCharacters() {
+  if (ONLINE) return null;
+  const params = new URLSearchParams(window.location.search);
+  const current = params.get('char') ?? 'player_default';
+  const characters = [...sharedContent().characters.values()];
+  if (characters.length < 2) return null;
+  return (
+    <div className="setting">
+      <span>
+        Thử nghiệm <span className="muted">(offline, tải lại trang)</span>
+      </span>
+      <div className="segmented">
+        {characters.map((c) => (
+          <button
+            key={c.id}
+            type="button"
+            className={current === c.id ? 'active' : ''}
+            onClick={() => {
+              const next = new URLSearchParams(window.location.search);
+              if (c.id === 'player_default') next.delete('char');
+              else next.set('char', c.id);
+              window.location.search = next.toString();
+            }}
+          >
+            {c.name}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
@@ -820,9 +970,9 @@ function HelpLine() {
   if (touch) return null;
   return (
     <div className="help">
-      WASD/↑↓←→: di chuyển · Click trái: đánh/chọn/nhặt/nói chuyện · Space: đánh · 1–4: chiêu · Q:
-      thuốc · F: tương tác · Tab: đổi mục tiêu · I: túi đồ · K: tu luyện · Enter: chat · Chuột phải:
-      xoay
+      WASD/↑↓←→: di chuyển · Click trái: đánh/chọn/nhặt/nói chuyện (súng: giữ để bắn theo chuột) ·
+      Space: đánh · R: nạp đạn · X: đổi vũ khí · 1–4: chiêu · Q: thuốc · F: tương tác · Tab: đổi mục
+      tiêu · I: túi đồ · K: tu luyện · Enter: chat · Chuột phải: xoay
     </div>
   );
 }

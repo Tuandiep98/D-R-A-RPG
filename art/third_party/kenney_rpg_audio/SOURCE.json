@@ -84,6 +84,10 @@
     {
       "id": "sfx_anvil",
       "file": "originals/Audio/metalPot1.ogg"
+    },
+    {
+      "id": "sfx_gun_click",
+      "file": "originals/Audio/metalClick.ogg"
     }
   ],
   "notes": "License approved by the project owner on 2026-10-07. Evidence: License.txt in the zip (CC0)."

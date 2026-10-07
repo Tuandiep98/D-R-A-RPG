@@ -475,7 +475,9 @@ async function devLogin(deps: ZoneDeps, rawName: string): Promise<AccessClaims> 
     const id = await deps.repo.createCharacter({
       accountId: account.id,
       name: `Dev ${name}`,
-      characterDefId: [...deps.content.characters.keys()][0] ?? 'player_default',
+      characterDefId: deps.content.characters.has('player_default')
+        ? 'player_default'
+        : ([...deps.content.characters.keys()][0] ?? 'player_default'),
       mapId: startMap ?? 'map_sandbox_01',
     });
     character = (await deps.repo.listCharacters(account.id)).find((c) => c.id === id);

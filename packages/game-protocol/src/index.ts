@@ -4,7 +4,7 @@ import { z } from 'zod';
  * Wire contract between client and simulation host (local or server).
  * Bump PROTOCOL_VERSION on any breaking change to these schemas.
  */
-export const PROTOCOL_VERSION = 7;
+export const PROTOCOL_VERSION = 8;
 
 /** Max world coordinate magnitude accepted from a client, in metres. */
 export const MAX_COORD = 10_000;
@@ -61,6 +61,22 @@ export const IntentSchema = z.discriminatedUnion('type', [
    * the held direction, then aim assist, then the current facing.
    */
   z.strictObject({ type: z.literal('BASIC_ATTACK'), aim: Vec2Schema.nullable().optional() }),
+  /**
+   * Ranged weapons (D-033): trigger pressed / still held (with a fresh aim
+   * point) or released. While held the client repeats it at least every
+   * 0.5 s; the host releases a trigger it has not heard about for 1.5 s, so a
+   * lost release never fires forever. Melee weapons treat a press as
+   * BASIC_ATTACK.
+   */
+  z.strictObject({
+    type: z.literal('TRIGGER'),
+    held: z.boolean(),
+    aim: Vec2Schema.nullable().optional(),
+    /** Selected hostile to keep aiming at when there is no aim point (touch / gamepad). */
+    targetId: EntityIdSchema.optional(),
+  }),
+  /** Reload the main-hand ranged weapon now (also starts by itself when it runs dry). */
+  z.strictObject({ type: z.literal('RELOAD') }),
   z.strictObject({
     type: z.literal('ATTACK_TARGET'),
     targetId: EntityIdSchema,
@@ -201,6 +217,8 @@ export const NoticeCodeSchema = z.enum([
   'max_realm',
   'not_in_safe_zone',
   'backlash',
+  'reloading',
+  'overheated',
 ]);
 export type NoticeCode = z.infer<typeof NoticeCodeSchema>;
 
@@ -232,7 +250,32 @@ export const SimEventSchema = z.discriminatedUnion('type', [
     /** Combo hits, timed on the impact tick: solid, glancing (sượt) or weak point (yếu hại). */
     hit: z.enum(['solid', 'graze', 'weak']).optional(),
     heavy: z.boolean().optional(),
+    /** Ranged hits: which SHOT and bullet (the client stops that tracer at the body). */
+    shot: z.object({ id: z.number().int(), pellet: z.number().int().nonnegative() }).optional(),
   }),
+  /**
+   * A ranged shot (D-033). One entry per bullet: heading and how far it can
+   * fly before a wall or max range stops it (hitscan: where it stopped).
+   * Bullets that hit a body end early through DAMAGE.shot.
+   */
+  z.object({
+    type: z.literal('SHOT'),
+    sourceId: EntityIdSchema,
+    rangedId: z.string(),
+    shotId: z.number().int(),
+    origin: Vec2Schema,
+    yaws: z.array(z.number().finite()),
+    lens: z.array(z.number().nonnegative()),
+  }),
+  /** Reload started (ends at endTick) or stopped early (endTick <= startTick). */
+  z.object({
+    type: z.literal('RELOAD'),
+    sourceId: EntityIdSchema,
+    startTick: z.number().int(),
+    endTick: z.number().int(),
+  }),
+  /** The weapon overheated (quá tải): locked until endTick. */
+  z.object({ type: z.literal('OVERHEAT'), sourceId: EntityIdSchema, endTick: z.number().int() }),
   /** A combo swing whose target stood just out of reach (shown as "Trượt"). */
   z.object({ type: z.literal('MISS'), sourceId: EntityIdSchema, targetId: EntityIdSchema }),
   z.object({
@@ -376,6 +419,20 @@ export const PlayerStateSchema = z.object({
   inventoryCapacity: z.number().int().positive(),
   equipment: z.partialRecord(EquipSlotSchema, ItemInstanceIdSchema),
   itemReadyAtTick: z.number().int(),
+  /** Main-hand ranged weapon (null with a melee weapon or bare hands). */
+  ranged: z
+    .object({
+      rangedId: z.string(),
+      ammo: z.number().int().nonnegative(),
+      magazine: z.number().int().nonnegative(),
+      /** 0…1; while overheated it drains from 1 to 0 until overheatEndTick. */
+      heat: z.number().min(0).max(1),
+      overheatEndTick: z.number().int(),
+      /** Reload in progress when reloadEndTick > the current tick. */
+      reloadStartTick: z.number().int(),
+      reloadEndTick: z.number().int(),
+    })
+    .nullable(),
   inSafeZone: z.boolean(),
   party: z
     .object({

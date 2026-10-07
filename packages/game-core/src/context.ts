@@ -1,6 +1,6 @@
 import type { ContentBundle, MapDef, RealmDef } from '@rpg/game-data';
 import type { EntityId, NoticeCode, SimEvent } from '@rpg/game-protocol';
-import type { CircleObstacle, Entity, LedgerEntry } from './entity';
+import type { CircleObstacle, Entity, LedgerEntry, Projectile } from './entity';
 import type { Bounds, Vec2 } from './math';
 import type { Rng } from './rng';
 
@@ -45,6 +45,10 @@ export interface SimContext {
   recordLedger(entry: Omit<LedgerEntry, 'tick'>): boolean;
   inSafeZone(p: Vec2): boolean;
   readonly parties: PartyService;
+  /** Bullets in flight (systems/ranged.ts). */
+  readonly projectiles: Projectile[];
+  /** Unique per world: ties SHOT events to the DAMAGE of their bullets. */
+  nextShotId(): number;
 }
 
 export const isAlive = (e: Entity | undefined): e is Entity => !!e && e.life.alive && !e.inert;

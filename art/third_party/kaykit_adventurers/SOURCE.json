@@ -127,7 +127,14 @@
         "Melee_Unarmed_Attack_Kick",
         "Dodge_Forward",
         "Ranged_Magic_Raise",
-        "Ranged_Magic_Spellcasting_Long"
+        "Ranged_Magic_Spellcasting_Long",
+        "Ranged_1H_Aiming",
+        "Ranged_1H_Reload",
+        "Ranged_1H_Shooting",
+        "Ranged_2H_Aiming",
+        "Ranged_2H_Reload",
+        "Ranged_2H_Shoot",
+        "Ranged_2H_Shooting"
       ],
       "type": "character",
       "derivedClips": [
@@ -202,7 +209,14 @@
         "Melee_Unarmed_Attack_Kick",
         "Dodge_Forward",
         "Ranged_Magic_Raise",
-        "Ranged_Magic_Spellcasting_Long"
+        "Ranged_Magic_Spellcasting_Long",
+        "Ranged_1H_Aiming",
+        "Ranged_1H_Reload",
+        "Ranged_1H_Shooting",
+        "Ranged_2H_Aiming",
+        "Ranged_2H_Reload",
+        "Ranged_2H_Shoot",
+        "Ranged_2H_Shooting"
       ],
       "type": "character",
       "derivedClips": [

@@ -94,6 +94,7 @@ export function meleeSystem(ctx: SimContext): void {
   for (const e of ctx.entities.values()) {
     if (
       e.player &&
+      !e.player.ranged &&
       e.life.alive &&
       !e.swing &&
       !e.cast &&
@@ -244,7 +245,7 @@ function resolveImpact(
 }
 
 /** Cosine between the target's facing and the direction to `from` (1 = in front). */
-function facingDot(t: Entity, from: Vec2): number {
+export function facingDot(t: Entity, from: Vec2): number {
   const d = sub(from, t.pos);
   const len = Math.hypot(d.x, d.z);
   if (len < 1e-4) return 1;

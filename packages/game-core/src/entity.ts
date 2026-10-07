@@ -1,4 +1,4 @@
-import type { ComboVariant, MonsterTier } from '@rpg/game-data';
+import type { ComboVariant, MonsterTier, RangedDef } from '@rpg/game-data';
 import type {
   EntityAction,
   EntityId,
@@ -77,6 +77,86 @@ export interface ComboState {
   aim: Vec2 | null;
 }
 
+/**
+ * Ammo and heat of one ranged weapon instance (systems/ranged.ts). Kept per
+ * instance so swapping weapons never refills or cools one.
+ */
+export interface WeaponState {
+  ammo: number;
+  /** Heat at `heatTick`; it cools lazily from max(heatTick, lastShotTick + coolDelay). */
+  heat: number;
+  heatTick: number;
+  lastShotTick: number;
+  /** Quá tải: no shots until this tick. */
+  overheatUntil: number;
+}
+
+/** Trigger and firing bookkeeping for the equipped ranged weapon. Times are ticks. */
+export interface TriggerState {
+  /** Weapon instance this state follows; a change means the weapon was swapped. */
+  instanceId: ItemInstanceId | null;
+  held: boolean;
+  /** Last TRIGGER held=true; a silent trigger is released after a timeout. */
+  heardTick: number;
+  /** Desktop cursor point to shoot at (null → aim assist / facing). */
+  aim: Vec2 | null;
+  /** A press not fired yet (semi / burst, or a tap on an auto weapon). */
+  queued: boolean;
+  /** Burst shots still to come and when the next one leaves. */
+  burstLeft: number;
+  nextShotTick: number;
+  /** No shot before this tick (raising the weapon, drawing a swapped one). */
+  readyTick: number;
+  /** Weapon raised: the body faces the aim and fires without wind-up until then. */
+  raisedUntil: number;
+  lastShotTick: number;
+  /** Sticky aim-assist target. */
+  assistId: EntityId | null;
+  reload: {
+    instanceId: ItemInstanceId;
+    startTick: number;
+    endTick: number;
+    nextTick: number;
+  } | null;
+  /** Movement speed factor this tick (firing / reloading slow the walk). */
+  move: number;
+}
+
+export function newTriggerState(): TriggerState {
+  return {
+    instanceId: null,
+    held: false,
+    heardTick: 0,
+    aim: null,
+    queued: false,
+    burstLeft: 0,
+    nextShotTick: 0,
+    readyTick: 0,
+    raisedUntil: 0,
+    lastShotTick: -1_000_000,
+    assistId: null,
+    reload: null,
+    move: 1,
+  };
+}
+
+/** A bullet in flight (not an entity: never in snapshots, presented from SHOT events). */
+export interface Projectile {
+  shotId: number;
+  pellet: number;
+  ownerId: EntityId;
+  rangedId: string;
+  /** Muzzle point and unit heading. */
+  origin: Vec2;
+  dir: Vec2;
+  /** Metres flown so far and where it must stop (wall / max range). */
+  travelled: number;
+  stopAt: number;
+  speedPerTick: number;
+  pierceLeft: number;
+  hitIds: EntityId[];
+}
+
 /** Something the entity walks to and then does (pickup, portal, queued skill). */
 export type PendingAction =
   | { type: 'pickup'; lootId: EntityId }
@@ -109,6 +189,10 @@ export interface PlayerData {
   itemReadyAtTick: number;
   quests: QuestState[];
   combo: ComboState;
+  /** Main-hand ranged weapon (derived on equip by recomputePlayerStats), null when melee. */
+  ranged: { instanceId: ItemInstanceId; def: RangedDef } | null;
+  weapons: Map<ItemInstanceId, WeaponState>;
+  trigger: TriggerState;
 }
 
 export interface LootData {

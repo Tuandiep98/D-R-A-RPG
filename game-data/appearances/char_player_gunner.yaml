@@ -1,0 +1,23 @@
+# Cơ Giới Xạ Thủ (thử súng, D-033): KayKit Ranger trên Rig_Medium, cùng bộ clip với Rogue
+# (gồm Ranged_1H/2H_* để bắn, ngắm, nạp đạn trên nửa thân trên).
+id: char_player_gunner
+kind: character
+modelAssetId: char_kk_ranger
+scale: 0.62
+animations:
+  idle: Idle_A
+  run: Running_A
+  attack: Melee_1H_Attack_Slice_Diagonal
+  cast: Ranged_Magic_Shoot
+  hit: Hit_A
+  death: Death_A
+sockets:
+  hand_r: handslot.r
+  hand_l: handslot.l
+  head: head
+hitDelay: 0.35
+placeholder:
+  shape: capsule
+  color: "#d9a066"
+  height: 1.5
+  radius: 0.42

@@ -41,7 +41,12 @@ for (const file of process.argv.slice(2).filter((a) => !a.startsWith('--'))) {
             .map((j) => j.getName())
             .join(', ')}`,
         );
-    const clips = root.listAnimations().map((a) => a.getName());
+    // Clip length = last keyframe time (needed to time hits / shots to a clip).
+    const clips = root.listAnimations().map((a) => {
+      let end = 0;
+      for (const s of a.listSamplers()) end = Math.max(end, s.getInput()?.getMax([0])[0] ?? 0);
+      return `${a.getName()} ${end.toFixed(2)}s`;
+    });
     if (clips.length) console.log(`  clips (${clips.length}): ${clips.join(', ')}`);
   } catch (err) {
     console.log(`${file}: ${(err as Error).message}`);
