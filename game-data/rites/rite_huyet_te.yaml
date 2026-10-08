@@ -1,0 +1,12 @@
+id: rite_huyet_te
+name: Huyết Tế Luyện
+description: "Hiến 30% khí huyết hiện tại nhỏ lên thân khí: +15% chỉ số, trang bị bị khoá với chủ."
+line: tien
+group: bind
+minQuality: epic
+gold: 400
+materials: [{ itemId: item_yeu_dan, count: 3 }]
+hpCost: 0.3
+effects:
+  statMultiplier: 0.15
+  bind: true

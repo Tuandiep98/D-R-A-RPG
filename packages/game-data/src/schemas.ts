@@ -450,6 +450,8 @@ export const RangedDefSchema = z
     /** Weapon family: drives presentation and future rules (bows draw, magic channels). */
     kind: z.enum(['gun', 'bow', 'magic', 'thrown']).default('gun'),
     fireMode: z.enum(['auto', 'semi', 'burst']),
+    /** Heavy weapons (shotgun, sniper) let ammo chips knock targets back. */
+    heavy: z.boolean().default(false),
     /** Seconds between shots (auto cadence; minimum gap between semi presses / after a burst). */
     fireInterval: seconds,
     /** Seconds to raise the weapon before the first shot; a raised weapon fires at once. */
@@ -611,11 +613,122 @@ export type EquipSlot = z.infer<typeof EquipSlotSchema>;
 export const RaritySchema = z.enum(['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic']);
 export type Rarity = z.infer<typeof RaritySchema>;
 
+// ---- Forge (Thiên Cơ Luyện Khí, docs/plan/06_forge_equipment_plan.md) -------
+
+/** Instance quality tiers the forge works with (item `rarity` maps onto these). */
+export const ForgeQualitySchema = z.enum(['common', 'rare', 'epic', 'legendary']);
+export type ForgeQuality = z.infer<typeof ForgeQualitySchema>;
+/** Tu Tiên (luyện khí) and Cơ Giới (kỹ thuật) — two lines from one root. */
+export const ForgeLineSchema = z.enum(['tien', 'co']);
+export type ForgeLine = z.infer<typeof ForgeLineSchema>;
+
+/** Gold + materials paid for a forge operation. */
+export const ForgeCostSchema = z.strictObject({
+  gold: z.number().int().nonnegative().default(0),
+  materials: z
+    .array(z.strictObject({ itemId: IdSchema, count: z.number().int().positive() }))
+    .default([]),
+});
+export type ForgeCost = z.infer<typeof ForgeCostSchema>;
+
+/** One evolution stage: raises the item's base stats and renames it (master plan §68). */
+export const EvolutionStageSchema = ForgeCostSchema.extend({
+  name: z.string().min(1),
+  /** Tier label shown in UI: Phàm khí/Linh khí/Pháp bảo… or Standard/Combat/Reactor Module… */
+  tier: z.string().min(1),
+  /** Multiplies the item's authored `bonus` (base stats). */
+  baseMultiplier: z.number().min(1).max(5),
+  /** Enhancement the item must already have. */
+  minEnhance: z.number().int().nonnegative().default(0),
+  minQuality: ForgeQualitySchema.default('common'),
+  realm: IdSchema.optional(),
+});
+export type EvolutionStage = z.infer<typeof EvolutionStageSchema>;
+
+/** The burst a combat module adds to the 3rd hit of a melee combo. */
+export const FinisherSchema = z.strictObject({
+  /** Presentation + identity: a skill whose `vfx` draws the burst (never on the bar). */
+  skillId: IdSchema,
+  multiplier: positive.max(5),
+  radius: positive.max(6),
+  /** Burst centre, metres ahead of the swing. */
+  forward: nonNegative.max(4).default(1.2),
+  maxTargets: z.number().int().min(1).max(8).default(5),
+  /** Natal-element match (bản mệnh): radius × and damage ×. */
+  natal: z
+    .strictObject({ radius: z.number().min(1).max(2), damage: z.number().min(1).max(2) })
+    .default({ radius: 1.3, damage: 1.25 }),
+});
+export type Finisher = z.infer<typeof FinisherSchema>;
+
+export const DefenseModuleSchema = z.strictObject({
+  /** Shield gained from damage dealt (fraction), capped at `shieldCap` × max HP. */
+  shieldOnHit: chance.default(0),
+  shieldCap: chance.default(0.15),
+  shieldSeconds: positive.max(10).default(4),
+  dodge: z.number().min(0).max(0.3).default(0),
+  /** Flat damage reduction after mitigation. */
+  reduction: z.number().min(0).max(0.3).default(0),
+  /** Extra reduction against attacks of this element. */
+  resist: z.strictObject({ element: ElementSchema, amount: z.number().min(0).max(0.5) }).optional(),
+});
+export type DefenseModule = z.infer<typeof DefenseModuleSchema>;
+
+export const AmmoChipSchema = z.strictObject({
+  /** Every N bullet hits stun the target for `stunSeconds` (bosses ignore). */
+  stunEvery: z.number().int().min(2).max(50).optional(),
+  stunSeconds: positive.max(2).default(0.4),
+  /** Metres pushed per hit — heavy weapons only (RangedDef.heavy). */
+  knockback: nonNegative.max(2).default(0),
+  /** Reload time multiplier (0.7 = 30% faster). */
+  reloadMultiplier: z.number().min(0.3).max(1).default(1),
+  magazineBonus: z.number().int().min(0).max(60).default(0),
+  /** Heat per shot multiplier. */
+  heatMultiplier: z.number().min(0.3).max(1).default(1),
+  critBonus: z.number().min(0).max(0.3).default(0),
+});
+export type AmmoChip = z.infer<typeof AmmoChipSchema>;
+
+/**
+ * Khảm: an item with `kind: socket` goes into an equipment socket.
+ * combat/defense/ammo are Cơ Giới modules; spirit (linh châu, yêu đan) and rune
+ * (phù văn trận pháp) belong to the Tu Tiên line.
+ */
+export const SocketDefSchema = z
+  .strictObject({
+    type: z.enum(['combat', 'defense', 'ammo', 'spirit', 'rune']),
+    line: ForgeLineSchema,
+    minQuality: ForgeQualitySchema.default('common'),
+    element: ElementSchema.optional(),
+    expression: ExpressionSchema.default('base'),
+    bonus: z
+      .strictObject({
+        hp: z.number().default(0),
+        mp: z.number().default(0),
+        attack: z.number().default(0),
+        defense: z.number().default(0),
+        critChance: z.number().default(0),
+        speed: z.number().default(0),
+      })
+      .optional(),
+    /** Bonus × this when `element` matches the wearer's natal element. */
+    natalBonus: z.number().min(1).max(2).default(1),
+    finisher: FinisherSchema.optional(),
+    defense: DefenseModuleSchema.optional(),
+    ammo: AmmoChipSchema.optional(),
+  })
+  .refine((s) => s.type !== 'combat' || (s.finisher && s.element), {
+    message: 'combat modules need an element and a finisher',
+  })
+  .refine((s) => s.type !== 'defense' || s.defense, { message: 'defense modules need `defense`' })
+  .refine((s) => s.type !== 'ammo' || s.ammo, { message: 'ammo chips need `ammo`' });
+export type SocketDef = z.infer<typeof SocketDefSchema>;
+
 export const ItemDefSchema = z
   .strictObject({
     id: IdSchema,
     name: z.string().min(1),
-    kind: z.enum(['equipment', 'consumable', 'material']),
+    kind: z.enum(['equipment', 'consumable', 'material', 'socket']),
     rarity: RaritySchema.default('common'),
     icon: z.string().default('◆'),
     /** Runtime media id (`pnpm media:build`); the emoji `icon` stays as fallback. */
@@ -636,6 +749,22 @@ export const ItemDefSchema = z
     combo: IdSchema.optional(),
     /** Main-hand ranged weapons (game-data/ranged): basic attacks shoot instead of swinging. */
     ranged: IdSchema.optional(),
+    /** Forge line the item belongs to (presentation; rites of both lines still apply). */
+    line: ForgeLineSchema.optional(),
+    /** Tier name of stage 0 (Phàm khí, Standard Module…). */
+    tier: z.string().optional(),
+    /** Evolution chain after stage 0; each keeps enhancement, sockets and rites. */
+    evolution: z.array(EvolutionStageSchema).max(6).default([]),
+    /** Sockets: what goes in, for `kind: socket`. */
+    socket: SocketDefSchema.optional(),
+  })
+  .refine((i) => (i.kind === 'socket') === !!i.socket, {
+    message: 'socket items (and only they) need `socket`',
+    path: ['socket'],
+  })
+  .refine((i) => i.kind === 'equipment' || i.evolution.length === 0, {
+    message: 'only equipment evolves',
+    path: ['evolution'],
   })
   .refine((i) => !i.ranged || i.slot === 'main_hand', {
     message: 'ranged weapons go in main_hand',
@@ -893,8 +1022,8 @@ export const NpcDefSchema = z.strictObject({
   shopId: IdSchema.optional(),
   /** Recipes this NPC can craft. */
   recipes: z.array(IdSchema).default([]),
-  /** Offers equipment upgrades (enhancement). */
-  upgrades: z.boolean().default(false),
+  /** Runs a forge (Tiệm Rèn): enhance, evolve, socket, rites, synthesis, repair. */
+  forge: z.boolean().default(false),
 });
 export type NpcDef = z.infer<typeof NpcDefSchema>;
 
@@ -964,31 +1093,116 @@ export const RecipeDefSchema = z.strictObject({
 });
 export type RecipeDef = z.infer<typeof RecipeDefSchema>;
 
-/** Equipment enhancement +1…+maxLevel (tech plan §47 "1 upgrade flow"). */
-export const UpgradeRulesSchema = z.strictObject({
-  id: IdSchema,
-  maxLevel: z.number().int().positive(),
-  /** Bonus multiplier per level: final = base × (1 + bonusPerLevel × level). */
-  bonusPerLevel: z.number().positive(),
-  /** One entry per target level (index 0 = +1). */
-  steps: z
-    .array(
-      z.strictObject({
-        gold: z.number().int().nonnegative(),
-        materials: z
-          .array(
-            z.strictObject({
-              itemId: IdSchema,
-              count: z.number().int().positive(),
-            }),
-          )
-          .default([]),
-        successRate: chance,
-      }),
-    )
-    .min(1),
+const QualityRuleSchema = z.strictObject({
+  name: z.string().min(1),
+  color: z.string().regex(/^#[0-9a-f]{6}$/i),
+  /** Multiplies base stats. */
+  statMultiplier: z.number().min(1).max(4),
+  sockets: z.number().int().min(0).max(6),
+  hidden: z.number().int().min(0).max(4),
+  maxEnhance: z.number().int().min(1).max(20),
+  durability: z.number().int().min(1).max(1000),
+  /** Gold per missing durability point. */
+  repairGold: nonNegative,
 });
-export type UpgradeRules = z.infer<typeof UpgradeRulesSchema>;
+
+const StatKeySchema = z.enum(['hp', 'mp', 'attack', 'defense', 'critChance', 'speed']);
+export type StatKey = z.infer<typeof StatKeySchema>;
+
+/**
+ * Forge rules (one file, game-data/forge/). Enhancement raises the regular
+ * stats, evolution the base stats, quality scales both; hidden stats are
+ * derived from the instance id and wake at enhancement milestones.
+ */
+export const ForgeRulesSchema = z
+  .strictObject({
+    id: IdSchema,
+    qualities: z.strictObject({
+      common: QualityRuleSchema,
+      rare: QualityRuleSchema,
+      epic: QualityRuleSchema,
+      legendary: QualityRuleSchema,
+    }),
+    enhance: z.strictObject({
+      /** final = base × (1 + bonusPerLevel × level). */
+      bonusPerLevel: z.number().positive().max(0.5),
+      /** Failing above this level drops one level unless a ward is spent. */
+      safeLevel: z.number().int().nonnegative(),
+      wardItemId: IdSchema.optional(),
+      /** Hidden stat i wakes at enhancement hiddenUnlockAt[i]. */
+      hiddenUnlockAt: z.array(z.number().int().positive()).min(1).max(4),
+      /** Index 0 = cost of reaching +1. */
+      steps: z
+        .array(ForgeCostSchema.extend({ successRate: chance }))
+        .min(1)
+        .max(20),
+    }),
+    /** Hidden stat pool by gear family; value rolls in [min,max] × quality multiplier. */
+    hiddenPool: z.strictObject({
+      weapon: z
+        .array(z.strictObject({ stat: StatKeySchema, min: z.number(), max: z.number() }))
+        .min(1),
+      armor: z
+        .array(z.strictObject({ stat: StatKeySchema, min: z.number(), max: z.number() }))
+        .min(1),
+    }),
+    socketRemove: ForgeCostSchema,
+    synthesis: z.strictObject({
+      /** Same slot + same quality items consumed with the main item. */
+      fodder: z.number().int().min(1).max(4),
+      /** Keyed by the quality reached. */
+      steps: z.strictObject({
+        rare: ForgeCostSchema.extend({ successRate: chance }),
+        epic: ForgeCostSchema.extend({ successRate: chance }),
+        legendary: ForgeCostSchema.extend({ successRate: chance }),
+      }),
+    }),
+    durability: z.strictObject({
+      /** Points every equipped item loses when the wearer dies. */
+      deathLoss: z.number().int().nonnegative(),
+      /** Stat multiplier of a broken (0 durability) item. */
+      brokenMultiplier: chance,
+    }),
+    /** Bonus for items holding rites of both lines in at least `groups` groups. */
+    hybrid: z.strictObject({ groups: z.number().int().min(1).max(5), statMultiplier: chance }),
+  })
+  .refine((r) => r.enhance.steps.length >= r.qualities.legendary.maxEnhance, {
+    message: 'enhance.steps must cover the legendary cap',
+  });
+export type ForgeRules = z.infer<typeof ForgeRulesSchema>;
+
+/**
+ * Luyện khí (Tiên) / kỹ thuật (Cơ) rite. One rite per `group` per item; the
+ * same group exists in both lines (e.g. Phụ Linh ↔ Ép Xung).
+ */
+export const RiteDefSchema = ForgeCostSchema.extend({
+  id: IdSchema,
+  name: z.string().min(1),
+  description: z.string().default(''),
+  line: ForgeLineSchema,
+  group: z.enum(['attune', 'engrave', 'bind', 'absorb', 'ascend']),
+  minQuality: ForgeQualitySchema,
+  /** Equipment slots allowed (empty = any). */
+  slots: z.array(EquipSlotSchema).default([]),
+  realm: IdSchema.optional(),
+  successRate: chance.default(1),
+  /** How many times the rite can be applied (absorb stacks). */
+  maxTimes: z.number().int().min(1).max(5).default(1),
+  /** Fraction of current HP offered (huyết tế); the wearer keeps at least 1 HP. */
+  hpCost: z.number().min(0).max(0.9).default(0),
+  /** Durability lost on failure (fraction of max). */
+  failDurability: chance.default(0),
+  effects: z.strictObject({
+    statMultiplier: z.number().min(0).max(1).default(0),
+    extraSockets: z.number().int().min(0).max(2).default(0),
+    /** Bound items cannot be sold nor used as synthesis fodder. */
+    bind: z.boolean().default(false),
+    /** Bản Mệnh: one per character, grows with realm. */
+    natal: z.boolean().default(false),
+    natalPerRealm: z.number().min(0).max(0.2).default(0),
+  }),
+});
+export type RiteDef = z.infer<typeof RiteDefSchema>;
 
 // ---------------------------------------------------------------------------
 // Map

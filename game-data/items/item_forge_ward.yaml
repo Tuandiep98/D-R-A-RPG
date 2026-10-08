@@ -1,0 +1,8 @@
+id: item_forge_ward
+name: Hộ Phù
+kind: material
+description: Đốt khi cường hoá thất bại trên +5 để không bị tụt cấp.
+icon: "🧧"
+iconImage: icon_item_parchment
+maxStack: 99
+sellPrice: 30

@@ -1,0 +1,8 @@
+id: item_rune_ink
+name: Phù Văn Chu Sa
+kind: material
+description: Mực chu sa trộn linh huyết để khắc trận văn.
+icon: "📜"
+iconImage: icon_item_scroll
+maxStack: 99
+sellPrice: 15

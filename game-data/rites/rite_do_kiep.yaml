@@ -1,0 +1,14 @@
+id: rite_do_kiep
+name: Độ Kiếp Bản Mệnh
+description: "Đưa pháp bảo qua lôi kiếp để thành Bản Mệnh (1 món): +4% mỗi cảnh giới. Thất bại mất 50% độ bền."
+line: tien
+group: ascend
+minQuality: legendary
+gold: 1500
+materials: [{ itemId: item_thien_tai, count: 2 }, { itemId: item_linh_thach, count: 5 }]
+successRate: 0.6
+failDurability: 0.5
+effects:
+  natal: true
+  bind: true
+  natalPerRealm: 0.04

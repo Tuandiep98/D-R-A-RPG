@@ -1,0 +1,12 @@
+id: item_ammo_trong_kich
+name: Đầu Đạn Trọng Kích
+kind: socket
+description: Súng hạng nặng (tán pháo, ngắm xa) đẩy lùi mục tiêu 0.8 m; +3% chí mạng.
+icon: "🎯"
+iconImage: icon_gun_pistol
+maxStack: 20
+sellPrice: 55
+socket:
+  type: ammo
+  line: co
+  ammo: { knockback: 0.8, critBonus: 0.03 }

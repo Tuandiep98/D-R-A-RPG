@@ -1,0 +1,8 @@
+id: item_tinh_thiet
+name: Tinh Thiết
+kind: material
+description: Sắt đã tôi luyện, dùng cường hoá mọi trang bị.
+icon: "⛓"
+iconImage: icon_item_mineral
+maxStack: 99
+sellPrice: 6

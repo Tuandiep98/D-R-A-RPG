@@ -1,0 +1,8 @@
+id: item_microchip
+name: Vi Mạch Thiên Cơ
+kind: material
+description: Vi mạch cổ, khắc lên vỏ trang bị để mở thêm cổng module.
+icon: "🔌"
+iconImage: icon_item_key1
+maxStack: 99
+sellPrice: 15

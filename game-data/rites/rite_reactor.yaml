@@ -1,0 +1,11 @@
+id: rite_reactor
+name: Nạp Lõi Phản Ứng
+description: "Nạp thêm lõi phản ứng: +6% chỉ số mỗi lần, tối đa 3 lần."
+line: co
+group: absorb
+minQuality: epic
+gold: 500
+materials: [{ itemId: item_reactor_core, count: 2 }]
+maxTimes: 3
+effects:
+  statMultiplier: 0.06

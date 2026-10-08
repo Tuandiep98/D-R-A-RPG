@@ -1,0 +1,11 @@
+id: rite_vi_mach
+name: Khắc Vi Mạch
+description: "Khắc vi mạch Thiên Cơ: mở thêm 1 cổng module."
+line: co
+group: engrave
+minQuality: rare
+gold: 250
+materials: [{ itemId: item_microchip, count: 2 }]
+
+effects:
+  extraSockets: 1

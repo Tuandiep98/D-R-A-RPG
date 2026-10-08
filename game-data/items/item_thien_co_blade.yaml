@@ -1,0 +1,14 @@
+id: item_thien_co_blade
+name: Thiên Cơ Kiếm
+kind: equipment
+slot: main_hand
+rarity: legendary
+icon: "⚔"
+iconImage: icon_item_sword_big_golden
+description: Di vật Thiên Cơ — nửa pháp bảo, nửa cỗ máy. Nhận nghi thức của cả hai tuyến.
+bonus: { attack: 28, critChance: 0.04 }
+sellPrice: 800
+appearanceId: equip_sword_01
+tier: Thiên Cơ Relic
+evolution:
+  - { name: Thiên Cơ Kiếm · Giác Tỉnh, tier: Thiên Cơ Relic II, baseMultiplier: 1.4, minEnhance: 6, gold: 1200, materials: [{ itemId: item_thien_tai, count: 1 }, { itemId: item_reactor_core, count: 2 }] }

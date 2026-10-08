@@ -8,3 +8,9 @@ iconImage: icon_item_sword
 bonus: { attack: 12 }
 sellPrice: 10
 appearanceId: equip_sword_01
+line: tien
+tier: Phàm khí
+evolution:
+  - { name: Thanh Phong Linh Kiếm, tier: Linh khí, baseMultiplier: 1.35, minEnhance: 3, gold: 200, materials: [{ itemId: item_linh_thach, count: 2 }, { itemId: item_wolf_fang, count: 4 }] }
+  - { name: Thanh Phong Kiếm Thai, tier: Pháp bảo, baseMultiplier: 1.8, minEnhance: 6, minQuality: rare, gold: 600, materials: [{ itemId: item_linh_thach, count: 4 }, { itemId: item_yeu_dan, count: 2 }] }
+  - { name: Thanh Phong Đạo Kiếm, tier: Cổ bảo, baseMultiplier: 2.4, minEnhance: 9, minQuality: epic, realm: truc_co, gold: 1500, materials: [{ itemId: item_thien_tai, count: 1 }, { itemId: item_linh_thach, count: 6 }] }

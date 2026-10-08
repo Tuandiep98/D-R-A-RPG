@@ -10,3 +10,9 @@ bonus: { attack: 8 }
 sellPrice: 40
 appearanceId: gear_weapon_kb_blaster_c
 ranged: ranged_pistol
+line: co
+tier: Standard Module
+evolution:
+  - { name: H-07 Mk II, tier: Combat Module, baseMultiplier: 1.35, minEnhance: 3, gold: 200, materials: [{ itemId: item_robot_scrap, count: 6 }, { itemId: item_microchip, count: 1 }] }
+  - { name: Autonomous H-07, tier: Reactor Module, baseMultiplier: 1.8, minEnhance: 6, minQuality: rare, gold: 600, materials: [{ itemId: item_reactor_core, count: 2 }, { itemId: item_microchip, count: 2 }] }
+  - { name: Spirit-AI H-07, tier: Autonomous Module, baseMultiplier: 2.4, minEnhance: 9, minQuality: epic, realm: truc_co, gold: 1500, materials: [{ itemId: item_reactor_core, count: 3 }, { itemId: item_thien_tai, count: 1 }] }

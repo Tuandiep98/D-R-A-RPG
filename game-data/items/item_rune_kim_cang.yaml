@@ -1,0 +1,13 @@
+id: item_rune_kim_cang
+name: Kim Cang Trận Văn
+kind: socket
+description: "Trận văn hộ thể: +5 phòng thủ, +40 HP."
+icon: "☯"
+iconImage: icon_item_scroll
+maxStack: 20
+sellPrice: 40
+socket:
+  type: rune
+  line: tien
+  minQuality: rare
+  bonus: { defense: 5, hp: 40 }

@@ -1,0 +1,11 @@
+id: rite_overclock
+name: Ép Xung Lõi
+description: "Ép xung lõi năng lượng của trang bị: +10% chỉ số."
+line: co
+group: attune
+minQuality: rare
+gold: 200
+materials: [{ itemId: item_reactor_core, count: 1 }, { itemId: item_robot_scrap, count: 4 }]
+
+effects:
+  statMultiplier: 0.1

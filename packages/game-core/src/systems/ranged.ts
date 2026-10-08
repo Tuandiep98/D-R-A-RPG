@@ -7,7 +7,8 @@ import { clamp, sub, type Vec2, yawOf } from '../math';
 import { secondsToTicks, TICK_RATE } from '../time';
 import { beginAction, currentAction } from './action-timeline';
 import { applyDamage, captureDamageSource, rollHit } from './combat';
-import { facingDot } from './melee';
+import { forgeBulletHit } from './forge-combat';
+import { facingDot, lunge } from './melee';
 
 /**
  * Ranged basic attacks (đánh tầm xa, D-033). Data in game-data/ranged; the
@@ -625,7 +626,7 @@ function hit(
     ctx,
     e,
     t,
-    { multiplier: def.damage, critBonus: def.critBonus },
+    { multiplier: def.damage, critBonus: def.critBonus + (e.player?.gear?.ammo.critBonus ?? 0) },
     { distanceFactor, positionFactor },
     source,
   );
@@ -635,6 +636,8 @@ function hit(
     shot: { id: shotId, pellet },
     source,
   });
+  // Chip đầu đạn: stun cadence and heavy-weapon knockback.
+  forgeBulletHit(ctx, e, t, def.heavy, (target, yaw, metres) => lunge(ctx, target, yaw, metres));
 }
 
 // ---- View -------------------------------------------------------------------

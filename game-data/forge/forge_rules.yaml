@@ -1,0 +1,48 @@
+# Thiên Cơ Luyện Khí — docs/plan/06_forge_equipment_plan.md (D-036).
+id: forge_rules
+qualities:
+  common: { name: Phổ thông, color: "#c9ced6", statMultiplier: 1, sockets: 1, hidden: 0, maxEnhance: 6, durability: 60, repairGold: 0.5 }
+  rare: { name: Quý hiếm, color: "#4fa3ff", statMultiplier: 1.2, sockets: 2, hidden: 1, maxEnhance: 9, durability: 80, repairGold: 1 }
+  epic: { name: Sử thi, color: "#b77bff", statMultiplier: 1.45, sockets: 3, hidden: 2, maxEnhance: 12, durability: 100, repairGold: 2 }
+  legendary: { name: Huyền thoại, color: "#ffb340", statMultiplier: 1.75, sockets: 4, hidden: 3, maxEnhance: 15, durability: 120, repairGold: 4 }
+enhance:
+  bonusPerLevel: 0.08
+  safeLevel: 5
+  wardItemId: item_forge_ward
+  hiddenUnlockAt: [3, 6, 9]
+  steps:
+    - { gold: 20, successRate: 1, materials: [{ itemId: item_tinh_thiet, count: 1 }] }
+    - { gold: 35, successRate: 1, materials: [{ itemId: item_tinh_thiet, count: 1 }] }
+    - { gold: 50, successRate: 0.95, materials: [{ itemId: item_tinh_thiet, count: 2 }] }
+    - { gold: 80, successRate: 0.9, materials: [{ itemId: item_tinh_thiet, count: 2 }] }
+    - { gold: 120, successRate: 0.8, materials: [{ itemId: item_tinh_thiet, count: 3 }] }
+    - { gold: 160, successRate: 0.7, materials: [{ itemId: item_tinh_thiet, count: 3 }, { itemId: item_linh_thach, count: 1 }] }
+    - { gold: 220, successRate: 0.6, materials: [{ itemId: item_tinh_thiet, count: 4 }, { itemId: item_linh_thach, count: 1 }] }
+    - { gold: 300, successRate: 0.55, materials: [{ itemId: item_tinh_thiet, count: 4 }, { itemId: item_linh_thach, count: 2 }] }
+    - { gold: 400, successRate: 0.5, materials: [{ itemId: item_linh_thach, count: 3 }] }
+    - { gold: 520, successRate: 0.45, materials: [{ itemId: item_linh_thach, count: 3 }, { itemId: item_reactor_core, count: 1 }] }
+    - { gold: 660, successRate: 0.4, materials: [{ itemId: item_linh_thach, count: 4 }, { itemId: item_reactor_core, count: 1 }] }
+    - { gold: 820, successRate: 0.35, materials: [{ itemId: item_linh_thach, count: 5 }, { itemId: item_reactor_core, count: 1 }] }
+    - { gold: 1000, successRate: 0.3, materials: [{ itemId: item_linh_thach, count: 6 }, { itemId: item_reactor_core, count: 2 }] }
+    - { gold: 1250, successRate: 0.25, materials: [{ itemId: item_linh_thach, count: 8 }, { itemId: item_reactor_core, count: 2 }] }
+    - { gold: 1500, successRate: 0.2, materials: [{ itemId: item_linh_thach, count: 10 }, { itemId: item_thien_tai, count: 1 }] }
+hiddenPool:
+  weapon:
+    - { stat: attack, min: 3, max: 9 }
+    - { stat: critChance, min: 0.01, max: 0.04 }
+    - { stat: mp, min: 10, max: 30 }
+    - { stat: speed, min: 0.05, max: 0.15 }
+  armor:
+    - { stat: hp, min: 30, max: 90 }
+    - { stat: defense, min: 2, max: 7 }
+    - { stat: mp, min: 10, max: 25 }
+    - { stat: speed, min: 0.05, max: 0.12 }
+socketRemove: { gold: 25 }
+synthesis:
+  fodder: 2
+  steps:
+    rare: { gold: 150, successRate: 1, materials: [{ itemId: item_synth_stone, count: 1 }] }
+    epic: { gold: 400, successRate: 0.8, materials: [{ itemId: item_synth_stone, count: 2 }, { itemId: item_linh_thach, count: 2 }] }
+    legendary: { gold: 1200, successRate: 0.6, materials: [{ itemId: item_synth_stone, count: 3 }, { itemId: item_thien_tai, count: 1 }] }
+durability: { deathLoss: 10, brokenMultiplier: 0.5 }
+hybrid: { groups: 2, statMultiplier: 0.1 }

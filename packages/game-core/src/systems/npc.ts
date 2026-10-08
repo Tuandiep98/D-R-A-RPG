@@ -1,10 +1,11 @@
 import type { QuestDef } from '@rpg/game-data';
+import { isBound } from '@rpg/game-data';
 import type { EntityId, ItemInstanceId } from '@rpg/game-protocol';
 import { INTERACT_RANGE, type SimContext } from '../context';
 import type { Entity, QuestState } from '../entity';
 import { distance } from '../math';
 import { addItem, canAdd, countItem, grantGold, removeItems } from './inventory';
-import { realmRank, recomputePlayerStats } from './progression';
+import { realmRank } from './progression';
 
 /** NPC actions are allowed a little beyond pickup reach (dialog stays open while you shuffle). */
 const NPC_RANGE = INTERACT_RANGE + 1.5;
@@ -214,6 +215,11 @@ export function shopSell(
     return false;
   }
   const equipped = Object.values(p.equipment).includes(instanceId);
+  // Huyết tế / liên kết thần kinh / bản mệnh bind the item to its owner.
+  if (isBound(ctx.content, inv)) {
+    ctx.notice(player.id, 'item_bound');
+    return false;
+  }
   if (equipped || def.sellPrice <= 0 || count > inv.count) {
     ctx.notice(player.id, 'not_sellable');
     return false;
@@ -272,61 +278,6 @@ export function craft(
   }
   for (const m of recipe.materials) removeItems(ctx, player, m.itemId, m.count);
   addItem(ctx, player, recipe.result.itemId, recipe.result.count);
-  refreshQuests(ctx, player);
-  return true;
-}
-
-// ---- Upgrade (enhancement) --------------------------------------------------
-
-export function upgrade(
-  ctx: SimContext,
-  player: Entity,
-  npcEntityId: EntityId,
-  instanceId: ItemInstanceId,
-): boolean {
-  const found = npcFor(ctx, player, npcEntityId);
-  const rules = [...ctx.content.upgrades.values()][0];
-  const p = player.player;
-  const inv = p?.inventory.find((i) => i.instanceId === instanceId);
-  const def = inv ? ctx.content.items.get(inv.itemId) : undefined;
-  if (!p || !found || !found.def.upgrades || !rules || !inv || def?.kind !== 'equipment') {
-    if (found) ctx.notice(player.id, 'invalid');
-    return false;
-  }
-  const level = inv.enhance ?? 0;
-  const step = rules.steps[level];
-  if (!step || level >= rules.maxLevel) {
-    ctx.notice(player.id, 'max_level');
-    return false;
-  }
-  if (step.materials.some((m) => countItem(player, m.itemId) < m.count)) {
-    ctx.notice(player.id, 'missing_materials');
-    return false;
-  }
-  if (p.gold < step.gold) {
-    ctx.notice(player.id, 'not_enough_gold');
-    return false;
-  }
-  if (
-    step.gold > 0 &&
-    !grantGold(ctx, player, -step.gold, 'upgrade', `upgrade:${instanceId}:${level}:${ctx.tick}`)
-  ) {
-    return false;
-  }
-  for (const m of step.materials) removeItems(ctx, player, m.itemId, m.count);
-  // Failure keeps the item at its level (no downgrade or destruction in the MVP).
-  const success = ctx.rng.chance(step.successRate);
-  if (success) {
-    inv.enhance = level + 1;
-    if (Object.values(p.equipment).includes(instanceId)) recomputePlayerStats(ctx, player);
-  }
-  ctx.emit({
-    type: 'UPGRADE_RESULT',
-    ownerId: player.id,
-    instanceId,
-    success,
-    level: inv.enhance ?? 0,
-  });
   refreshQuests(ctx, player);
   return true;
 }

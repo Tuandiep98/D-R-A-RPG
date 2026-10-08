@@ -1,0 +1,12 @@
+id: item_ammo_toc_nap
+name: Chip Tốc Nạp
+kind: socket
+description: Nạp đạn nhanh hơn 30%, +4 viên mỗi băng, giảm 20% nhiệt.
+icon: "🎯"
+iconImage: icon_gun_pistol
+maxStack: 20
+sellPrice: 55
+socket:
+  type: ammo
+  line: co
+  ammo: { reloadMultiplier: 0.7, magazineBonus: 4, heatMultiplier: 0.8 }

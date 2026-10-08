@@ -4,7 +4,7 @@ import { z } from 'zod';
  * Wire contract between client and simulation host (local or server).
  * Bump PROTOCOL_VERSION on any breaking change to these schemas.
  */
-export const PROTOCOL_VERSION = 13;
+export const PROTOCOL_VERSION = 14;
 export const SAVE_VERSION = 2;
 export const SaveVersionSchema = z.number().int().min(1).max(SAVE_VERSION);
 export const LearnedSkillsSchema = z.array(z.string().regex(/^[a-z][a-z0-9_]*$/)).max(256);
@@ -51,6 +51,17 @@ export const EquipSlotSchema = z.enum([
 // ---------------------------------------------------------------------------
 // Client → host. Clients send intents only (tech plan §21).
 // ---------------------------------------------------------------------------
+
+export const ForgeOpSchema = z.enum([
+  'enhance',
+  'evolve',
+  'socket',
+  'unsocket',
+  'rite',
+  'synthesize',
+  'repair',
+]);
+export type ForgeOp = z.infer<typeof ForgeOpSchema>;
 
 export const IntentSchema = z.discriminatedUnion('type', [
   z.strictObject({ type: z.literal('MOVE_TO'), target: Vec2Schema }),
@@ -148,10 +159,22 @@ export const IntentSchema = z.discriminatedUnion('type', [
     npcId: EntityIdSchema,
     recipeId: contentId,
   }),
+  /** Tiệm Rèn (docs/plan/06_forge_equipment_plan.md); the server checks every requirement. */
   z.strictObject({
-    type: z.literal('UPGRADE'),
+    type: z.literal('FORGE'),
     npcId: EntityIdSchema,
+    op: ForgeOpSchema,
     instanceId: ItemInstanceIdSchema,
+    /** socket: the socket item; unsocket: unused. */
+    socketInstanceId: ItemInstanceIdSchema.optional(),
+    /** unsocket: which socket. */
+    socketIndex: z.number().int().min(0).max(8).optional(),
+    /** rite: which rite. */
+    riteId: contentId.optional(),
+    /** synthesize: the fodder items. */
+    fodder: z.array(ItemInstanceIdSchema).max(4).optional(),
+    /** enhance: burn a ward to avoid a level drop on failure. */
+    useWard: z.boolean().optional(),
   }),
   z.strictObject({ type: z.literal('PARTY_INVITE'), targetId: EntityIdSchema }),
   z.strictObject({ type: z.literal('PARTY_ACCEPT'), fromId: EntityIdSchema }),
@@ -292,6 +315,11 @@ export const NoticeCodeSchema = z.enum([
   'backlash',
   'reloading',
   'overheated',
+  'quality_too_low',
+  'item_bound',
+  'item_equipped',
+  'no_socket',
+  'natal_taken',
 ]);
 export type NoticeCode = z.infer<typeof NoticeCodeSchema>;
 
@@ -538,11 +566,15 @@ export const SimEventSchema = z
       fromName: z.string(),
     }),
     z.object({
-      type: z.literal('UPGRADE_RESULT'),
+      type: z.literal('FORGE_RESULT'),
       ownerId: EntityIdSchema,
+      op: ForgeOpSchema,
       instanceId: z.string(),
       success: z.boolean(),
+      /** Enhancement after the attempt. */
       level: z.number().int(),
+      /** Short machine detail for the HUD toast (e.g. 'dropped', 'ward', 'quality:rare'). */
+      detail: z.string().max(64).optional(),
     }),
   ])
   .and(z.object({ eventId: z.number().int().positive().optional() }));
@@ -552,12 +584,38 @@ export type SimEvent = z.infer<typeof SimEventSchema>;
 // Host → one client: private state of the controlled character
 // ---------------------------------------------------------------------------
 
+/** Per-instance forge state (docs/plan/06_forge_equipment_plan.md). */
+export const ItemForgeSchema = z.strictObject({
+  quality: z.enum(['common', 'rare', 'epic', 'legendary']).optional(),
+  /** Evolution stage (0 = authored item). */
+  stage: z.number().int().min(0).max(6).optional(),
+  durability: z.number().int().min(0).max(1000).optional(),
+  /** Socket item ids; null = empty socket. */
+  sockets: z
+    .array(
+      z
+        .string()
+        .regex(/^[a-z][a-z0-9_]*$/)
+        .nullable(),
+    )
+    .max(8)
+    .optional(),
+  /** Applied rite ids; repeats count absorb stacks. */
+  rites: z
+    .array(z.string().regex(/^[a-z][a-z0-9_]*$/))
+    .max(16)
+    .optional(),
+});
+export type ItemForge = z.infer<typeof ItemForgeSchema>;
+
 export const InventoryItemSchema = z.object({
   instanceId: ItemInstanceIdSchema,
   itemId: z.string(),
   count: z.number().int().positive(),
   /** Equipment enhancement level (+1…). */
   enhance: z.number().int().nonnegative().optional(),
+  /** Forge state of an equipment instance; absent = authored defaults. */
+  forge: ItemForgeSchema.optional(),
 });
 export type InventoryItem = z.infer<typeof InventoryItemSchema>;
 

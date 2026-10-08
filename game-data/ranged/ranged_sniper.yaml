@@ -3,6 +3,7 @@
 id: ranged_sniper
 name: Trường thương ngắm
 kind: gun
+heavy: true
 fireMode: semi
 fireInterval: 0.2
 windup: 0.25

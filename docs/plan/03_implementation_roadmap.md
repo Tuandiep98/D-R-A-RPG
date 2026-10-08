@@ -1,7 +1,7 @@
 # Implementation Roadmap
 
 Tài liệu nguồn: `00_game_design_master.md` (Thiên Cơ Kỷ), `01_tech_stack_plan.md`, `02_assets_models_maps_plan.md`, `../decision_log.md`.
-Cập nhật: 2026-10-08.
+Cập nhật: 2026-10-09.
 
 Ký hiệu: ✅ xong · 🟡 có nền tảng/placeholder, cần hoàn thiện · ✋ cần người làm (art, thiết bị, quyết định) · ⬜ chưa làm.
 
@@ -27,7 +27,7 @@ Ký hiệu: ✅ xong · 🟡 có nền tảng/placeholder, cần hoàn thiện �
 | 4 RPG systems   | Inventory, equipment, item stats, loot, skill, quest; **không level** (D-024)           | ✅         | Quest kill/collect/talk, chuỗi 6 nhiệm vụ, NPC; tiến triển bằng cảnh giới + node                                        |
 | 5 World         | Zone, chunk, streaming, AOI, chuyển map, dungeon instance                               | ✅         | Phó bản solo "Cơ Quan Điện" (1 instance/nhân vật)                                                                       |
 | 6 Optimization  | Pool, LOD, simulation LOD, thin instances, quality runtime, nén asset, profile mobile   | 🟡         | Simulation LOD ✅, bundle Babylon 7.5→4.0 MB ✅, LOD1 environment tự động ✅ (cây cần impostor ⬜), profile thiết bị ✋ |
-| 7 Economy       | Craft, upgrade, currency ledger, shop, chuẩn bị marketplace                             | ✅         | Shop mua/bán, 3 công thức, cường hoá +1…+5; marketplace ⬜                                                              |
+| 7 Economy       | Craft, upgrade, currency ledger, shop, chuẩn bị marketplace                             | ✅         | Shop mua/bán, 3 công thức, Tiệm Rèn (cường hoá +15, khảm, luyện khí, hợp thành, sửa chữa); marketplace ⬜                |
 | 8 Social        | Chat, friend, guild, party, leaderboard                                                 | ✅         | Chat, party, bạn bè, bang hội (DB + API + panel), leaderboard                                                           |
 | 9 PWA/mobile    | PWA install, runtime cache, offline shell, Capacitor                                    | 🟡         | PWA ✅; Capacitor config ✅, `cap add android/ios` ✋                                                                   |
 
@@ -46,8 +46,8 @@ Ký hiệu: ✅ xong · 🟡 có nền tảng/placeholder, cần hoàn thiện �
 | 8 Đạo + skill web (§36)                                                      | ⬜         | Hiện chỉ trục `dao` trên node                                                                         |
 | Kim Đan properties / Foundation / Frame lựa chọn (§44–49)                    | 🟡         | Kiếm Cơ, Medium Frame là node Trúc Cơ; chưa có lựa chọn loại trừ nhau                                 |
 | World layer theo cảnh giới (§64)                                             | ⬜         |                                                                                                       |
-| Equipment evolution, tier Tiên/Cơ (§65–68)                                   | ⬜         |                                                                                                       |
-| Bản Mệnh + bond (§69–70)                                                     | ⬜         |                                                                                                       |
+| Equipment evolution, tier Tiên/Cơ (§65–68)                                   | ✅         | Tiệm Rèn D-036: phẩm, cường hoá, tiến hoá, khảm, luyện khí/kỹ thuật, hợp thành, sửa chữa ([plan 06](06_forge_equipment_plan.md)) |
+| Bản Mệnh + bond (§69–70)                                                     | 🟡         | Độ Kiếp / Thăng Cấp Tự Trị: 1 món, +4%/cảnh giới; personality/memory/bond chưa có                     |
 | Mutation trade-off (§77–78), hidden path (§76)                               | ⬜         |                                                                                                       |
 | Respec soft/medium/hard (§86–88)                                             | ⬜         | Node hiện không gỡ được                                                                               |
 | Boss drop đa dạng (§89)                                                      | 🟡         | Guardian X-04 rơi Lõi Cơ Quan (dùng cho node Trúc Cơ)                                                 |
@@ -92,6 +92,10 @@ Backlog hạ tầng/social hiện có:
 5. Lệnh GM trực tiếp trong game (thay cho "tặng vật phẩm" offline).
 6. Party xuyên map và party trong phó bản (hiện party chỉ trong một map).
 7. Tiếp tục giảm bundle (Babylon 4.0 MB → < 3 MB): tách inspector, lazy-load shadow/VFX.
+
+### Trang bị & Tiệm Rèn — 2026-10-09
+
+Bản đầu tiên theo [plan 06](06_forge_equipment_plan.md) (D-036): 4 phẩm instance-level, 15 cấp cường hoá, chuỗi tiến hoá Tiên/Cơ cho 8 món, 23 vật phẩm khảm (5 module chiến đấu theo ngũ hành có đòn thứ 3, 3 module phòng thủ, 4 chip đầu đạn, 5 linh châu, 3 trận văn), 10 nghi thức hai tuyến, hợp thành nâng phẩm, độ bền/sửa chữa, 9 vật liệu mới + nguồn rơi. Bộ thử nghiệm: quest "Thử Lò" của Lão Mộc. Gates: 339 test/35 file, typecheck, 465 YAML, depcruise, build web; `pnpm smoke:forge` desktop + điện thoại ngang. Tiếp theo: cân bằng tỉ lệ/giá qua playtest, VFX riêng cho đòn thứ 3 Hàn Triều/Địa Chấn, model theo stage tiến hoá, Bản Mệnh có bond/memory.
 
 ## Việc cần người làm
 

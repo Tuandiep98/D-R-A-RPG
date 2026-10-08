@@ -3,10 +3,23 @@ import {
   type AppearanceDef,
   type ComboVariant,
   type ContentBundle,
+  durabilityOf,
   type EquipSlot,
+  forgedName,
+  forgedTier,
+  forgeRules,
+  hiddenStats,
+  type ItemForgeState,
+  isBound,
+  isHybrid,
+  isNatal,
+  itemBonus,
   type MonsterTier,
+  maxDurability,
+  qualityOf,
   type RangedDef,
   realmLadder,
+  socketsOf,
 } from '@rpg/game-data';
 import type {
   ChatMessage,
@@ -130,7 +143,7 @@ export interface ItemView {
   iconImage: string | null;
   rarity: string;
   rarityColor: string;
-  kind: 'equipment' | 'consumable' | 'material';
+  kind: 'equipment' | 'consumable' | 'material' | 'socket';
   slot: EquipSlot | null;
   /** Required realm name, null when any realm may use it. */
   realmName: string | null;
@@ -139,6 +152,26 @@ export interface ItemView {
   description: string;
   bonus: string;
   enhance: number;
+  /** Forge view of equipment (Tiệm Rèn); null for other kinds. */
+  forge: ForgeView | null;
+}
+
+/** Display-only forge summary; the server owns every number that matters. */
+export interface ForgeView {
+  state: ItemForgeState;
+  quality: string;
+  qualityName: string;
+  tier: string | null;
+  stage: number;
+  stages: number;
+  durability: number;
+  maxDurability: number;
+  sockets: { itemId: string | null; name: string | null }[];
+  rites: { id: string; name: string; line: string; group: string }[];
+  hidden: { text: string; active: boolean; unlockAt: number }[];
+  bound: boolean;
+  natal: boolean;
+  hybrid: boolean;
 }
 
 /** Equipped ranged weapon for the HUD (ammo, heat, reload). */
@@ -340,7 +373,31 @@ const NOTICE_TEXT: Record<NoticeCode, string> = {
   backlash: 'Đang bị phản phệ, chưa thể đột phá lại',
   reloading: 'Đang nạp đạn',
   overheated: 'Súng quá tải — chờ nguội',
+  quality_too_low: 'Phẩm trang bị chưa đủ',
+  item_bound: 'Trang bị đã khoá với chủ',
+  item_equipped: 'Hãy tháo trang bị trước',
+  no_socket: 'Không còn ô khảm trống',
+  natal_taken: 'Đã có Bản Mệnh khác',
 };
+
+const STAT_LABEL = {
+  hp: 'HP',
+  mp: 'MP',
+  attack: 'Công',
+  defense: 'Thủ',
+  critChance: 'Bạo kích',
+  speed: 'Tốc độ',
+} as const;
+
+const FORGE_TEXT = {
+  enhance: 'Cường hoá',
+  evolve: 'Tiến hoá',
+  socket: 'Khảm',
+  unsocket: 'Gỡ khảm',
+  rite: 'Luyện khí',
+  synthesize: 'Hợp thành',
+  repair: 'Sửa chữa',
+} as const;
 
 /**
  * Client-side game: renders host snapshots, turns input into intents.
@@ -1760,19 +1817,28 @@ export class GameView {
             });
           }
           break;
-        case 'UPGRADE_RESULT':
+        case 'FORGE_RESULT':
           if (mine(ev.ownerId)) {
+            const op = FORGE_TEXT[ev.op];
+            const rite =
+              ev.op === 'rite' && ev.detail ? this.opts.content.rites.get(ev.detail) : undefined;
+            const what = rite ? `${op} · ${rite.name}` : op;
+            const extra =
+              ev.op === 'enhance'
+                ? ev.success
+                  ? ` +${ev.level}`
+                  : ev.detail === 'dropped'
+                    ? ` — tụt về +${ev.level}`
+                    : ev.detail === 'ward'
+                      ? ' — Hộ Phù giữ cấp'
+                      : ` — giữ +${ev.level}`
+                : ev.op === 'synthesize' && ev.detail?.startsWith('quality:')
+                  ? ` → ${forgeRules(this.opts.content)?.qualities[ev.detail.slice(8) as 'rare'].name ?? ''}`
+                  : '';
             this.opts.onNotice?.(
               ev.success
-                ? {
-                    text: `Cường hoá thành công: +${ev.level}`,
-                    tone: 'good',
-                    color: '#ffd23f',
-                  }
-                : {
-                    text: `Cường hoá thất bại (giữ +${ev.level})`,
-                    tone: 'warn',
-                  },
+                ? { text: `${what} thành công${extra}`, tone: 'good', color: '#ffd23f' }
+                : { text: `${what} thất bại${extra}`, tone: 'warn' },
             );
           }
           break;
@@ -2047,31 +2113,73 @@ export class GameView {
     count: number,
     equipped: boolean,
     enhance = 0,
+    forge?: ItemForgeState,
+    wearer: { element: import('@rpg/game-protocol').Element | null; realm: number } = {
+      element: null,
+      realm: 0,
+    },
   ): ItemView {
-    const def = this.opts.content.items.get(itemId);
-    const b = def?.bonus;
-    const sign = (v: number) => (v > 0 ? `+${v}` : `${v}`);
+    const c = this.opts.content;
+    const def = c.items.get(itemId);
+    const instance = { instanceId, enhance, forge };
+    const rules = forgeRules(c);
+    const gear = def?.kind === 'equipment';
+    // Equipment shows its forged total; sockets show their own bonus.
+    const b = gear ? itemBonus(c, def, instance, wearer) : (def?.bonus ?? def?.socket?.bonus);
+    const round = (v: number) => Math.round(v * 10) / 10;
+    const sign = (v: number) => (v > 0 ? `+${round(v)}` : `${round(v)}`);
     const parts = b
       ? [
           b.attack && `Công ${sign(b.attack)}`,
           b.defense && `Thủ ${sign(b.defense)}`,
           b.hp && `HP ${sign(b.hp)}`,
           b.mp && `MP ${sign(b.mp)}`,
-          b.critChance && `Bạo kích ${(b.critChance * 100).toFixed(0)}%`,
+          b.critChance && `Bạo kích ${(b.critChance * 100).toFixed(1)}%`,
           b.speed && `Tốc độ ${sign(b.speed)}`,
         ].filter(Boolean)
       : def?.heal
         ? [`Hồi ${(def.heal * 100).toFixed(0)}% HP`]
         : [];
-    const rarity = def?.rarity ?? 'common';
+    const quality = gear ? qualityOf(def, instance) : (def?.rarity ?? 'common');
+    const rarity = quality;
+    const qualityRule = rules && gear ? rules.qualities[qualityOf(def, instance)] : undefined;
+    const forgeView: ForgeView | null =
+      gear && def
+        ? {
+            state: forge ?? {},
+            quality,
+            qualityName: qualityRule?.name ?? quality,
+            tier: forgedTier(def, instance) ?? null,
+            stage: forge?.stage ?? 0,
+            stages: def.evolution.length,
+            durability: durabilityOf(rules, def, instance),
+            maxDurability: maxDurability(rules, qualityOf(def, instance)),
+            sockets: socketsOf(c, def, instance).map((id) => ({
+              itemId: id,
+              name: id ? (c.items.get(id)?.name ?? id) : null,
+            })),
+            rites: (forge?.rites ?? []).flatMap((id) => {
+              const r = c.rites.get(id);
+              return r ? [{ id, name: r.name, line: r.line, group: r.group }] : [];
+            }),
+            hidden: hiddenStats(c, def, instance).map((h) => ({
+              text: `${STAT_LABEL[h.stat]} ${h.stat === 'critChance' ? `+${(h.value * 100).toFixed(1)}%` : sign(h.value)}`,
+              active: h.active,
+              unlockAt: h.unlockAt,
+            })),
+            bound: isBound(c, instance),
+            natal: isNatal(c, instance),
+            hybrid: isHybrid(c, instance),
+          }
+        : null;
     return {
       instanceId,
       itemId,
-      name: def?.name ?? itemId,
+      name: def && gear ? forgedName(def, instance) : (def?.name ?? itemId),
       icon: def?.icon ?? '◆',
       iconImage: def?.iconImage ?? null,
       rarity,
-      rarityColor: RARITY_COLORS[rarity] ?? '#fff',
+      rarityColor: qualityRule?.color ?? RARITY_COLORS[rarity] ?? '#fff',
       kind: def?.kind ?? 'material',
       slot: (def?.slot as EquipSlot | undefined) ?? null,
       realmName: def?.realm ? (this.opts.content.realms.get(def.realm)?.name ?? def.realm) : null,
@@ -2080,6 +2188,7 @@ export class GameView {
       description: def?.description ?? '',
       bonus: parts.join(' · '),
       enhance,
+      forge: forgeView,
     };
   }
 
@@ -2236,8 +2345,21 @@ export class GameView {
         : null;
 
     const equippedIds = new Set(Object.values(ps?.equipment ?? {}));
+    const rank = Math.max(
+      0,
+      realmLadder(c).findIndex((r) => r.id === ps?.realm),
+    );
+    const wearer = { element: ps?.element ?? null, realm: rank };
     const inventory = (ps?.inventory ?? []).map((i) =>
-      this.itemView(i.instanceId, i.itemId, i.count, equippedIds.has(i.instanceId), i.enhance ?? 0),
+      this.itemView(
+        i.instanceId,
+        i.itemId,
+        i.count,
+        equippedIds.has(i.instanceId),
+        i.enhance ?? 0,
+        i.forge,
+        wearer,
+      ),
     );
     const equipment: UiState['equipment'] = {};
     for (const [slot, instanceId] of Object.entries(ps?.equipment ?? {})) {

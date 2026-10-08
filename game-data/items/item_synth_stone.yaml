@@ -1,0 +1,8 @@
+id: item_synth_stone
+name: Hợp Thành Thạch
+kind: material
+description: Đá dung hợp, cần cho hợp thành nâng phẩm.
+icon: "✴"
+iconImage: icon_item_star
+maxStack: 99
+sellPrice: 40

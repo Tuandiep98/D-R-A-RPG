@@ -1,0 +1,8 @@
+id: item_reactor_core
+name: Lõi Phản Ứng
+kind: material
+description: Lõi năng lượng Thiên Cơ còn hoạt động; dùng Ép Xung và Nạp Lõi.
+icon: "🔋"
+iconImage: icon_item_crystal1
+maxStack: 99
+sellPrice: 30

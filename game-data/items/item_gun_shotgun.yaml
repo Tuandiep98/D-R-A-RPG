@@ -10,3 +10,8 @@ bonus: { attack: 14 }
 sellPrice: 110
 appearanceId: gear_weapon_kb_blaster_h
 ranged: ranged_shotgun
+line: co
+tier: Standard Module
+evolution:
+  - { name: Tán Pháo Mk II, tier: Combat Module, baseMultiplier: 1.35, minEnhance: 3, gold: 220, materials: [{ itemId: item_robot_scrap, count: 8 }, { itemId: item_microchip, count: 1 }] }
+  - { name: Tán Pháo Phản Ứng, tier: Reactor Module, baseMultiplier: 1.8, minEnhance: 6, minQuality: rare, gold: 650, materials: [{ itemId: item_reactor_core, count: 2 }, { itemId: item_microchip, count: 2 }] }

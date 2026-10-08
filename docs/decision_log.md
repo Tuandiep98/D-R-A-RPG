@@ -282,3 +282,17 @@ Mỗi quyết định: ngày, bối cảnh, quyết định, hệ quả. Khi mâ
   - Luật tạo map: `docs/map_authoring_rules.md` (R1–R8 có test `tools/map-builder/map-rules.test.ts`). Plan: `docs/plan/05_map_renovation_plan.md`.
   - Tân Nguyên Trấn mở rộng 40 → 80 m; bãi quái nhập môn dời ra ngoài cổng bắc (không đặt quái trong vùng an toàn).
 - **Hệ quả:** thêm 57 model KayKit (pack đã duyệt) cho dressing. Kiến trúc Đông phương (mái ngói, đình) vẫn thiếu asset — nhà tạm ghép từ tường KayKit Dungeon. "Đã khám phá" theo nhân vật (persist) là bước sau.
+
+## D-036 — Trang bị & Tiệm Rèn hai tuyến Tu Tiên / Cơ Giới
+
+- **Ngày:** 2026-10-09
+- **Bối cảnh:** chủ dự án yêu cầu hệ thống trang bị, tiệm rèn, nâng cấp/sửa chữa/cường hoá/khảm/hợp thành với bốn phẩm (Phổ thông, Quý hiếm, Sử thi, Huyền thoại), chỉ số ẩn theo phẩm, khảm module chiến đấu (đòn thứ 3 theo hệ, tăng khi trùng bản mệnh), module phòng thủ, chip đầu đạn và các phép luyện khí kiểu tiểu thuyết tu tiên; hai tuyến song song cùng gốc.
+- **Quyết định:**
+  - Thay `upgrades/` (cường hoá +1…+5) bằng `forge/forge_rules.yaml` + `rites/`; NPC dùng cờ `forge: true`. Intent `UPGRADE`/event `UPGRADE_RESULT` thay bằng `FORGE` (op: enhance/evolve/socket/unsocket/rite/synthesize/repair) và `FORGE_RESULT`. PROTOCOL_VERSION 14.
+  - Phẩm, stage tiến hoá, độ bền, khảm và nghi thức nằm trên **instance** (`InventoryItem.forge`, cột `item_instances.forge jsonb`). Chỉ số ẩn không lưu: suy ra từ instanceId bằng hash có định, không dùng RNG của World.
+  - Tầng chỉ số tách bạch: cường hoá = chỉ số thường, tiến hoá = chỉ số gốc, phẩm = hệ số, nghi thức = %, khảm = hiệu ứng combat + bonus phẳng. Chỉ số âm không bị khuếch đại.
+  - Mỗi nhóm nghi thức (attune/engrave/bind/absorb/ascend) có một bản Tiên và một bản Cơ; món mang nghi thức của cả hai tuyến ở ≥ 2 nhóm là **Thiên Cơ** (+10%). Bản Mệnh tối đa 1 món/nhân vật.
+  - Không vỡ đồ: thất bại chỉ mất chi phí, 1 cấp cường hoá trên +5 (Hộ Phù chặn), 1 món nguyên liệu hợp thành hoặc độ bền.
+  - Hàm tính chỉ số rèn ở `game-data/src/forge.ts` (thuần) để sim và UI hiển thị dùng chung; sim vẫn authoritative.
+  - Bộ thử nghiệm tạm thời: quest `q_forge_trial` của Lão Mộc (vàng qua ledger + vật liệu + chip + trang bị nhiều phẩm).
+- **Hệ quả:** plan `docs/plan/06_forge_equipment_plan.md`; `pnpm smoke:forge` chạy luồng UI. Bản Mệnh mới chỉ là chỉ số theo cảnh giới (personality/memory/bond §69–70 là bước sau); số liệu cân bằng là đề xuất chờ playtest.

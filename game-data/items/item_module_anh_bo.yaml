@@ -1,0 +1,14 @@
+id: item_module_anh_bo
+name: Module Ảnh Bộ
+kind: socket
+description: 8% né hoàn toàn đòn đánh.
+icon: "🛡"
+iconImage: icon_skill_shield
+maxStack: 20
+sellPrice: 50
+socket:
+  type: defense
+  line: co
+  bonus: { defense: 3 }
+  defense:
+    dodge: 0.08

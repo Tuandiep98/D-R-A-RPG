@@ -5,11 +5,12 @@ import { clampToBounds, distance } from '../math';
 import { secondsToTicks } from '../time';
 import { canCancelAction, cancelAction, currentAction } from './action-timeline';
 import { breakthrough, openNode } from './cultivation';
+import { forge } from './forge';
 import { equip, unequip, useItem } from './inventory';
 import { tryPickup } from './loot';
 import { requestBasicAttack } from './melee';
 import { requestMobility } from './mobility';
-import { acceptQuest, craft, openNpc, shopBuy, shopSell, turnInQuest, upgrade } from './npc';
+import { acceptQuest, craft, openNpc, shopBuy, shopSell, turnInQuest } from './npc';
 import { releaseTrigger, requestReload, setTrigger, tapTrigger } from './ranged';
 import { requestCast } from './skills';
 
@@ -266,8 +267,8 @@ function apply(ctx: SimContext, actor: Entity, intent: Intent): boolean {
       return shopSell(ctx, actor, intent.npcId, intent.instanceId, intent.count);
     case 'CRAFT':
       return craft(ctx, actor, intent.npcId, intent.recipeId);
-    case 'UPGRADE':
-      return upgrade(ctx, actor, intent.npcId, intent.instanceId);
+    case 'FORGE':
+      return forge(ctx, actor, intent);
     case 'PARTY_INVITE': {
       const target = ctx.entities.get(intent.targetId);
       return !!target && ctx.parties.invite(ctx, actor, target);

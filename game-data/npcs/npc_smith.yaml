@@ -1,7 +1,9 @@
 id: npc_smith
 name: Lão Mộc
-title: Thợ rèn · Lò rèn
+title: Thợ rèn · Tiệm Rèn Thiên Cơ
 appearanceId: npc_smith_01
-greeting: Pháp khí hay robot, hỏng gì ta sửa nấy. Đừng hỏi ta học ở đâu.
+greeting: Pháp khí hay robot, gốc rễ đều là Thiên Cơ. Cường hoá, khảm, luyện khí, hợp thành — muốn gì ta làm nấy.
+quests: [q_forge_trial]
+shopId: shop_forge
 recipes: [r_wuxia_robe, r_mech_visor]
-upgrades: true
+forge: true

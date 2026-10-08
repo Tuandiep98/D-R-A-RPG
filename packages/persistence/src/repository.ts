@@ -5,6 +5,7 @@ import {
   SkillCooldownsSchema as CooldownsSchema,
   ElementSchema,
   ExpressionSchema,
+  ItemForgeSchema,
   LearnedSkillsSchema,
   SAVE_VERSION,
   SaveVersionSchema,
@@ -290,6 +291,7 @@ export class GameRepository {
           itemId: i.itemId,
           count: i.count,
           ...(i.enhance > 0 ? { enhance: i.enhance } : {}),
+          ...(i.forge ? { forge: ItemForgeSchema.parse(i.forge) } : {}),
         })),
         equipment,
         quests: (c.questLog as PlayerSave['quests']) ?? [],
@@ -383,6 +385,7 @@ export class GameRepository {
             count: i.count,
             equippedSlot: equippedBy.get(i.instanceId) ?? null,
             enhance: i.enhance ?? 0,
+            forge: i.forge ? ItemForgeSchema.parse(i.forge) : null,
           })),
         );
       }

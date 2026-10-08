@@ -19,6 +19,7 @@ apps/game-web/public/media/
 # Local smoke-test screenshots
 reports/smoke/
 reports/responsive/
+reports/forge/
 
 # Local PGlite database (dev without Docker)
 .data/

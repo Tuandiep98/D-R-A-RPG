@@ -1,0 +1,15 @@
+id: item_module_cach_nhiet
+name: Module Cách Nhiệt
+kind: socket
+description: Giảm 4% mọi sát thương, thêm 20% với đòn hệ Hoả.
+icon: "🛡"
+iconImage: icon_skill_shield
+maxStack: 20
+sellPrice: 50
+socket:
+  type: defense
+  line: co
+  bonus: { defense: 3 }
+  defense:
+    reduction: 0.04
+    resist: { element: hoa, amount: 0.2 }

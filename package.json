@@ -44,7 +44,8 @@
     "smoke:kit-basics": "tsx tools/smoke/kit-basics.ts",
     "smoke:online-kits": "tsx tools/smoke/online-kits.ts",
     "assets:proportions": "tsx tools/asset-processor/proportions.ts",
-    "assets:vendor": "tsx tools/asset-processor/vendor.ts"
+    "assets:vendor": "tsx tools/asset-processor/vendor.ts",
+    "smoke:forge": "tsx tools/smoke/forge.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

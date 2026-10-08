@@ -1,0 +1,12 @@
+id: item_ammo_ung_nhan
+name: Chip Ưng Nhãn
+kind: socket
+description: +10% tỉ lệ chí mạng cho đạn.
+icon: "🎯"
+iconImage: icon_gun_pistol
+maxStack: 20
+sellPrice: 55
+socket:
+  type: ammo
+  line: co
+  ammo: { critBonus: 0.1 }

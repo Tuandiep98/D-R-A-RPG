@@ -8,3 +8,8 @@ iconImage: icon_item_glove
 bonus: { attack: 18, critChance: 0.08, speed: 0.3 }
 sellPrice: 140
 appearanceId: equip_gauntlet_01
+line: co
+tier: Combat Module
+evolution:
+  - { name: Quyền Sáo Phản Ứng, tier: Reactor Module, baseMultiplier: 1.4, minEnhance: 4, gold: 300, materials: [{ itemId: item_reactor_core, count: 1 }, { itemId: item_robot_scrap, count: 6 }] }
+  - { name: Quyền Sáo Tự Trị, tier: Autonomous Module, baseMultiplier: 1.9, minEnhance: 8, minQuality: epic, gold: 900, materials: [{ itemId: item_reactor_core, count: 3 }, { itemId: item_microchip, count: 2 }] }

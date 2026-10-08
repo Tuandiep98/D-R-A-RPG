@@ -1,0 +1,11 @@
+id: rite_phu_linh
+name: Phụ Linh
+description: "Luyện yêu đan vào binh khí, linh tính thức tỉnh: +10% chỉ số."
+line: tien
+group: attune
+minQuality: rare
+gold: 200
+materials: [{ itemId: item_yeu_dan, count: 2 }, { itemId: item_linh_thach, count: 1 }]
+
+effects:
+  statMultiplier: 0.1

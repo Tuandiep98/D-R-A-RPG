@@ -8,3 +8,8 @@ iconImage: icon_item_sword_big
 bonus: { attack: 22, critChance: 0.03 }
 sellPrice: 60
 appearanceId: equip_great_blade_01
+line: tien
+tier: Phàm khí
+evolution:
+  - { name: Phá Sơn Linh Đao, tier: Linh khí, baseMultiplier: 1.35, minEnhance: 3, gold: 220, materials: [{ itemId: item_linh_thach, count: 2 }, { itemId: item_elite_antler, count: 1 }] }
+  - { name: Phá Sơn Bá Đao, tier: Pháp bảo, baseMultiplier: 1.8, minEnhance: 6, minQuality: rare, gold: 650, materials: [{ itemId: item_linh_thach, count: 4 }, { itemId: item_yeu_dan, count: 2 }] }

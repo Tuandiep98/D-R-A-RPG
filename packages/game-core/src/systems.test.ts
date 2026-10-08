@@ -545,21 +545,23 @@ describe('npcs: quests, shop, crafting, upgrades', () => {
     world.step();
     expect(world.playerState(id)?.stats.attack).toBe(60); // 30 + sword 20 + charm 10
     world.enqueueIntent(id, {
-      type: 'UPGRADE',
+      type: 'FORGE',
+      op: 'enhance',
       npcId: npc.id,
       instanceId: charm?.instanceId ?? 'x',
     });
-    expect(world.step().find((e) => e.type === 'UPGRADE_RESULT')).toMatchObject({
+    expect(world.step().find((e) => e.type === 'FORGE_RESULT')).toMatchObject({
       success: true,
       level: 1,
     });
     expect(world.playerState(id)?.stats.attack).toBe(65); // charm x1.5
     world.enqueueIntent(id, {
-      type: 'UPGRADE',
+      type: 'FORGE',
+      op: 'enhance',
       npcId: npc.id,
       instanceId: charm?.instanceId ?? 'x',
     });
-    expect(world.step().find((e) => e.type === 'UPGRADE_RESULT')).toMatchObject({
+    expect(world.step().find((e) => e.type === 'FORGE_RESULT')).toMatchObject({
       success: false,
       level: 1,
     });

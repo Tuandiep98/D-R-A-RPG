@@ -46,6 +46,47 @@ describe('GameRepository', () => {
       });
     }
   });
+  it('persists forge state per item instance and rejects malformed forge data', async () => {
+    const accountId = await repo.createAccount('forge-save', 'hash');
+    const id = await repo.createCharacter({
+      accountId,
+      name: 'Forge',
+      characterDefId: 'player_default',
+      mapId: 'map_sandbox_01',
+    });
+    const loaded = await repo.loadCharacter(id);
+    if (!loaded) throw new Error('missing save');
+    const position = { mapId: loaded.mapId, x: 0, z: 0 };
+    const forged = {
+      instanceId: 'forge-blade',
+      itemId: 'item_thien_co_blade',
+      count: 1,
+      enhance: 7,
+      forge: {
+        quality: 'legendary' as const,
+        stage: 1,
+        durability: 90,
+        sockets: ['item_chip_cuong_phong', null, null, null],
+        rites: ['rite_phu_linh', 'rite_vi_mach', 'rite_do_kiep'],
+      },
+    };
+    const inventory = [...loaded.save.inventory, forged];
+    await repo.saveCharacter(id, { ...loaded.save, inventory }, position, []);
+    const reloaded = await repo.loadCharacter(id);
+    expect(reloaded?.save.inventory.find((i) => i.instanceId === 'forge-blade')).toEqual(forged);
+    await expect(
+      repo.saveCharacter(
+        id,
+        {
+          ...loaded.save,
+          inventory: [{ ...forged, forge: { ...forged.forge, quality: 'mythic' as 'epic' } }],
+        },
+        position,
+        [],
+      ),
+    ).rejects.toThrow();
+    expect((await repo.loadCharacter(id))?.save.inventory).toEqual(reloaded?.save.inventory);
+  });
   it('keeps affinity immutable across save and rejects an incompatible expression', async () => {
     const accountId = await repo.createAccount('affinity-lock', 'hash');
     const id = await repo.createCharacter({

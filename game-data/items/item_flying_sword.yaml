@@ -9,3 +9,8 @@ realm: truc_co
 bonus: { attack: 10, mp: 40 }
 sellPrice: 400
 appearanceId: equip_flying_sword_01
+line: tien
+tier: Pháp bảo
+evolution:
+  - { name: Thanh Vân Bản Mệnh Phi Kiếm, tier: Cổ bảo, baseMultiplier: 1.5, minEnhance: 6, minQuality: epic, gold: 900, materials: [{ itemId: item_thien_tai, count: 1 }, { itemId: item_yeu_dan, count: 3 }] }
+  - { name: Thanh Vân Đạo Kiếm, tier: Đạo khí, baseMultiplier: 2.1, minEnhance: 12, minQuality: legendary, realm: truc_co, gold: 2500, materials: [{ itemId: item_thien_tai, count: 2 }, { itemId: item_linh_thach, count: 8 }] }

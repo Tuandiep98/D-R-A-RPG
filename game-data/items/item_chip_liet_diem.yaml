@@ -1,0 +1,16 @@
+id: item_chip_liet_diem
+name: Chip Liệt Diễm
+kind: socket
+description: "Module chiến đấu hệ Hoả: đòn thứ 3 nổ lửa. Trùng bản mệnh: tầm ×1.3, sát thương ×1.25."
+icon: "⚡"
+iconImage: icon_skill_sword_qi
+maxStack: 20
+sellPrice: 60
+socket:
+  type: combat
+  line: co
+  minQuality: common
+  element: hoa
+  expression: base
+  bonus: { attack: 4 }
+  finisher: { skillId: skill_forge_liet_diem, multiplier: 1.2, radius: 2.0 }

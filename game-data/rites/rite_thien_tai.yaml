@@ -1,0 +1,11 @@
+id: rite_thien_tai
+name: Hấp Thụ Thiên Tài Địa Bảo
+description: "Cho trang bị hấp thụ linh khí trời đất: +6% chỉ số mỗi lần, tối đa 3 lần."
+line: tien
+group: absorb
+minQuality: epic
+gold: 500
+materials: [{ itemId: item_thien_tai, count: 1 }]
+maxTimes: 3
+effects:
+  statMultiplier: 0.06

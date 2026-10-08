@@ -4,9 +4,10 @@ import { useMemo, useState } from 'react';
 import { loadContent } from '../content';
 import { game } from '../game';
 import { useUiStore } from '../store';
+import { Forge } from './ForgePanel';
 import { GameIcon } from './GameIcon';
 
-type Tab = 'quests' | 'shop' | 'craft' | 'upgrade';
+type Tab = 'quests' | 'shop' | 'craft' | 'forge';
 
 const rankOf = (c: ContentBundle, realmId: string) => c.realms.get(realmId)?.order ?? 0;
 
@@ -16,7 +17,7 @@ const content = () => {
   return contentCache;
 };
 
-/** NPC dialog (quests, shop, crafting, upgrades). Every button only sends an intent. */
+/** NPC dialog (quests, shop, crafting, forge). Every button only sends an intent. */
 export function NpcPanel() {
   const npc = useUiStore((s) => s.npc);
   const ui = useUiStore((s) => s.ui);
@@ -28,7 +29,7 @@ export function NpcPanel() {
     if (def?.quests.length) t.push({ id: 'quests', label: 'Nhiệm vụ' });
     if (def?.shopId) t.push({ id: 'shop', label: 'Cửa hàng' });
     if (def?.recipes.length) t.push({ id: 'craft', label: 'Chế tạo' });
-    if (def?.upgrades) t.push({ id: 'upgrade', label: 'Cường hoá' });
+    if (def?.forge) t.push({ id: 'forge', label: 'Tiệm Rèn' });
     return t;
   }, [def]);
   const [tab, setTab] = useState<Tab | null>(null);
@@ -37,7 +38,10 @@ export function NpcPanel() {
   const send = game()?.send.bind(game());
 
   return (
-    <div className="panel npc-panel" onPointerDown={(e) => e.stopPropagation()}>
+    <div
+      className={`panel npc-panel ${active === 'forge' ? 'npc-panel-forge' : ''}`}
+      onPointerDown={(e) => e.stopPropagation()}
+    >
       <div className="panel-head">
         <strong>
           {def.name}
@@ -71,7 +75,7 @@ export function NpcPanel() {
       {active === 'craft' && (
         <Craft ui={ui} npcEntityId={npc.npcEntityId} recipes={def.recipes} send={send} />
       )}
-      {active === 'upgrade' && <Upgrade ui={ui} npcEntityId={npc.npcEntityId} send={send} />}
+      {active === 'forge' && <Forge c={c} ui={ui} npcEntityId={npc.npcEntityId} send={send} />}
       <div className="muted">🪙 {ui.player?.gold ?? 0}</div>
     </div>
   );
@@ -287,57 +291,6 @@ function Craft({
             >
               Chế tạo
             </button>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-function Upgrade({ ui, npcEntityId, send }: { ui: UiState; npcEntityId: number; send: Send }) {
-  const c = content();
-  const rules = [...c.upgrades.values()][0];
-  if (!rules) return null;
-  const gear = ui.inventory.filter((i) => i.kind === 'equipment');
-  return (
-    <div className="npc-list">
-      {gear.length === 0 && <span className="muted small">Không có trang bị</span>}
-      {gear.map((i) => {
-        const level = i.enhance ?? 0;
-        const step = rules.steps[level];
-        return (
-          <div key={i.instanceId} className="npc-row">
-            <div>
-              <span style={{ color: i.rarityColor }}>
-                <GameIcon className="inline-icon" icon={i.icon} image={i.iconImage} /> {i.name}{' '}
-                {level > 0 && <strong>+{level}</strong>}
-              </span>
-              {step ? (
-                <div className="small">
-                  {step.gold} 🪙
-                  {step.materials.map(
-                    (m) => ` · ${c.items.get(m.itemId)?.name} ${count(ui, m.itemId)}/${m.count}`,
-                  )}{' '}
-                  · tỉ lệ {Math.round(step.successRate * 100)}%
-                </div>
-              ) : (
-                <div className="small muted">Đã tối đa</div>
-              )}
-            </div>
-            {step && (
-              <button
-                type="button"
-                onClick={() =>
-                  send?.({
-                    type: 'UPGRADE',
-                    npcId: npcEntityId,
-                    instanceId: i.instanceId,
-                  })
-                }
-              >
-                +{level + 1}
-              </button>
-            )}
           </div>
         );
       })}

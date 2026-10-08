@@ -12,6 +12,8 @@ import {
   type CultivationNodeDef,
   CultivationNodeDefSchema,
   compatibleExpression,
+  type ForgeRules,
+  ForgeRulesSchema,
   type ItemDef,
   ItemDefSchema,
   type LootTableDef,
@@ -34,12 +36,12 @@ import {
   RealmDefSchema,
   type RecipeDef,
   RecipeDefSchema,
+  type RiteDef,
+  RiteDefSchema,
   type ShopDef,
   ShopDefSchema,
   type SkillDef,
   SkillDefSchema,
-  type UpgradeRules,
-  UpgradeRulesSchema,
   type WorldRegionDef,
   WorldRegionDefSchema,
 } from './schemas';
@@ -63,7 +65,9 @@ export interface ContentBundle {
   quests: ReadonlyMap<string, QuestDef>;
   shops: ReadonlyMap<string, ShopDef>;
   recipes: ReadonlyMap<string, RecipeDef>;
-  upgrades: ReadonlyMap<string, UpgradeRules>;
+  /** Forge rules (one file) and luyện khí / kỹ thuật rites. */
+  forge: ReadonlyMap<string, ForgeRules>;
+  rites: ReadonlyMap<string, RiteDef>;
   /** World-map regions (game-data/world/). */
   world: ReadonlyMap<string, WorldRegionDef>;
 }
@@ -108,7 +112,8 @@ const FOLDERS = {
   quests: QuestDefSchema,
   shops: ShopDefSchema,
   recipes: RecipeDefSchema,
-  upgrades: UpgradeRulesSchema,
+  forge: ForgeRulesSchema,
+  rites: RiteDefSchema,
   world: WorldRegionDefSchema,
 } as const;
 type Folder = keyof typeof FOLDERS;
@@ -151,7 +156,8 @@ export function buildContentBundle(files: readonly ContentFile[]): ContentBundle
     quests: new Map(),
     shops: new Map(),
     recipes: new Map(),
-    upgrades: new Map(),
+    forge: new Map(),
+    rites: new Map(),
     world: new Map(),
   };
 
@@ -393,15 +399,7 @@ function checkReferences(bundle: ContentBundle, issues: ContentIssue[]): void {
     needRealm(`recipes/${r.id}`, r.realm);
     for (const m of r.materials) needItem(`recipes/${r.id}`, m.itemId);
   }
-  for (const u of bundle.upgrades.values()) {
-    if (u.steps.length !== u.maxLevel) {
-      issues.push({
-        path: `upgrades/${u.id}`,
-        message: 'steps must have maxLevel entries',
-      });
-    }
-    for (const st of u.steps) for (const m of st.materials) needItem(`upgrades/${u.id}`, m.itemId);
-  }
+  checkForge(bundle, issues, needItem, needRealm, needSkill);
   for (const map of bundle.maps.values()) {
     const owner = `maps/${map.id}`;
     for (const n of map.npcs) needNpc(`${owner}#npcs`, n.npcId);
@@ -508,4 +506,49 @@ function checkRealms(bundle: ContentBundle, issues: ContentIssue[]): void {
 /** Realms sorted by order: index = realm rank used by the simulation and snapshots. */
 export function realmLadder(bundle: Pick<ContentBundle, 'realms'>): RealmDef[] {
   return [...bundle.realms.values()].sort((a, b) => a.order - b.order);
+}
+
+function checkForge(
+  bundle: ContentBundle,
+  issues: ContentIssue[],
+  needItem: (owner: string, id: string | undefined) => void,
+  needRealm: (owner: string, id: string | undefined) => void,
+  needSkill: (owner: string, id: string | undefined) => void,
+): void {
+  const costs = (owner: string, c: { materials: { itemId: string }[] }) => {
+    for (const m of c.materials) needItem(owner, m.itemId);
+  };
+  if (bundle.forge.size > 1)
+    issues.push({ path: 'forge', message: 'only one forge rules file is allowed' });
+  if (bundle.forge.size === 0 && bundle.npcs.size > 0)
+    issues.push({ path: 'forge', message: 'missing forge rules file' });
+  for (const f of bundle.forge.values()) {
+    const owner = `forge/${f.id}`;
+    needItem(owner, f.enhance.wardItemId);
+    for (const st of f.enhance.steps) costs(owner, st);
+    costs(owner, f.socketRemove);
+    for (const st of Object.values(f.synthesis.steps)) costs(owner, st);
+  }
+  const groups = new Map<string, string>();
+  for (const r of bundle.rites.values()) {
+    const owner = `rites/${r.id}`;
+    costs(owner, r);
+    needRealm(owner, r.realm);
+    const key = `${r.line}:${r.group}`;
+    if (groups.has(key))
+      issues.push({ path: owner, message: `group ${r.group} already has a ${r.line} rite` });
+    groups.set(key, r.id);
+  }
+  for (const it of bundle.items.values()) {
+    const owner = `items/${it.id}`;
+    for (const st of it.evolution) {
+      costs(owner, st);
+      needRealm(owner, st.realm);
+    }
+    if (it.socket?.finisher) {
+      needSkill(owner, it.socket.finisher.skillId);
+      if (it.socket.type !== 'combat')
+        issues.push({ path: owner, message: 'only combat modules carry a finisher' });
+    }
+  }
 }

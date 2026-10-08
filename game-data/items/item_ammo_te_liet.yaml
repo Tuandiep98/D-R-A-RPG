@@ -1,0 +1,12 @@
+id: item_ammo_te_liet
+name: Đầu Đạn Tê Liệt
+kind: socket
+description: Mỗi 6 viên trúng làm mục tiêu tê liệt 0.5 giây (boss miễn nhiễm).
+icon: "🎯"
+iconImage: icon_gun_pistol
+maxStack: 20
+sellPrice: 55
+socket:
+  type: ammo
+  line: co
+  ammo: { stunEvery: 6, stunSeconds: 0.5 }

@@ -122,6 +122,8 @@ export const itemInstances = pgTable(
     equippedSlot: text('equipped_slot'),
     /** Enhancement level (+N). */
     enhance: integer('enhance').notNull().default(0),
+    /** Forge state (quality, stage, durability, sockets, rites); validated with Zod on load. */
+    forge: jsonb('forge'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [

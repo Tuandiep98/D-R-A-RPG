@@ -8,3 +8,7 @@ iconImage: icon_item_armor_metal
 realm: truc_co
 bonus: { defense: 12, hp: 80, speed: -0.3 }
 sellPrice: 180
+line: co
+tier: Combat Module
+evolution:
+  - { name: Giáp Cơ Quan Mk II, tier: Reactor Module, baseMultiplier: 1.4, minEnhance: 4, gold: 300, materials: [{ itemId: item_reactor_core, count: 1 }, { itemId: item_robot_scrap, count: 6 }] }

@@ -1,0 +1,13 @@
+id: item_rune_tu_linh
+name: Tụ Linh Trận Văn
+kind: socket
+description: "Trận văn tụ linh khí: +25 MP."
+icon: "☯"
+iconImage: icon_item_scroll
+maxStack: 20
+sellPrice: 40
+socket:
+  type: rune
+  line: tien
+  minQuality: rare
+  bonus: { mp: 25 }

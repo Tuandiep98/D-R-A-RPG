@@ -1,0 +1,11 @@
+id: shop_forge
+name: Tiệm Rèn Thiên Cơ
+buybackRate: 0.5
+items:
+  - { itemId: item_tinh_thiet, price: 15 }
+  - { itemId: item_rune_ink, price: 60 }
+  - { itemId: item_microchip, price: 60 }
+  - { itemId: item_forge_ward, price: 90 }
+  - { itemId: item_chip_kim_cuong, price: 180 }
+  - { itemId: item_module_anh_bo, price: 160 }
+  - { itemId: item_ammo_ung_nhan, price: 170 }

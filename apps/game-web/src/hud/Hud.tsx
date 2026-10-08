@@ -842,8 +842,30 @@ function InventoryPanel() {
       <div className="item-detail">
         {detail ? (
           <>
-            <strong style={{ color: detail.rarityColor }}>{detail.name}</strong>
+            <strong style={{ color: detail.rarityColor }}>
+              {detail.name}
+              {detail.enhance > 0 && ` +${detail.enhance}`}
+            </strong>
+            {detail.forge && (
+              <span className="muted">
+                {detail.forge.qualityName}
+                {detail.forge.tier && ` · ${detail.forge.tier}`}
+                {detail.forge.natal && ' · Bản Mệnh'}
+                {detail.forge.hybrid && ' · Thiên Cơ'}
+                {` · Độ bền ${detail.forge.durability}/${detail.forge.maxDurability}`}
+              </span>
+            )}
             <span>{detail.bonus}</span>
+            {detail.forge?.hidden.map((h) => (
+              <span key={h.unlockAt} className={h.active ? 'reward' : 'muted'}>
+                {h.active ? `Ẩn: ${h.text}` : `Ẩn: ??? (+${h.unlockAt})`}
+              </span>
+            ))}
+            {detail.forge && detail.forge.sockets.length > 0 && (
+              <span className="muted">
+                Khảm: {detail.forge.sockets.map((s) => s.name ?? '◇').join(' · ')}
+              </span>
+            )}
             {detail.realmName && <span>Yêu cầu cảnh giới {detail.realmName}</span>}
             {detail.description && <span>{detail.description}</span>}
             {touch && (detail.kind === 'equipment' || detail.kind === 'consumable') && (

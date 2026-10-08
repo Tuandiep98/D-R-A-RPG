@@ -10,6 +10,7 @@ Tài liệu chính:
 - `docs/plan/03_implementation_roadmap.md` — trạng thái từng phase/hạng mục, việc tiếp theo
 - `docs/plan/05_map_renovation_plan.md` — trùng tu map, minimap, bản đồ thế giới 8 vùng (mở theo cảnh giới)
 - `docs/map_authoring_rules.md` — **luật tạo map bắt buộc** (R1–R8 có test, bày trí theo phong cách vùng)
+- `docs/plan/06_forge_equipment_plan.md` — trang bị & Tiệm Rèn: phẩm, cường hoá, tiến hoá, khảm, luyện khí Tiên/Cơ, hợp thành, sửa chữa (D-036)
 - `docs/plan/04_combat_elements_skills_redesign.md` — plan combat RPG × MOBA, ngũ hành, skill tám Đạo, migration Lôi/súng và auto farm (nền tảng/combat slice đã triển khai; kit tám Đạo còn trong roadmap)
 - `docs/asset_sourcing.md` — pack asset/model/map đề xuất theo lore mới, khoảng trống phải tự làm
 - `docs/game-ui-style.md` — quy tắc UI bắt buộc: Kenney Fantasy Glass, source/element, blur và fallback
@@ -41,6 +42,7 @@ pnpm smoke [url]         # headless Chrome smoke test against a running dev/prev
 pnpm smoke:controls [url] # WASD desktop + joystick điện thoại dọc/ngang (touch thật qua CDP)
 pnpm smoke:maps [url]    # mỗi map: scene, minimap, bản đồ thế giới + khu vực → reports/maps/
 pnpm smoke:responsive [url] # 9 kích thước desktop/tablet/phone: tràn màn, đè nhau, vùng chạm <44px, chữ <11px
+pnpm smoke:forge [url]  # Lão Mộc → bộ thử → cường hoá/khảm/luyện khí/hợp thành (--mobile)
 pnpm smoke:login [url]   # đăng ký → tạo nhân vật → vào game → bang hội → chat (cần dev:stack)
 pnpm db:generate         # drizzle-kit migration sau khi sửa packages/persistence/src/schema.ts
 ```
@@ -81,7 +83,7 @@ infra/                     docker (compose, Dockerfiles), deploy (Caddyfile)
 1. Không import Babylon, React hay DOM vào `game-core`, `game-protocol`, `game-data`, `sim-host` (depcruise chặn).
 2. Server (hoặc `LocalSimHost`) là authoritative. Client chỉ gửi intent qua `SimHost`.
 3. Client không tự tính damage/gold/item/loot/cooldown/HP/kết quả đột phá.
-4. Không hardcode stats quái, item, skill, map, cảnh giới, node tu luyện trong source — để trong `game-data/` (`realms/`, `cultivation/`, `progression/`).
+4. Không hardcode stats quái, item, skill, map, cảnh giới, node tu luyện, luật rèn trong source — để trong `game-data/` (`realms/`, `cultivation/`, `progression/`, `forge/`, `rites/`).
    4b. Không thêm Character Level/XP. Sức mạnh đến từ cảnh giới, node, trang bị; mọi thứ data-driven (D-024).
 5. Thời gian trong sim tính bằng tick (`TICK_RATE = 20`). Không dùng `Math.random()` hay `Date.now()` trong `game-core`; dùng RNG của `World`.
 6. Mọi data quan trọng (intent, snapshot, YAML, env, API body) phải validate bằng Zod.

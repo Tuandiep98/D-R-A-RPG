@@ -1,4 +1,5 @@
 import type { ProgressionRules, RealmDef, StatBonus } from '@rpg/game-data';
+import { gearMods, itemBonus } from '@rpg/game-data';
 import type { SimContext } from '../context';
 import type { Entity } from '../entity';
 
@@ -83,15 +84,24 @@ export function playerBonus(ctx: SimContext, e: Entity): StatBonus {
   if (!p) return total;
   addBonus(total, realmOf(ctx, e.realm)?.bonus);
   for (const id of p.nodes) addBonus(total, ctx.content.cultivation.get(id)?.bonus);
-  const upgradeRules = [...ctx.content.upgrades.values()][0];
-  for (const instanceId of Object.values(p.equipment)) {
-    const inv = p.inventory.find((i) => i.instanceId === instanceId);
-    const item = inv && ctx.content.items.get(inv.itemId);
-    // +N enhancement scales the item's own bonus (equipment_contract.md).
-    const mult = 1 + (upgradeRules?.bonusPerLevel ?? 0) * (inv?.enhance ?? 0);
-    addBonus(total, item?.bonus, mult);
-  }
+  for (const { def, inv } of equippedItems(ctx, e))
+    addBonus(total, itemBonus(ctx.content, def, inv, { element: e.element, realm: e.realm }));
   return total;
+}
+
+/** Equipped instances with their definitions, in slot order. */
+export function equippedItems(ctx: Pick<SimContext, 'content'>, e: Entity) {
+  const p = e.player;
+  const out: {
+    def: import('@rpg/game-data').ItemDef;
+    inv: import('@rpg/game-protocol').InventoryItem;
+  }[] = [];
+  for (const instanceId of Object.values(p?.equipment ?? {})) {
+    const inv = p?.inventory.find((i) => i.instanceId === instanceId);
+    const def = inv && ctx.content.items.get(inv.itemId);
+    if (inv && def) out.push({ def, inv });
+  }
+  return out;
 }
 
 /**
@@ -120,7 +130,23 @@ export function recomputePlayerStats(ctx: SimContext, e: Entity): void {
   const mainId = p.equipment.main_hand;
   const main = mainId ? p.inventory.find((i) => i.instanceId === mainId) : undefined;
   const rangedId = main ? ctx.content.items.get(main.itemId)?.ranged : undefined;
-  const ranged = rangedId ? ctx.content.ranged.get(rangedId) : undefined;
+  const authored = rangedId ? ctx.content.ranged.get(rangedId) : undefined;
+  // Khảm: sockets of the equipped items (systems/forge-stats.ts).
+  p.gear = gearMods(ctx.content, equippedItems(ctx, e));
+  const ammo = p.gear?.ammo;
+  const ranged =
+    authored && ammo
+      ? {
+          ...authored,
+          magazine: authored.magazine > 0 ? authored.magazine + ammo.magazineBonus : 0,
+          reload: authored.reload
+            ? { ...authored.reload, seconds: authored.reload.seconds * ammo.reloadMultiplier }
+            : undefined,
+          heat: authored.heat
+            ? { ...authored.heat, perShot: authored.heat.perShot * ammo.heatMultiplier }
+            : undefined,
+        }
+      : authored;
   p.ranged = mainId && ranged ? { instanceId: mainId, def: ranged } : null;
   e.combat.range = ranged ? ranged.projectile.range * 0.8 : def.combat.range;
   if (e.life.alive) {

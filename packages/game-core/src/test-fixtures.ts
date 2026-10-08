@@ -4,6 +4,7 @@ import {
   ComboDefSchema,
   type ContentBundle,
   CultivationNodeDefSchema,
+  ForgeRulesSchema,
   ItemDefSchema,
   LootTableDefSchema,
   MapDefSchema,
@@ -14,9 +15,9 @@ import {
   RangedDefSchema,
   RealmDefSchema,
   RecipeDefSchema,
+  RiteDefSchema,
   ShopDefSchema,
   SkillDefSchema,
-  UpgradeRulesSchema,
 } from '@rpg/game-data';
 
 type Raw = Record<string, unknown>;
@@ -197,7 +198,7 @@ export function makeContent(o: FixtureOverrides = {}): ContentBundle {
     quests: ['q_wolves', 'q_fangs'],
     shopId: 'shop',
     recipes: ['r_charm'],
-    upgrades: true,
+    forge: true,
   });
   const quests = [
     {
@@ -229,15 +230,68 @@ export function makeContent(o: FixtureOverrides = {}): ContentBundle {
     materials: [{ itemId: 'fang', count: 2 }],
     gold: 1,
   });
-  const upgrades = UpgradeRulesSchema.parse({
-    id: 'upgrade_default',
-    maxLevel: 2,
-    bonusPerLevel: 0.5,
-    steps: [
-      { gold: 1, successRate: 1 },
-      { gold: 1, successRate: 0 },
-    ],
+  const q = (statMultiplier: number, sockets: number, hidden: number) => ({
+    name: 'Q',
+    color: '#ffffff',
+    statMultiplier,
+    sockets,
+    hidden,
+    maxEnhance: 2,
+    durability: 50,
+    repairGold: 1,
   });
+  const forge = ForgeRulesSchema.parse({
+    id: 'forge_rules',
+    qualities: {
+      common: q(1, 1, 0),
+      rare: q(1.2, 2, 1),
+      epic: q(1.5, 3, 2),
+      legendary: q(2, 4, 3),
+    },
+    enhance: {
+      bonusPerLevel: 0.5,
+      safeLevel: 1,
+      hiddenUnlockAt: [1],
+      steps: [
+        { gold: 1, successRate: 1 },
+        { gold: 1, successRate: 0 },
+      ],
+    },
+    hiddenPool: {
+      weapon: [{ stat: 'attack', min: 4, max: 4 }],
+      armor: [{ stat: 'hp', min: 10, max: 10 }],
+    },
+    socketRemove: { gold: 1 },
+    synthesis: {
+      fodder: 2,
+      steps: {
+        rare: { gold: 1, successRate: 1 },
+        epic: { gold: 1, successRate: 1 },
+        legendary: { gold: 1, successRate: 1 },
+      },
+    },
+    durability: { deathLoss: 10, brokenMultiplier: 0.5 },
+    hybrid: { groups: 2, statMultiplier: 0.1 },
+  });
+  const rites = [
+    {
+      id: 'rite_bind',
+      name: 'Bind',
+      line: 'tien',
+      group: 'bind',
+      minQuality: 'rare',
+      hpCost: 0.3,
+      effects: { statMultiplier: 0.5, bind: true },
+    },
+    {
+      id: 'rite_attune_co',
+      name: 'Attune',
+      line: 'co',
+      group: 'attune',
+      minQuality: 'rare',
+      effects: { statMultiplier: 0.1, extraSockets: 1 },
+    },
+  ].map((r) => RiteDefSchema.parse(r));
   const loot = LootTableDefSchema.parse({
     id: 'wolf_loot',
     gold: { min: 5, max: 5 },
@@ -344,7 +398,8 @@ export function makeContent(o: FixtureOverrides = {}): ContentBundle {
     shops: new Map([[shop.id, shop]]),
     recipes: new Map([[recipe.id, recipe]]),
     combat: new Map(),
-    upgrades: new Map([[upgrades.id, upgrades]]),
+    forge: new Map([[forge.id, forge]]),
+    rites: new Map(rites.map((r) => [r.id, r])),
     world: new Map(),
   };
 }

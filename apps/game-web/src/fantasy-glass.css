@@ -1085,3 +1085,164 @@
   background: var(--hud-panel, rgba(9, 17, 23, 0.9));
   font: inherit;
 }
+
+/* ---- Tiệm Rèn (docs/plan/06_forge_equipment_plan.md) ------------------------ */
+.npc-panel.npc-panel-forge {
+  width: min(640px, calc(100vw - 24px));
+}
+.forge {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.forge-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-height: 112px;
+  overflow-y: auto;
+}
+.hud .forge-slot {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 8px solid transparent;
+  border-image: var(--fui-slot) 16 fill / 8px stretch;
+  background: none;
+  box-shadow: inset 0 -3px 0 var(--quality, transparent);
+  color: var(--hud-text);
+  cursor: pointer;
+}
+.hud .forge-slot.selected {
+  border-image-source: var(--fui-slot-active);
+  outline: 2px solid var(--quality, var(--accent));
+  outline-offset: -2px;
+}
+.hud .forge-slot:focus-visible {
+  outline: 2px solid var(--accent);
+}
+.forge-slot .game-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.forge-plus,
+.forge-worn {
+  position: absolute;
+  font-size: 11px;
+  font-weight: 700;
+  text-shadow: 0 1px 2px #000;
+}
+.forge-plus {
+  right: -4px;
+  bottom: -5px;
+  color: #ffd86b;
+}
+.forge-worn {
+  left: -4px;
+  top: -5px;
+  color: var(--accent);
+}
+.forge-summary {
+  display: grid;
+  gap: 3px;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.04);
+}
+.forge-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.forge-badge {
+  padding: 1px 6px;
+  border: 1px solid var(--hud-border);
+  color: var(--hud-muted);
+}
+.forge-badge.natal {
+  border-color: #ffb340;
+  color: #ffb340;
+}
+.forge-badge.hybrid {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.forge-hidden,
+.forge-cost {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+}
+.forge-durability {
+  display: grid;
+  gap: 2px;
+}
+.forge-bar {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.12);
+}
+.forge-bar > div {
+  height: 100%;
+  background: var(--hp-player);
+}
+.forge-ops {
+  flex-wrap: wrap;
+}
+.forge-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  cursor: pointer;
+}
+.hud .forge-check input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+}
+@media (max-width: 560px) {
+  .hud .forge-slot {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* NPC row actions (quests, shop, craft, forge) share the Kenney button plate. */
+.hud .npc-row button {
+  min-height: 36px;
+  padding: 2px 10px;
+  border: 8px solid transparent;
+  border-image: var(--fui-button) 16 fill / 8px stretch;
+  border-radius: 0;
+  background: none;
+  color: var(--hud-text);
+  image-rendering: pixelated;
+}
+.hud .npc-row button.primary {
+  border-image-source: var(--fui-button-primary);
+  color: #10181d;
+  font-weight: 600;
+}
+.hud .npc-row button:disabled {
+  border-image-source: var(--fui-button);
+  color: var(--hud-muted);
+  font-weight: 400;
+  opacity: 0.5;
+}
+.hud .npc-row button:not(:disabled):hover {
+  filter: brightness(1.12);
+}
+.hud .forge-ops {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+.hud .forge-ops button {
+  min-width: 0;
+  padding-inline: 2px;
+  font-size: 13px;
+}
+@media (max-width: 560px) {
+  .hud .forge-ops {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

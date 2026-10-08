@@ -3,6 +3,7 @@ import type {
   DamageSpec,
   Element,
   Expression,
+  GearMods,
   MonsterTier,
   RangedDef,
 } from '@rpg/game-data';
@@ -263,6 +264,10 @@ export interface PlayerData {
   ranged: { instanceId: ItemInstanceId; def: RangedDef } | null;
   weapons: Map<ItemInstanceId, WeaponState>;
   trigger: TriggerState;
+  /** Socket effects of the equipped gear (derived on equip, systems/forge-stats.ts). */
+  gear?: GearMods | null;
+  /** Bullet hits counted toward an ammo chip's stun cadence (runtime only). */
+  ammoHits?: number;
 }
 
 export interface LootData {
@@ -441,6 +446,7 @@ export interface LedgerEntry {
     | 'buy'
     | 'craft'
     | 'upgrade'
+    | 'forge'
     | 'admin'
     | 'quest'
     | 'cultivation'

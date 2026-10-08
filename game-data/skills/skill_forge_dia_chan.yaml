@@ -1,0 +1,13 @@
+# Presentation of a combat-module finisher (game-core/systems/forge.ts); never on the bar.
+id: skill_forge_dia_chan
+name: Địa Chấn
+description: Đòn thứ 3 chấn địa hệ Thổ.
+icon: "✦"
+iconImage: icon_skill_ground_slam
+targeting: self
+delivery: circle
+autoPolicy: manual
+cooldown: 1
+timeline: { windup: 0, active: 0, recovery: 0, cancelWindup: true }
+effects: [{ type: damage, multiplier: 1, radius: 2 }]
+vfx: slam

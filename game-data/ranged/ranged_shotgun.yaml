@@ -3,6 +3,7 @@
 id: ranged_shotgun
 name: Tán pháo
 kind: gun
+heavy: true
 fireMode: semi
 fireInterval: 0.8
 windup: 0.12

@@ -1,0 +1,38 @@
+# TẠM THỜI (yêu cầu chủ dự án 2026-10-09): bộ thử nghiệm Tiệm Rèn — vàng, vật liệu,
+# chip/linh châu và vài món nhiều phẩm. Bỏ khi drop/kinh tế thật đã đủ.
+id: q_forge_trial
+name: Thử Lò
+description: Lão Mộc muốn xem ngươi có xứng với lò rèn Thiên Cơ không. Chỉ cần đến nói chuyện — lão đưa đủ đồ để thử mọi công đoạn.
+giverNpcId: npc_smith
+objectives: [{ type: talk, npcId: npc_smith }]
+rewards:
+  gold: 50000
+  items:
+    - { itemId: item_tinh_thiet, count: 60 }
+    - { itemId: item_linh_thach, count: 60 }
+    - { itemId: item_reactor_core, count: 20 }
+    - { itemId: item_yeu_dan, count: 20 }
+    - { itemId: item_rune_ink, count: 10 }
+    - { itemId: item_microchip, count: 10 }
+    - { itemId: item_synth_stone, count: 15 }
+    - { itemId: item_thien_tai, count: 10 }
+    - { itemId: item_forge_ward, count: 10 }
+    - { itemId: item_wolf_fang, count: 12 }
+    - { itemId: item_fox_fur, count: 12 }
+    - { itemId: item_robot_scrap, count: 30 }
+    - { itemId: item_elite_antler, count: 4 }
+    - { itemId: item_chip_cuong_phong, count: 1 }
+    - { itemId: item_chip_liet_diem, count: 1 }
+    - { itemId: item_chip_han_trieu, count: 1 }
+    - { itemId: item_module_phan_quang, count: 1 }
+    - { itemId: item_module_anh_bo, count: 1 }
+    - { itemId: item_ammo_te_liet, count: 1 }
+    - { itemId: item_ammo_toc_nap, count: 1 }
+    - { itemId: item_linh_chau_moc, count: 1 }
+    - { itemId: item_linh_chau_kim, count: 1 }
+    - { itemId: item_rune_kim_cang, count: 1 }
+    - { itemId: item_sword_iron, count: 3 }
+    - { itemId: item_gun_pistol, count: 1 }
+    - { itemId: item_xianxia_robe, count: 1 }
+    - { itemId: item_flying_sword, count: 1 }
+    - { itemId: item_thien_co_blade, count: 1 }

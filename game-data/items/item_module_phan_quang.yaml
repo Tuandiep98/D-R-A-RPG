@@ -1,0 +1,15 @@
+id: item_module_phan_quang
+name: Module Phản Quang Giáp
+kind: socket
+description: Chuyển 12% sát thương gây ra thành khiên (tối đa 15% HP, 4 giây).
+icon: "🛡"
+iconImage: icon_skill_shield
+maxStack: 20
+sellPrice: 50
+socket:
+  type: defense
+  line: co
+  bonus: { defense: 3 }
+  defense:
+    shieldOnHit: 0.12
+    shieldCap: 0.15

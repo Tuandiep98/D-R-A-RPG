@@ -1,0 +1,14 @@
+id: item_linh_chau_hoa
+name: Hoả Linh Châu
+kind: socket
+description: "Linh châu hệ Hoả luyện từ yêu đan. Trùng bản mệnh: hiệu quả ×1.5."
+icon: "🔴"
+iconImage: icon_item_necklace1
+maxStack: 20
+sellPrice: 35
+socket:
+  type: spirit
+  line: tien
+  element: hoa
+  natalBonus: 1.5
+  bonus: { critChance: 0.03 }

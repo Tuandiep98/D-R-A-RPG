@@ -4,6 +4,7 @@ export { createEngine, type EngineKind } from './engine';
 export {
   type CultivationView,
   type DebugStats,
+  type ForgeView,
   GameView,
   type GameViewOptions,
   type ItemView,

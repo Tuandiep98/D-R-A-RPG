@@ -14,6 +14,7 @@ import { clamp, clampToBounds, distance, sub, type Vec2, yawOf } from '../math';
 import { secondsToTicks, TICK_RATE } from '../time';
 import { beginAction, currentAction } from './action-timeline';
 import { applyDamage, captureDamageSource, rollHit } from './combat';
+import { forgeFinisher } from './forge';
 import { avoidsDamage } from './mobility';
 import { MAX_SKILL_OBJECTS, skillObjectLoad } from './skill-capacity';
 import { ownedFields } from './skills';
@@ -178,6 +179,9 @@ export function meleeSystem(ctx: SimContext): void {
     if (!swing.impacted && ctx.tick >= swing.impactTick) {
       swing.impacted = true;
       resolveImpact(ctx, e, swing.comboId, swing.variant, swing.yaw, swing.source);
+      // Module chiến đấu: every 3rd strike of a melee chain bursts in its element.
+      if (!swing.variant.projectileSkillId && swing.step % 3 === 2 && e.life.alive)
+        forgeFinisher(ctx, e, swing.yaw, swing.source);
     }
   }
   meleeFinishSystem(ctx);
@@ -366,7 +370,7 @@ export function facingDot(t: Entity, from: Vec2): number {
 }
 
 /** Forward dash during a wind-up (jumping chop); slides on the navmesh like steering. */
-function lunge(ctx: SimContext, e: Entity, yaw: number, metres: number): void {
+export function lunge(ctx: SimContext, e: Entity, yaw: number, metres: number): void {
   if (metres <= 0) return;
   const steps = Math.ceil(metres / 0.25);
   const step = metres / steps;

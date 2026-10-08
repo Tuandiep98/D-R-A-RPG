@@ -1,0 +1,11 @@
+id: rite_tran_van
+name: Khắc Trận Văn
+description: "Khắc trận pháp phù văn lên thân khí: mở thêm 1 ô khảm."
+line: tien
+group: engrave
+minQuality: rare
+gold: 250
+materials: [{ itemId: item_rune_ink, count: 2 }]
+
+effects:
+  extraSockets: 1

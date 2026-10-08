@@ -7,3 +7,8 @@ icon: "👘"
 iconImage: icon_item_armor_golden
 bonus: { defense: 4, hp: 40, mp: 40 }
 sellPrice: 90
+line: tien
+tier: Phàm khí
+evolution:
+  - { name: Tiên Môn Linh Bào, tier: Linh khí, baseMultiplier: 1.35, minEnhance: 3, gold: 200, materials: [{ itemId: item_linh_thach, count: 2 }, { itemId: item_fox_fur, count: 4 }] }
+  - { name: Tử Hà Pháp Bào, tier: Pháp bảo, baseMultiplier: 1.8, minEnhance: 6, minQuality: rare, gold: 600, materials: [{ itemId: item_linh_thach, count: 4 }, { itemId: item_rune_ink, count: 2 }] }

@@ -6,6 +6,7 @@ import { sub, yawOf } from '../math';
 import type { Rng } from '../rng';
 import { TICK_RATE } from '../time';
 import { beginAction, cancelAction, currentAction, resetTransientActions } from './action-timeline';
+import { forgeMitigate, forgeOnDeath, forgeShieldOnHit } from './forge-combat';
 import { grantGold } from './inventory';
 import { dropLoot } from './loot';
 import { avoidsDamage } from './mobility';
@@ -268,6 +269,17 @@ export function applyDamage(
   if (source.pet && !isAlive(ctx.entities.get(source.pet.ownerId))) return;
   source.cloakEndTick = null;
   target.cloakEndTick = null;
+  // Module phòng thủ (khảm): dodge, reduction, element resist.
+  amount = forgeMitigate(
+    ctx,
+    target,
+    amount,
+    detail?.source ? detail.source.element : source.element,
+  );
+  if (amount <= 0) {
+    ctx.emit({ type: 'MISS', sourceId: source.id, targetId: target.id });
+    return;
+  }
   if (target.shield && ctx.tick >= target.shield.endTick) target.shield = null;
   if (target.shield) {
     const absorbed = Math.min(target.shield.amount, amount);
@@ -346,6 +358,7 @@ export function applyDamage(
     ...(detail ? { hit: detail.hit, heavy: detail.heavy } : {}),
     ...(detail?.shot ? { shot: detail.shot } : {}),
   });
+  forgeShieldOnHit(ctx, source, dealt);
   if (target.stats.hp <= 0) kill(ctx, target, source);
   else updatePhase(ctx, target);
 }
@@ -379,6 +392,7 @@ function kill(ctx: SimContext, target: Entity, killer: Entity | null): void {
   target.life.alive = false;
   target.life.respawnAtTick = ctx.tick + target.life.respawnTicks;
   ctx.emit({ type: 'DEATH', id: target.id, killerId: killer?.id ?? null });
+  if (target.player) forgeOnDeath(ctx, target);
   if (target.kind === 'monster') rewardKill(ctx, target);
 }
 

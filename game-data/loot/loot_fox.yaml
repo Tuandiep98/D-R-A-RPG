@@ -4,3 +4,5 @@ entries:
   - { itemId: item_fox_fur, chance: 0.6, min: 1, max: 2 }
   - { itemId: item_wuxia_headband, chance: 0.05, min: 1, max: 1 }
   - { itemId: item_potion_hp_small, chance: 0.1, min: 1, max: 1 }
+  - { itemId: item_tinh_thiet, chance: 0.25, min: 1, max: 1 }
+  - { itemId: item_yeu_dan, chance: 0.05, min: 1, max: 1 }

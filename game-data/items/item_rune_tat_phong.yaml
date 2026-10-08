@@ -1,0 +1,13 @@
+id: item_rune_tat_phong
+name: Tật Phong Trận Văn
+kind: socket
+description: "Trận văn khinh thân: +0.2 tốc chạy."
+icon: "☯"
+iconImage: icon_item_scroll
+maxStack: 20
+sellPrice: 40
+socket:
+  type: rune
+  line: tien
+  minQuality: rare
+  bonus: { speed: 0.2 }

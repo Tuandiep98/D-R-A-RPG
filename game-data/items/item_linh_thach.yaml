@@ -1,0 +1,8 @@
+id: item_linh_thach
+name: Linh Thạch
+kind: material
+description: Đá chứa linh khí thiên địa; cường hoá cao và luyện khí.
+icon: "💎"
+iconImage: icon_item_crystal2
+maxStack: 99
+sellPrice: 20

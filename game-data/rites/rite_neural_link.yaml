@@ -1,0 +1,12 @@
+id: rite_neural_link
+name: Liên Kết Thần Kinh
+description: "Đồng bộ trang bị với thần kinh người dùng: +15% chỉ số, khoá với chủ."
+line: co
+group: bind
+minQuality: epic
+gold: 400
+materials: [{ itemId: item_microchip, count: 2 }, { itemId: item_reactor_core, count: 1 }]
+
+effects:
+  statMultiplier: 0.15
+  bind: true

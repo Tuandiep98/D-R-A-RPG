@@ -1,0 +1,8 @@
+id: item_thien_tai
+name: Thiên Tài Địa Bảo
+kind: material
+description: Kỳ vật trời đất. Trang bị hấp thụ để tăng linh tính; cần cho Độ Kiếp.
+icon: "🏺"
+iconImage: icon_item_chalice
+maxStack: 99
+sellPrice: 120

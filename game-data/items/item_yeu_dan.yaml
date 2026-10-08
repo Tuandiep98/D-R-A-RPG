@@ -1,0 +1,8 @@
+id: item_yeu_dan
+name: Yêu Đan
+kind: material
+description: Nội đan của yêu thú, nguyên liệu Phụ Linh.
+icon: "🔴"
+iconImage: icon_item_crystal3
+maxStack: 99
+sellPrice: 25

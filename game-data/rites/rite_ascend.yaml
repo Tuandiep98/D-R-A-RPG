@@ -1,0 +1,14 @@
+id: rite_ascend
+name: Thăng Cấp Tự Trị
+description: "Nạp Spirit-AI cho cỗ máy thành Bản Mệnh (1 món): +4% mỗi cảnh giới. Thất bại mất 50% độ bền."
+line: co
+group: ascend
+minQuality: legendary
+gold: 1500
+materials: [{ itemId: item_reactor_core, count: 4 }, { itemId: item_microchip, count: 3 }]
+successRate: 0.6
+failDurability: 0.5
+effects:
+  natal: true
+  bind: true
+  natalPerRealm: 0.04
