@@ -148,12 +148,8 @@
           "name": "audit_log_actor_account_id_accounts_id_fk",
           "tableFrom": "audit_log",
           "tableTo": "accounts",
-          "columnsFrom": [
-            "actor_account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["actor_account_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -358,12 +354,8 @@
           "name": "characters_account_id_accounts_id_fk",
           "tableFrom": "characters",
           "tableTo": "accounts",
-          "columnsFrom": [
-            "account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["account_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -480,12 +472,8 @@
           "name": "currency_transactions_character_id_characters_id_fk",
           "tableFrom": "currency_transactions",
           "tableTo": "characters",
-          "columnsFrom": [
-            "character_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["character_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -550,12 +538,8 @@
           "name": "friendships_requester_id_characters_id_fk",
           "tableFrom": "friendships",
           "tableTo": "characters",
-          "columnsFrom": [
-            "requester_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["requester_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -563,12 +547,8 @@
           "name": "friendships_target_id_characters_id_fk",
           "tableFrom": "friendships",
           "tableTo": "characters",
-          "columnsFrom": [
-            "target_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["target_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -576,10 +556,7 @@
       "compositePrimaryKeys": {
         "friendships_requester_id_target_id_pk": {
           "name": "friendships_requester_id_target_id_pk",
-          "columns": [
-            "requester_id",
-            "target_id"
-          ]
+          "columns": ["requester_id", "target_id"]
         }
       },
       "uniqueConstraints": {},
@@ -646,12 +623,8 @@
           "name": "guild_members_character_id_characters_id_fk",
           "tableFrom": "guild_members",
           "tableTo": "characters",
-          "columnsFrom": [
-            "character_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["character_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -659,12 +632,8 @@
           "name": "guild_members_guild_id_guilds_id_fk",
           "tableFrom": "guild_members",
           "tableTo": "guilds",
-          "columnsFrom": [
-            "guild_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["guild_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -727,12 +696,8 @@
           "name": "guilds_leader_id_characters_id_fk",
           "tableFrom": "guilds",
           "tableTo": "characters",
-          "columnsFrom": [
-            "leader_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["leader_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -814,12 +779,8 @@
           "name": "item_instances_character_id_characters_id_fk",
           "tableFrom": "item_instances",
           "tableTo": "characters",
-          "columnsFrom": [
-            "character_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["character_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -920,12 +881,8 @@
           "name": "refresh_tokens_account_id_accounts_id_fk",
           "tableFrom": "refresh_tokens",
           "tableTo": "accounts",
-          "columnsFrom": [
-            "account_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["account_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -967,12 +924,8 @@
           "name": "wallets_character_id_characters_id_fk",
           "tableFrom": "wallets",
           "tableTo": "characters",
-          "columnsFrom": [
-            "character_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["character_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -993,28 +946,17 @@
     "public.friend_status": {
       "name": "friend_status",
       "schema": "public",
-      "values": [
-        "pending",
-        "accepted"
-      ]
+      "values": ["pending", "accepted"]
     },
     "public.guild_rank": {
       "name": "guild_rank",
       "schema": "public",
-      "values": [
-        "leader",
-        "officer",
-        "member"
-      ]
+      "values": ["leader", "officer", "member"]
     },
     "public.role": {
       "name": "role",
       "schema": "public",
-      "values": [
-        "player",
-        "gm",
-        "admin"
-      ]
+      "values": ["player", "gm", "admin"]
     }
   },
   "schemas": {},

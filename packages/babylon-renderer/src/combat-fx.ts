@@ -1,4 +1,4 @@
-import type { ComboVariant } from "@rpg/game-data";
+import type { ComboVariant } from '@rpg/game-data';
 import {
   type ArcRotateCamera,
   Color3,
@@ -15,8 +15,8 @@ import {
   type TransformNode,
   Vector3,
   VertexBuffer,
-} from "./babylon";
-import type { QualityLevel } from "./quality";
+} from './babylon';
+import type { QualityLevel } from './quality';
 
 /**
  * Basic-attack presentation (D-031): swing arcs, blade trails, hand glow,
@@ -33,52 +33,52 @@ import type { QualityLevel } from "./quality";
  */
 
 export type FxSprite =
-  | "slash"
-  | "arc"
-  | "ring"
-  | "glow"
-  | "star"
-  | "twirl"
-  | "trace"
-  | "smoke"
-  | "scorch"
-  | "spark"
+  | 'slash'
+  | 'arc'
+  | 'ring'
+  | 'glow'
+  | 'star'
+  | 'twirl'
+  | 'trace'
+  | 'smoke'
+  | 'scorch'
+  | 'spark'
   // Thunder skills (Lôi Kiếm Tu).
-  | "zap"
-  | "bolt"
-  | "streak"
-  | "rune"
-  | "sigil"
-  | "shock"
+  | 'zap'
+  | 'bolt'
+  | 'streak'
+  | 'rune'
+  | 'sigil'
+  | 'shock'
   // Ranged weapons (D-033).
-  | "muzzle"
-  | "blast"
-  | "tracer";
+  | 'muzzle'
+  | 'blast'
+  | 'tracer';
 
 const SPRITE_MEDIA: Record<FxSprite, string> = {
-  slash: "vfx_slash_02",
-  arc: "vfx_slash_03",
-  ring: "vfx_circle_01",
-  glow: "vfx_circle_05",
-  star: "vfx_star_06",
-  twirl: "vfx_twirl_01",
-  trace: "vfx_trace_01",
-  smoke: "vfx_smoke_07",
-  scorch: "vfx_scorch_01",
-  spark: "vfx_flare_01",
-  zap: "vfx_spark_02",
-  bolt: "vfx_spark_06",
-  streak: "vfx_spark_07",
-  rune: "vfx_magic_01",
-  sigil: "vfx_magic_02",
-  shock: "vfx_circle_02",
-  muzzle: "vfx_muzzle_02",
-  blast: "vfx_muzzle_04",
-  tracer: "vfx_trace_06",
+  slash: 'vfx_slash_02',
+  arc: 'vfx_slash_03',
+  ring: 'vfx_circle_01',
+  glow: 'vfx_circle_05',
+  star: 'vfx_star_06',
+  twirl: 'vfx_twirl_01',
+  trace: 'vfx_trace_01',
+  smoke: 'vfx_smoke_07',
+  scorch: 'vfx_scorch_01',
+  spark: 'vfx_flare_01',
+  zap: 'vfx_spark_02',
+  bolt: 'vfx_spark_06',
+  streak: 'vfx_spark_07',
+  rune: 'vfx_magic_01',
+  sigil: 'vfx_magic_02',
+  shock: 'vfx_circle_02',
+  muzzle: 'vfx_muzzle_02',
+  blast: 'vfx_muzzle_04',
+  tracer: 'vfx_trace_06',
 };
 
 /** How a sprite is oriented: facing the camera, lying on the ground, or standing along a heading. */
-export type FxMode = "billboard" | "flat" | "upright";
+export type FxMode = 'billboard' | 'flat' | 'upright';
 
 export interface SpriteSpec {
   sprite: FxSprite;
@@ -119,9 +119,8 @@ export interface SpriteSpec {
   tag?: number;
 }
 
-interface Sprite extends Required<
-  Omit<SpriteSpec, "follow" | "h" | "yaw" | "roll" | "rollEnd" | "tag">
-> {
+interface Sprite
+  extends Required<Omit<SpriteSpec, 'follow' | 'h' | 'yaw' | 'roll' | 'rollEnd' | 'tag'>> {
   tag: number;
   h: number;
   yaw: number;
@@ -161,17 +160,17 @@ class SpriteBatch {
     this.mesh.material = mat;
     this.mesh.isPickable = false;
     this.mesh.alwaysSelectAsActiveMesh = true;
-    this.mesh.thinInstanceSetBuffer("matrix", this.matrices, 16, false);
-    this.mesh.thinInstanceSetBuffer("color", this.colors, 4, false);
+    this.mesh.thinInstanceSetBuffer('matrix', this.matrices, 16, false);
+    this.mesh.thinInstanceSetBuffer('color', this.colors, 4, false);
     this.mesh.thinInstanceCount = 0;
     // Light flashes draw over bodies (a glow in the hand must not hide behind the arm).
     if (
-      kind === "glow" ||
-      kind === "star" ||
-      kind === "spark" ||
-      kind === "zap" ||
-      kind === "muzzle" ||
-      kind === "blast"
+      kind === 'glow' ||
+      kind === 'star' ||
+      kind === 'spark' ||
+      kind === 'zap' ||
+      kind === 'muzzle' ||
+      kind === 'blast'
     )
       this.mesh.renderingGroupId = 1;
     this.mesh.setEnabled(false);
@@ -182,8 +181,7 @@ class SpriteBatch {
       // Full: replace the oldest (bounded cost).
       let oldest = 0;
       for (let i = 1; i < this.items.length; i++)
-        if ((this.items[i]?.age ?? 0) > (this.items[oldest]?.age ?? 0))
-          oldest = i;
+        if ((this.items[i]?.age ?? 0) > (this.items[oldest]?.age ?? 0)) oldest = i;
       this.items[oldest] = sprite;
       return;
     }
@@ -193,8 +191,7 @@ class SpriteBatch {
   /** Ends tagged sprites within `fade` seconds. */
   cut(tag: number, fade: number): void {
     for (const it of this.items)
-      if (it.tag === tag && it.delay <= 0)
-        it.life = Math.min(it.life, it.age + fade);
+      if (it.tag === tag && it.delay <= 0) it.life = Math.min(it.life, it.age + fade);
   }
 
   update(dt: number, cameraRotation: Quaternion): void {
@@ -235,18 +232,13 @@ class SpriteBatch {
         const a = it.follow.getAbsolutePosition();
         this.p.set(a.x, a.y, a.z);
       } else this.p.set(it.x, it.y, it.z);
-      if (it.mode === "billboard") {
+      if (it.mode === 'billboard') {
         Quaternion.RotationAxisToRef(Vector3.Forward(), roll, this.q);
         cameraRotation.multiplyToRef(this.q, this.q);
-      } else if (it.mode === "flat") {
+      } else if (it.mode === 'flat') {
         Quaternion.RotationYawPitchRollToRef(it.yaw, Math.PI / 2, roll, this.q);
       } else {
-        Quaternion.RotationYawPitchRollToRef(
-          it.yaw - Math.PI / 2,
-          0,
-          roll,
-          this.q,
-        );
+        Quaternion.RotationYawPitchRollToRef(it.yaw - Math.PI / 2, 0, roll, this.q);
       }
       const stretch = 1 + (it.growH - 1) * ease;
       this.s.set(it.w * size * (it.mirror ? -1 : 1), it.h * size * stretch, 1);
@@ -262,8 +254,8 @@ class SpriteBatch {
     this.mesh.thinInstanceCount = n;
     this.mesh.setEnabled(n > 0);
     if (n > 0) {
-      this.mesh.thinInstanceBufferUpdated("matrix");
-      this.mesh.thinInstanceBufferUpdated("color");
+      this.mesh.thinInstanceBufferUpdated('matrix');
+      this.mesh.thinInstanceBufferUpdated('color');
     }
   }
 }
@@ -340,15 +332,11 @@ class BladeTrail {
     if (this.left > 0 && this.base && !this.base.isDisposed()) {
       this.left -= dt;
       const b = this.base.getAbsolutePosition();
-      const t =
-        this.tip && !this.tip.isDisposed()
-          ? this.tip.getAbsolutePosition()
-          : null;
+      const t = this.tip && !this.tip.isDisposed() ? this.tip.getAbsolutePosition() : null;
       const inner = t ? Vector3.Lerp(b, t, 0.25) : b.clone();
       const outer = t ? t.clone() : b.add(new Vector3(0, this.width, 0));
       this.samples.unshift(inner, outer);
-      if (this.samples.length > this.length * 2)
-        this.samples.length = this.length * 2;
+      if (this.samples.length > this.length * 2) this.samples.length = this.length * 2;
     } else {
       // Released: the tail catches up with the head, then the ribbon is gone.
       this.fade += dt;
@@ -373,18 +361,9 @@ class BladeTrail {
         [0, 0.35],
         [4, 1],
       ] as const) {
-        this.colors[i * 8 + o] = Math.min(
-          1,
-          this.color.r * k * edge + hot * k * 0.25,
-        );
-        this.colors[i * 8 + o + 1] = Math.min(
-          1,
-          this.color.g * k * edge + hot * k * 0.25,
-        );
-        this.colors[i * 8 + o + 2] = Math.min(
-          1,
-          this.color.b * k * edge + hot * k * 0.25,
-        );
+        this.colors[i * 8 + o] = Math.min(1, this.color.r * k * edge + hot * k * 0.25);
+        this.colors[i * 8 + o + 1] = Math.min(1, this.color.g * k * edge + hot * k * 0.25);
+        this.colors[i * 8 + o + 2] = Math.min(1, this.color.b * k * edge + hot * k * 0.25);
         this.colors[i * 8 + o + 3] = 1;
       }
     }
@@ -406,7 +385,7 @@ export class CombatFx {
   private readonly batches = new Map<FxSprite, SpriteBatch>();
   private readonly trails: BladeTrail[] = [];
   private readonly camRotation = new Quaternion();
-  private level: QualityLevel = "high";
+  private level: QualityLevel = 'high';
 
   constructor(
     scene: Scene,
@@ -436,16 +415,12 @@ export class CombatFx {
   }
 
   private get cap(): number {
-    return this.level === "low"
-      ? 12
-      : this.level === "medium"
-        ? 32
-        : MAX_PER_KIND;
+    return this.level === 'low' ? 12 : this.level === 'medium' ? 32 : MAX_PER_KIND;
   }
 
   /** Multiplier for particle counts. */
   get density(): number {
-    return this.level === "low" ? 0.35 : this.level === "medium" ? 0.65 : 1;
+    return this.level === 'low' ? 0.35 : this.level === 'medium' ? 0.65 : 1;
   }
 
   sprite(spec: SpriteSpec): void {
@@ -512,11 +487,11 @@ export class CombatFx {
       const up = 0.2 + Math.random() * 0.9;
       const v = speed * (0.45 + Math.random() * 0.75);
       this.sprite({
-        sprite: "spark",
+        sprite: 'spark',
         x,
         y,
         z,
-        mode: "billboard",
+        mode: 'billboard',
         w: (opts.size ?? 0.22) * (0.6 + Math.random() * 0.8),
         life: 0.25 + Math.random() * 0.3,
         grow: 0.3,
@@ -538,7 +513,7 @@ export class CombatFx {
     seconds: number,
     width = 0.12,
   ): void {
-    if (!base || this.level === "low") return;
+    if (!base || this.level === 'low') return;
     const t = this.trails.find((x) => !x.active) ?? this.trails[0];
     t?.start(base, tip, color, seconds, width);
   }
@@ -563,15 +538,15 @@ export class CombatFx {
         ]
       : [[color, 1, 1]];
     switch (v.trail.shape) {
-      case "slash": {
+      case 'slash': {
         // Kenney slash_02 is a "U": its thick bottom must face away from the body.
-        const sweep = v.trail.from === "left" ? -1 : 1;
+        const sweep = v.trail.from === 'left' ? -1 : 1;
         const r = (v.reach + 0.5) * size;
         for (const [c, k, intensity] of layers)
           this.sprite({
-            sprite: "slash",
+            sprite: 'slash',
             ...at(r * 0.28, heavy ? 0.95 : 0.85),
-            mode: "flat",
+            mode: 'flat',
             yaw: o.yaw + Math.PI,
             roll: 0.55 * sweep,
             rollEnd: -0.35 * sweep,
@@ -584,15 +559,15 @@ export class CombatFx {
           });
         break;
       }
-      case "smash": {
+      case 'smash': {
         // A vertical plane would be edge-on to the chase camera: the falling
         // crescent faces the camera instead and drops toward the ground.
         const r = (v.reach + 0.3) * size;
         for (const [c, k, intensity] of layers)
           this.sprite({
-            sprite: "arc",
+            sprite: 'arc',
             ...at(r * 0.45, 1.0),
-            mode: "billboard",
+            mode: 'billboard',
             roll: 0.55,
             rollEnd: -0.35,
             w: r * 0.95 * k,
@@ -604,13 +579,13 @@ export class CombatFx {
           });
         break;
       }
-      case "thrust": {
+      case 'thrust': {
         const r = v.reach * size;
         for (const [c, k, intensity] of layers)
           this.sprite({
-            sprite: "trace",
+            sprite: 'trace',
             ...at(r * 0.55 + 0.3, 0.95),
-            mode: "flat",
+            mode: 'flat',
             yaw: o.yaw,
             w: 0.8 * size * k,
             h: r * 1.3,
@@ -621,9 +596,9 @@ export class CombatFx {
             intensity,
           });
         this.sprite({
-          sprite: "star",
+          sprite: 'star',
           ...at(r + 0.35, 0.95),
-          mode: "billboard",
+          mode: 'billboard',
           w: 0.6 * size,
           grow: 1.8,
           life: 0.16,
@@ -632,15 +607,15 @@ export class CombatFx {
         });
         break;
       }
-      case "spin": {
+      case 'spin': {
         const r = (v.reach + 0.6) * size;
         for (const [c, k, intensity] of layers)
           this.sprite({
-            sprite: "twirl",
+            sprite: 'twirl',
             x: o.x,
             y: 0.75,
             z: o.z,
-            mode: "flat",
+            mode: 'flat',
             yaw: o.yaw,
             roll: 0,
             rollEnd: -Math.PI * 1.6,
@@ -663,19 +638,19 @@ export class CombatFx {
     const color = Color3.FromHexString(v.trail.color);
     const fx = Math.sin(o.yaw);
     const fz = Math.cos(o.yaw);
-    const ahead = v.trail.shape === "spin" ? 0 : Math.min(v.reach, 1.6) * 0.75;
+    const ahead = v.trail.shape === 'spin' ? 0 : Math.min(v.reach, 1.6) * 0.75;
     const cx = o.x + fx * ahead;
     const cz = o.z + fz * ahead;
     switch (v.trail.impact) {
-      case "spark":
+      case 'spark':
         return { shake: 0, kick: 0 };
-      case "burst": {
+      case 'burst': {
         this.sprite({
-          sprite: "star",
+          sprite: 'star',
           x: cx,
           y: 0.95,
           z: cz,
-          mode: "billboard",
+          mode: 'billboard',
           w: 1.2,
           grow: 2.4,
           life: 0.22,
@@ -683,11 +658,11 @@ export class CombatFx {
           intensity: 1.4,
         });
         this.sprite({
-          sprite: "glow",
+          sprite: 'glow',
           x: cx,
           y: 0.95,
           z: cz,
-          mode: "billboard",
+          mode: 'billboard',
           w: 1.4,
           grow: 1.8,
           life: 0.3,
@@ -695,11 +670,11 @@ export class CombatFx {
           intensity: 1.2,
         });
         this.sprite({
-          sprite: "ring",
+          sprite: 'ring',
           x: cx,
           y: 0.95,
           z: cz,
-          mode: "upright",
+          mode: 'upright',
           yaw: o.yaw + Math.PI / 2,
           w: 0.6,
           grow: 3.4,
@@ -713,14 +688,14 @@ export class CombatFx {
         });
         return { shake: 0.12, kick: 0.45 };
       }
-      case "quake": {
+      case 'quake': {
         const r = Math.max(1.6, v.reach * 1.4) * v.trail.size;
         this.sprite({
-          sprite: "ring",
+          sprite: 'ring',
           x: cx,
           y: 0.06,
           z: cz,
-          mode: "flat",
+          mode: 'flat',
           w: r * 0.5,
           grow: 4,
           life: 0.5,
@@ -728,11 +703,11 @@ export class CombatFx {
           intensity: 1.3,
         });
         this.sprite({
-          sprite: "ring",
+          sprite: 'ring',
           x: cx,
           y: 0.08,
           z: cz,
-          mode: "flat",
+          mode: 'flat',
           w: r * 0.3,
           grow: 3,
           life: 0.35,
@@ -741,11 +716,11 @@ export class CombatFx {
           delay: 0.05,
         });
         this.sprite({
-          sprite: "scorch",
+          sprite: 'scorch',
           x: cx,
           y: 0.04,
           z: cz,
-          mode: "flat",
+          mode: 'flat',
           yaw: o.yaw,
           w: r * 1.1,
           grow: 1.15,
@@ -754,11 +729,11 @@ export class CombatFx {
           intensity: 0.9,
         });
         this.sprite({
-          sprite: "star",
+          sprite: 'star',
           x: cx,
           y: 0.5,
           z: cz,
-          mode: "billboard",
+          mode: 'billboard',
           w: 1.3,
           grow: 2.2,
           life: 0.18,
@@ -766,15 +741,15 @@ export class CombatFx {
           intensity: 1.3,
         });
         const dust = new Color3(0.42, 0.36, 0.3);
-        const puffs = this.level === "low" ? 3 : 6;
+        const puffs = this.level === 'low' ? 3 : 6;
         for (let i = 0; i < puffs; i++) {
           const a = o.yaw + (i / puffs) * Math.PI * 2;
           this.sprite({
-            sprite: "smoke",
+            sprite: 'smoke',
             x: cx + Math.sin(a) * 0.4,
             y: 0.35,
             z: cz + Math.cos(a) * 0.4,
-            mode: "billboard",
+            mode: 'billboard',
             roll: a,
             rollEnd: a + 0.6,
             w: 0.9,
@@ -798,16 +773,16 @@ export class CombatFx {
         });
         return { shake: 0.24, kick: 0.8 };
       }
-      case "pierce": {
+      case 'pierce': {
         const len = v.reach * 1.5;
         const tx = o.x + fx * (len + 0.4);
         const tz = o.z + fz * (len + 0.4);
         this.sprite({
-          sprite: "trace",
+          sprite: 'trace',
           x: o.x + fx * (len * 0.6),
           y: 0.95,
           z: o.z + fz * (len * 0.6),
-          mode: "flat",
+          mode: 'flat',
           yaw: o.yaw,
           w: 1.6,
           h: len * 1.3,
@@ -817,11 +792,11 @@ export class CombatFx {
           intensity: 1.6,
         });
         this.sprite({
-          sprite: "trace",
+          sprite: 'trace',
           x: o.x + fx * (len * 0.6),
           y: 0.95,
           z: o.z + fz * (len * 0.6),
-          mode: "flat",
+          mode: 'flat',
           yaw: o.yaw,
           w: 0.6,
           h: len * 1.2,
@@ -834,11 +809,11 @@ export class CombatFx {
         for (let i = 0; i < 3; i++) {
           const d = len * (0.35 + i * 0.35);
           this.sprite({
-            sprite: "ring",
+            sprite: 'ring',
             x: o.x + fx * d,
             y: 0.95,
             z: o.z + fz * d,
-            mode: "upright",
+            mode: 'upright',
             yaw: o.yaw + Math.PI / 2,
             w: 0.35 + i * 0.1,
             grow: 3 + i * 0.4,
@@ -849,11 +824,11 @@ export class CombatFx {
           });
         }
         this.sprite({
-          sprite: "star",
+          sprite: 'star',
           x: tx,
           y: 0.95,
           z: tz,
-          mode: "billboard",
+          mode: 'billboard',
           w: 1.2,
           grow: 2.2,
           life: 0.2,
@@ -862,11 +837,11 @@ export class CombatFx {
           delay: 0.07,
         });
         this.sprite({
-          sprite: "glow",
+          sprite: 'glow',
           x: tx,
           y: 0.95,
           z: tz,
-          mode: "billboard",
+          mode: 'billboard',
           w: 1.2,
           grow: 1.6,
           life: 0.3,
@@ -881,14 +856,14 @@ export class CombatFx {
         });
         return { shake: 0.1, kick: 0.35 };
       }
-      case "cyclone": {
+      case 'cyclone': {
         const r = (v.reach + 0.6) * v.trail.size;
         this.sprite({
-          sprite: "twirl",
+          sprite: 'twirl',
           x: o.x,
           y: 0.4,
           z: o.z,
-          mode: "flat",
+          mode: 'flat',
           roll: 0,
           rollEnd: -Math.PI * 2.4,
           w: r * 2.2,
@@ -898,26 +873,26 @@ export class CombatFx {
           intensity: 1.1,
         });
         this.sprite({
-          sprite: "ring",
+          sprite: 'ring',
           x: o.x,
           y: 0.08,
           z: o.z,
-          mode: "flat",
+          mode: 'flat',
           w: r,
           grow: 2.4,
           life: 0.4,
           color,
           intensity: 1,
         });
-        const puffs = this.level === "low" ? 3 : 8;
+        const puffs = this.level === 'low' ? 3 : 8;
         for (let i = 0; i < puffs; i++) {
           const a = (i / puffs) * Math.PI * 2;
           this.sprite({
-            sprite: "smoke",
+            sprite: 'smoke',
             x: o.x + Math.sin(a) * r * 0.7,
             y: 0.3,
             z: o.z + Math.cos(a) * r * 0.7,
-            mode: "billboard",
+            mode: 'billboard',
             w: 0.7,
             grow: 2,
             life: 0.6,
@@ -941,11 +916,11 @@ export class CombatFx {
   chargeGlow(node: TransformNode | null, color: Color3, seconds: number): void {
     if (!node) return;
     this.sprite({
-      sprite: "glow",
+      sprite: 'glow',
       x: 0,
       y: 0,
       z: 0,
-      mode: "billboard",
+      mode: 'billboard',
       follow: node,
       w: 0.7,
       grow: 1.7,
@@ -956,11 +931,11 @@ export class CombatFx {
       pulse: 28,
     });
     this.sprite({
-      sprite: "star",
+      sprite: 'star',
       x: 0,
       y: 0,
       z: 0,
-      mode: "billboard",
+      mode: 'billboard',
       follow: node,
       roll: 0,
       rollEnd: 2.5,
@@ -973,17 +948,17 @@ export class CombatFx {
     });
     // Motes drawn in toward the hand.
     const p = node.getAbsolutePosition();
-    const motes = this.level === "low" ? 0 : 6;
+    const motes = this.level === 'low' ? 0 : 6;
     for (let i = 0; i < motes; i++) {
       const a = (i / motes) * Math.PI * 2;
       const r = 0.9;
       const t = Math.max(0.2, seconds * 0.8);
       this.sprite({
-        sprite: "spark",
+        sprite: 'spark',
         x: p.x + Math.sin(a) * r,
         y: p.y + 0.5 - (i % 3) * 0.3,
         z: p.z + Math.cos(a) * r,
-        mode: "billboard",
+        mode: 'billboard',
         w: 0.18,
         grow: 0.5,
         life: t,
@@ -999,20 +974,13 @@ export class CombatFx {
   }
 
   /** Flash + sparks on a struck body. */
-  hit(
-    x: number,
-    y: number,
-    z: number,
-    yaw: number,
-    color: Color3,
-    strength: number,
-  ): void {
+  hit(x: number, y: number, z: number, yaw: number, color: Color3, strength: number): void {
     this.sprite({
-      sprite: "star",
+      sprite: 'star',
       x,
       y,
       z,
-      mode: "billboard",
+      mode: 'billboard',
       roll: Math.random() * 3,
       w: 0.5 + strength * 0.5,
       grow: 1.9,
@@ -1021,11 +989,11 @@ export class CombatFx {
       intensity: 1.2,
     });
     this.sprite({
-      sprite: "glow",
+      sprite: 'glow',
       x,
       y,
       z,
-      mode: "billboard",
+      mode: 'billboard',
       w: 0.5 + strength * 0.6,
       grow: 1.5,
       life: 0.2,
@@ -1041,10 +1009,7 @@ export class CombatFx {
 
   update(dt: number): void {
     const view = this.camera.getViewMatrix();
-    Quaternion.FromRotationMatrixToRef(
-      view.getRotationMatrix().transpose(),
-      this.camRotation,
-    );
+    Quaternion.FromRotationMatrixToRef(view.getRotationMatrix().transpose(), this.camRotation);
     for (const b of this.batches.values()) b.update(dt, this.camRotation);
     for (const t of this.trails) t.update(dt);
   }
@@ -1066,12 +1031,7 @@ export class CombatFx {
 /** Stand-in sprites drawn on a canvas when the Kenney media is not built. */
 function proceduralTexture(scene: Scene, kind: FxSprite): DynamicTexture {
   const size = 128;
-  const tex = new DynamicTexture(
-    `fx_${kind}_tex`,
-    { width: size, height: size },
-    scene,
-    true,
-  );
+  const tex = new DynamicTexture(`fx_${kind}_tex`, { width: size, height: size }, scene, true);
   const ctx = tex.getContext() as unknown as CanvasRenderingContext2D;
   const c = size / 2;
   ctx.clearRect(0, 0, size, size);
@@ -1081,41 +1041,41 @@ function proceduralTexture(scene: Scene, kind: FxSprite): DynamicTexture {
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, size, size);
   };
-  ctx.strokeStyle = "rgba(255,255,255,1)";
-  ctx.lineCap = "round";
+  ctx.strokeStyle = 'rgba(255,255,255,1)';
+  ctx.lineCap = 'round';
   switch (kind) {
-    case "glow":
-    case "spark":
-    case "muzzle":
-    case "blast":
+    case 'glow':
+    case 'spark':
+    case 'muzzle':
+    case 'blast':
       radial(0, c, [
         [0, 1],
         [0.3, 0.6],
         [1, 0],
       ]);
       break;
-    case "smoke":
+    case 'smoke':
       radial(0, c, [
         [0, 0.55],
         [0.6, 0.25],
         [1, 0],
       ]);
       break;
-    case "ring":
+    case 'ring':
       radial(c * 0.55, c, [
         [0, 0],
         [0.55, 1],
         [1, 0],
       ]);
       break;
-    case "scorch":
+    case 'scorch':
       radial(0, c, [
         [0, 0.9],
         [0.4, 0.35],
         [1, 0],
       ]);
       break;
-    case "star":
+    case 'star':
       radial(0, c * 0.4, [
         [0, 1],
         [1, 0],
@@ -1135,42 +1095,38 @@ function proceduralTexture(scene: Scene, kind: FxSprite): DynamicTexture {
         ctx.restore();
       }
       break;
-    case "zap":
-    case "bolt":
-    case "streak": {
+    case 'zap':
+    case 'bolt':
+    case 'streak': {
       // A jagged stroke (vertical for bolts, horizontal for streaks, a few for zaps).
-      const strokes = kind === "zap" ? 3 : 1;
-      ctx.lineWidth = kind === "zap" ? 3 : 5;
+      const strokes = kind === 'zap' ? 3 : 1;
+      ctx.lineWidth = kind === 'zap' ? 3 : 5;
       for (let k = 0; k < strokes; k++) {
-        const a =
-          kind === "streak" ? Math.PI / 2 : kind === "zap" ? k * 2.1 : 0;
+        const a = kind === 'streak' ? Math.PI / 2 : kind === 'zap' ? k * 2.1 : 0;
         ctx.save();
         ctx.translate(c, c);
         ctx.rotate(a);
         ctx.beginPath();
         ctx.moveTo(0, -c * 0.9);
         for (let i = 1; i <= 8; i++)
-          ctx.lineTo(
-            (Math.random() * 2 - 1) * c * 0.18,
-            -c * 0.9 + i * c * 0.225,
-          );
+          ctx.lineTo((Math.random() * 2 - 1) * c * 0.18, -c * 0.9 + i * c * 0.225);
         ctx.stroke();
         ctx.restore();
       }
       break;
     }
-    case "rune":
-    case "sigil":
-    case "shock": {
-      ctx.lineWidth = kind === "shock" ? 8 : 4;
+    case 'rune':
+    case 'sigil':
+    case 'shock': {
+      ctx.lineWidth = kind === 'shock' ? 8 : 4;
       ctx.beginPath();
       ctx.arc(c, c, c * 0.85, 0, Math.PI * 2);
       ctx.stroke();
-      if (kind !== "shock") {
-        const n = kind === "rune" ? 5 : 6;
+      if (kind !== 'shock') {
+        const n = kind === 'rune' ? 5 : 6;
         ctx.beginPath();
         for (let i = 0; i <= n; i++) {
-          const a = ((i * (kind === "rune" ? 2 : 1)) / n) * Math.PI * 2;
+          const a = ((i * (kind === 'rune' ? 2 : 1)) / n) * Math.PI * 2;
           const x = c + Math.sin(a) * c * 0.8;
           const y = c - Math.cos(a) * c * 0.8;
           if (i === 0) ctx.moveTo(x, y);
@@ -1180,23 +1136,19 @@ function proceduralTexture(scene: Scene, kind: FxSprite): DynamicTexture {
       }
       break;
     }
-    case "trace":
-    case "tracer":
-      ctx.lineWidth = kind === "tracer" ? 18 : 10;
+    case 'trace':
+    case 'tracer':
+      ctx.lineWidth = kind === 'tracer' ? 18 : 10;
       ctx.beginPath();
       ctx.moveTo(c, 6);
       ctx.lineTo(c, size - 6);
       ctx.stroke();
       break;
-    case "slash":
-    case "arc":
-    case "twirl": {
+    case 'slash':
+    case 'arc':
+    case 'twirl': {
       const [from, to] =
-        kind === "slash"
-          ? [0.15, 0.85]
-          : kind === "arc"
-            ? [-0.35, 0.35]
-            : [0, 1.5];
+        kind === 'slash' ? [0.15, 0.85] : kind === 'arc' ? [-0.35, 0.35] : [0, 1.5];
       for (let i = 0; i < 14; i++) {
         const f = i / 13;
         ctx.lineWidth = 2 + 12 * Math.sin(f * Math.PI);

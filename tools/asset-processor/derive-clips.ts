@@ -1,4 +1,4 @@
-import type { Accessor, Animation, Document, Node } from "@gltf-transform/core";
+import type { Accessor, Animation, Document, Node } from '@gltf-transform/core';
 
 /**
  * Derived animation clips baked at build time (SOURCE.json `derivedClips`):
@@ -28,26 +28,17 @@ export interface DerivedClip {
 
 const SIDE = /\.(l|r)$/;
 const otherSide = (name: string) =>
-  SIDE.test(name)
-    ? name.replace(SIDE, (_, s: string) => (s === "l" ? ".r" : ".l"))
-    : name;
+  SIDE.test(name) ? name.replace(SIDE, (_, s: string) => (s === 'l' ? '.r' : '.l')) : name;
 
-export function deriveClips(
-  doc: Document,
-  clips: readonly DerivedClip[],
-): string[] {
+export function deriveClips(doc: Document, clips: readonly DerivedClip[]): string[] {
   const root = doc.getRoot();
   const problems: string[] = [];
-  const nodes = new Map<string, Node>(
-    root.listNodes().map((n) => [n.getName(), n]),
-  );
-  const buffer = root.listBuffers()[0] ?? doc.createBuffer("derived_buffer");
+  const nodes = new Map<string, Node>(root.listNodes().map((n) => [n.getName(), n]));
+  const buffer = root.listBuffers()[0] ?? doc.createBuffer('derived_buffer');
   for (const clip of clips) {
     const source = root.listAnimations().find((a) => a.getName() === clip.from);
     if (!source) {
-      problems.push(
-        `derived clip ${clip.name}: source "${clip.from}" not in the model`,
-      );
+      problems.push(`derived clip ${clip.name}: source "${clip.from}" not in the model`);
       continue;
     }
     problems.push(...derive(doc, source, clip, nodes, buffer));
@@ -60,15 +51,14 @@ function derive(
   source: Animation,
   clip: DerivedClip,
   nodes: Map<string, Node>,
-  buffer: ReturnType<Document["createBuffer"]>,
+  buffer: ReturnType<Document['createBuffer']>,
 ): string[] {
   const problems: string[] = [];
   const out = doc.createAnimation(clip.name);
   let duration = 0;
   for (const s of source.listSamplers()) {
     const t = s.getInput()?.getArray();
-    if (t && t.length > 0)
-      duration = Math.max(duration, t[t.length - 1] as number);
+    if (t && t.length > 0) duration = Math.max(duration, t[t.length - 1] as number);
   }
   for (const ch of source.listChannels()) {
     const sampler = ch.getSampler();
@@ -77,39 +67,28 @@ function derive(
     const input = sampler?.getInput();
     const output = sampler?.getOutput();
     if (!sampler || !node || !path || !input || !output) continue;
-    if (sampler.getInterpolation() === "CUBICSPLINE") {
+    if (sampler.getInterpolation() === 'CUBICSPLINE') {
       problems.push(`derived clip ${clip.name}: CUBICSPLINE channel skipped`);
       continue;
     }
     const target = clip.mirror ? nodes.get(otherSide(node.getName())) : node;
     if (!target) {
-      problems.push(
-        `derived clip ${clip.name}: no mirror joint for ${node.getName()}`,
-      );
+      problems.push(`derived clip ${clip.name}: no mirror joint for ${node.getName()}`);
       continue;
     }
     const times = Array.from(input.getArray() as ArrayLike<number>);
     const k = output.getElementSize();
     const values = Array.from(output.getArray() as ArrayLike<number>);
     if (clip.mirror) mirrorValues(values, k, path);
-    if (path === "translation" && clip.inPlace?.includes(node.getName()))
-      pinXZ(values, k);
+    if (path === 'translation' && clip.inPlace?.includes(node.getName())) pinXZ(values, k);
     let outTimes = times;
     let outValues = values;
     if (clip.reverse) {
       outTimes = times.map((t) => duration - t).reverse();
       outValues = [];
-      for (let i = times.length - 1; i >= 0; i--)
-        outValues.push(...values.slice(i * k, i * k + k));
+      for (let i = times.length - 1; i >= 0; i--) outValues.push(...values.slice(i * k, i * k + k));
     }
-    if (clip.trimStart)
-      [outTimes, outValues] = trim(
-        outTimes,
-        outValues,
-        k,
-        clip.trimStart,
-        path,
-      );
+    if (clip.trimStart) [outTimes, outValues] = trim(outTimes, outValues, k, clip.trimStart, path);
     const newSampler = doc
       .createAnimationSampler()
       .setInput(accessor(doc, buffer, input, outTimes))
@@ -117,11 +96,7 @@ function derive(
       .setInterpolation(sampler.getInterpolation());
     out.addSampler(newSampler);
     out.addChannel(
-      doc
-        .createAnimationChannel()
-        .setTargetNode(target)
-        .setTargetPath(path)
-        .setSampler(newSampler),
+      doc.createAnimationChannel().setTargetNode(target).setTargetPath(path).setSampler(newSampler),
     );
   }
   return problems;
@@ -143,7 +118,7 @@ function trim(
   const va = values.slice((first - 1) * k, first * k);
   const vb = values.slice(first * k, first * k + k);
   let v = va.map((x, i) => x + ((vb[i] as number) - x) * f);
-  if (path === "rotation") {
+  if (path === 'rotation') {
     const len = Math.hypot(...v);
     v = v.map((x) => x / len);
   }
@@ -168,8 +143,8 @@ function pinXZ(values: number[], k: number): void {
 /** Reflection across X: translations negate x, rotations keep x/w and negate y/z. */
 function mirrorValues(values: number[], k: number, path: string): void {
   for (let i = 0; i < values.length; i += k) {
-    if (path === "translation") values[i] = -(values[i] as number);
-    else if (path === "rotation") {
+    if (path === 'translation') values[i] = -(values[i] as number);
+    else if (path === 'rotation') {
       values[i + 1] = -(values[i + 1] as number);
       values[i + 2] = -(values[i + 2] as number);
     }
@@ -178,7 +153,7 @@ function mirrorValues(values: number[], k: number, path: string): void {
 
 function accessor(
   doc: Document,
-  buffer: ReturnType<Document["createBuffer"]>,
+  buffer: ReturnType<Document['createBuffer']>,
   like: Accessor,
   data: number[],
 ): Accessor {

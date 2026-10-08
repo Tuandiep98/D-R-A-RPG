@@ -1,8 +1,8 @@
-import { VirtualJoystick } from "@rpg/input";
-import { useEffect, useRef } from "react";
-import { effectiveScheme, JOYSTICK_RADIUS, useControls } from "../controls";
-import { game } from "../game";
-import { useUiStore } from "../store";
+import { VirtualJoystick } from '@rpg/input';
+import { useEffect, useRef } from 'react';
+import { effectiveScheme, JOYSTICK_RADIUS, useControls } from '../controls';
+import { game } from '../game';
+import { useUiStore } from '../store';
 
 /**
  * Mounts the on-screen joystick while touch controls are active. The stick
@@ -12,8 +12,8 @@ import { useUiStore } from "../store";
 export function TouchJoystick() {
   const layer = useRef<HTMLDivElement>(null);
   const stick = useRef<VirtualJoystick | null>(null);
-  const ready = useUiStore((s) => s.status === "ready");
-  const touch = useControls((s) => effectiveScheme(s) === "touch");
+  const ready = useUiStore((s) => s.status === 'ready');
+  const touch = useControls((s) => effectiveScheme(s) === 'touch');
   const mode = useControls((s) => s.joystickMode);
   const side = useControls((s) => s.joystickSide);
   const size = useControls((s) => s.joystickSize);

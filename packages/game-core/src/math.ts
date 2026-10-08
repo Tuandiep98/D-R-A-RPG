@@ -10,8 +10,7 @@ export const sub = (a: Vec2, b: Vec2): Vec2 => ({ x: a.x - b.x, z: a.z - b.z });
 export const add = (a: Vec2, b: Vec2): Vec2 => ({ x: a.x + b.x, z: a.z + b.z });
 export const scale = (v: Vec2, s: number): Vec2 => ({ x: v.x * s, z: v.z * s });
 export const length = (v: Vec2): number => Math.hypot(v.x, v.z);
-export const distance = (a: Vec2, b: Vec2): number =>
-  Math.hypot(a.x - b.x, a.z - b.z);
+export const distance = (a: Vec2, b: Vec2): number => Math.hypot(a.x - b.x, a.z - b.z);
 
 /** Facing angle so that yaw 0 looks down +Z and yaw π/2 looks down +X. */
 export const yawOf = (dir: Vec2): number => Math.atan2(dir.x, dir.z);

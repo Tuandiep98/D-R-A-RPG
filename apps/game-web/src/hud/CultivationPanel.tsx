@@ -1,33 +1,33 @@
-import type { CultivationView, UiState } from "@rpg/babylon-renderer";
+import type { CultivationView, UiState } from '@rpg/babylon-renderer';
 import {
   type CultivationNodeDef,
   type CultivationPath,
   type RealmDef,
   realmLadder,
-} from "@rpg/game-data";
-import { sharedContent } from "../content";
-import { game } from "../game";
-import { useUiStore } from "../store";
-import { GameIcon } from "./GameIcon";
+} from '@rpg/game-data';
+import { sharedContent } from '../content';
+import { game } from '../game';
+import { useUiStore } from '../store';
+import { GameIcon } from './GameIcon';
 
 const PATHS: { id: CultivationPath; label: string; hint: string }[] = [
-  { id: "tien", label: "Tiên Đạo", hint: "Kinh mạch · luyện thể · công pháp" },
-  { id: "co", label: "Cơ Đạo", hint: "Core · augmentation · module" },
+  { id: 'tien', label: 'Tiên Đạo', hint: 'Kinh mạch · luyện thể · công pháp' },
+  { id: 'co', label: 'Cơ Đạo', hint: 'Core · augmentation · module' },
   {
-    id: "hon_nguyen",
-    label: "Hỗn Nguyên",
-    hint: "Dùng cả kinh mạch lẫn body load",
+    id: 'hon_nguyen',
+    label: 'Hỗn Nguyên',
+    hint: 'Dùng cả kinh mạch lẫn body load',
   },
 ];
 
-const AXIS_LABEL: Record<CultivationNodeDef["axis"], string> = {
-  than: "Thân",
-  nang_luong: "Năng lượng",
-  than_thuc: "Thần thức",
-  dao: "Đạo",
+const AXIS_LABEL: Record<CultivationNodeDef['axis'], string> = {
+  than: 'Thân',
+  nang_luong: 'Năng lượng',
+  than_thuc: 'Thần thức',
+  dao: 'Đạo',
 };
 
-type Inventory = UiState["inventory"];
+type Inventory = UiState['inventory'];
 
 const owned = (inv: Inventory, itemId: string) =>
   inv.filter((i) => i.itemId === itemId).reduce((n, i) => n + i.count, 0);
@@ -49,19 +49,16 @@ function nodeHint(
   const need = ladder.findIndex((r) => r.id === node.realm);
   if (need > rank) return `Cần ${ladder[need]?.name ?? node.realm}`;
   const missingNode = node.requires.find((r) => !cv.nodes.includes(r));
-  if (missingNode)
-    return `Cần mở ${c.cultivation.get(missingNode)?.name ?? missingNode}`;
+  if (missingNode) return `Cần mở ${c.cultivation.get(missingNode)?.name ?? missingNode}`;
   const missingQuest = node.quests.find((q) => !questsDone.includes(q));
-  if (missingQuest)
-    return `Cần hoàn thành “${c.quests.get(missingQuest)?.name ?? missingQuest}”`;
+  if (missingQuest) return `Cần hoàn thành “${c.quests.get(missingQuest)?.name ?? missingQuest}”`;
   if (
     cv.meridianLoad + node.meridian > cv.meridianCapacity ||
     cv.bodyLoad + node.body > cv.bodyCapacity
   )
-    return "Không đủ chỗ (tải)";
-  if (node.cost.materials.some((m) => owned(inv, m.itemId) < m.count))
-    return "Thiếu nguyên liệu";
-  if (gold < node.cost.gold) return "Thiếu vàng";
+    return 'Không đủ chỗ (tải)';
+  if (node.cost.materials.some((m) => owned(inv, m.itemId) < m.count)) return 'Thiếu nguyên liệu';
+  if (gold < node.cost.gold) return 'Thiếu vàng';
   return null;
 }
 
@@ -81,13 +78,9 @@ function Cost({
         const have = owned(inv, m.itemId);
         const item = c.items.get(m.itemId);
         return (
-          <span key={m.itemId} className={have >= m.count ? "" : "lacking"}>
-            <GameIcon
-              className="inline-icon"
-              icon={item?.icon}
-              image={item?.iconImage}
-            />{" "}
-            {item?.name ?? m.itemId} {have}/{m.count}{" "}
+          <span key={m.itemId} className={have >= m.count ? '' : 'lacking'}>
+            <GameIcon className="inline-icon" icon={item?.icon} image={item?.iconImage} />{' '}
+            {item?.name ?? m.itemId} {have}/{m.count}{' '}
           </span>
         );
       })}
@@ -113,23 +106,16 @@ export function CultivationPanel() {
   const bt = next?.breakthrough;
   const realmOrder = (id: string) => c.realms.get(id)?.order ?? 0;
   const nodes = [...c.cultivation.values()].sort(
-    (x, y) =>
-      realmOrder(x.realm) - realmOrder(y.realm) ||
-      x.requires.length - y.requires.length,
+    (x, y) => realmOrder(x.realm) - realmOrder(y.realm) || x.requires.length - y.requires.length,
   );
-  const send = (
-    intent: Parameters<NonNullable<ReturnType<typeof game>>["send"]>[0],
-  ) => game()?.send(intent);
+  const send = (intent: Parameters<NonNullable<ReturnType<typeof game>>['send']>[0]) =>
+    game()?.send(intent);
 
   return (
-    <div
-      className="panel npc-panel cultivation"
-      onPointerDown={(e) => e.stopPropagation()}
-    >
+    <div className="panel npc-panel cultivation" onPointerDown={(e) => e.stopPropagation()}>
       <div className="panel-head">
         <strong>
-          ☯ Tu Luyện · {cv.realmName}{" "}
-          <span className="muted">/ {cv.mechName}</span>
+          ☯ Tu Luyện · {cv.realmName} <span className="muted">/ {cv.mechName}</span>
         </strong>
         <button type="button" onClick={close}>
           ✕
@@ -137,10 +123,7 @@ export function CultivationPanel() {
       </div>
       <div className="realm-ladder small">
         {ladder.map((r, i) => (
-          <span
-            key={r.id}
-            className={i === rank ? "current" : i < rank ? "passed" : ""}
-          >
+          <span key={r.id} className={i === rank ? 'current' : i < rank ? 'passed' : ''}>
             {r.name}
           </span>
         ))}
@@ -165,23 +148,16 @@ export function CultivationPanel() {
                 const open = cv.nodes.includes(n.id);
                 const hint = open
                   ? null
-                  : nodeHint(
-                      n,
-                      cv,
-                      ladder,
-                      ui.inventory,
-                      p.gold,
-                      ui.questsDone,
-                    );
+                  : nodeHint(n, cv, ladder, ui.inventory, p.gold, ui.questsDone);
                 const skill = n.skillId ? c.skills.get(n.skillId) : undefined;
                 return (
                   <div
                     key={n.id}
-                    className={`npc-row node ${open ? "node-open" : hint ? "locked" : ""}`}
+                    className={`npc-row node ${open ? 'node-open' : hint ? 'locked' : ''}`}
                   >
                     <div>
                       <div>
-                        {n.icon} {n.name}{" "}
+                        {n.icon} {n.name}{' '}
                         <span className="muted small">
                           {AXIS_LABEL[n.axis]}
                           {n.meridian > 0 && ` · mạch ${n.meridian}`}
@@ -191,21 +167,17 @@ export function CultivationPanel() {
                       <div className="small muted">{n.description}</div>
                       {skill && (
                         <div className="small reward">
-                          Mở kỹ năng:{" "}
+                          Mở kỹ năng:{' '}
                           <GameIcon
                             className="inline-icon"
                             icon={skill.icon}
                             image={skill.iconImage}
-                          />{" "}
+                          />{' '}
                           {skill.name}
                         </div>
                       )}
                       {!open && (
-                        <Cost
-                          gold={n.cost.gold}
-                          materials={n.cost.materials}
-                          inv={ui.inventory}
-                        />
+                        <Cost gold={n.cost.gold} materials={n.cost.materials} inv={ui.inventory} />
                       )}
                     </div>
                     {open ? (
@@ -217,9 +189,7 @@ export function CultivationPanel() {
                           type="button"
                           className="primary"
                           disabled={!!hint}
-                          onClick={() =>
-                            send({ type: "OPEN_NODE", nodeId: n.id })
-                          }
+                          onClick={() => send({ type: 'OPEN_NODE', nodeId: n.id })}
                         >
                           Khai mở
                         </button>
@@ -235,55 +205,45 @@ export function CultivationPanel() {
         {next && bt ? (
           <>
             <strong>
-              Đột phá {next.name}{" "}
-              <span className="muted">/ {next.mechName}</span>
+              Đột phá {next.name} <span className="muted">/ {next.mechName}</span>
             </strong>
             <p className="small muted">{next.description}</p>
             <div className="small">
               Nền móng: {cv.nodes.length}/{bt.minNodes} node
               {bt.quests.map((q) => (
-                <span
-                  key={q}
-                  className={ui.questsDone.includes(q) ? "" : "lacking"}
-                >
-                  {" "}
+                <span key={q} className={ui.questsDone.includes(q) ? '' : 'lacking'}>
+                  {' '}
                   · Thử thách “{c.quests.get(q)?.name ?? q}”
                 </span>
               ))}
             </div>
             <Cost gold={bt.gold} materials={bt.materials} inv={ui.inventory} />
             <div className="small">
-              Tỉ lệ thành công:{" "}
-              <strong>{Math.round(cv.breakthroughChance * 100)}%</strong>
+              Tỉ lệ thành công: <strong>{Math.round(cv.breakthroughChance * 100)}%</strong>
               <span className="muted">
-                {" "}
-                (mỗi node vượt mức +{Math.round(bt.chancePerExtraNode * 100)}%).
-                Thất bại: mất nguyên liệu, phản phệ {bt.backlashSeconds}s —
-                không mất cảnh giới hay node.
+                {' '}
+                (mỗi node vượt mức +{Math.round(bt.chancePerExtraNode * 100)}%). Thất bại: mất
+                nguyên liệu, phản phệ {bt.backlashSeconds}s — không mất cảnh giới hay node.
               </span>
             </div>
             <button
               type="button"
               className="primary wide"
-              disabled={
-                cv.backlash > 0 ||
-                !p.inSafeZone ||
-                cv.nodes.length < bt.minNodes
-              }
-              onClick={() => send({ type: "BREAKTHROUGH" })}
+              disabled={cv.backlash > 0 || !p.inSafeZone || cv.nodes.length < bt.minNodes}
+              onClick={() => send({ type: 'BREAKTHROUGH' })}
             >
               {cv.backlash > 0
                 ? `Phản phệ — chờ ${Math.ceil(cv.backlash)}s`
                 : p.inSafeZone
-                  ? "Đột phá"
-                  : "Về vùng an toàn để đột phá"}
+                  ? 'Đột phá'
+                  : 'Về vùng an toàn để đột phá'}
             </button>
           </>
         ) : (
           <span className="muted small">
             {next
               ? `${next.name} chưa mở trong phiên bản này.`
-              : "Đã ở cảnh giới cao nhất hiện có."}
+              : 'Đã ở cảnh giới cao nhất hiện có.'}
           </span>
         )}
       </div>

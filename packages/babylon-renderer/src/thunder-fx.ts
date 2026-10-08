@@ -1,7 +1,7 @@
-import { Color3, Vector3 } from "./babylon";
-import type { CombatFx } from "./combat-fx";
-import type { EntityView } from "./entity-view";
-import type { LightningBatch } from "./lightning";
+import { Color3, Vector3 } from './babylon';
+import type { CombatFx } from './combat-fx';
+import type { EntityView } from './entity-view';
+import type { LightningBatch } from './lightning';
 
 /**
  * Lôi Kiếm Tu skill presentation: one look per `vfx` id (game-data/skills),
@@ -12,30 +12,30 @@ import type { LightningBatch } from "./lightning";
  */
 
 export type ThunderStyle =
-  | "thunder_dash"
-  | "thunder_leap"
-  | "thunder_arc"
-  | "thunder_field"
-  | "thunder_projectile"
-  | "thunder_strike"
-  | "thunder_ultimate";
+  | 'thunder_dash'
+  | 'thunder_leap'
+  | 'thunder_arc'
+  | 'thunder_field'
+  | 'thunder_projectile'
+  | 'thunder_strike'
+  | 'thunder_ultimate';
 
 const STYLES = new Set<string>([
-  "thunder_dash",
-  "thunder_leap",
-  "thunder_arc",
-  "thunder_field",
-  "thunder_projectile",
-  "thunder_strike",
-  "thunder_ultimate",
+  'thunder_dash',
+  'thunder_leap',
+  'thunder_arc',
+  'thunder_field',
+  'thunder_projectile',
+  'thunder_strike',
+  'thunder_ultimate',
 ]);
 
 export const isThunderStyle = (vfx: string | undefined): vfx is ThunderStyle =>
   !!vfx && STYLES.has(vfx);
 
-const BLUE = Color3.FromHexString("#4fc8ff");
-const PALE = Color3.FromHexString("#b8ecff");
-const VIOLET = Color3.FromHexString("#9a6bff");
+const BLUE = Color3.FromHexString('#4fc8ff');
+const PALE = Color3.FromHexString('#b8ecff');
+const VIOLET = Color3.FromHexString('#9a6bff');
 const WHITE = Color3.White();
 const SKY = 8;
 
@@ -78,7 +78,7 @@ export class ThunderFx {
   ) {}
 
   private get low(): boolean {
-    return this.fx.quality === "low";
+    return this.fx.quality === 'low';
   }
 
   private n(count: number): number {
@@ -97,33 +97,33 @@ export class ThunderFx {
   ): Feedback {
     const hold = Math.max(0.15, seconds);
     switch (style) {
-      case "thunder_dash":
-      case "thunder_leap":
+      case 'thunder_dash':
+      case 'thunder_leap':
         this.crackle(caster, 0.45, BLUE);
         return NONE;
-      case "thunder_arc":
+      case 'thunder_arc':
         this.crackle(caster, hold + 0.4, BLUE);
-        this.fx.chargeGlow(caster.anchor("hand_r"), BLUE, hold);
+        this.fx.chargeGlow(caster.anchor('hand_r'), BLUE, hold);
         return NONE;
-      case "thunder_projectile":
-        this.fx.chargeGlow(caster.anchor("weapon_tip"), BLUE, hold);
+      case 'thunder_projectile':
+        this.fx.chargeGlow(caster.anchor('weapon_tip'), BLUE, hold);
         this.crackle(caster, hold + 0.1, BLUE);
         return NONE;
-      case "thunder_strike":
-        this.fx.chargeGlow(caster.anchor("weapon_tip"), PALE, hold);
-        this.fx.chargeGlow(caster.anchor("hand_r"), BLUE, hold);
+      case 'thunder_strike':
+        this.fx.chargeGlow(caster.anchor('weapon_tip'), PALE, hold);
+        this.fx.chargeGlow(caster.anchor('hand_r'), BLUE, hold);
         this.crackle(caster, hold + 0.3, BLUE);
         return { shake: 0, kick: 0.25, seconds: 0 };
-      case "thunder_field":
+      case 'thunder_field':
         this.crackle(caster, hold + 0.2, BLUE);
-        this.fx.chargeGlow(caster.anchor("hand_r"), BLUE, hold);
-        this.fx.chargeGlow(caster.anchor("hand_l"), BLUE, hold);
+        this.fx.chargeGlow(caster.anchor('hand_r'), BLUE, hold);
+        this.fx.chargeGlow(caster.anchor('hand_l'), BLUE, hold);
         if (point) this.rune(point.x, point.z, radius, hold, BLUE, false);
         return NONE;
-      case "thunder_ultimate": {
+      case 'thunder_ultimate': {
         this.crackle(caster, hold + 0.5, VIOLET);
-        this.fx.chargeGlow(caster.anchor("hand_r"), VIOLET, hold);
-        this.fx.chargeGlow(caster.anchor("hand_l"), VIOLET, hold);
+        this.fx.chargeGlow(caster.anchor('hand_r'), VIOLET, hold);
+        this.fx.chargeGlow(caster.anchor('hand_l'), VIOLET, hold);
         if (point) {
           this.rune(point.x, point.z, radius, hold, VIOLET, true);
           // Thin warning bolts licking the rune during the last half of the cast.
@@ -165,23 +165,23 @@ export class ThunderFx {
     radius: number,
   ): Feedback {
     switch (style) {
-      case "thunder_dash":
+      case 'thunder_dash':
         this.dashPath(from ?? point, point);
         if (caster) this.crackle(caster, 0.35, BLUE);
         return { shake: 0.04, kick: 0, seconds: 0.15 };
-      case "thunder_leap": {
+      case 'thunder_leap': {
         const yaw = this.dashPath(from ?? point, point);
         this.arcBurst(point.x, point.z, Math.max(1.4, radius), yaw, 6, 0.08);
         this.skyStrike(point.x, point.z, 0.65, BLUE, 0.04);
         if (caster) this.crackle(caster, 0.4, BLUE);
         return { shake: 0.12, kick: 0.35, seconds: 0.3 };
       }
-      case "thunder_arc": {
+      case 'thunder_arc': {
         const yaw = caster ? caster.root.rotation.y : 0;
         this.arcBurst(point.x, point.z, radius, yaw, 9, 0);
         return { shake: 0.14, kick: 0.4, seconds: 0.35 };
       }
-      case "thunder_field": {
+      case 'thunder_field': {
         const strikes = this.low ? 3 : 5;
         for (let i = 0; i < strikes; i++) {
           const a = Math.random() * Math.PI * 2;
@@ -197,7 +197,7 @@ export class ThunderFx {
         this.ground(point.x, point.z, radius, BLUE, 0);
         return { shake: 0.2, kick: 0.5, seconds: 0.55 };
       }
-      case "thunder_projectile": {
+      case 'thunder_projectile': {
         if (!caster || !target) return NONE;
         // Launched from in front of the chest toward the target: the blade tip
         // swings around during the stab clip and would make the start jump.
@@ -209,9 +209,7 @@ export class ThunderFx {
           caster.height * 0.6,
           c.z + ((t.z - c.z) / d) * 0.7,
         );
-        const end = target.root.position.add(
-          new Vector3(0, target.height * 0.55, 0),
-        );
+        const end = target.root.position.add(new Vector3(0, target.height * 0.55, 0));
         const casterId = caster.entityId;
         this.fly(start, end, BLUE, () => {
           this.zapAt(end, 1, BLUE);
@@ -240,10 +238,8 @@ export class ThunderFx {
         });
         return { shake: 0.05, kick: 0, seconds: 0.15 };
       }
-      case "thunder_strike": {
-        const at = target
-          ? target.root.position
-          : new Vector3(point.x, 0, point.z);
+      case 'thunder_strike': {
+        const at = target ? target.root.position : new Vector3(point.x, 0, point.z);
         this.skyStrike(at.x, at.z, 1.25, PALE, 0);
         const yaw = caster ? caster.root.rotation.y : 0;
         // Falling crescent: the blade's downward cut, facing the camera.
@@ -252,11 +248,11 @@ export class ThunderFx {
           [WHITE, 0.8],
         ] as const)
           this.fx.sprite({
-            sprite: "arc",
+            sprite: 'arc',
             x: at.x - Math.sin(yaw) * 0.3,
             y: 1.1,
             z: at.z - Math.cos(yaw) * 0.3,
-            mode: "billboard",
+            mode: 'billboard',
             roll: 0.5,
             rollEnd: -0.4,
             w: 1.5 * k,
@@ -273,7 +269,7 @@ export class ThunderFx {
         caster?.freeze(0.1);
         return { shake: 0.24, kick: 0.6, seconds: 0.4 };
       }
-      case "thunder_ultimate":
+      case 'thunder_ultimate':
         this.judgement(point.x, point.z, radius);
         return { shake: 0.4, kick: 1, seconds: 0.7 };
     }
@@ -281,29 +277,16 @@ export class ThunderFx {
 
   /** A thunder skill's damage landing on a body: sparks and a short crackle. */
   hit(target: EntityView, style: ThunderStyle): void {
-    const color = style === "thunder_ultimate" ? VIOLET : BLUE;
+    const color = style === 'thunder_ultimate' ? VIOLET : BLUE;
     const p = target.root.position;
-    this.fx.hit(
-      p.x,
-      target.height * 0.55,
-      p.z,
-      Math.random() * Math.PI * 2,
-      color,
-      0.45,
-    );
+    this.fx.hit(p.x, target.height * 0.55, p.z, Math.random() * Math.PI * 2, color, 0.45);
     this.crackle(target, 0.3, color);
   }
 
   // ---- Building blocks --------------------------------------------------
 
   /** Lightning bolt from the sky onto the ground, with flash, ring, scorch and sparks. */
-  private skyStrike(
-    x: number,
-    z: number,
-    scale: number,
-    color: Color3,
-    delay: number,
-  ): void {
+  private skyStrike(x: number, z: number, scale: number, color: Color3, delay: number): void {
     const top = new Vector3(
       x + rand(1.2 * scale),
       SKY * Math.min(1.2, 0.7 + scale * 0.3),
@@ -332,11 +315,11 @@ export class ThunderFx {
         delay: delay + 0.06,
       });
     this.fx.sprite({
-      sprite: "bolt",
+      sprite: 'bolt',
       x,
       y: 1.3 * scale,
       z,
-      mode: "billboard",
+      mode: 'billboard',
       w: 1 * scale,
       h: 2.8 * scale,
       life: 0.18,
@@ -346,11 +329,11 @@ export class ThunderFx {
     });
     this.ground(x, z, 0.9 * scale, color, delay);
     this.fx.sprite({
-      sprite: "star",
+      sprite: 'star',
       x,
       y: 0.35,
       z,
-      mode: "billboard",
+      mode: 'billboard',
       w: 1.4 * scale,
       grow: 2.2,
       life: 0.18,
@@ -359,11 +342,11 @@ export class ThunderFx {
       delay,
     });
     this.fx.sprite({
-      sprite: "zap",
+      sprite: 'zap',
       x,
       y: 0.5 * scale,
       z,
-      mode: "billboard",
+      mode: 'billboard',
       roll: Math.random() * 6,
       w: 1.6 * scale,
       grow: 1.4,
@@ -376,19 +359,13 @@ export class ThunderFx {
   }
 
   /** Ground marks of a lightning hit: glow, shock ring, scorch. */
-  private ground(
-    x: number,
-    z: number,
-    radius: number,
-    color: Color3,
-    delay: number,
-  ): void {
+  private ground(x: number, z: number, radius: number, color: Color3, delay: number): void {
     this.fx.sprite({
-      sprite: "glow",
+      sprite: 'glow',
       x,
       y: 0.08,
       z,
-      mode: "flat",
+      mode: 'flat',
       w: radius * 2.2,
       grow: 1.3,
       life: 0.35,
@@ -397,11 +374,11 @@ export class ThunderFx {
       delay,
     });
     this.fx.sprite({
-      sprite: "shock",
+      sprite: 'shock',
       x,
       y: 0.07,
       z,
-      mode: "flat",
+      mode: 'flat',
       w: radius * 0.6,
       grow: 3.6,
       life: 0.4,
@@ -410,11 +387,11 @@ export class ThunderFx {
       delay,
     });
     this.fx.sprite({
-      sprite: "scorch",
+      sprite: 'scorch',
       x,
       y: 0.04,
       z,
-      mode: "flat",
+      mode: 'flat',
       yaw: Math.random() * Math.PI * 2,
       w: radius * 1.6,
       grow: 1.1,
@@ -426,10 +403,7 @@ export class ThunderFx {
   }
 
   /** The blink: a bolt and streak along the path, flashes at both ends. Returns its heading. */
-  private dashPath(
-    a: { x: number; z: number },
-    b: { x: number; z: number },
-  ): number {
+  private dashPath(a: { x: number; z: number }, b: { x: number; z: number }): number {
     const dx = b.x - a.x;
     const dz = b.z - a.z;
     const len = Math.hypot(dx, dz);
@@ -459,11 +433,11 @@ export class ThunderFx {
       const mx = (a.x + b.x) / 2;
       const mz = (a.z + b.z) / 2;
       this.fx.sprite({
-        sprite: "streak",
+        sprite: 'streak',
         x: mx,
         y: 0.85,
         z: mz,
-        mode: "upright",
+        mode: 'upright',
         yaw,
         w: len * 1.15,
         h: 1.1,
@@ -472,11 +446,11 @@ export class ThunderFx {
         intensity: 1.3,
       });
       this.fx.sprite({
-        sprite: "trace",
+        sprite: 'trace',
         x: mx,
         y: 0.05,
         z: mz,
-        mode: "flat",
+        mode: 'flat',
         yaw,
         w: 0.9,
         h: len * 1.2,
@@ -491,11 +465,11 @@ export class ThunderFx {
     ] as const) {
       this.zapAt(new Vector3(p.x, 0.8, p.z), k, BLUE);
       this.fx.sprite({
-        sprite: "shock",
+        sprite: 'shock',
         x: p.x,
         y: 0.06,
         z: p.z,
-        mode: "flat",
+        mode: 'flat',
         w: 0.5,
         grow: 3,
         life: 0.3,
@@ -520,11 +494,11 @@ export class ThunderFx {
       [WHITE, 0.7, 0.35],
     ] as const)
       this.fx.sprite({
-        sprite: "twirl",
+        sprite: 'twirl',
         x,
         y: 0.7,
         z,
-        mode: "flat",
+        mode: 'flat',
         yaw,
         roll: 0,
         rollEnd: -Math.PI * 2.2,
@@ -536,11 +510,11 @@ export class ThunderFx {
         delay,
       });
     this.fx.sprite({
-      sprite: "shock",
+      sprite: 'shock',
       x,
       y: 0.07,
       z,
-      mode: "flat",
+      mode: 'flat',
       w: radius * 0.5,
       grow: 4,
       life: 0.45,
@@ -549,11 +523,11 @@ export class ThunderFx {
       delay,
     });
     this.fx.sprite({
-      sprite: "star",
+      sprite: 'star',
       x,
       y: 0.9,
       z,
-      mode: "billboard",
+      mode: 'billboard',
       w: 1.3,
       grow: 2,
       life: 0.2,
@@ -579,11 +553,11 @@ export class ThunderFx {
         delay: delay + (i % 3) * 0.03,
       });
       this.fx.sprite({
-        sprite: "zap",
+        sprite: 'zap',
         x: end.x,
         y: end.y,
         z: end.z,
-        mode: "billboard",
+        mode: 'billboard',
         roll: Math.random() * 6,
         w: 0.8,
         grow: 1.3,
@@ -604,11 +578,11 @@ export class ThunderFx {
       [WHITE, 0.6, 1.2],
     ] as const)
       this.fx.sprite({
-        sprite: "trace",
+        sprite: 'trace',
         x,
         y: 9,
         z,
-        mode: "billboard",
+        mode: 'billboard',
         w,
         h: 7,
         life: 0.16,
@@ -642,11 +616,11 @@ export class ThunderFx {
     }
     this.ground(x, z, radius, VIOLET, land);
     this.fx.sprite({
-      sprite: "shock",
+      sprite: 'shock',
       x,
       y: 0.1,
       z,
-      mode: "flat",
+      mode: 'flat',
       w: radius * 0.4,
       grow: 6,
       life: 0.6,
@@ -655,11 +629,11 @@ export class ThunderFx {
       delay: land + 0.05,
     });
     this.fx.sprite({
-      sprite: "glow",
+      sprite: 'glow',
       x,
       y: 1.4,
       z,
-      mode: "billboard",
+      mode: 'billboard',
       w: radius * 1.1,
       grow: 1.4,
       life: 0.4,
@@ -668,11 +642,11 @@ export class ThunderFx {
       delay: land,
     });
     this.fx.sprite({
-      sprite: "star",
+      sprite: 'star',
       x,
       y: 1,
       z,
-      mode: "billboard",
+      mode: 'billboard',
       w: 1.8,
       grow: 2.2,
       life: 0.2,
@@ -684,11 +658,11 @@ export class ThunderFx {
     for (let i = 0; i < puffs; i++) {
       const a = (i / puffs) * Math.PI * 2;
       this.fx.sprite({
-        sprite: "smoke",
+        sprite: 'smoke',
         x: x + Math.sin(a) * 0.6,
         y: 0.35,
         z: z + Math.cos(a) * 0.6,
-        mode: "billboard",
+        mode: 'billboard',
         roll: a,
         rollEnd: a + 0.8,
         w: 1.1,
@@ -716,11 +690,11 @@ export class ThunderFx {
     big: boolean,
   ): void {
     this.fx.sprite({
-      sprite: "rune",
+      sprite: 'rune',
       x,
       y: 0.06,
       z,
-      mode: "flat",
+      mode: 'flat',
       roll: 0,
       rollEnd: big ? 1.6 : 1,
       w: radius * 2.1,
@@ -733,11 +707,11 @@ export class ThunderFx {
     });
     if (big)
       this.fx.sprite({
-        sprite: "sigil",
+        sprite: 'sigil',
         x,
         y: 0.07,
         z,
-        mode: "flat",
+        mode: 'flat',
         roll: 0,
         rollEnd: -2.4,
         w: radius * 1.2,
@@ -748,11 +722,11 @@ export class ThunderFx {
         fadeIn: 0.4,
       });
     this.fx.sprite({
-      sprite: "shock",
+      sprite: 'shock',
       x,
       y: 0.05,
       z,
-      mode: "flat",
+      mode: 'flat',
       w: radius * 2,
       life: seconds + 0.1,
       color,
@@ -763,11 +737,11 @@ export class ThunderFx {
 
   private zapAt(p: Vector3, k: number, color: Color3): void {
     this.fx.sprite({
-      sprite: "zap",
+      sprite: 'zap',
       x: p.x,
       y: p.y,
       z: p.z,
-      mode: "billboard",
+      mode: 'billboard',
       roll: Math.random() * 6,
       w: 1.3 * k,
       grow: 1.4,
@@ -776,11 +750,11 @@ export class ThunderFx {
       intensity: 1.4,
     });
     this.fx.sprite({
-      sprite: "glow",
+      sprite: 'glow',
       x: p.x,
       y: p.y,
       z: p.z,
-      mode: "billboard",
+      mode: 'billboard',
       w: 1.2 * k,
       grow: 1.5,
       life: 0.26,
@@ -839,12 +813,7 @@ export class ThunderFx {
   }
 
   /** Sword qi flying to the target, trailing lightning. */
-  private fly(
-    from: Vector3,
-    to: Vector3,
-    color: Color3,
-    onArrive: () => void,
-  ): void {
+  private fly(from: Vector3, to: Vector3, color: Color3, onArrive: () => void): void {
     const duration = Math.min(0.22, 0.06 + Vector3.Distance(from, to) * 0.016);
     const v = to.subtract(from).scale(1 / duration);
     for (const [c, w, intensity] of [
@@ -852,11 +821,11 @@ export class ThunderFx {
       [WHITE, 0.4, 1.2],
     ] as const)
       this.fx.sprite({
-        sprite: "glow",
+        sprite: 'glow',
         x: from.x,
         y: from.y,
         z: from.z,
-        mode: "billboard",
+        mode: 'billboard',
         w,
         life: duration,
         color: c,
@@ -869,11 +838,11 @@ export class ThunderFx {
     // Centred half a length ahead so it trails behind the head, not behind the caster.
     const ahead = v.clone().normalize().scale(0.6);
     this.fx.sprite({
-      sprite: "streak",
+      sprite: 'streak',
       x: from.x + ahead.x,
       y: from.y + ahead.y,
       z: from.z + ahead.z,
-      mode: "upright",
+      mode: 'upright',
       yaw: Math.atan2(v.x, v.z),
       w: 1.2,
       h: 0.7,
@@ -942,8 +911,7 @@ export class ThunderFx {
       const r = c.view.radius * 0.9;
       const a = Math.random() * Math.PI * 2;
       const y = 0.15 + Math.random() * h * 0.85;
-      const b =
-        a + (Math.random() < 0.5 ? 1 : -1) * (0.6 + Math.random() * 0.9);
+      const b = a + (Math.random() < 0.5 ? 1 : -1) * (0.6 + Math.random() * 0.9);
       this.bolts.bolt({
         from: new Vector3(p.x + Math.sin(a) * r, y, p.z + Math.cos(a) * r),
         to: new Vector3(

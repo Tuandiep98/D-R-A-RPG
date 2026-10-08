@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 /**
  * Provenance + asset list for one third-party pack (assets plan §4.2, §13.1).
@@ -14,7 +14,7 @@ export const PackSourceSchema = z
     /** Set true only after a human checked the license on the author's page. */
     licenseVerified: z.boolean(),
     downloadedAt: z.string().nullable(),
-    status: z.enum(["candidate", "approved", "prototype_only", "rejected"]),
+    status: z.enum(['candidate', 'approved', 'prototype_only', 'rejected']),
     notes: z.string().optional(),
     /**
      * `models` packs feed the glTF pipeline (`assets`). Other kinds only ship
@@ -23,8 +23,8 @@ export const PackSourceSchema = z
      * `library` packs are approved but not wired into the game yet.
      */
     kind: z
-      .enum(["models", "animations", "audio", "icons", "ui", "vfx", "library"])
-      .default("models"),
+      .enum(['models', 'animations', 'audio', 'icons', 'ui', 'vfx', 'library'])
+      .default('models'),
     /** Curated non-model files copied/optimised into the runtime media manifest. */
     media: z
       .array(
@@ -47,9 +47,7 @@ export const PackSourceSchema = z
         z.strictObject({
           assetId: z.string().regex(/^[a-z][a-z0-9_]*$/),
           /** Path relative to the pack folder, usually under originals/. */
-          file: z
-            .string()
-            .regex(/\.(glb|gltf)$/i, "only .glb/.gltf are supported"),
+          file: z.string().regex(/\.(glb|gltf)$/i, 'only .glb/.gltf are supported'),
           /** Extra image lookup folders, relative to the source glTF file. */
           textureDirs: z.array(z.string()).default([]),
           /**
@@ -96,13 +94,7 @@ export const PackSourceSchema = z
             .default([]),
           /** Meshes (mesh or node name) removed from the main file. */
           dropMeshes: z.array(z.string()).default([]),
-          type: z.enum([
-            "character",
-            "monster",
-            "environment",
-            "prop",
-            "ground",
-          ]),
+          type: z.enum(['character', 'monster', 'environment', 'prop', 'ground']),
           modified: z.boolean().default(false),
           /** Assets plan §14: exceeding a locked budget needs a reason and an owner. */
           budgetException: z
@@ -116,17 +108,14 @@ export const PackSourceSchema = z
       )
       .default([]),
   })
-  .refine((p) => p.kind !== "models" || p.assets.length > 0, {
-    message: "a models pack needs at least one asset",
-    path: ["assets"],
+  .refine((p) => p.kind !== 'models' || p.assets.length > 0, {
+    message: 'a models pack needs at least one asset',
+    path: ['assets'],
   });
 export type PackSource = z.infer<typeof PackSourceSchema>;
 
 /** Max texture edge in px per asset type (assets plan §10.1 baseline). */
-export const TEXTURE_BUDGET: Record<
-  PackSource["assets"][number]["type"],
-  number
-> = {
+export const TEXTURE_BUDGET: Record<PackSource['assets'][number]['type'], number> = {
   character: 1024,
   monster: 1024,
   environment: 512,
@@ -135,10 +124,7 @@ export const TEXTURE_BUDGET: Record<
 };
 
 /** LOD0 triangle budgets from assets plan §10.1; exceeding one is a warning, not an error. */
-export const TRIANGLE_BUDGET: Record<
-  PackSource["assets"][number]["type"],
-  number
-> = {
+export const TRIANGLE_BUDGET: Record<PackSource['assets'][number]['type'], number> = {
   character: 20_000,
   monster: 10_000,
   environment: 5_000,

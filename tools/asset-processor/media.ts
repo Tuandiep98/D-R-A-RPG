@@ -10,28 +10,21 @@
  * - Icons / VFX → WebP resized to `size` (default 128 / 256).
  * - UI frames → lossless PNG at the original size (9-slice stays crisp).
  */
-import { execFileSync } from "node:child_process";
-import { createHash } from "node:crypto";
-import {
-  existsSync,
-  mkdirSync,
-  readdirSync,
-  readFileSync,
-  rmSync,
-  writeFileSync,
-} from "node:fs";
-import { tmpdir } from "node:os";
-import { extname, join, resolve } from "node:path";
-import sharp from "sharp";
-import { PackSourceSchema } from "./source";
+import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { extname, join, resolve } from 'node:path';
+import sharp from 'sharp';
+import { PackSourceSchema } from './source';
 
-const repo = resolve(import.meta.dirname, "../..");
-const thirdParty = join(repo, "art/third_party");
-const outDir = join(repo, "apps/game-web/public/media");
+const repo = resolve(import.meta.dirname, '../..');
+const thirdParty = join(repo, 'art/third_party');
+const outDir = join(repo, 'apps/game-web/public/media');
 
 interface MediaEntry {
   url: string;
-  kind: "audio" | "image";
+  kind: 'audio' | 'image';
   bytes: number;
   width?: number;
   height?: number;
@@ -42,7 +35,7 @@ interface MediaEntry {
 
 const hasFfmpeg = (() => {
   try {
-    execFileSync("ffmpeg", ["-version"], { stdio: "ignore" });
+    execFileSync('ffmpeg', ['-version'], { stdio: 'ignore' });
     return true;
   } catch {
     return false;
@@ -54,25 +47,21 @@ mkdirSync(outDir, { recursive: true });
 const manifest: Record<string, MediaEntry> = {};
 const errors: string[] = [];
 const hashName = (id: string, bytes: Buffer, ext: string) =>
-  `${id}.${createHash("sha256").update(bytes).digest("hex").slice(0, 10)}${ext}`;
+  `${id}.${createHash('sha256').update(bytes).digest('hex').slice(0, 10)}${ext}`;
 
 for (const dir of readdirSync(thirdParty, { withFileTypes: true })) {
   if (!dir.isDirectory()) continue;
   const packDir = join(thirdParty, dir.name);
-  const sourcePath = join(packDir, "SOURCE.json");
+  const sourcePath = join(packDir, 'SOURCE.json');
   if (!existsSync(sourcePath)) continue;
-  const parsed = PackSourceSchema.safeParse(
-    JSON.parse(readFileSync(sourcePath, "utf8")),
-  );
+  const parsed = PackSourceSchema.safeParse(JSON.parse(readFileSync(sourcePath, 'utf8')));
   if (!parsed.success) {
-    errors.push(
-      `${dir.name}/SOURCE.json: ${parsed.error.issues.map((i) => i.message).join("; ")}`,
-    );
+    errors.push(`${dir.name}/SOURCE.json: ${parsed.error.issues.map((i) => i.message).join('; ')}`);
     continue;
   }
   const pack = parsed.data;
   if (pack.media.length === 0) continue;
-  if (!existsSync(join(packDir, "LICENSE.txt"))) {
+  if (!existsSync(join(packDir, 'LICENSE.txt'))) {
     errors.push(`${pack.packId}: LICENSE.txt missing — pack skipped`);
     continue;
   }
@@ -94,51 +83,50 @@ for (const dir of readdirSync(thirdParty, { withFileTypes: true })) {
       licenseVerified: pack.licenseVerified,
     };
     try {
-      if ([".ogg", ".wav", ".mp3"].includes(ext)) {
+      if (['.ogg', '.wav', '.mp3'].includes(ext)) {
         let bytes: Buffer;
         let outExt = ext;
         if (hasFfmpeg) {
           // The ipod (m4a) muxer needs a seekable output, so go through a temp file.
           const tmp = join(tmpdir(), `rpg-media-${process.pid}-${m.id}.m4a`);
-          execFileSync("ffmpeg", [
-            "-v",
-            "error",
-            "-y",
-            "-i",
+          execFileSync('ffmpeg', [
+            '-v',
+            'error',
+            '-y',
+            '-i',
             file,
-            "-c:a",
-            "aac",
-            "-b:a",
-            "96k",
+            '-c:a',
+            'aac',
+            '-b:a',
+            '96k',
             tmp,
           ]);
           bytes = readFileSync(tmp);
           rmSync(tmp, { force: true });
-          outExt = ".m4a";
+          outExt = '.m4a';
         } else bytes = readFileSync(file);
         const name = hashName(m.id, bytes, outExt);
         writeFileSync(join(outDir, name), bytes);
         manifest[m.id] = {
           url: name,
-          kind: "audio",
+          kind: 'audio',
           bytes: bytes.byteLength,
           ...base,
         };
       } else {
-        const ui = pack.kind === "ui";
-        const size =
-          m.size ?? (ui ? undefined : pack.kind === "vfx" ? 256 : 128);
+        const ui = pack.kind === 'ui';
+        const size = m.size ?? (ui ? undefined : pack.kind === 'vfx' ? 256 : 128);
         let img = sharp(readFileSync(file));
         if (size)
           img = img.resize(size, size, {
-            fit: "inside",
+            fit: 'inside',
             withoutEnlargement: true,
           });
         if (m.tint) {
           // Multiply each channel: white line art becomes exactly the tint colour
           // (sharp's tint() keeps luminance, so white would stay white).
           const [r, g, b] = [1, 3, 5].map(
-            (i) => Number.parseInt(m.tint?.slice(i, i + 2) ?? "ff", 16) / 255,
+            (i) => Number.parseInt(m.tint?.slice(i, i + 2) ?? 'ff', 16) / 255,
           );
           img = img.recomb([
             [r ?? 1, 0, 0],
@@ -146,16 +134,17 @@ for (const dir of readdirSync(thirdParty, { withFileTypes: true })) {
             [0, 0, b ?? 1],
           ]);
         }
-        const { data, info } = await (
-          ui ? img.png({ compressionLevel: 9 }) : img.webp({ quality: 90 })
+        const { data, info } = await (ui
+          ? img.png({ compressionLevel: 9 })
+          : img.webp({ quality: 90 })
         ).toBuffer({
           resolveWithObject: true,
         });
-        const name = hashName(m.id, data, ui ? ".png" : ".webp");
+        const name = hashName(m.id, data, ui ? '.png' : '.webp');
         writeFileSync(join(outDir, name), data);
         manifest[m.id] = {
           url: name,
-          kind: "image",
+          kind: 'image',
           bytes: data.byteLength,
           width: info.width,
           height: info.height,
@@ -171,33 +160,33 @@ for (const dir of readdirSync(thirdParty, { withFileTypes: true })) {
 }
 
 writeFileSync(
-  join(outDir, "media.manifest.json"),
+  join(outDir, 'media.manifest.json'),
   `${JSON.stringify({ version: 1, media: manifest }, null, 2)}\n`,
 );
 // Human-readable catalog (committed) so designers can pick ids without building.
 const rows = Object.entries(manifest)
   .sort(([a], [b]) => a.localeCompare(b))
   .map(([id, e]) => {
-    const dims = e.width ? `${e.width}×${e.height}` : "—";
+    const dims = e.width ? `${e.width}×${e.height}` : '—';
     return `| \`${id}\` | ${e.kind} | ${dims} | ${(e.bytes / 1024).toFixed(1)} KB | ${e.packId} |`;
   });
 writeFileSync(
-  join(repo, "docs/media_catalog.md"),
+  join(repo, 'docs/media_catalog.md'),
   [
-    "# Media catalog",
-    "",
-    "Sinh tự động bởi `pnpm media:build` từ `media` trong `art/third_party/*/SOURCE.json`. Không sửa tay.",
-    "Dùng id trong game-data: `iconImage` (skill/item), `sfx` (skill, appearance). Validator kiểm tra id tồn tại.",
-    "",
-    "| id | loại | kích thước | dung lượng | pack |",
-    "| --- | --- | --- | --- | --- |",
+    '# Media catalog',
+    '',
+    'Sinh tự động bởi `pnpm media:build` từ `media` trong `art/third_party/*/SOURCE.json`. Không sửa tay.',
+    'Dùng id trong game-data: `iconImage` (skill/item), `sfx` (skill, appearance). Validator kiểm tra id tồn tại.',
+    '',
+    '| id | loại | kích thước | dung lượng | pack |',
+    '| --- | --- | --- | --- | --- |',
     ...rows,
-    "",
-  ].join("\n"),
+    '',
+  ].join('\n'),
 );
 const total = Object.values(manifest).reduce((s, e) => s + e.bytes, 0);
 console.log(
-  `\n${Object.keys(manifest).length} media → ${outDir} (${(total / 1024).toFixed(0)} KB${hasFfmpeg ? "" : ", audio copied without ffmpeg"})`,
+  `\n${Object.keys(manifest).length} media → ${outDir} (${(total / 1024).toFixed(0)} KB${hasFfmpeg ? '' : ', audio copied without ffmpeg'})`,
 );
 for (const e of errors) console.error(`ERROR ${e}`);
 process.exit(errors.length ? 1 : 0);

@@ -1,4 +1,4 @@
-import type { GameView } from "@rpg/babylon-renderer";
+import type { GameView } from '@rpg/babylon-renderer';
 
 /**
  * The running GameView, for HUD buttons. Kept outside Zustand on purpose:

@@ -1,6 +1,6 @@
 import { CombatRulesSchema, compatibleExpression, SkillDefSchema } from '@rpg/game-data';
-import { describe, expect, it } from 'vitest';
 import type { Intent } from '@rpg/game-protocol';
+import { describe, expect, it } from 'vitest';
 import { Rng } from './rng';
 import { applyDamage, rollHit } from './systems/combat';
 import { farmSystem } from './systems/farm';

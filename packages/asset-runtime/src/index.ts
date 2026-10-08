@@ -1,9 +1,9 @@
-import type { AssetContainer } from "@babylonjs/core/assetContainer";
-import { LoadAssetContainerAsync } from "@babylonjs/core/Loading/sceneLoader";
-import { MeshoptCompression } from "@babylonjs/core/Meshes/Compression/meshoptCompression";
-import type { Scene } from "@babylonjs/core/scene";
-import "@babylonjs/loaders/glTF";
-import { z } from "zod";
+import type { AssetContainer } from '@babylonjs/core/assetContainer';
+import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
+import { MeshoptCompression } from '@babylonjs/core/Meshes/Compression/meshoptCompression';
+import type { Scene } from '@babylonjs/core/scene';
+import '@babylonjs/loaders/glTF';
+import { z } from 'zod';
 
 /** Written by tools/asset-processor. URLs are content-hashed and relative to the manifest. */
 export const AssetManifestSchema = z.object({
@@ -17,7 +17,7 @@ export const AssetManifestSchema = z.object({
       url: z.string(),
       hash: z.string(),
       bytes: z.number().int().nonnegative(),
-      type: z.enum(["character", "monster", "environment", "prop", "ground"]),
+      type: z.enum(['character', 'monster', 'environment', 'prop', 'ground']),
       animations: z.array(z.string()).default([]),
       license: z.string(),
       licenseVerified: z.boolean(),
@@ -32,14 +32,14 @@ export const AssetManifestSchema = z.object({
   ),
 });
 export type AssetManifest = z.infer<typeof AssetManifestSchema>;
-export type AssetEntry = AssetManifest["assets"][string];
+export type AssetEntry = AssetManifest['assets'][string];
 
 /** Manifest fetches before falling back to placeholders (1.5 s apart). */
 const MANIFEST_ATTEMPTS = 3;
 
 const EMPTY_MANIFEST: AssetManifest = {
   version: 1,
-  generatedAt: "",
+  generatedAt: '',
   decoders: {},
   assets: {},
 };
@@ -60,11 +60,8 @@ export interface LoadProgress {
  */
 export class AssetLibrary {
   private manifest: AssetManifest = EMPTY_MANIFEST;
-  private baseUrl = "";
-  private readonly containers = new Map<
-    string,
-    Promise<AssetContainer | null>
-  >();
+  private baseUrl = '';
+  private readonly containers = new Map<string, Promise<AssetContainer | null>>();
   private readonly progress: LoadProgress = {
     loadedBytes: 0,
     totalBytes: 0,
@@ -75,16 +72,16 @@ export class AssetLibrary {
   constructor(private readonly scene: Scene) {}
 
   async loadManifest(url: string): Promise<AssetManifest> {
-    this.baseUrl = new URL(".", new URL(url, window.location.href)).href;
+    this.baseUrl = new URL('.', new URL(url, window.location.href)).href;
     // A few tries: the manifest can be missing for a moment while
     // `pnpm assets:build` runs, and one miss would mean placeholders all session.
     for (let attempt = 1; ; attempt++) {
       try {
-        const res = await fetch(url, { cache: "no-cache" });
+        const res = await fetch(url, { cache: 'no-cache' });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         // Dev servers answer unknown paths with index.html; treat that as "not built yet".
-        if (!res.headers.get("content-type")?.includes("json"))
-          throw new Error("not built (run `pnpm assets:build`)");
+        if (!res.headers.get('content-type')?.includes('json'))
+          throw new Error('not built (run `pnpm assets:build`)');
         this.manifest = AssetManifestSchema.parse(await res.json());
         break;
       } catch (err) {
@@ -92,10 +89,7 @@ export class AssetLibrary {
           await new Promise((r) => setTimeout(r, 1500));
           continue;
         }
-        console.warn(
-          `[assets] no usable manifest at ${url}; using placeholders`,
-          err,
-        );
+        console.warn(`[assets] no usable manifest at ${url}; using placeholders`, err);
         this.manifest = EMPTY_MANIFEST;
         break;
       }
@@ -126,9 +120,7 @@ export class AssetLibrary {
   /** Starts loading several assets; resolves when all settled. */
   async preload(assetIds: Iterable<string>): Promise<void> {
     await Promise.all(
-      [...new Set(assetIds)]
-        .filter((id) => this.has(id))
-        .map((id) => this.loadContainer(id)),
+      [...new Set(assetIds)].filter((id) => this.has(id)).map((id) => this.loadContainer(id)),
     );
   }
 
@@ -139,10 +131,7 @@ export class AssetLibrary {
     const key = `${assetId}#lod1`;
     const cached = this.containers.get(key);
     if (cached) return cached;
-    const promise = this.loadWithRetry(
-      key,
-      new URL(lod.url, this.baseUrl).href,
-    );
+    const promise = this.loadWithRetry(key, new URL(lod.url, this.baseUrl).href);
     this.containers.set(key, promise);
     return promise;
   }
@@ -160,14 +149,13 @@ export class AssetLibrary {
     this.progress.totalBytes += entry.bytes;
     this.progress.pending++;
     this.emitProgress();
-    const promise = this.loadWithRetry(
-      assetId,
-      new URL(entry.url, this.baseUrl).href,
-    ).finally(() => {
-      this.progress.loadedBytes += entry.bytes;
-      this.progress.pending--;
-      this.emitProgress();
-    });
+    const promise = this.loadWithRetry(assetId, new URL(entry.url, this.baseUrl).href).finally(
+      () => {
+        this.progress.loadedBytes += entry.bytes;
+        this.progress.pending--;
+        this.emitProgress();
+      },
+    );
     this.containers.set(assetId, promise);
     return promise;
   }
@@ -178,19 +166,13 @@ export class AssetLibrary {
     this.progressListeners.clear();
   }
 
-  private async loadWithRetry(
-    assetId: string,
-    url: string,
-  ): Promise<AssetContainer | null> {
+  private async loadWithRetry(assetId: string, url: string): Promise<AssetContainer | null> {
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
       try {
         return await LoadAssetContainerAsync(url, this.scene);
       } catch (err) {
         if (attempt === MAX_ATTEMPTS) {
-          console.warn(
-            `[assets] failed to load ${assetId} after ${attempt} attempts`,
-            err,
-          );
+          console.warn(`[assets] failed to load ${assetId} after ${attempt} attempts`, err);
           return null;
         }
         await new Promise((r) => setTimeout(r, 300 * 2 ** (attempt - 1)));

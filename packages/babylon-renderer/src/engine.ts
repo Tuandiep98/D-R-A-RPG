@@ -1,6 +1,6 @@
-import { type AbstractEngine, Engine, WebGPUEngine } from "./babylon";
+import { type AbstractEngine, Engine, WebGPUEngine } from './babylon';
 
-export type EngineKind = "WebGPU" | "WebGL2" | "WebGL1";
+export type EngineKind = 'WebGPU' | 'WebGL2' | 'WebGL1';
 
 export interface CreatedEngine {
   engine: AbstractEngine;
@@ -30,19 +30,14 @@ export async function createEngine(
         adaptToDeviceRatio: false,
       });
       await engine.initAsync();
-      created = { engine, kind: "WebGPU" };
+      created = { engine, kind: 'WebGPU' };
     } catch (err) {
-      console.warn("[render] WebGPU init failed, falling back to WebGL", err);
+      console.warn('[render] WebGPU init failed, falling back to WebGL', err);
     }
   }
   if (!created) {
-    const engine = new Engine(
-      canvas,
-      true,
-      { stencil: true, adaptToDeviceRatio: false },
-      false,
-    );
-    created = { engine, kind: engine.webGLVersion >= 2 ? "WebGL2" : "WebGL1" };
+    const engine = new Engine(canvas, true, { stencil: true, adaptToDeviceRatio: false }, false);
+    created = { engine, kind: engine.webGLVersion >= 2 ? 'WebGL2' : 'WebGL1' };
   }
   created.engine.setHardwareScalingLevel(1 / dpr);
   return created;

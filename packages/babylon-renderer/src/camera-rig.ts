@@ -1,4 +1,4 @@
-import { ArcRotateCamera, type Scene, Vector3 } from "./babylon";
+import { ArcRotateCamera, type Scene, Vector3 } from './babylon';
 
 const DEG = Math.PI / 180;
 
@@ -37,14 +37,7 @@ export class CameraRig {
       minRadius: opts.minRadius ?? 6,
       maxRadius: opts.maxRadius ?? 20,
     };
-    this.camera = new ArcRotateCamera(
-      "camera",
-      -Math.PI / 2,
-      48 * DEG,
-      13,
-      Vector3.Zero(),
-      scene,
-    );
+    this.camera = new ArcRotateCamera('camera', -Math.PI / 2, 48 * DEG, 13, Vector3.Zero(), scene);
     this.camera.lowerBetaLimit = this.opts.minBeta;
     this.camera.upperBetaLimit = this.opts.maxBeta;
     this.camera.lowerRadiusLimit = this.opts.minRadius;
@@ -56,11 +49,7 @@ export class CameraRig {
 
   rotate(dx: number, dy: number): void {
     this.camera.alpha -= dx * 0.006;
-    this.camera.beta = clamp(
-      this.camera.beta - dy * 0.004,
-      this.opts.minBeta,
-      this.opts.maxBeta,
-    );
+    this.camera.beta = clamp(this.camera.beta - dy * 0.004, this.opts.minBeta, this.opts.maxBeta);
   }
 
   zoom(delta: number): void {
@@ -93,23 +82,14 @@ export class CameraRig {
 
   /** Brief zoom punch toward the player (heavy finishers). */
   kick(metres: number): void {
-    this.kickRadius = Math.min(
-      this.kickRadius,
-      -Math.abs(metres) * this.shakeScale,
-    );
+    this.kickRadius = Math.min(this.kickRadius, -Math.abs(metres) * this.shakeScale);
   }
 
   /** Smoothly follows `x,z`; call once per frame. */
   follow(x: number, z: number, dt: number, snap = false): void {
     this.focus.set(x, 1, z);
     if (snap) this.smooth.copyFrom(this.focus);
-    else
-      Vector3.LerpToRef(
-        this.smooth,
-        this.focus,
-        1 - Math.exp(-dt * 10),
-        this.smooth,
-      );
+    else Vector3.LerpToRef(this.smooth, this.focus, 1 - Math.exp(-dt * 10), this.smooth);
     this.camera.target.copyFrom(this.smooth);
     if (this.shakeAmp > 0.001) {
       this.shakeTime += dt;
@@ -123,13 +103,11 @@ export class CameraRig {
       this.shakeAmp *= Math.exp(-dt * this.shakeDecay * 4);
     } else this.shakeAmp = 0;
     if (this.kickRadius !== 0 || this.kickApplied !== 0) {
-      this.kickRadius =
-        this.kickRadius < -0.01 ? this.kickRadius * Math.exp(-dt * 7) : 0;
+      this.kickRadius = this.kickRadius < -0.01 ? this.kickRadius * Math.exp(-dt * 7) : 0;
       this.camera.radius += this.kickRadius - this.kickApplied;
       this.kickApplied = this.kickRadius;
     }
   }
 }
 
-const clamp = (v: number, min: number, max: number) =>
-  v < min ? min : v > max ? max : v;
+const clamp = (v: number, min: number, max: number) => (v < min ? min : v > max ? max : v);

@@ -1,13 +1,7 @@
-import type { NavQuery, Vec2 } from "@rpg/game-core";
-import type { MapDef } from "@rpg/game-data";
-import {
-  exportNavMesh,
-  importNavMesh,
-  init,
-  type NavMesh,
-  NavMeshQuery,
-} from "recast-navigation";
-import { generateSoloNavMesh } from "recast-navigation/generators";
+import type { NavQuery, Vec2 } from '@rpg/game-core';
+import type { MapDef } from '@rpg/game-data';
+import { exportNavMesh, importNavMesh, init, type NavMesh, NavMeshQuery } from 'recast-navigation';
+import { generateSoloNavMesh } from 'recast-navigation/generators';
 
 /**
  * Recast/Detour navigation shared by the local sim and the game server
@@ -44,20 +38,7 @@ export function buildNavGeometry(map: MapDef): {
   const positions: number[] = [];
   const indices: number[] = [];
   const { min, max } = map.bounds;
-  positions.push(
-    min.x,
-    0,
-    min.z,
-    max.x,
-    0,
-    min.z,
-    max.x,
-    0,
-    max.z,
-    min.x,
-    0,
-    max.z,
-  );
+  positions.push(min.x, 0, min.z, max.x, 0, min.z, max.x, 0, max.z, min.x, 0, max.z);
   indices.push(0, 2, 1, 0, 3, 2);
 
   const h = NAV_CONFIG.obstacleHeight;
@@ -97,13 +78,9 @@ export function buildNavGeometry(map: MapDef): {
 export function navSourceHash(map: MapDef): string {
   const { positions } = buildNavGeometry(map);
   let h = 2166136261 ^ NAV_VERSION;
-  const s = JSON.stringify([
-    NAV_CONFIG,
-    positions.map((v) => Math.round(v * 100)),
-  ]);
-  for (let i = 0; i < s.length; i++)
-    h = Math.imul(h ^ s.charCodeAt(i), 16777619);
-  return (h >>> 0).toString(16).padStart(8, "0");
+  const s = JSON.stringify([NAV_CONFIG, positions.map((v) => Math.round(v * 100))]);
+  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
+  return (h >>> 0).toString(16).padStart(8, '0');
 }
 
 export function generateNavMesh(map: MapDef): NavMesh {
@@ -124,17 +101,15 @@ export function generateNavMesh(map: MapDef): NavMesh {
     detailSampleDist: 6,
     detailSampleMaxError: 1,
   });
-  if (!result.success)
-    throw new Error(`navmesh generation failed for ${map.id}: ${result.error}`);
+  if (!result.success) throw new Error(`navmesh generation failed for ${map.id}: ${result.error}`);
   return result.navMesh;
 }
 
-export const serializeNavMesh = (navMesh: NavMesh): Uint8Array =>
-  exportNavMesh(navMesh);
+export const serializeNavMesh = (navMesh: NavMesh): Uint8Array => exportNavMesh(navMesh);
 
 export function deserializeNavMesh(data: Uint8Array): NavMesh {
   const { navMesh } = importNavMesh(data);
-  if (!navMesh) throw new Error("invalid navmesh data");
+  if (!navMesh) throw new Error('invalid navmesh data');
   return navMesh;
 }
 
@@ -182,9 +157,6 @@ export function createNavQuery(
 ): RecastNavQuery {
   if (baked && baked.hash === navSourceHash(map))
     return new RecastNavQuery(deserializeNavMesh(baked.data));
-  if (baked)
-    console.warn(
-      `[nav] baked navmesh for ${map.id} is stale; generating at runtime`,
-    );
+  if (baked) console.warn(`[nav] baked navmesh for ${map.id} is stale; generating at runtime`);
   return new RecastNavQuery(generateNavMesh(map));
 }

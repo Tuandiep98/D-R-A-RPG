@@ -1,6 +1,6 @@
-import { existsSync, readFileSync } from "node:fs";
-import { basename, dirname, join } from "node:path";
-import type { Document, JSONDocument, NodeIO } from "@gltf-transform/core";
+import { existsSync, readFileSync } from 'node:fs';
+import { basename, dirname, join } from 'node:path';
+import type { Document, JSONDocument, NodeIO } from '@gltf-transform/core';
 
 /**
  * Reads a .glb/.gltf, tolerating the broken texture paths some packs ship
@@ -20,24 +20,19 @@ export async function readTolerant(
 ): Promise<Document> {
   if (/\.glb$/i.test(file)) return io.read(file);
   const dir = dirname(file);
-  const json = JSON.parse(readFileSync(file, "utf8")) as JSONDocument["json"];
-  const resources: JSONDocument["resources"] = {};
+  const json = JSON.parse(readFileSync(file, 'utf8')) as JSONDocument['json'];
+  const resources: JSONDocument['resources'] = {};
 
   for (const buffer of json.buffers ?? []) {
-    if (!buffer.uri || buffer.uri.startsWith("data:")) continue;
-    resources[buffer.uri] = new Uint8Array(
-      readFileSync(join(dir, decodeURI(buffer.uri))),
-    );
+    if (!buffer.uri || buffer.uri.startsWith('data:')) continue;
+    resources[buffer.uri] = new Uint8Array(readFileSync(join(dir, decodeURI(buffer.uri))));
   }
 
   const dropped = new Set<number>();
   (json.images ?? []).forEach((image, index) => {
-    if (!image.uri || image.uri.startsWith("data:")) return;
+    if (!image.uri || image.uri.startsWith('data:')) return;
     const wanted = decodeURI(image.uri);
-    const names = [
-      basename(wanted),
-      basename(wanted).replace(/_png(\.png)$/i, "$1"),
-    ];
+    const names = [basename(wanted), basename(wanted).replace(/_png(\.png)$/i, '$1')];
     const candidates = [
       join(dir, wanted),
       ...names.map((n) => join(dir, dirname(wanted), n)),
@@ -57,7 +52,7 @@ export async function readTolerant(
 }
 
 /** Removes images (and textures/material slots using them), reindexing references. */
-function dropImages(json: JSONDocument["json"], dropped: Set<number>): void {
+function dropImages(json: JSONDocument['json'], dropped: Set<number>): void {
   const imageMap = new Map<number, number>();
   json.images = (json.images ?? []).filter((_, i) => {
     if (dropped.has(i)) return false;
@@ -83,14 +78,11 @@ function dropImages(json: JSONDocument["json"], dropped: Set<number>): void {
     else ref.index = textureMap.get(ref.index) ?? ref.index;
   };
   for (const m of json.materials ?? []) {
-    const mat = m as unknown as Record<
-      string,
-      Record<string, unknown> | undefined
-    >;
-    fix(mat.pbrMetallicRoughness, "baseColorTexture");
-    fix(mat.pbrMetallicRoughness, "metallicRoughnessTexture");
-    fix(mat as unknown as Record<string, unknown>, "normalTexture");
-    fix(mat as unknown as Record<string, unknown>, "occlusionTexture");
-    fix(mat as unknown as Record<string, unknown>, "emissiveTexture");
+    const mat = m as unknown as Record<string, Record<string, unknown> | undefined>;
+    fix(mat.pbrMetallicRoughness, 'baseColorTexture');
+    fix(mat.pbrMetallicRoughness, 'metallicRoughnessTexture');
+    fix(mat as unknown as Record<string, unknown>, 'normalTexture');
+    fix(mat as unknown as Record<string, unknown>, 'occlusionTexture');
+    fix(mat as unknown as Record<string, unknown>, 'emissiveTexture');
   }
 }

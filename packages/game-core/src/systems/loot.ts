@@ -1,10 +1,10 @@
-import type { LootTableDef } from "@rpg/game-data";
-import { INTERACT_RANGE, type SimContext } from "../context";
-import type { Entity } from "../entity";
-import { distance } from "../math";
-import { secondsToTicks } from "../time";
-import { addItem } from "./inventory";
-import { refreshQuests } from "./npc";
+import type { LootTableDef } from '@rpg/game-data';
+import { INTERACT_RANGE, type SimContext } from '../context';
+import type { Entity } from '../entity';
+import { distance } from '../math';
+import { secondsToTicks } from '../time';
+import { addItem } from './inventory';
+import { refreshQuests } from './npc';
 
 /** Loot belongs to the top damager for this long, then anyone may take it. */
 const OWNER_SECONDS = 30;
@@ -24,7 +24,7 @@ export function dropLoot(
     ctx.addEntity((id) =>
       makeInert(
         id,
-        "loot",
+        'loot',
         entry.itemId,
         {
           x: monster.pos.x + Math.sin(angle) * r,
@@ -47,16 +47,16 @@ export function dropLoot(
 /** Shared factory for loot and portal entities. */
 export function makeInert(
   id: number,
-  kind: "loot" | "portal" | "npc",
+  kind: 'loot' | 'portal' | 'npc',
   defId: string,
   pos: { x: number; z: number },
-  extra: Partial<Pick<Entity, "loot" | "portal" | "npc">>,
+  extra: Partial<Pick<Entity, 'loot' | 'portal' | 'npc'>>,
 ): Entity {
   return {
     id,
     kind,
     defId,
-    faction: "neutral",
+    faction: 'neutral',
     inert: true,
     realm: 0,
     pos: { ...pos },
@@ -109,7 +109,7 @@ export function makeInert(
     loot: extra.loot ?? null,
     portal: extra.portal ?? null,
     npc: extra.npc ?? null,
-    action: "idle",
+    action: 'idle',
   };
 }
 
@@ -121,17 +121,10 @@ export function lootSystem(ctx: SimContext): void {
 }
 
 /** Tries to pick up `loot`; returns false if the player must walk closer first. */
-export function tryPickup(
-  ctx: SimContext,
-  player: Entity,
-  loot: Entity,
-): boolean {
+export function tryPickup(ctx: SimContext, player: Entity, loot: Entity): boolean {
   if (!loot.loot) return true;
   if (distance(player.pos, loot.pos) > INTERACT_RANGE) return false;
-  const owner =
-    loot.loot.ownerId !== null
-      ? ctx.entities.get(loot.loot.ownerId)
-      : undefined;
+  const owner = loot.loot.ownerId !== null ? ctx.entities.get(loot.loot.ownerId) : undefined;
   const partyLoot = owner ? ctx.parties.sameParty(owner, player) : false;
   if (
     loot.loot.ownerId !== null &&
@@ -139,7 +132,7 @@ export function tryPickup(
     !partyLoot &&
     ctx.tick < loot.loot.freeAtTick
   ) {
-    ctx.notice(player.id, "not_owner");
+    ctx.notice(player.id, 'not_owner');
     return true;
   }
   const left = addItem(ctx, player, loot.loot.itemId, loot.loot.count);

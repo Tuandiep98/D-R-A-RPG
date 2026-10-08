@@ -1,18 +1,14 @@
-import type { MapDef } from "@rpg/game-data";
-import {
-  createNavQuery,
-  initNavigation,
-  type RecastNavQuery,
-} from "@rpg/navigation";
+import type { MapDef } from '@rpg/game-data';
+import { createNavQuery, initNavigation, type RecastNavQuery } from '@rpg/navigation';
 
 /** Baked navmeshes from `pnpm nav:build`, bundled as URLs + hash sidecars. */
-const binUrls = import.meta.glob("../../../game-data/nav/*.navmesh.bin", {
-  query: "?url",
-  import: "default",
+const binUrls = import.meta.glob('../../../game-data/nav/*.navmesh.bin', {
+  query: '?url',
+  import: 'default',
   eager: true,
 }) as Record<string, string>;
-const metas = import.meta.glob("../../../game-data/nav/*.navmesh.json", {
-  import: "default",
+const metas = import.meta.glob('../../../game-data/nav/*.navmesh.json', {
+  import: 'default',
   eager: true,
 }) as Record<string, { mapId: string; hash: string }>;
 
@@ -24,9 +20,7 @@ export async function navFor(map: MapDef): Promise<RecastNavQuery> {
   if (hit) return hit;
   await initNavigation();
   const meta = Object.values(metas).find((m) => m.mapId === map.id);
-  const urlKey = Object.keys(binUrls).find((k) =>
-    k.endsWith(`/${map.id}.navmesh.bin`),
-  );
+  const urlKey = Object.keys(binUrls).find((k) => k.endsWith(`/${map.id}.navmesh.bin`));
   let baked: { hash: string; data: Uint8Array } | null = null;
   if (meta && urlKey) {
     const res = await fetch(binUrls[urlKey] as string);

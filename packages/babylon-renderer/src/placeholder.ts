@@ -1,12 +1,5 @@
-import type { AppearanceDef } from "@rpg/game-data";
-import {
-  Color3,
-  Matrix,
-  type Mesh,
-  MeshBuilder,
-  type Scene,
-  StandardMaterial,
-} from "./babylon";
+import type { AppearanceDef } from '@rpg/game-data';
+import { Color3, Matrix, type Mesh, MeshBuilder, type Scene, StandardMaterial } from './babylon';
 
 const materials = new WeakMap<Scene, Map<string, StandardMaterial>>();
 
@@ -31,43 +24,35 @@ export function colorMaterial(scene: Scene, hex: string): StandardMaterial {
  * Primitive stand-in used until (or instead of) a real model. Pivot sits on
  * the ground like an exported character (assets plan §5.1).
  */
-export function createPlaceholderMesh(
-  scene: Scene,
-  appearance: AppearanceDef,
-  name: string,
-): Mesh {
+export function createPlaceholderMesh(scene: Scene, appearance: AppearanceDef, name: string): Mesh {
   const { shape, height, radius, color } = appearance.placeholder;
   let mesh: Mesh;
   switch (shape) {
-    case "capsule":
-      mesh = MeshBuilder.CreateCapsule(
-        name,
-        { height, radius, tessellation: 12 },
-        scene,
-      );
+    case 'capsule':
+      mesh = MeshBuilder.CreateCapsule(name, { height, radius, tessellation: 12 }, scene);
       break;
-    case "box":
+    case 'box':
       mesh = MeshBuilder.CreateBox(
         name,
         { width: radius * 1.4, depth: radius * 2.2, height },
         scene,
       );
       break;
-    case "cone":
+    case 'cone':
       mesh = MeshBuilder.CreateCylinder(
         name,
         { height, diameterTop: 0, diameterBottom: radius * 2, tessellation: 8 },
         scene,
       );
       break;
-    case "cylinder":
+    case 'cylinder':
       mesh = MeshBuilder.CreateCylinder(
         name,
         { height, diameter: radius * 2, tessellation: 10 },
         scene,
       );
       break;
-    case "sphere":
+    case 'sphere':
       mesh = MeshBuilder.CreateSphere(
         name,
         {

@@ -1,5 +1,5 @@
-import type { EntityId } from "@rpg/game-protocol";
-import type { Entity } from "./entity";
+import type { EntityId } from '@rpg/game-protocol';
+import type { Entity } from './entity';
 
 export interface AoiOptions {
   /** Grid cell edge, metres (tech plan §8: 30 m). */
@@ -34,10 +34,7 @@ export class SpatialGrid {
   rebuild(entities: Iterable<Entity>): void {
     this.cells.clear();
     for (const e of entities) {
-      const k = this.key(
-        Math.floor(e.pos.x / this.cellSize),
-        Math.floor(e.pos.z / this.cellSize),
-      );
+      const k = this.key(Math.floor(e.pos.x / this.cellSize), Math.floor(e.pos.z / this.cellSize));
       const list = this.cells.get(k);
       if (list) list.push(e);
       else this.cells.set(k, [e]);

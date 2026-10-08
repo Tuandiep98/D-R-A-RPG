@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from "react";
-import { realmName } from "../content";
-import { effectiveScheme, useControls } from "../controls";
-import { game } from "../game";
-import { fetchLeaderboard } from "../online";
-import { useUiStore } from "../store";
+import { useEffect, useRef, useState } from 'react';
+import { realmName } from '../content';
+import { effectiveScheme, useControls } from '../controls';
+import { game } from '../game';
+import { fetchLeaderboard } from '../online';
+import { useUiStore } from '../store';
 
 const NO_QUESTS: never[] = [];
 
@@ -15,12 +15,9 @@ export function QuestTracker() {
   return (
     <div className="quest-tracker">
       {quests.slice(0, 4).map((q) => (
-        <div
-          key={q.questId}
-          className={`quest ${q.status === "ready" ? "quest-ready" : ""}`}
-        >
+        <div key={q.questId} className={`quest ${q.status === 'ready' ? 'quest-ready' : ''}`}>
           <strong>{q.name}</strong>
-          {q.status === "ready" ? (
+          {q.status === 'ready' ? (
             <div className="small">✔ Quay về trả nhiệm vụ</div>
           ) : (
             q.objectives.map((o) => (
@@ -38,33 +35,30 @@ export function QuestTracker() {
 /** Map chat. Enter focuses the input; the host enforces length, rate and mutes. */
 export function ChatBox() {
   const messages = useUiStore((s) => s.chat);
-  const touch = useControls((s) => effectiveScheme(s) === "touch");
-  const [text, setText] = useState("");
+  const touch = useControls((s) => effectiveScheme(s) === 'touch');
+  const [text, setText] = useState('');
   const [open, setOpen] = useState(false);
   const input = useRef<HTMLInputElement>(null);
   const list = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Enter" && document.activeElement !== input.current) {
+      if (e.key === 'Enter' && document.activeElement !== input.current) {
         // Focus synchronously so keys typed right after Enter are not lost.
         e.preventDefault();
         input.current?.focus();
         setOpen(true);
       }
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
   }, []);
   useEffect(() => {
     list.current?.scrollTo({ top: list.current.scrollHeight });
   });
 
   return (
-    <div
-      className={`chat ${open ? "chat-open" : ""}`}
-      onPointerDown={(e) => e.stopPropagation()}
-    >
+    <div className={`chat ${open ? 'chat-open' : ''}`} onPointerDown={(e) => e.stopPropagation()}>
       {touch && !open && (
         <button
           type="button"
@@ -74,14 +68,14 @@ export function ChatBox() {
             requestAnimationFrame(() => input.current?.focus());
           }}
         >
-          Chat{messages.length > 0 ? ` · ${messages.length}` : ""}
+          Chat{messages.length > 0 ? ` · ${messages.length}` : ''}
         </button>
       )}
       <div className="chat-list" ref={list}>
         {messages.slice(-30).map((m) => (
           <div
             key={`${m.at}-${m.fromId}-${m.text}`}
-            className={m.channel === "system" ? "chat-system" : ""}
+            className={m.channel === 'system' ? 'chat-system' : ''}
           >
             <strong>{m.fromName}:</strong> {m.text}
           </div>
@@ -91,7 +85,7 @@ export function ChatBox() {
         onSubmit={(e) => {
           e.preventDefault();
           if (text.trim()) game()?.sendChat(text.trim());
-          setText("");
+          setText('');
           input.current?.blur();
           setOpen(false);
         }}
@@ -105,7 +99,7 @@ export function ChatBox() {
           onFocus={() => setOpen(true)}
           onBlur={() => setOpen(false)}
           onKeyDown={(e) => {
-            if (e.key === "Escape") input.current?.blur();
+            if (e.key === 'Escape') input.current?.blur();
             e.stopPropagation();
           }}
         />
@@ -117,9 +111,7 @@ export function ChatBox() {
 /** Online only: top characters from the API. */
 export function LeaderboardPanel() {
   const close = useUiStore((s) => s.closePanel);
-  const [rows, setRows] = useState<
-    { name: string; realm: string; nodes: number }[] | null
-  >(null);
+  const [rows, setRows] = useState<{ name: string; realm: string; nodes: number }[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     fetchLeaderboard()
@@ -127,10 +119,7 @@ export function LeaderboardPanel() {
       .catch((e: Error) => setError(e.message));
   }, []);
   return (
-    <div
-      className="panel panel-small"
-      onPointerDown={(e) => e.stopPropagation()}
-    >
+    <div className="panel panel-small" onPointerDown={(e) => e.stopPropagation()}>
       <div className="panel-head">
         <strong>Bảng xếp hạng</strong>
         <button type="button" onClick={close}>

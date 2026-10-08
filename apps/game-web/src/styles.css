@@ -7,12 +7,7 @@
   --mp: #4a86e8;
   --xp: #e8c547;
   --accent: #ffcf5a;
-  font-family:
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    Roboto,
-    sans-serif;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   color: var(--hud-text);
   -webkit-tap-highlight-color: transparent;
 }
@@ -1150,14 +1145,9 @@ kbd {
   top: calc(100% - var(--safe-b) - var(--joystick-radius) - 36px);
   width: calc(var(--joystick-radius) * 2);
   height: calc(var(--joystick-radius) * 2);
-  margin: calc(var(--joystick-radius) * -1) 0 0
-    calc(var(--joystick-radius) * -1);
+  margin: calc(var(--joystick-radius) * -1) 0 0 calc(var(--joystick-radius) * -1);
   border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.06) 40%,
-    rgba(255, 255, 255, 0.14)
-  );
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.06) 40%, rgba(255, 255, 255, 0.14));
   border: 2px solid rgba(255, 255, 255, 0.28);
   display: grid;
   place-items: center;
@@ -1206,7 +1196,6 @@ kbd {
 
 /* Short landscape phones: menu becomes a row at the top, cluster shrinks. */
 @media (max-height: 480px) {
-
   .joystick-zone {
     height: 70%;
   }
@@ -1228,7 +1217,6 @@ kbd {
 
 /* Portrait phones: frames stack on the left, target frame moves under the menu row. */
 @media (orientation: portrait) and (max-width: 600px) {
-
   .menu {
     top: max(10px, env(safe-area-inset-top));
     right: var(--safe-r);
@@ -1256,11 +1244,9 @@ kbd {
   .notices {
     top: 30%;
   }
-
 }
 
 @media (orientation: portrait) and (max-width: 360px) {
-
   .joystick-zone {
     width: 42%;
   }

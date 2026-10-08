@@ -1,15 +1,14 @@
-import type { UiState } from "@rpg/babylon-renderer";
-import type { ContentBundle } from "@rpg/game-data";
-import { useMemo, useState } from "react";
-import { loadContent } from "../content";
-import { game } from "../game";
-import { useUiStore } from "../store";
-import { GameIcon } from "./GameIcon";
+import type { UiState } from '@rpg/babylon-renderer';
+import type { ContentBundle } from '@rpg/game-data';
+import { useMemo, useState } from 'react';
+import { loadContent } from '../content';
+import { game } from '../game';
+import { useUiStore } from '../store';
+import { GameIcon } from './GameIcon';
 
-type Tab = "quests" | "shop" | "craft" | "upgrade";
+type Tab = 'quests' | 'shop' | 'craft' | 'upgrade';
 
-const rankOf = (c: ContentBundle, realmId: string) =>
-  c.realms.get(realmId)?.order ?? 0;
+const rankOf = (c: ContentBundle, realmId: string) => c.realms.get(realmId)?.order ?? 0;
 
 let contentCache: ContentBundle | null = null;
 const content = () => {
@@ -26,16 +25,15 @@ export function NpcPanel() {
   const def = npc ? c.npcs.get(npc.npcId) : undefined;
   const tabs = useMemo(() => {
     const t: { id: Tab; label: string }[] = [];
-    if (def?.quests.length) t.push({ id: "quests", label: "Nhiệm vụ" });
-    if (def?.shopId) t.push({ id: "shop", label: "Cửa hàng" });
-    if (def?.recipes.length) t.push({ id: "craft", label: "Chế tạo" });
-    if (def?.upgrades) t.push({ id: "upgrade", label: "Cường hoá" });
+    if (def?.quests.length) t.push({ id: 'quests', label: 'Nhiệm vụ' });
+    if (def?.shopId) t.push({ id: 'shop', label: 'Cửa hàng' });
+    if (def?.recipes.length) t.push({ id: 'craft', label: 'Chế tạo' });
+    if (def?.upgrades) t.push({ id: 'upgrade', label: 'Cường hoá' });
     return t;
   }, [def]);
   const [tab, setTab] = useState<Tab | null>(null);
   if (!npc || !def || !ui) return null;
-  const active =
-    tab && tabs.some((t) => t.id === tab) ? tab : (tabs[0]?.id ?? null);
+  const active = tab && tabs.some((t) => t.id === tab) ? tab : (tabs[0]?.id ?? null);
   const send = game()?.send.bind(game());
 
   return (
@@ -56,7 +54,7 @@ export function NpcPanel() {
             <button
               key={t.id}
               type="button"
-              className={active === t.id ? "active" : ""}
+              className={active === t.id ? 'active' : ''}
               onClick={() => setTab(t.id)}
             >
               {t.label}
@@ -64,47 +62,26 @@ export function NpcPanel() {
           ))}
         </div>
       )}
-      {active === "quests" && (
-        <Quests
-          ui={ui}
-          npcEntityId={npc.npcEntityId}
-          quests={def.quests}
-          send={send}
-        />
+      {active === 'quests' && (
+        <Quests ui={ui} npcEntityId={npc.npcEntityId} quests={def.quests} send={send} />
       )}
-      {active === "shop" && def.shopId && (
-        <Shop
-          ui={ui}
-          npcEntityId={npc.npcEntityId}
-          shopId={def.shopId}
-          send={send}
-        />
+      {active === 'shop' && def.shopId && (
+        <Shop ui={ui} npcEntityId={npc.npcEntityId} shopId={def.shopId} send={send} />
       )}
-      {active === "craft" && (
-        <Craft
-          ui={ui}
-          npcEntityId={npc.npcEntityId}
-          recipes={def.recipes}
-          send={send}
-        />
+      {active === 'craft' && (
+        <Craft ui={ui} npcEntityId={npc.npcEntityId} recipes={def.recipes} send={send} />
       )}
-      {active === "upgrade" && (
-        <Upgrade ui={ui} npcEntityId={npc.npcEntityId} send={send} />
-      )}
+      {active === 'upgrade' && <Upgrade ui={ui} npcEntityId={npc.npcEntityId} send={send} />}
       <div className="muted">🪙 {ui.player?.gold ?? 0}</div>
     </div>
   );
 }
 
 type Send =
-  | ((
-      intent: Parameters<NonNullable<ReturnType<typeof game>>["send"]>[0],
-    ) => void)
+  | ((intent: Parameters<NonNullable<ReturnType<typeof game>>['send']>[0]) => void)
   | undefined;
 const count = (ui: UiState, itemId: string) =>
-  ui.inventory
-    .filter((i) => i.itemId === itemId)
-    .reduce((n, i) => n + i.count, 0);
+  ui.inventory.filter((i) => i.itemId === itemId).reduce((n, i) => n + i.count, 0);
 
 function Quests({
   ui,
@@ -128,17 +105,14 @@ function Quests({
         if (ui.questsDone.includes(id)) return null;
         const locked =
           !q &&
-          ((def.realm !== undefined &&
-            rankOf(c, def.realm) > (ui.player?.realm ?? 0)) ||
+          ((def.realm !== undefined && rankOf(c, def.realm) > (ui.player?.realm ?? 0)) ||
             !def.requires.every((r) => ui.questsDone.includes(r)));
         return (
-          <div key={id} className={`npc-row ${locked ? "locked" : ""}`}>
+          <div key={id} className={`npc-row ${locked ? 'locked' : ''}`}>
             <div>
-              <strong>{def.name}</strong>{" "}
+              <strong>{def.name}</strong>{' '}
               {def.realm && (
-                <span className="muted">
-                  {c.realms.get(def.realm)?.name ?? def.realm}
-                </span>
+                <span className="muted">{c.realms.get(def.realm)?.name ?? def.realm}</span>
               )}
               <div className="muted small">{def.description}</div>
               {q && (
@@ -153,11 +127,8 @@ function Quests({
               <div className="small reward">
                 Thưởng: {def.rewards.gold > 0 && `${def.rewards.gold} vàng `}
                 {def.rewards.items
-                  .map(
-                    (i) =>
-                      `${c.items.get(i.itemId)?.name ?? i.itemId}×${i.count}`,
-                  )
-                  .join(", ")}
+                  .map((i) => `${c.items.get(i.itemId)?.name ?? i.itemId}×${i.count}`)
+                  .join(', ')}
               </div>
             </div>
             {!q && !locked && (
@@ -165,7 +136,7 @@ function Quests({
                 type="button"
                 onClick={() =>
                   send?.({
-                    type: "QUEST_ACCEPT",
+                    type: 'QUEST_ACCEPT',
                     npcId: npcEntityId,
                     questId: id,
                   })
@@ -174,13 +145,13 @@ function Quests({
                 Nhận
               </button>
             )}
-            {q?.status === "ready" && (
+            {q?.status === 'ready' && (
               <button
                 type="button"
                 className="primary"
                 onClick={() =>
                   send?.({
-                    type: "QUEST_TURN_IN",
+                    type: 'QUEST_TURN_IN',
                     npcId: npcEntityId,
                     questId: id,
                   })
@@ -223,11 +194,7 @@ function Shop({
           return (
             <div key={entry.itemId} className="npc-row">
               <span>
-                <GameIcon
-                  className="inline-icon"
-                  icon={item?.icon}
-                  image={item?.iconImage}
-                />{" "}
+                <GameIcon className="inline-icon" icon={item?.icon} image={item?.iconImage} />{' '}
                 {item?.name}
               </span>
               <button
@@ -235,7 +202,7 @@ function Shop({
                 disabled={(ui.player?.gold ?? 0) < entry.price}
                 onClick={() =>
                   send?.({
-                    type: "SHOP_BUY",
+                    type: 'SHOP_BUY',
                     npcId: npcEntityId,
                     itemId: entry.itemId,
                     count: 1,
@@ -250,29 +217,20 @@ function Shop({
       </div>
       <div className="npc-list">
         <strong className="small">Bán</strong>
-        {sellable.length === 0 && (
-          <span className="muted small">Không có gì để bán</span>
-        )}
+        {sellable.length === 0 && <span className="muted small">Không có gì để bán</span>}
         {sellable.map((i) => {
-          const price = Math.floor(
-            (c.items.get(i.itemId)?.sellPrice ?? 0) * shop.buybackRate,
-          );
+          const price = Math.floor((c.items.get(i.itemId)?.sellPrice ?? 0) * shop.buybackRate);
           return (
             <div key={i.instanceId} className="npc-row">
               <span style={{ color: i.rarityColor }}>
-                <GameIcon
-                  className="inline-icon"
-                  icon={i.icon}
-                  image={i.iconImage}
-                />{" "}
-                {i.name}
-                {i.count > 1 ? ` ×${i.count}` : ""}
+                <GameIcon className="inline-icon" icon={i.icon} image={i.iconImage} /> {i.name}
+                {i.count > 1 ? ` ×${i.count}` : ''}
               </span>
               <button
                 type="button"
                 onClick={() =>
                   send?.({
-                    type: "SHOP_SELL",
+                    type: 'SHOP_SELL',
                     npcId: npcEntityId,
                     instanceId: i.instanceId,
                     count: i.count,
@@ -315,12 +273,8 @@ function Craft({
               <strong>{r.name}</strong>
               <div className="small">
                 {r.materials.map((m) => (
-                  <span
-                    key={m.itemId}
-                    className={count(ui, m.itemId) >= m.count ? "" : "missing"}
-                  >
-                    {c.items.get(m.itemId)?.name} {count(ui, m.itemId)}/
-                    {m.count}{" "}
+                  <span key={m.itemId} className={count(ui, m.itemId) >= m.count ? '' : 'missing'}>
+                    {c.items.get(m.itemId)?.name} {count(ui, m.itemId)}/{m.count}{' '}
                   </span>
                 ))}
                 {r.gold > 0 && <span>· {r.gold} 🪙</span>}
@@ -329,9 +283,7 @@ function Craft({
             <button
               type="button"
               disabled={!ok}
-              onClick={() =>
-                send?.({ type: "CRAFT", npcId: npcEntityId, recipeId: id })
-              }
+              onClick={() => send?.({ type: 'CRAFT', npcId: npcEntityId, recipeId: id })}
             >
               Chế tạo
             </button>
@@ -342,24 +294,14 @@ function Craft({
   );
 }
 
-function Upgrade({
-  ui,
-  npcEntityId,
-  send,
-}: {
-  ui: UiState;
-  npcEntityId: number;
-  send: Send;
-}) {
+function Upgrade({ ui, npcEntityId, send }: { ui: UiState; npcEntityId: number; send: Send }) {
   const c = content();
   const rules = [...c.upgrades.values()][0];
   if (!rules) return null;
-  const gear = ui.inventory.filter((i) => i.kind === "equipment");
+  const gear = ui.inventory.filter((i) => i.kind === 'equipment');
   return (
     <div className="npc-list">
-      {gear.length === 0 && (
-        <span className="muted small">Không có trang bị</span>
-      )}
+      {gear.length === 0 && <span className="muted small">Không có trang bị</span>}
       {gear.map((i) => {
         const level = i.enhance ?? 0;
         const step = rules.steps[level];
@@ -367,20 +309,15 @@ function Upgrade({
           <div key={i.instanceId} className="npc-row">
             <div>
               <span style={{ color: i.rarityColor }}>
-                <GameIcon
-                  className="inline-icon"
-                  icon={i.icon}
-                  image={i.iconImage}
-                />{" "}
-                {i.name} {level > 0 && <strong>+{level}</strong>}
+                <GameIcon className="inline-icon" icon={i.icon} image={i.iconImage} /> {i.name}{' '}
+                {level > 0 && <strong>+{level}</strong>}
               </span>
               {step ? (
                 <div className="small">
                   {step.gold} 🪙
                   {step.materials.map(
-                    (m) =>
-                      ` · ${c.items.get(m.itemId)?.name} ${count(ui, m.itemId)}/${m.count}`,
-                  )}{" "}
+                    (m) => ` · ${c.items.get(m.itemId)?.name} ${count(ui, m.itemId)}/${m.count}`,
+                  )}{' '}
                   · tỉ lệ {Math.round(step.successRate * 100)}%
                 </div>
               ) : (
@@ -392,7 +329,7 @@ function Upgrade({
                 type="button"
                 onClick={() =>
                   send?.({
-                    type: "UPGRADE",
+                    type: 'UPGRADE',
                     npcId: npcEntityId,
                     instanceId: i.instanceId,
                   })

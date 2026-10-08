@@ -1,4 +1,4 @@
-import type { EntitySnapshot, Snapshot } from "@rpg/game-protocol";
+import type { EntitySnapshot, Snapshot } from '@rpg/game-protocol';
 
 export interface InterpolatedEntity {
   state: EntitySnapshot;
@@ -45,10 +45,7 @@ export class SnapshotBuffer {
     for (const e of a.snapshot.entities) prev.set(e.id, e);
     for (const e of b.snapshot.entities) {
       const p = prev.get(e.id);
-      if (
-        !p ||
-        Math.hypot(e.pos.x - p.pos.x, e.pos.z - p.pos.z) > SNAP_DISTANCE
-      ) {
+      if (!p || Math.hypot(e.pos.x - p.pos.x, e.pos.z - p.pos.z) > SNAP_DISTANCE) {
         out.set(e.id, { state: e, x: e.pos.x, z: e.pos.z, yaw: e.yaw });
         continue;
       }
