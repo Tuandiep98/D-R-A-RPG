@@ -8,7 +8,7 @@ import { secondsToTicks, TICK_RATE } from '../time';
 import { beginAction, canCancelAction, cancelAction, currentAction } from './action-timeline';
 import { applyDamage, captureDamageSource, rollHit } from './combat';
 import { requestMobility } from './mobility';
-import { companion } from './pets';
+import { companion, petProfile, toggleCompanion } from './pets';
 import { MAX_SKILL_OBJECTS, skillObjectLoad } from './skill-capacity';
 
 export const effectRadius = (skill: SkillDef): number =>
@@ -71,6 +71,18 @@ export function requestCast(
   if (skill.id === 'skill_thunder_step') return requestMobility(ctx, e, 'roll', point);
   if (skill.mobility) return requestMobility(ctx, e, skill.mobility, point);
   if (e.cast || e.mobility || isStaggered(ctx, e)) return false;
+  const summon = skill.effects.some((effect) => effect.type === 'summon_toggle');
+  if (summon) {
+    const state = e.player?.companion;
+    if (!e.player || !petProfile(ctx, e)) {
+      ctx.notice(e.id, 'invalid');
+      return false;
+    }
+    if (!state?.active && (state?.readyAtTick ?? ctx.tick) > ctx.tick) {
+      ctx.notice(e.id, 'cooldown');
+      return false;
+    }
+  }
   const petEffects = skill.effects.filter(
     (effect) => effect.type === 'pet_attack' || effect.type === 'pet_support',
   );
@@ -491,7 +503,10 @@ function resolveSkill(ctx: SimContext, e: Entity, cast: Cast, damageMultiplier =
       skillId: skill.id,
       projectileId: id,
       origin: { ...e.pos },
-      destination: { x: e.pos.x + dir.x * skill.range, z: e.pos.z + dir.z * skill.range },
+      destination: {
+        x: e.pos.x + dir.x * skill.range,
+        z: e.pos.z + dir.z * skill.range,
+      },
       speed: skill.projectileSpeed,
       element: cast.source.element,
       expression: cast.source.expression,
@@ -501,6 +516,10 @@ function resolveSkill(ctx: SimContext, e: Entity, cast: Cast, damageMultiplier =
   let damageIndex = 0;
   for (const effect of skill.effects) {
     if (effect.type === 'dash') continue;
+    if (effect.type === 'summon_toggle') {
+      toggleCompanion(ctx, e);
+      continue;
+    }
     if (effect.type === 'pet_attack') {
       const pet = companion(ctx, e);
       if (
@@ -545,7 +564,10 @@ function resolveSkill(ctx: SimContext, e: Entity, cast: Cast, damageMultiplier =
       pet.stats.hp += amount;
       ctx.emit({ type: 'HEAL', targetId: pet.id, amount });
       const shield = Math.round(pet.stats.maxHp * effect.shield);
-      pet.shield = { amount: shield, endTick: ctx.tick + secondsToTicks(effect.duration) };
+      pet.shield = {
+        amount: shield,
+        endTick: ctx.tick + secondsToTicks(effect.duration),
+      };
       ctx.emit({
         type: 'SHIELD',
         targetId: pet.id,
@@ -570,7 +592,10 @@ function resolveSkill(ctx: SimContext, e: Entity, cast: Cast, damageMultiplier =
     }
     if (effect.type === 'shield') {
       const amount = Math.round(e.stats.maxHp * effect.fraction);
-      e.shield = { amount, endTick: ctx.tick + secondsToTicks(effect.duration) };
+      e.shield = {
+        amount,
+        endTick: ctx.tick + secondsToTicks(effect.duration),
+      };
       ctx.emit({
         type: 'SHIELD',
         targetId: e.id,

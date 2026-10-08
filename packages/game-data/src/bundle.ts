@@ -247,6 +247,7 @@ function checkReferences(bundle: ContentBundle, issues: ContentIssue[]): void {
     for (const q of n.quests) need(bundle.quests, 'questId')(owner, q);
     for (const m of n.cost.materials) needItem(owner, m.itemId);
     needSkill(owner, n.skillId);
+    for (const skillId of n.grants) needSkill(owner, skillId);
     if (n.path === 'tien' && n.body > 0)
       issues.push({
         path: owner,

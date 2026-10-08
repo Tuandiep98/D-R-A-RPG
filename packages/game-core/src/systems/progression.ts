@@ -133,7 +133,10 @@ export function recomputePlayerStats(ctx: SimContext, e: Entity): void {
     ...(ctx.combatContent === 'prototype' ? def.prototypeSkills : []),
     ...p.learnedSkills,
     ...[...ctx.content.skills.values()].filter((s) => s.mobility).map((s) => s.id),
-    ...p.nodes.flatMap((id) => ctx.content.cultivation.get(id)?.skillId ?? []),
+    ...p.nodes.flatMap((id) => {
+      const node = ctx.content.cultivation.get(id);
+      return [...(node?.skillId ? [node.skillId] : []), ...(node?.grants ?? [])];
+    }),
   ];
   for (const s of learned) if (!skills.has(s)) skills.set(s, e.skills.get(s) ?? 0);
   e.skills = skills;

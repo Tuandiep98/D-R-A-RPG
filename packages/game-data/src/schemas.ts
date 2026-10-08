@@ -163,6 +163,7 @@ export const ActionTimingSchema = z
 export type ActionTiming = z.infer<typeof ActionTimingSchema>;
 
 export const SkillEffectSchema = z.discriminatedUnion('type', [
+  z.strictObject({ type: z.literal('summon_toggle') }),
   z.strictObject({ type: z.literal('pet_attack'), skillId: IdSchema }),
   z.strictObject({
     type: z.literal('pet_support'),
@@ -171,7 +172,10 @@ export const SkillEffectSchema = z.discriminatedUnion('type', [
     duration: positive.max(10),
   }),
   z.strictObject({ type: z.literal('cloak'), duration: positive.max(6) }),
-  z.strictObject({ type: z.literal('pulse_fields'), multiplier: positive.max(3) }),
+  z.strictObject({
+    type: z.literal('pulse_fields'),
+    multiplier: positive.max(3),
+  }),
   z.strictObject({
     type: z.literal('shield'),
     /** Replaces the current shield, never stacks; derived from max HP on impact. */
@@ -211,14 +215,21 @@ export const SkillDefSchema = z
     autoPolicy: z.enum(['offense', 'defense', 'manual']).default('offense'),
     /** Persistent circle scheduled with pulses; all owned fields share this bounded limit. */
     field: z
-      .strictObject({ maxOwned: z.number().int().min(1).max(3), maxDuration: positive.max(30) })
+      .strictObject({
+        maxOwned: z.number().int().min(1).max(3),
+        maxDuration: positive.max(30),
+      })
       .optional(),
     requiresField: z.boolean().default(false),
     /** Auto field centres stay within this distance of the farm anchor; manual casts are unchanged. */
     autoAnchorRadius: positive.max(10).optional(),
     /** Bounded observed-motion assist for auto point projectiles, never homing. */
     autoAim: z
-      .strictObject({ maxSeconds: positive.max(1), maxDistance: positive.max(3), weight: chance })
+      .strictObject({
+        maxSeconds: positive.max(1),
+        maxDistance: positive.max(3),
+        weight: chance,
+      })
       .optional(),
     /** Max distance to target/point, metres (ignored for `self`). */
     range: nonNegative.default(0),
@@ -306,7 +317,9 @@ export const SkillDefSchema = z
     (s) =>
       s.delivery !== 'line' ||
       s.effects.every((effect) => effect.type === 'damage' && effect.radius <= 5),
-    { message: 'Line delivery requires damage only and a bounded half-width of at most 5 metres' },
+    {
+      message: 'Line delivery requires damage only and a bounded half-width of at most 5 metres',
+    },
   );
 export type SkillDef = z.infer<typeof SkillDefSchema>;
 
@@ -770,6 +783,8 @@ export const CultivationNodeDefSchema = z.strictObject({
   bonus: StatBonusSchema.optional(),
   /** Skill unlocked by this node (appended to the skill bar). */
   skillId: IdSchema.optional(),
+  /** Additional skills unlocked atomically with the primary node skill. */
+  grants: z.array(IdSchema).max(3).default([]),
   petId: IdSchema.optional(),
 });
 export type CultivationNodeDef = z.infer<typeof CultivationNodeDefSchema>;
@@ -821,7 +836,9 @@ export const PetDefSchema = z
     respawnSeconds: positive.min(5).max(120),
     skills: z.array(IdSchema).max(4),
   })
-  .refine((p) => p.leash > p.followDistance, { message: 'Pet leash must exceed follow distance' });
+  .refine((p) => p.leash > p.followDistance, {
+    message: 'Pet leash must exceed follow distance',
+  });
 export type PetDef = z.infer<typeof PetDefSchema>;
 
 export const MonsterTierSchema = z.enum(['normal', 'elite', 'mini_boss', 'boss', 'world_boss']);

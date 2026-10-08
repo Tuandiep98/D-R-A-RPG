@@ -10,4 +10,5 @@ quests: [q_meet_scout]
 cost: { gold: 80, materials: [{ itemId: item_wolf_fang, count: 3 }] }
 meridian: 5
 petId: pet_wolf
+grants: [skill_thu_summon]
 skillId: skill_thu_strike

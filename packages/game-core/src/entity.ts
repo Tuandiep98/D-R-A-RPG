@@ -232,7 +232,12 @@ export interface PlayerData {
   learnedSkills: string[];
   elementRevision: number;
   characterId: string;
-  companion?: { entityId: EntityId | null; hp: number; readyAtTick: number };
+  companion?: {
+    active: boolean;
+    entityId: EntityId | null;
+    hp: number;
+    readyAtTick: number;
+  };
   mobilityReady: Map<string, number>;
   farm: {
     enabled: boolean;
@@ -283,7 +288,12 @@ export interface Entity {
   pet?: { ownerId: EntityId; profileId: string };
   cloakEndTick?: number | null;
   shield?: { amount: number; endTick: number } | null;
-  guardChain?: { comboId: string; stacks: number; defense: number; endTick: number } | null;
+  guardChain?: {
+    comboId: string;
+    stacks: number;
+    defense: number;
+    endTick: number;
+  } | null;
   poise?: {
     pressure: number;
     threshold: number;
@@ -396,7 +406,7 @@ export interface CircleObstacle {
 
 /** Persisted character state (DB row in M4, carried across map transfers). */
 export interface PlayerSave {
-  companion?: { hp: number; respawnSeconds: number };
+  companion?: { active?: boolean; hp: number; respawnSeconds: number };
   saveVersion?: number;
   elementRevision?: number;
   learnedSkills?: string[];

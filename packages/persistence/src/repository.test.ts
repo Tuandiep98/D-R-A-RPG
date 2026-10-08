@@ -26,8 +26,8 @@ describe('GameRepository', () => {
     if (!loaded) throw new Error('missing save');
     const position = { mapId: loaded.mapId, x: 0, z: 0 };
     for (const companion of [
-      { hp: 321, respawnSeconds: 0 },
-      { hp: 0, respawnSeconds: 17.35 },
+      { active: true, hp: 321, respawnSeconds: 0 },
+      { active: false, hp: 0, respawnSeconds: 17.35 },
     ]) {
       await repo.saveCharacter(id, { ...loaded.save, companion }, position, []);
       expect((await repo.loadCharacter(id))?.save.companion).toEqual(companion);
@@ -40,6 +40,7 @@ describe('GameRepository', () => {
         repo.saveCharacter(id, { ...loaded.save, companion }, position, []),
       ).rejects.toThrow();
       expect((await repo.loadCharacter(id))?.save.companion).toEqual({
+        active: false,
         hp: 0,
         respawnSeconds: 17.35,
       });

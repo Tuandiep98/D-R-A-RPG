@@ -74,9 +74,11 @@ describe('authored sword starter progression', () => {
         expect(skills(restored, next)).toContain(skillId);
       }
       if (suffixes[0] === 'thu_strike') {
+        expect(skills(restored, next)).toContain('skill_thu_summon');
         expect(
           restored.snapshot().entities.filter((e) => e.kind === 'pet' && e.ownerId === next),
-        ).toHaveLength(1);
+        ).toHaveLength(0);
+        expect(save?.companion?.active).toBe(false);
         expect(save?.companion?.hp).toBeGreaterThan(0);
       }
       expect(restored.exportPlayer(next)?.cooldowns?.skill_thunder_arc).toBe(

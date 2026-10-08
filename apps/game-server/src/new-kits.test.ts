@@ -16,12 +16,16 @@ import {
 import { farmSystem } from '../../../packages/game-core/src/systems/farm';
 import { requestBasicAttack } from '../../../packages/game-core/src/systems/melee';
 import { requestMobility } from '../../../packages/game-core/src/systems/mobility';
-import { companion, petSystem } from '../../../packages/game-core/src/systems/pets';
+import {
+  companion,
+  petSystem,
+  toggleCompanion,
+} from '../../../packages/game-core/src/systems/pets';
 import { requestCast } from '../../../packages/game-core/src/systems/skills';
 import { makeContent } from '../../../packages/game-core/src/test-fixtures';
 
 const authored = loadContentFromDir(resolve(import.meta.dirname, '../../../game-data'));
-function setup(characterId = 'player_phap') {
+function setup(characterId = 'player_phap', summon = true) {
   const fixture = makeContent({
     monster: { stats: { hp: 5000, attack: 10, defense: 0, critChance: 0 } },
   });
@@ -39,6 +43,7 @@ function setup(characterId = 'player_phap') {
   const target = [...world.entities.values()].find((e) => e.kind === 'monster');
   if (!actor?.player || !target) throw new Error('missing fixture');
   actor.pos = { x: 0, z: 0 };
+  if (characterId === 'player_thu' && summon) toggleCompanion(world, actor);
   target.pos = { x: 0, z: 5 };
   target.ai = null;
   target.combat.targetId = null;
@@ -48,12 +53,42 @@ const run = (world: World, ticks: number) =>
   Array.from({ length: ticks }, () => world.step()).flat();
 
 describe('authored combat kits', () => {
+  it('Ngự Thú explicitly toggles its summon and emits validated lifecycle events', () => {
+    const { world, actor } = setup('player_thu', false);
+    expect(companion(world, actor)).toBeUndefined();
+    expect(actor.player?.companion?.active).toBe(false);
+
+    expect(requestCast(world, actor, 'skill_thu_summon', null, null)).toBe(true);
+    const summoned = run(world, 10);
+    const materialize = summoned.find(
+      (event) => event.type === 'SUMMON' && event.phase === 'materialize',
+    );
+    expect(materialize).toMatchObject({
+      ownerId: actor.id,
+      profileId: 'pet_wolf',
+    });
+    expect(SimEventSchema.safeParse(materialize).success).toBe(true);
+    expect(companion(world, actor)).toBeDefined();
+    expect(actor.player?.companion?.active).toBe(true);
+
+    expect(requestCast(world, actor, 'skill_thu_summon', null, null)).toBe(true);
+    const dismissed = run(world, 10);
+    const dismiss = dismissed.find((event) => event.type === 'SUMMON' && event.phase === 'dismiss');
+    expect(SimEventSchema.safeParse(dismiss).success).toBe(true);
+    expect(companion(world, actor)).toBeUndefined();
+    expect(actor.player?.companion?.active).toBe(false);
+  });
   it.each(['plain', 'guard', 'decay', 'shield', 'unconfigured'])(
     'Thể poise uses explicit pressure, guard-chain resistance and bounded break: %s',
     (mode) => {
       const { world, actor, target } = setup('player_the');
       if (mode === 'guard')
-        actor.guardChain = { comboId: 'combo_unarmed', stacks: 3, defense: 12, endTick: 100 };
+        actor.guardChain = {
+          comboId: 'combo_unarmed',
+          stacks: 3,
+          defense: 12,
+          endTick: 100,
+        };
       if (mode === 'shield') actor.shield = { amount: 100, endTick: 100 };
       const hit = () =>
         applyDamage(world, target, actor, 1, false, null, {
@@ -78,7 +113,11 @@ describe('authored combat kits', () => {
         run(world, 1);
         expect(requestCast(world, actor, 'skill_the_guard', null, null)).toBe(true);
       } else if (mode === 'guard') {
-        expect(actor.poise).toMatchObject({ pressure: 24, threshold: 42, staggerUntilTick: 0 });
+        expect(actor.poise).toMatchObject({
+          pressure: 24,
+          threshold: 42,
+          staggerUntilTick: 0,
+        });
         hit();
         expect(actor.poise?.pressure).toBe(36);
         hit();
@@ -150,7 +189,11 @@ describe('authored combat kits', () => {
   it('poise break keeps a projectile already released by the actor in flight', () => {
     const { world, actor, target } = setup('player_the');
     actor.skills.set('skill_phap_arrow', 0);
-    expect(requestCast(world, actor, 'skill_phap_arrow', target.id, { ...target.pos })).toBe(true);
+    expect(
+      requestCast(world, actor, 'skill_phap_arrow', target.id, {
+        ...target.pos,
+      }),
+    ).toBe(true);
     run(world, 5);
     expect(world.skillProjectiles).toHaveLength(1);
     applyDamage(world, target, actor, 1, false, null, {
@@ -193,7 +236,10 @@ describe('authored combat kits', () => {
       const observedX = target.pos.x;
       if (mode === 'turn') target.movement.dir = { x: -1, z: 0 };
       if (mode === 'wall')
-        world.obstacles.push({ pos: { x: (observedX + 0.975) / 2, z: 2.5 }, radius: 0.1 });
+        world.obstacles.push({
+          pos: { x: (observedX + 0.975) / 2, z: 2.5 },
+          radius: 0.1,
+        });
       if (mode === 'stale' && actor.player.farm.observedTarget)
         actor.player.farm.observedTarget.tick = 0;
       if (mode === 'changed-target' && actor.player.farm.observedTarget)
@@ -394,13 +440,20 @@ describe('authored combat kits', () => {
       if (mode === 'side') target.pos = { x: 0.84, z: 1.2 };
       if (mode === 'end') target.pos = { x: 0, z: 3.24 };
       if (mode === 'outside') target.pos = { x: 0.86, z: 1.2 };
-      world.enqueueIntent(id, { type: 'CAST_SKILL', skillId: 'skill_the_mountain' });
+      world.enqueueIntent(id, {
+        type: 'CAST_SKILL',
+        skillId: 'skill_the_mountain',
+      });
       const events = world.step();
       const start = events.find(
         (event) => event.type === 'CAST_START' && event.skillId === 'skill_the_mountain',
       );
       expect(start).toMatchObject({
-        line: { origin: { x: 0, z: 0 }, destination: { x: 0, z: 2.4 }, radius: 0.35 },
+        line: {
+          origin: { x: 0, z: 0 },
+          destination: { x: 0, z: 2.4 },
+          radius: 0.35,
+        },
       });
       if (mode === 'move') target.movement.dir = { x: 1, z: 0 };
       if (mode === 'wall') world.obstacles.push({ pos: { x: 0, z: 1 }, radius: 0.3 });
@@ -420,7 +473,11 @@ describe('authored combat kits', () => {
         (event) => event.type === 'SKILL_IMPACT' && event.skillId === 'skill_the_mountain',
       );
       expect(impact).toMatchObject({
-        line: { origin: { x: 0, z: 0 }, destination: { x: 0, z: 2.4 }, radius: 0.35 },
+        line: {
+          origin: { x: 0, z: 0 },
+          destination: { x: 0, z: 2.4 },
+          radius: 0.35,
+        },
       });
       for (const event of events) expect(SimEventSchema.safeParse(event).success).toBe(true);
     },
@@ -486,7 +543,10 @@ describe('authored combat kits', () => {
   );
   it('Thể auto approaches the next punch reach instead of whiffing at character range', () => {
     const { world, actor, target, id } = setup('player_the');
-    target.pos = { x: 0, z: actor.movement.radius + target.movement.radius + 1.25 };
+    target.pos = {
+      x: 0,
+      z: actor.movement.radius + target.movement.radius + 1.25,
+    };
     world.enqueueIntent(id, { type: 'ATTACK_TARGET', targetId: target.id });
     const events = run(world, 70);
     expect(
@@ -581,6 +641,7 @@ describe('authored combat kits', () => {
     for (let i = 1; i < 129; i++) players.push(world.spawnPlayer('player_thu'));
     for (const playerId of players) {
       const owner = world.entities.get(playerId);
+      if (owner && !companion(world, owner)) toggleCompanion(world, owner);
       const pet = owner ? companion(world, owner) : undefined;
       if (!owner || !pet) throw new Error('missing pet');
       owner.pos = { x: 0, z: 0 };
@@ -623,7 +684,11 @@ describe('authored combat kits', () => {
       expect(actor.cloakEndTick).toBeNull();
       expect(startup.find((e) => e.type === 'CAST_START' && e.sourceId === pet.id)).toMatchObject({
         telegraph: true,
-        line: { origin: { x: 0, z: 0 }, destination: { x: 0, z: 9 }, radius: 0.7 },
+        line: {
+          origin: { x: 0, z: 0 },
+          destination: { x: 0, z: 9 },
+          radius: 0.7,
+        },
       });
       expect(target.stats.hp).toBe(hp);
       if (mode === 'move') target.pos.x = 4;
@@ -658,7 +723,11 @@ describe('authored combat kits', () => {
     target.defId = 'wolf_001';
     actor.combat.lastCombatTick = -100;
     actor.cloakEndTick = world.tick + 60;
-    actor.player.quests.push({ questId: 'q_wolf_cull', status: 'active', progress: [0] });
+    actor.player.quests.push({
+      questId: 'q_wolf_cull',
+      status: 'active',
+      progress: [0],
+    });
     applyDamage(world, pet, target, target.stats.hp, false, 'skill_pet_lunge');
     expect(actor.combat.lastCombatTick).toBe(world.tick);
     expect(actor.cloakEndTick).toBeNull();
@@ -732,7 +801,9 @@ describe('authored combat kits', () => {
     world.step();
     expect(companion(world, actor)?.stats.hp).toBe(save?.companion?.hp);
     const next = setup('player_thu').world;
-    const restored = next.spawnPlayer('player_thu', { save: save ?? undefined });
+    const restored = next.spawnPlayer('player_thu', {
+      save: save ?? undefined,
+    });
     const owner = next.entities.get(restored);
     if (!owner) throw new Error('missing owner');
     expect(companion(next, owner)?.stats.hp).toBe(save?.companion?.hp);
@@ -756,10 +827,12 @@ describe('authored combat kits', () => {
     const save = world.exportPlayer(id);
     expect(save?.companion).toMatchObject({ hp: 0 });
     const next = setup('player_thu').world;
-    const restored = next.spawnPlayer('player_thu', { save: save ?? undefined });
+    const restored = next.spawnPlayer('player_thu', {
+      save: save ?? undefined,
+    });
     const owner = next.entities.get(restored);
     if (!owner) throw new Error('missing owner');
-    run(next, 398);
+    run(next, 399);
     expect(companion(next, owner)).toBeUndefined();
     next.step();
     expect(companion(next, owner)?.stats.hp).toBe(pet.stats.maxHp);
@@ -783,7 +856,10 @@ describe('authored combat kits', () => {
     const windup = run(world, 4);
     expect(windup.some((e) => e.type === 'CAST_START' && e.sourceId === pet.id)).toBe(true);
     const warning = windup.find((e) => e.type === 'CAST_START' && e.sourceId === pet.id);
-    expect(warning).toMatchObject({ telegraph: true, cone: { radius: 2, arc: 75 } });
+    expect(warning).toMatchObject({
+      telegraph: true,
+      cone: { radius: 2, arc: 75 },
+    });
     expect(SimEventSchema.safeParse(warning).success).toBe(true);
     expect(target.stats.hp).toBe(hp);
     if (mode === 'move') target.pos.x = 4;
@@ -839,7 +915,9 @@ describe('authored combat kits', () => {
     world.resetController(id);
     expect(actor.cloakEndTick).toBeNull();
     const next = setup('player_anh').world;
-    const restored = next.spawnPlayer('player_anh', { save: save ?? undefined });
+    const restored = next.spawnPlayer('player_anh', {
+      save: save ?? undefined,
+    });
     expect(next.entities.get(restored)?.cloakEndTick).toBeFalsy();
     expect(next.exportPlayer(restored)?.cooldowns?.skill_anh_cloak).toBe(
       save?.cooldowns?.skill_anh_cloak,
@@ -880,7 +958,11 @@ describe('authored combat kits', () => {
       });
       const initial = run(world, 14);
       expect(initial.find((event) => event.type === 'CAST_START')).toMatchObject({
-        line: { origin: { x: 0, z: 0 }, destination: { x: 0, z: 7 }, radius: 0.45 },
+        line: {
+          origin: { x: 0, z: 0 },
+          destination: { x: 0, z: 7 },
+          radius: 0.45,
+        },
       });
       actor.pos.x = 5; // Remaining pulses retain the committed line and source position.
       const hp = target.stats.hp;
@@ -940,7 +1022,10 @@ describe('authored combat kits', () => {
   );
   it('Trận requires live fields, uses a shared ownership cap and clears them on transfer', () => {
     const { world, actor, target, id } = setup('player_tran');
-    world.enqueueIntent(id, { type: 'CAST_SKILL', skillId: 'skill_tran_pulse' });
+    world.enqueueIntent(id, {
+      type: 'CAST_SKILL',
+      skillId: 'skill_tran_pulse',
+    });
     world.enqueueIntent(id, { type: 'CAST_SKILL', skillId: 'skill_tran_link' });
     expect(world.step().filter((e) => e.type === 'NOTICE' && e.code === 'no_target')).toHaveLength(
       2,
@@ -954,7 +1039,10 @@ describe('authored combat kits', () => {
     run(world, 17);
     expect(world.skillPulses).toHaveLength(1);
     const hp = target.stats.hp;
-    world.enqueueIntent(id, { type: 'CAST_SKILL', skillId: 'skill_tran_pulse' });
+    world.enqueueIntent(id, {
+      type: 'CAST_SKILL',
+      skillId: 'skill_tran_pulse',
+    });
     run(world, 5);
     expect(target.stats.hp).toBeLessThan(hp);
     world.enqueueIntent(id, {

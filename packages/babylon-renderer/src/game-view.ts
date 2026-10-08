@@ -43,6 +43,7 @@ import {
 import { CameraRig } from './camera-rig';
 import { CombatFx } from './combat-fx';
 import { DamageTextPool, MoveMarker, SelectionRing } from './effects';
+import { ElementalFx } from './elemental-fx';
 import { elementColor } from './elements';
 import { createEngine, type EngineKind } from './engine';
 import { EntityView, EntityViewPool, type PickMetadata } from './entity-view';
@@ -115,6 +116,8 @@ export interface SkillSlot {
   description: string;
   cooldown: number;
   remaining: number;
+  /** Persistent/toggle skill is currently maintained by authoritative state. */
+  active?: boolean;
   mpCost: number;
   usable: boolean;
 }
@@ -193,14 +196,23 @@ export interface UiState {
         maxMp: number;
         shield?: { amount: number; remaining: number } | null;
         cloakRemaining?: number;
-        guardChain?: { stacks: number; defense: number; remaining: number } | null;
+        guardChain?: {
+          stacks: number;
+          defense: number;
+          remaining: number;
+        } | null;
         poise?: {
           pressure: number;
           threshold: number;
           staggerRemaining: number;
           immuneRemaining: number;
         } | null;
-        companion?: { name: string; hp: number; maxHp: number; recovery: number } | null;
+        companion?: {
+          name: string;
+          hp: number;
+          maxHp: number;
+          recovery: number;
+        } | null;
         cultivation: CultivationView;
         gold: number;
         inSafeZone: boolean;
@@ -380,6 +392,7 @@ export class GameView {
   private readonly quality: QualityManager;
   private preset: QualityPreset;
   private readonly fx: CombatFx;
+  private readonly elemental: ElementalFx;
   private readonly bolts: LightningBatch;
   private readonly thunder: ThunderFx;
   /** Where each caster stood when its current cast began (dash skills travel from there). */
@@ -429,6 +442,7 @@ export class GameView {
   ) {
     this.join = join;
     this.fx = new CombatFx(scene, rig.camera, opts.mediaUrl ?? (() => null));
+    this.elemental = new ElementalFx(this.fx);
     this.bolts = new LightningBatch(scene, rig.camera);
     this.thunder = new ThunderFx(this.fx, this.bolts);
     this.gun = new GunFx(this.fx);
@@ -1384,7 +1398,10 @@ export class GameView {
               shotDef
                 ? {
                     ...shotDef,
-                    fx: { ...shotDef.fx, color: elementColor(ev.element, ev.expression) },
+                    fx: {
+                      ...shotDef.fx,
+                      color: elementColor(ev.element, ev.expression),
+                    },
                   }
                 : undefined,
               ev.shot,
@@ -1541,6 +1558,13 @@ export class GameView {
           const self = skill?.targeting === 'self';
           const from = self ? ev.point : source ? source.root.position : null;
           if (from) this.castFrom.set(ev.sourceId, { x: from.x, z: from.z });
+          if (source && skill)
+            this.elemental.cast(
+              source,
+              skill,
+              ev.element,
+              Math.max(0, (ev.endTick - tick) / TICK_RATE),
+            );
           if (source && skill?.mobility) {
             this.fx.trail(
               source.anchor('hand_r'),
@@ -1594,6 +1618,7 @@ export class GameView {
           if (skill?.anim?.impact) src?.playClip(skill.anim.impact, skill.anim.impactSpeed, 'cast');
           const from = this.castFrom.get(ev.sourceId) ?? null;
           this.castFrom.delete(ev.sourceId);
+          if (skill) this.elemental.impact(skill, ev.element, ev.point, ev.radius, from);
           if (skill?.mobility && ev.expression === 'thunder') {
             this.thunder.impact('thunder_dash', src, tgt, from, ev.point, 0);
           }
@@ -1819,7 +1844,13 @@ export class GameView {
    */
   private presentSwing(id: EntityId, view: EntityView, v: ComboVariant, yaw: number): void {
     const state = this.buffer.latest?.entities.find((e) => e.id === id);
-    v = { ...v, trail: { ...v.trail, color: elementColor(state?.element, state?.expression) } };
+    v = {
+      ...v,
+      trail: {
+        ...v.trail,
+        color: elementColor(state?.element, state?.expression),
+      },
+    };
     if (state?.expression === 'thunder') this.thunder.hit(view, 'thunder_strike');
     view.faceYaw(yaw, v.windup + v.recovery * 0.6);
     const swing = { variant: v, yaw, stopped: false };
@@ -2353,6 +2384,9 @@ export class GameView {
           iconImage: def?.iconImage ?? null,
           description: def?.description ?? '',
           cooldown: def?.cooldown ?? 1,
+          active:
+            def?.effects.some((effect) => effect.type === 'summon_toggle') === true &&
+            ps?.companion?.active === true,
           remaining: Math.round(remaining * 10) / 10,
           mpCost: def?.mpCost ?? 0,
           usable: remaining <= 0 && (ps?.mp ?? 0) >= (def?.mpCost ?? 0),

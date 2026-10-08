@@ -196,6 +196,9 @@ it.each(['player_default', 'player_phap', 'player_the', 'player_tran', 'player_a
               },
             ];
           if (tick === 50) intents = [{ type: 'BASIC_ATTACK', aim: { x: pos.x, z: pos.z + 4 } }];
+          // Ngự Thú starts without a companion; the summon skill materialises it.
+          if (characterId === 'player_thu' && tick === 2)
+            intents = [{ type: 'CAST_SKILL', skillId: 'skill_thu_summon' }];
         }
         for (const intent of intents) {
           host.sendIntent(intent);
@@ -209,7 +212,11 @@ it.each(['player_default', 'player_phap', 'player_the', 'player_tran', 'player_a
           );
         const previousStateCount = stateCount;
         room.stepOnce();
-        expectedEvents.push(...reference.step().filter(concernsPlayer));
+        const stepped = reference.step();
+        for (const event of stepped)
+          if (event.type === 'SUMMON' && event.ownerId === join.playerId && event.entityId)
+            ownedIds.add(event.entityId);
+        expectedEvents.push(...stepped.filter(concernsPlayer));
         expect(authoritative.snapshot()).toEqual(reference.snapshot());
         expect(authoritative.playerState(join.playerId)).toEqual(
           reference.playerState(join.playerId),

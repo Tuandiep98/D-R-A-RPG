@@ -1,0 +1,15 @@
+id: skill_thu_summon
+name: Triệu Linh Lang
+description: Mở khế ước triệu hồi Linh Lang. Khi đang duy trì, dùng lại để thu hồi linh thú.
+icon: "◇"
+targeting: self
+range: 0
+delivery: support
+autoPolicy: manual
+cooldown: 0.5
+mpCost: 0
+timeline: { windup: 0.25, active: 0, recovery: 0.15, cancelWindup: true }
+effects: [{ type: summon_toggle }]
+vfx: summon
+anim: { cast: Ranged_Magic_Raise, castSpeed: 2 }
+barRole: utility

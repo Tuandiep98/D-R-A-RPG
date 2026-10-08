@@ -35,6 +35,7 @@ export function exportCompanion(ctx: SimContext, owner: Entity): PlayerSave['com
       ? (pet.life.respawnAtTick ?? ctx.tick)
       : (state?.readyAtTick ?? ctx.tick);
   return {
+    active: state?.active ?? false,
     hp: Math.max(0, Math.round(hp)),
     respawnSeconds: Math.max(0, (ready - ctx.tick) / TICK_RATE),
   };
@@ -44,7 +45,8 @@ export function exportCompanion(ctx: SimContext, owner: Entity): PlayerSave['com
 export function dismissCompanion(ctx: SimContext, owner: Entity, dead = false): void {
   const pet = companion(ctx, owner);
   const state = owner.player?.companion;
-  if (!pet || !state) return;
+  if (!state) return;
+  if (!pet) return;
   state.hp = dead ? 0 : pet.stats.hp;
   state.readyAtTick = dead
     ? ctx.tick + pet.life.respawnTicks
@@ -53,6 +55,16 @@ export function dismissCompanion(ctx: SimContext, owner: Entity, dead = false): 
       : state.readyAtTick;
   state.entityId = null;
   ctx.removeEntity(pet.id);
+  const profile = petProfile(ctx, owner);
+  if (profile)
+    ctx.emit({
+      type: 'SUMMON',
+      ownerId: owner.id,
+      profileId: profile.id,
+      entityId: pet.id,
+      phase: dead ? 'death' : 'dismiss',
+      readyAtTick: state.readyAtTick,
+    });
 }
 
 function spawn(ctx: SimContext, owner: Entity, profile: PetDef): Entity | undefined {
@@ -74,7 +86,13 @@ function spawn(ctx: SimContext, owner: Entity, profile: PetDef): Entity | undefi
     pos,
     yaw: owner.yaw,
     inert: false,
-    stats: { ...def.stats, hp: Math.min(maxHp, state.hp), maxHp, maxMp: def.stats.mp, attack },
+    stats: {
+      ...def.stats,
+      hp: Math.min(maxHp, state.hp),
+      maxHp,
+      maxMp: def.stats.mp,
+      attack,
+    },
     baseAttack: attack,
     movement: {
       baseSpeed: def.movement.speed * profile.movementMultiplier,
@@ -114,7 +132,48 @@ function spawn(ctx: SimContext, owner: Entity, profile: PetDef): Entity | undefi
     action: 'idle',
   }));
   state.entityId = pet.id;
+  ctx.emit({
+    type: 'SUMMON',
+    ownerId: owner.id,
+    profileId: profile.id,
+    entityId: pet.id,
+    phase: 'materialize',
+    readyAtTick: state.readyAtTick,
+  });
   return pet;
+}
+
+/** The summon skill owns this state. Commands never create a companion implicitly. */
+export function toggleCompanion(ctx: SimContext, owner: Entity): boolean {
+  const profile = petProfile(ctx, owner);
+  const def = profile ? ctx.content.monsters.get(profile.monsterId) : undefined;
+  if (!profile || !def || !owner.player || !isAlive(owner)) return false;
+  owner.player.companion ??= {
+    active: false,
+    entityId: null,
+    hp: Math.round(def.stats.hp * profile.hpMultiplier),
+    readyAtTick: ctx.tick,
+  };
+  const state = owner.player.companion;
+  if (state.active) {
+    state.active = false;
+    const pet = companion(ctx, owner);
+    dismissCompanion(ctx, owner);
+    if (!pet)
+      ctx.emit({
+        type: 'SUMMON',
+        ownerId: owner.id,
+        profileId: profile.id,
+        entityId: null,
+        phase: 'dismiss',
+        readyAtTick: state.readyAtTick,
+      });
+    return true;
+  }
+  if (state.readyAtTick > ctx.tick) return false;
+  state.active = true;
+  if (state.hp <= 0) state.hp = Math.round(def.stats.hp * profile.hpMultiplier);
+  return !!spawn(ctx, owner, profile);
 }
 
 export function ensureCompanion(ctx: SimContext, owner: Entity): Entity | undefined {
@@ -122,12 +181,14 @@ export function ensureCompanion(ctx: SimContext, owner: Entity): Entity | undefi
   const def = profile ? ctx.content.monsters.get(profile.monsterId) : undefined;
   if (!profile || !def || !owner.player || !isAlive(owner)) return;
   owner.player.companion ??= {
+    active: false,
     entityId: null,
     hp: Math.round(def.stats.hp * profile.hpMultiplier),
     readyAtTick: ctx.tick,
   };
   const existing = companion(ctx, owner);
   if (existing) return existing;
+  if (!owner.player.companion.active) return;
   if (owner.player.companion.readyAtTick > ctx.tick) return;
   if (owner.player.companion.hp <= 0)
     owner.player.companion.hp = Math.round(def.stats.hp * profile.hpMultiplier);
@@ -146,7 +207,12 @@ export function petSystem(ctx: SimContext): void {
     const def = ctx.content.monsters.get(profile.monsterId);
     if (!def) continue;
     const maxHp = Math.round(def.stats.hp * profile.hpMultiplier);
-    owner.player.companion ??= { entityId: null, hp: maxHp, readyAtTick: ctx.tick };
+    owner.player.companion ??= {
+      active: false,
+      entityId: null,
+      hp: maxHp,
+      readyAtTick: ctx.tick,
+    };
     const state = owner.player.companion;
     let pet = companion(ctx, owner);
     if (!isAlive(owner)) {
@@ -154,8 +220,12 @@ export function petSystem(ctx: SimContext): void {
       continue;
     }
     if (pet && !pet.life.alive) {
-      dismissCompanion(ctx, owner);
+      dismissCompanion(ctx, owner, true);
       pet = undefined;
+    }
+    if (!state.active) {
+      dismissCompanion(ctx, owner);
+      continue;
     }
     if (!pet) {
       if (state.readyAtTick > ctx.tick) continue;

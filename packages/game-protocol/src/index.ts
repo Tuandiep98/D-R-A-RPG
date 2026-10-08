@@ -4,7 +4,7 @@ import { z } from 'zod';
  * Wire contract between client and simulation host (local or server).
  * Bump PROTOCOL_VERSION on any breaking change to these schemas.
  */
-export const PROTOCOL_VERSION = 12;
+export const PROTOCOL_VERSION = 13;
 export const SAVE_VERSION = 2;
 export const SaveVersionSchema = z.number().int().min(1).max(SAVE_VERSION);
 export const LearnedSkillsSchema = z.array(z.string().regex(/^[a-z][a-z0-9_]*$/)).max(256);
@@ -196,7 +196,10 @@ export const EntitySnapshotSchema = z.object({
     .nullable()
     .optional(),
   shield: z
-    .object({ amount: z.number().int().nonnegative(), endTick: z.number().int() })
+    .object({
+      amount: z.number().int().nonnegative(),
+      endTick: z.number().int(),
+    })
     .nullable()
     .optional(),
   actionState: z
@@ -310,6 +313,14 @@ export const SimEventSchema = z
     z.object({ type: z.literal('SPAWN'), id: EntityIdSchema }),
     z.object({ type: z.literal('DESPAWN'), id: EntityIdSchema }),
     z.object({
+      type: z.literal('SUMMON'),
+      ownerId: EntityIdSchema,
+      profileId: z.string(),
+      entityId: EntityIdSchema.nullable(),
+      phase: z.enum(['materialize', 'dismiss', 'death']),
+      readyAtTick: z.number().int().nonnegative(),
+    }),
+    z.object({
       type: z.literal('ATTACK'),
       actionId: z.number().int().positive().nullable().optional(),
       element: ElementSchema.nullable().optional(),
@@ -350,7 +361,12 @@ export const SimEventSchema = z
       hit: z.enum(['solid', 'graze', 'weak']).optional(),
       heavy: z.boolean().optional(),
       /** Ranged hits: which SHOT and bullet (the client stops that tracer at the body). */
-      shot: z.object({ id: z.number().int(), pellet: z.number().int().nonnegative() }).optional(),
+      shot: z
+        .object({
+          id: z.number().int(),
+          pellet: z.number().int().nonnegative(),
+        })
+        .optional(),
     }),
     /**
      * A ranged shot (D-033). One entry per bullet: heading and how far it can
@@ -555,6 +571,7 @@ export const PlayerStateSchema = z.object({
     .object({
       profileId: z.string(),
       entityId: EntityIdSchema.nullable(),
+      active: z.boolean(),
       hp: z.number().int().nonnegative(),
       maxHp: z.number().int().positive(),
       readyAtTick: z.number().int().nonnegative(),
@@ -660,6 +677,7 @@ export type ChatMessage = z.infer<typeof ChatMessageSchema>;
 export const SkillCooldownsSchema = z.record(z.string(), z.number().finite().min(0).max(86400));
 
 export const CompanionSaveSchema = z.strictObject({
+  active: z.boolean().default(false),
   hp: z.number().int().min(0).max(1000000),
   respawnSeconds: z.number().finite().min(0).max(120),
 });

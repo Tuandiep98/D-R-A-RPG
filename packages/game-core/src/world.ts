@@ -330,6 +330,7 @@ export class World implements SimContext {
         ...(save?.companion
           ? {
               companion: {
+                active: CompanionSaveSchema.parse(save.companion).active,
                 entityId: null,
                 hp: CompanionSaveSchema.parse(save.companion).hp,
                 readyAtTick:
@@ -463,6 +464,7 @@ export class World implements SimContext {
           ? {
               profileId: profile.id,
               entityId: pet?.id ?? null,
+              active: p.companion?.active ?? false,
               hp: Math.max(0, Math.round(pet?.stats.hp ?? p.companion?.hp ?? 0)),
               maxHp: Math.round(petDef.stats.hp * profile.hpMultiplier),
               readyAtTick:
@@ -496,7 +498,10 @@ export class World implements SimContext {
         const action =
           this.content.skills.get(skillId)?.mobility ??
           (skillId === 'skill_thunder_step' ? 'roll' : null);
-        return { skillId, readyAtTick: action ? (p.mobilityReady.get(action) ?? 0) : readyAtTick };
+        return {
+          skillId,
+          readyAtTick: action ? (p.mobilityReady.get(action) ?? 0) : readyAtTick,
+        };
       }),
       inventory: p.inventory.map((i) => ({ ...i })),
       inventoryCapacity: INVENTORY_CAPACITY,
@@ -699,7 +704,11 @@ function toSnapshot(e: Entity): EntitySnapshot {
     id: e.id,
     kind: e.kind,
     mobility: e.mobility
-      ? { action: e.mobility.action, startTick: e.mobility.startTick, endTick: e.mobility.endTick }
+      ? {
+          action: e.mobility.action,
+          startTick: e.mobility.startTick,
+          endTick: e.mobility.endTick,
+        }
       : null,
     element: e.element ?? null,
     expression: e.expression ?? 'base',

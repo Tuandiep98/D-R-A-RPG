@@ -55,7 +55,9 @@ it.each(['player_default', 'player_phap', 'player_the', 'player_tran', 'player_a
         learnedSkills: def.prototypeSkills,
         inventory: [{ instanceId: 'transfer-pot', itemId: 'item_potion_hp_small', count: 3 }],
         cooldowns: { [ultimate]: cooldown },
-        ...(profile === 'player_thu' ? { companion: { hp: 321, respawnSeconds: 0 } } : {}),
+        ...(profile === 'player_thu'
+          ? { companion: { active: true, hp: 321, respawnSeconds: 0 } }
+          : {}),
       },
       { mapId: map.id, x: portal.position.x, z: portal.position.z - 3 },
       [],
