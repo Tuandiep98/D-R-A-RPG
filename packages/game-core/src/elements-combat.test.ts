@@ -1,4 +1,4 @@
-import { CombatRulesSchema, SkillDefSchema } from '@rpg/game-data';
+import { CombatRulesSchema, compatibleExpression, SkillDefSchema } from '@rpg/game-data';
 import { describe, expect, it } from 'vitest';
 import { Rng } from './rng';
 import { applyDamage, rollHit } from './systems/combat';
@@ -61,24 +61,62 @@ function setup() {
   return { world, id, player, mob };
 }
 describe('authoritative element combat', () => {
+  it('resolves expression compatibility from mapping data without adding a sixth element', () => {
+    expect(compatibleExpression('moc', 'thunder', combat.expressions)).toBe(true);
+    expect(compatibleExpression('thuy', 'ice', combat.expressions)).toBe(true);
+    expect(compatibleExpression('kim', 'thunder', combat.expressions)).toBe(false);
+    const revised = { thunder: 'kim', ice: 'thuy' } as const;
+    expect(compatibleExpression('kim', 'thunder', revised)).toBe(true);
+    expect(compatibleExpression('moc', 'thunder', revised)).toBe(false);
+  });
+  it('rejects counter tables containing self edges or separate cycles', () => {
+    expect(
+      CombatRulesSchema.safeParse({
+        ...combat,
+        counters: { kim: 'kim', moc: 'tho', tho: 'thuy', thuy: 'hoa', hoa: 'moc' },
+      }).success,
+    ).toBe(false);
+    expect(
+      CombatRulesSchema.safeParse({
+        ...combat,
+        counters: { kim: 'moc', moc: 'kim', tho: 'thuy', thuy: 'hoa', hoa: 'tho' },
+      }).success,
+    ).toBe(false);
+  });
+  it('rolls back matchup bonuses per world while preserving saved affinity', () => {
+    const { world, player, mob } = setup();
+    const classic = new World({
+      content: world.content,
+      mapId: 'test_map',
+      combatRuleset: 'classic',
+    });
+    const id = classic.spawnPlayer('hero', { save: world.exportPlayer(player.id) ?? undefined });
+    const actor = classic.entities.get(id);
+    if (!actor) throw new Error('missing classic actor');
+    player.element = actor.element = 'moc';
+    mob.element = 'tho';
+    const old = rollHit(classic, actor, mob, { multiplier: 10, elementalShare: 1 });
+    const next = rollHit(world, player, mob, { multiplier: 10, elementalShare: 1 });
+    expect(next.amount).toBeGreaterThan(old.amount);
+    expect(classic.exportPlayer(id)).toMatchObject({ element: 'moc', expression: 'thunder' });
+    expect(classic.combatRuleset).toBe('classic');
+    expect(world.combatRuleset).toBe('elements_v1');
+  });
   it('evaluates all 25 matchups on only the elemental share', () => {
     const { world, player, mob } = setup();
     for (const a of ['kim', 'moc', 'thuy', 'hoa', 'tho'] as const)
       for (const b of ['kim', 'moc', 'thuy', 'hoa', 'tho'] as const) {
         player.element = a;
         mob.element = b;
-        const base = rollHit(
-          {
-            ...world,
-            rng: new Rng(42),
-            content: world.content,
-            realms: world.realms,
-            tick: world.tick,
-          } as typeof world,
-          { ...player, element: null },
-          mob,
-          10,
-        );
+        const rng = new Rng(42);
+        const variance = 1 + rng.range(-0.1, 0.1);
+        const crit = rng.chance(player.stats.critChance);
+        const base =
+          player.stats.attack *
+          10 *
+          (100 / (100 + mob.stats.defense * 5)) *
+          variance *
+          (crit ? player.stats.critMultiplier : 1);
         const actual = rollHit(
           {
             ...world,
@@ -89,7 +127,7 @@ describe('authoritative element combat', () => {
           } as typeof world,
           player,
           mob,
-          10,
+          { multiplier: 10 },
         );
         const factor =
           combat.counters[a] === b
@@ -98,7 +136,7 @@ describe('authoritative element combat', () => {
               ? combat.disadvantage
               : 1;
         expect(actual.amount).toBe(
-          Math.max(1, Math.round(base.amount * (1 + combat.basicShare * (factor - 1)))),
+          Math.max(1, Math.round(base * (1 + combat.basicShare * (factor - 1)))),
         );
       }
   });
@@ -169,7 +207,8 @@ describe('authoritative element combat', () => {
     for (let i = 0; i < 3; i++) world.step();
     applyDamage(world, mob, player, 10, false, null);
     expect(player.stats.hp).toBe(hp - 10);
-    player.mobility = null;
+    world.step();
+    expect(player.mobility).toBeNull();
     expect(requestMobility(world, player, 'jump')).toBe(true);
     for (let i = 0; i < 3; i++) world.step();
     applyDamage(world, mob, player, 10, false, null, {

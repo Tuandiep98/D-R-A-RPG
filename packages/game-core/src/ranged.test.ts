@@ -113,6 +113,70 @@ const of = <T extends SimEvent['type']>(events: SimEvent[], type: T) =>
   events.filter((e): e is Extract<SimEvent, { type: T }> => e.type === type);
 
 describe('ranged weapons', () => {
+  it('hits a moving body that crosses a bullet between ticks, exactly once', () => {
+    const { world, id, hero } = setup('pistol', [{ x: -1, z: 1.75 }]);
+    const mob = [...world.entities.values()].find((e) => e.kind === 'monster');
+    if (!mob || !hero.player?.ranged) throw new Error('missing fixture');
+    hero.pos = { x: 0, z: 0 };
+    hero.player.ranged.def = { ...hero.player.ranged.def, windup: 0 };
+    mob.ai = null;
+    mob.pos = { x: -1, z: 1.75 };
+    mob.monsterSwing = null;
+    mob.actionState = null;
+    mob.combat.targetId = null;
+    mob.movement.dir = { x: 1, z: 0 };
+    mob.movement.speed = 40;
+    world.enqueueIntent(id, { type: 'BASIC_ATTACK', aim: { x: 0, z: 10 } });
+    const events = world.step();
+    expect(mob.pos.x).toBeCloseTo(1);
+    expect(of(events, 'DAMAGE').filter((event) => event.targetId === mob.id)).toHaveLength(1);
+    expect(of(run(world, 5), 'DAMAGE').filter((event) => event.targetId === mob.id)).toHaveLength(
+      0,
+    );
+  });
+
+  it('tests hitscan against the final position after movement, not its old position', () => {
+    const { world, id, hero } = setup('sniper', [{ x: 0, z: 4 }]);
+    const mob = [...world.entities.values()].find((e) => e.kind === 'monster');
+    if (!mob || !hero.player?.ranged) throw new Error('missing fixture');
+    hero.pos = { x: 0, z: 0 };
+    hero.player.ranged.def = { ...hero.player.ranged.def, windup: 0 };
+    mob.ai = null;
+    mob.pos = { x: 0, z: 4 };
+    mob.movement.dir = { x: 1, z: 0 };
+    mob.movement.speed = 40;
+    const hp = mob.stats.hp;
+    world.enqueueIntent(id, { type: 'BASIC_ATTACK', aim: { x: 0, z: 10 } });
+    const events = world.step();
+    expect(of(events, 'SHOT')).toHaveLength(1);
+    expect(of(events, 'SHOT')[0]?.lens[0]).toBeGreaterThan(20);
+    expect(mob.stats.hp).toBe(hp);
+    expect(world.projectiles).toHaveLength(0);
+  });
+
+  it('locks facing and offensive stats through windup, sharing action identity with impact', () => {
+    const { world, id, hero } = setup('pistol', [{ x: 0, z: 4 }]);
+    if (!hero.player?.ranged) throw new Error('missing equipped weapon');
+    hero.player.ranged.def = { ...hero.player.ranged.def, windup: 0.2 };
+    world.enqueueIntent(id, { type: 'BASIC_ATTACK', aim: { x: 0, z: 10 } });
+    world.step();
+    const commitment = hero.player?.trigger.windup;
+    if (!commitment) throw new Error('expected weapon windup');
+    const frozenAttack = commitment.source.stats.attack;
+    hero.stats.attack = 1000;
+    hero.element = 'hoa';
+    world.enqueueIntent(id, { type: 'TRIGGER', held: true, aim: { x: 10, z: 0 } });
+    const events = run(world, 10);
+    const shot = events.find((e) => e.type === 'SHOT');
+    const damage = events.find((e) => e.type === 'DAMAGE');
+    expect(shot?.type === 'SHOT' ? shot.yaws[0] : undefined).toBeCloseTo(0, 3);
+    expect(shot).toMatchObject({
+      actionId: commitment.source.actionId,
+      element: commitment.source.element,
+    });
+    expect(damage).toMatchObject({ actionId: commitment.source.actionId });
+    expect(damage?.type === 'DAMAGE' ? damage.amount : Infinity).toBeLessThan(frozenAttack * 2);
+  });
   it('semi: one shot per press, bullets fly and hit later, magazine counts down', () => {
     const { world, id } = setup('pistol', [{ x: 0, z: 8 }]);
     world.enqueueIntent(id, {
@@ -314,6 +378,7 @@ describe('ranged weapons', () => {
     const z1 = hero.pos.z;
     run(world, 10);
     expect(hero.pos.z - z1).toBeCloseTo(free * 0.5, 1);
-    expect(hero.yaw).toBeCloseTo(Math.atan2(aim.x - hero.pos.x, aim.z - hero.pos.z), 4);
+    const previous = hero.previousPos ?? hero.pos;
+    expect(hero.yaw).toBeCloseTo(Math.atan2(aim.x - previous.x, aim.z - previous.z), 4);
   });
 });

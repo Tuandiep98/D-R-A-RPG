@@ -25,6 +25,8 @@ import type { Logger } from 'pino';
 
 /** Everything rooms share inside one server process. */
 export interface ZoneDeps {
+  combatContent: import('@rpg/game-protocol').CombatContent;
+  combatRuleset: import('@rpg/game-protocol').CombatRuleset;
   content: ContentBundle;
   repo: GameRepository;
   tokens: TokenService;
@@ -103,12 +105,18 @@ export class ZoneRoom extends Room {
     this.patchRate = null; // no Schema state; snapshots are sent as messages
     this.autoDispose = true;
     this.world = new World({
+      combatContent: this.deps.combatContent,
+      combatRuleset: this.deps.combatRuleset,
       content: this.deps.content,
       mapId: this.mapId,
       nav: this.deps.navFor(this.mapId),
       newItemInstanceId: () => crypto.randomUUID(),
     });
-    this.setMetadata({ mapId: this.mapId });
+    this.setMetadata({
+      mapId: this.mapId,
+      combatRuleset: this.world.combatRuleset,
+      combatContent: this.world.combatContent,
+    });
     this.onMessage('intent', (client, message) => this.handleIntent(client, message));
     this.onMessage('chat', (client, message) => this.handleChat(client, message));
     this.lastStepAt = performance.now();
@@ -201,12 +209,15 @@ export class ZoneRoom extends Room {
     };
     this.sessions.set(client.sessionId, session);
     this.deps.takeover.set(auth.characterId, async () => {
+      this.world.resetController(session.playerId);
       session.kicked = true;
       if (session.reconnection) session.reconnection.reject(new Error('logged in elsewhere'));
       else client.leave(4003, 'logged in elsewhere');
       await Promise.race([session.left, new Promise((r) => setTimeout(r, 5000))]);
     });
     const join: JoinInfo = {
+      combatContent: this.world.combatContent,
+      combatRuleset: this.world.combatRuleset,
       protocolVersion: PROTOCOL_VERSION,
       playerId,
       mapId: this.mapId,
@@ -329,7 +340,7 @@ export class ZoneRoom extends Room {
 
   private handleIntent(client: Client, message: unknown): void {
     const s = this.sessions.get(client.sessionId);
-    if (!s || s.leaving) return;
+    if (!s || s.leaving || s.kicked) return;
     if (s.tokens < 1) {
       this.violation(client, s, 1);
       return;
@@ -346,7 +357,7 @@ export class ZoneRoom extends Room {
   /** Map chat (tech plan §55.2): length/rate limits, mutes from the DB, simple word filter. */
   private handleChat(client: Client, message: unknown): void {
     const s = this.sessions.get(client.sessionId);
-    if (!s || s.leaving) return;
+    if (!s || s.leaving || s.kicked) return;
     const parsed = ChatSendSchema.safeParse(message);
     if (!parsed.success) {
       this.violation(client, s, 5);
@@ -396,6 +407,7 @@ export class ZoneRoom extends Room {
     arrival: string | null,
   ): Promise<void> {
     s.leaving = true;
+    this.world.resetController(s.playerId);
     await this.saveSession(client.sessionId, 'transfer', mapId);
     const ticket = await this.deps.tokens.signTicket({
       sub: s.auth.characterId,

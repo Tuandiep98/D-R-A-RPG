@@ -74,10 +74,10 @@ Ký hiệu: ✅ xong · 🟡 có nền tảng/placeholder, cần hoàn thiện �
 
 ## Việc tiếp theo (tự động được)
 
-Ưu tiên combat theo yêu cầu mới: [plan ngũ hành và skill tám Đạo](04_combat_elements_skills_redesign.md). Thiết kế đã được ghi lại; runtime mới **chưa triển khai**. Các dấu ✅ combat ở trên chỉ phản ánh nền hiện tại.
+Ưu tiên combat theo yêu cầu mới: [plan ngũ hành và skill tám Đạo](04_combat_elements_skills_redesign.md). P0 — contract đã nghiệm thu local; P1 và các phase sau còn tiếp tục. Các dấu ✅ combat ở trên phản ánh nền hiện tại, không phải kit tám Đạo đã xong.
 
-1. P0: contract năm hành, action/hitbox, khóa hành nhân vật và migration save/Lôi/loadout.
-2. P1: combat slice Kiếm/Lôi + Pistol + sói/robot; đủ năm hành, hiệu ứng basic, roll/blink/jump và skill projectile né được.
+1. P0 đã hoàn tất: mapping/schema, DamageSpec, action→movement→collision, TTL buffer/approach, save v2/audit migration, flag content/combat, preview tạo nhân vật/HUD và replay/dedupe/reset. Bảng nghiệm thu và bằng chứng lệnh/test nằm trong plan combat; global lint còn baseline ngoài file thay đổi.
+2. P1: rollout starter/unlock rồi nghiệm thu combat slice Kiếm/Lôi + Pistol + sói/robot trên Low, online và reconnect.
 3. P2: feel/combo, cả bảy skill Lôi, năm súng và Farm cùng luật hitbox.
 4. P3–P5: kit các Đạo còn lại, Hỗn Nguyên/đổi hành late game, balance và nghiệm thu thiết bị/latency. Gate chi tiết trong plan mới.
 
@@ -102,4 +102,4 @@ Backlog hạ tầng/social hiện có:
 
 ### Combat slice ngũ hành — 2026-10-08
 
-Đã triển khai luật năm hành trong YAML, chọn/khóa hành API–DB–sim, debug chọn hành, mobility chung, VFX hành cho basic/súng, projectile thật cho Lôi Xuyên Tâm/laser/kiếm khí, windup hitbox quái và auto quái cơ bản. Chi tiết trạng thái và giới hạn trong [plan combat § Bản triển khai đầu tiên](04_combat_elements_skills_redesign.md). Chưa đánh dấu toàn bộ P0/P1 hoàn tất: DamageSpec/timeline, rollout starter và nghiệm thu thiết bị/online vẫn còn; kit tám Đạo, đổi hành late game và balance tiếp tục ở P2–P5.
+Đã hoàn tất P0 contract: luật năm hành/schema, DamageSpec/snapshot offense, timeline/cancel/TTL, pipeline action→movement→collision, swept bullets, save v2/audit migration giữ unlock/CD/gear/node, loadout alias theo nhân vật, immutable content/combat flag và preview thiết kế năm hành. Gates cuối: 172 test/27 file, 20 workspace typecheck, 291 YAML, depcruise, build web/PWA, Biome file thay đổi; replay local/Worker/Colyseus, dedupe events, takeover/portal/reconnect và smoke súng Low/cảm ứng qua. Preview và HUD chạy lại trên chín kích thước qua. Chi tiết và giới hạn baseline global lint trong [plan combat](04_combat_elements_skills_redesign.md). Starter mở rộng qua progression và nghiệm thu P1, kit tám Đạo, đổi hành late game, thiết bị thật và balance tiếp tục theo phase gốc.

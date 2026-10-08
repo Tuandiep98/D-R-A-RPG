@@ -1,6 +1,7 @@
 import type { Element } from '@rpg/game-protocol';
 import { useEffect, useState } from 'react';
-import { realmName } from './content';
+import { realmName, sharedContent } from './content';
+import { ElementPreview } from './ElementPreview';
 import { ELEMENTS, elementName } from './elements';
 import {
   type CharacterSummary,
@@ -21,11 +22,17 @@ export interface OnlineChoice {
 
 /** Login → character select → play. Only shown in online mode (`?online`). */
 export function Login({ onPlay }: { onPlay: (choice: OnlineChoice) => void }) {
+  const expressions = sharedContent().combat.get('combat_rules')?.expressions ?? {
+    thunder: 'moc',
+    ice: 'thuy',
+  };
   const [stage, setStage] = useState<'login' | 'characters'>('login');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [element, setElement] = useState<Element>('moc');
-  const [expression, setExpression] = useState<'base' | 'thunder' | 'ice'>('thunder');
+  const [expression, setExpression] = useState<'base' | 'thunder' | 'ice'>(
+    expressions.thunder === 'moc' ? 'thunder' : 'base',
+  );
   const [newName, setNewName] = useState('');
   const [characters, setCharacters] = useState<CharacterSummary[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -55,7 +62,11 @@ export function Login({ onPlay }: { onPlay: (choice: OnlineChoice) => void }) {
   }, []);
 
   return (
-    <div className="login" onPointerDown={(e) => e.stopPropagation()}>
+    <div
+      className="login"
+      data-quality={new URLSearchParams(window.location.search).get('quality') ?? 'auto'}
+      onPointerDown={(e) => e.stopPropagation()}
+    >
       <h1>Thiên Cơ Kỷ</h1>
       {stage === 'login' ? (
         <form
@@ -102,6 +113,7 @@ export function Login({ onPlay }: { onPlay: (choice: OnlineChoice) => void }) {
           <label>
             Ngũ hành bản mệnh
             <select
+              aria-label="Ngũ hành bản mệnh"
               value={element}
               disabled={busy}
               onChange={(e) => {
@@ -116,16 +128,18 @@ export function Login({ onPlay }: { onPlay: (choice: OnlineChoice) => void }) {
               ))}
             </select>
           </label>
-          {element === 'moc' && (
+          {Object.values(expressions).includes(element) && (
             <label>
               Biểu hiện
               <select
+                aria-label="Biểu hiện"
                 value={expression}
                 disabled={busy}
-                onChange={(e) => setExpression(e.target.value as 'base' | 'thunder')}
+                onChange={(e) => setExpression(e.target.value as 'base' | 'thunder' | 'ice')}
               >
-                <option value="base">Sinh khí</option>
-                <option value="thunder">Lôi</option>
+                <option value="base">Nguyên bản</option>
+                {expressions.thunder === element && <option value="thunder">Lôi</option>}
+                {expressions.ice === element && <option value="ice">Băng</option>}
               </select>
             </label>
           )}
@@ -133,6 +147,7 @@ export function Login({ onPlay }: { onPlay: (choice: OnlineChoice) => void }) {
             {ELEMENTS.find((e) => e.id === element)?.hint}. Bản mệnh khóa đến late game, dùng cho cả
             kiếm và súng.
           </p>
+          <ElementPreview element={element} expression={expression} />
           {characters.map((c) => (
             <button
               key={c.id}

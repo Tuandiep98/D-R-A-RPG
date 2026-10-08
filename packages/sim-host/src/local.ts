@@ -24,6 +24,8 @@ import { HostEmitter, type SimHost } from './host';
 export type NavProvider = (map: MapDef) => Promise<NavQuery | null> | NavQuery | null;
 
 export interface LocalSimHostOptions {
+  combatContent?: import('@rpg/game-protocol').CombatContent;
+  combatRuleset?: import('@rpg/game-protocol').CombatRuleset;
   content: ContentBundle;
   mapId: string;
   characterId: string;
@@ -170,6 +172,8 @@ export class LocalSimHost implements SimHost {
     if (!map) throw new Error(`unknown map ${mapId}`);
     const nav = (await this.opts.navFor?.(map)) ?? null;
     const world = new World({
+      combatContent: this.opts.combatContent ?? 'prototype',
+      combatRuleset: this.opts.combatRuleset,
       content: this.opts.content,
       mapId,
       seed: this.opts.seed,
@@ -183,6 +187,8 @@ export class LocalSimHost implements SimHost {
     });
     this.world = world;
     const join: JoinInfo = {
+      combatContent: world.combatContent,
+      combatRuleset: world.combatRuleset,
       protocolVersion: PROTOCOL_VERSION,
       playerId: this.playerId,
       mapId,

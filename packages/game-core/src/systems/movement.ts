@@ -21,7 +21,7 @@ export function movementSystem(ctx: SimContext): void {
     e.movement.moved = false;
     if (e.inert || !e.life.alive) continue;
     bodies.push(e);
-    if (e.mobility || e.monsterSwing) continue;
+    if (e.mobility || e.monsterSwing || e.cast) continue;
 
     if (e.movement.dir) {
       // Direct control wins over goals (chase, queued casts); casting roots.

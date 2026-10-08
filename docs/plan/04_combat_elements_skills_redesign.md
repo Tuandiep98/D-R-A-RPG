@@ -1,6 +1,6 @@
 # Combat RPG × MOBA — Ngũ hành và skill toàn bộ Đạo
 
-Ngày: 2026-10-08. Trạng thái: **đã triển khai nền tảng ngũ hành + combat slice đầu tiên; kit tám Đạo và late game còn trong roadmap**.
+Ngày: 2026-10-08. Trạng thái: **P0 — contract đã hoàn tất và nghiệm thu local; P1–P5 còn trong roadmap**. Các bản triển khai phía dưới là lịch sử từng mốc; bảng audit P0 và mục nghiệm thu cuối phản ánh trạng thái hiện tại.
 
 Yêu cầu của chủ dự án là nền tảng của tài liệu này. Các con số cân bằng, cách gán Lôi và mốc late game dưới đây là đề xuất để playtest; không xem là số liệu đã nghiệm thu. Phạm vi bao gồm tám Đạo trong master plan, bảy skill Lôi hiện có, năm loại súng, nhân vật mới/cũ, quái và auto farm.
 
@@ -18,9 +18,71 @@ Quái đánh thường khóa hướng, có windup và cảnh báo cone trước 
 
 Auto quái chạy trong core qua intent SET_FARM; giới hạn quanh điểm bật, phản ứng sau thời gian cấu hình, dùng skill/basic/reload bình thường và giữ MP dự phòng. HP thấp/túi đầy thì dừng, thao tác tay ngắt auto. Đây là auto cơ bản: chưa có bộ tùy chọn farm, ưu tiên mục tiêu, tự dùng thuốc, stuck recovery hoặc màn lý do dừng.
 
-Còn lại: DamageSpec/action timeline hợp nhất; đổi hành late game bằng chi phí/transaction; starter unlock theo progression; kit tám Đạo; balance/proc cap; VFX riêng, animation jump chuẩn và đánh giá cảm giác trên thiết bị thật. Bản này **không nghiệm thu toàn bộ P0–P5**.
+Còn lại: action timeline hợp nhất; đổi hành late game bằng chi phí/transaction; starter unlock theo progression; kit tám Đạo; balance/proc cap; VFX riêng, animation jump chuẩn và đánh giá cảm giác trên thiết bị thật. Bản này **không nghiệm thu toàn bộ P0–P5**.
 
 Kiểm chứng: unit/integration test core/API/persistence; typecheck các workspace; data validator; depcruise; build web; responsive audit trên 9 kích thước. Test sim bao gồm đủ 25 cặp hành, projectile hit/miss/tường, roll/jump, quái windup, save affinity và auto.
+
+## Bản tiếp tục P0 — contract damage chung
+
+`DamageSpecSchema` đã có trong game-data: multiplier, flat, elementalShare, critBonus và canCrit. Effect damage của skill kế thừa schema này; YAML cũ giữ nguyên ID/field và vẫn validate. Skill dùng tỷ lệ hành ở effect nếu có, sau đó tới skill và combat rules. `canCrit: false` chuẩn bị contract cho damage định kỳ; chưa có runtime DOT/status mới.
+
+Kiếm, súng, skill và đánh thường quái dùng cùng resolver: attack × multiplier + flat → distance/position → phần vật lý/nguyên tố và defense → variance/crit → realm/backlash → làm tròn một lần cuối. Graze/falloff và back/flank là hệ số độc lập. Sát thương có thể lệch 1 đơn vị so với cách làm tròn hai lần cũ; cần playtest cân bằng tiếp.
+
+Mỗi swing, windup quái, cast và shot lưu bản chụp attack/crit/realm/backlash/hành/biểu hiện lúc bắt đầu. Projectile giữ bản chụp này tới impact; đổi trang bị hoặc buff trong lúc đạn bay không thay đòn đã phát. Defense, hành và trạng thái né của mục tiêu vẫn đọc ở lúc chạm. Projectile skill có nhiều effect damage chỉ phát một đạn, mỗi payload áp một lần khi trúng.
+
+P0 **chưa hoàn tất**; phần timeline và travel đã được tiếp tục ở bản dưới. Starter/unlock giữ trong rollout P1, đồng thời migration P0 phải bảo toàn unlock cũ. Kit tám Đạo, đổi hành late game, DOT/proc cap và nghiệm thu thiết bị giữ ở roadmap.
+
+Kiểm chứng bản tiếp tục: 137 test trên 22 file qua (17 test contract/snapshot mới, gồm đạn súng, skill, melee, live defense và multi-effect); typecheck cả 20 workspace qua; 291 file game-data validate; depcruise không có vi phạm. Biome qua trên 9 file code thay đổi; lint toàn repo còn 106 lỗi baseline ngoài phần này (chủ yếu định dạng). Chưa đo lại cảm giác/cân bằng trên thiết bị thật.
+
+## Bản tiếp tục P0 — timeline và cờ combat
+
+`ActionTimingSchema` khai báo windup/active/recovery, luật hủy windup và mốc hủy recovery theo giây; sim lượng tử hóa 20 Hz. `ActionState` dùng chung cho skill, melee, mobility, windup quái và súng; snapshot đưa ID/tick/hướng sang client. Protocol v10; event ra đòn, projectile, impact và damage giữ `actionId` của cùng đòn, kể cả khi đạn chạm sau recovery.
+
+Lôi Ảnh Trảm dùng YAML: gồng 0.1 s, travel 0.3 s, recovery 0.2 s, hủy recovery từ 0.1 s. Di chuyển theo tick, khóa hướng, chặn nav/tường và gây damage một lần tại điểm dừng thật. Hủy windup không hoàn MP/cooldown. Melee vẫn cho vừa đi vừa đánh; steering xóa buffer combo/tiếp cận, giữ hướng swing. Pending cast kiểm tra lại MP/cooldown khi vào tầm. Súng chụp offense/hướng ngay từ lúc nâng nòng.
+
+`COMBAT_RULESET=elements_v1|classic` được validate lúc server boot, cố định trong mỗi World/room và thông báo trong join/metadata. `classic` tắt hệ số khắc chế; vẫn giữ bản mệnh/biểu hiện trong DB/save. Cờ này chỉ rollback luật khắc chế, chưa rollback content/delivery/timeline. LocalSimHost nhận cùng option và giữ qua chuyển map. Server không đọc cờ combat từ intent hoặc URL của client.
+
+Audit P0 cuối (cập nhật sau các mốc triển khai):
+
+Kiểm chứng mốc này: 145 test trên 23 file qua; typecheck 20 workspace; 291 YAML validate; depcruise 160 module/526 dependency không vi phạm; Biome trên code thay đổi và `git diff --check` qua. Test mới chứng minh leap đi nhiều tick/khóa hướng/impact một lần/chặn tường, windup cancel không refund, recovery lock, counter cycle hợp lệ, classic giữ affinity và súng giữ offense/actionId qua nâng nòng→impact. Chưa nghiệm thu toàn bộ P0 hoặc kiểm chứng visual tạo nhân vật mới.
+
+| Yêu cầu P0 | Bằng chứng nghiệm thu | Kết luận |
+| --- | --- | --- |
+| Mapping/ma trận/schema | `elements-combat.test.ts`: đủ 25 cặp, partial share, neutral, biểu hiện và chu kỳ đủ 5 hành; `schemas.ts`/`bundle.ts` và validator qua 291 YAML; core/API dùng mapping YAML | Đạt; đổi mapping về sau cần data + DB migration tương ứng |
+| DamageSpec | `damage.test.ts`: resolver chung, một lần làm tròn, variance/crit/realm/backlash, snapshot offense/live defense, projectile nhiều payload; melee/súng/quái/skill dùng chung resolver | Đạt |
+| Action timeline | `action-timeline.test.ts`/`ranged.test.ts`/`elements-combat.test.ts`: prepare→movement→collision; lunge, blink và dash đi ở phase movement; six-tick leap; hướng khóa; cancel không refund; TTL một buffer/approach; mobility thay basic windup; relative swept bullet/hitscan cuối tick; death/takeover/portal reset | Đạt |
+| Migration | SQL 0006–0009 + `combat-migration.test.ts` áp migration thật lên DB trước bản mệnh, giữ node/quest/gear/wallet/CD/unlock, audit revision và chọn gunner một lần; `save-migration.test.ts` giữ save v2 qua transfer/classic; `skill-loadout.test.ts` giữ alias và tách layout theo nhân vật | Đạt |
+| Feature flag | `config.test.ts`: default/enum/production guard; immutable World/room flags, join/metadata mang cùng modes; `save-migration.test.ts`/`elements-combat.test.ts` giữ affinity/revision/unlock/cost khi chuyển classic | Đạt; classic chỉ tắt multiplier khắc chế, không giả lập lại toàn bộ timing cũ |
+| Protocol/replay | Protocol v10, action/projectile/event IDs; `net.test.ts` chống trùng từng event, không gộp multi-effect; `sim-host/index.test.ts` replay 200 tick cả classic/elements_v1 qua local/Worker; `combat-replay.test.ts` replay 160 tick qua socket Colyseus thật, AOI delta/private state/events và thử gửi event trùng; `server.test.ts` takeover/portal/reconnect | Đạt |
+| Preview tạo nhân vật/HUD | `element-preview.ts`: đủ 5 hành/Lôi/Băng, kiếm/súng, basic/roll/blink/jump, 63 ảnh/9 kích thước, vùng chạm ≥44 px và Low/reduced motion; `responsive.ts`: 9 kích thước → responsive audit OK; đã đọc ảnh phone/desktop | Đạt preview thiết kế P0; 3D/VFX riêng và thiết bị thật thuộc các phase sau |
+
+## Bản tiếp tục P0 — migration, content và preview
+
+Migration 0009 nâng save format lên v2, thêm revision bản mệnh và unlock đã học. Nhân vật `player_default` đã chơi giữ bảy ID Lôi; gunner đã chơi giữ bốn ID cũ nhưng vẫn phải chọn hành nếu chưa có. Nhân vật mới không nhận unlock prototype. Migration ghi `character.combat.migrate`; lựa chọn hành cũ ghi `character.element.choose` cùng transaction, regular save không ghi đè affinity/revision. Không chạy down migration khi rollback gameplay.
+
+YAML tách hai starter skill (Hoàn Kiếm/Xuyên Tâm) khỏi `prototypeSkills`; node cũ và learned skills hợp lệ vẫn giữ. `COMBAT_CONTENT=starter|prototype` cố định trong World/room, production không cho prototype. Offline mặc định prototype để thử kit đầy đủ; server mặc định starter. Save v1 được nâng khi load, giữ prototype grant và cooldown; version tương lai bị từ chối. Layout v1 chỉ được nhận bởi nhân vật chọn đầu tiên, ghi envelope v2 một lần; các nhân vật sau có preference riêng. Alias `skill_thunder_step` remap sang `skill_roll` (nút mobility chung), cooldown alias vẫn khôi phục vào roll.
+
+Kiểm chứng mốc này: full suite 153 test/25 file qua trước các test flag/mapping bổ sung; các gate config/content/mapping/transfer/persistence bổ sung 28 test/5 file qua; audit DB legacy và audit history qua. Typecheck 20 workspace, 291 YAML, build web và responsive HUD chín kích thước qua. `tools/smoke/element-preview.ts` dùng API fixture chỉ để nghiệm thu giao diện, không ghi tài khoản người chơi; đã chụp 63 ảnh, kiểm đủ năm hành/Lôi/Băng/bốn động tác/kiếm/súng/vùng chạm/Low. Đã đọc ảnh desktop và phone 360 px. P0 vẫn chưa nghiệm thu cho đến khi pipeline và replay/transient-state gates còn lại hoàn tất.
+
+## Bản tiếp tục P0 — phase skill/melee và timeout tiếp cận
+
+Skill bắt đầu ở phase chuẩn bị, sát thương instant cũng chờ tới sau di chuyển. Dash không còn di chuyển trong resolver damage; travel 0.3 s dùng đúng sáu tick active. Skill ngoài tầm chỉ tiếp cận trong TTL `bufferSeconds` (150–200 ms), hết hạn xóa goal/target, không trừ MP hoặc bắt đầu cooldown. Tiếp cận xa bằng auto-attack vẫn là lệnh riêng; cần bấm skill lại khi đã vào tầm.
+
+Melee tự bắt đầu trước movement; lunge được xử lý trước mọi skill/projectile collision. Payload swing hết recovery được dọn trước intent/buffer; request basic trực tiếp cũng dùng buffer action chung thay vì một queue combo riêng. Test tiếp cận cũ giữ lệnh năm giây được thay bằng tiếp cận gần trong TTL, đồng thời thêm regression cho lệnh xa hết hạn và instant skill trượt khi mục tiêu đã di chuyển khỏi tầm.
+
+Kiểm chứng: toàn repo 158 test/26 file qua; typecheck core qua sau thay đổi fixture; Biome năm file phase/contract và `git diff --check` qua; depcruise 166 module/544 dependency không vi phạm. P0 vẫn còn phase chuẩn bị súng/quái, relative swept collision súng và replay/reset gates; chưa nghiệm thu toàn bộ.
+
+## Nghiệm thu P0 — pipeline, reset và replay cuối
+
+`World.step()` chuẩn bị input/auto/AI và các windup trước movement; ordinary movement, mobility, skill travel và melee lunge hoàn tất trước phase collision. Đạn súng dùng chuyển động tương đối giữa vị trí đầu/cuối tick của mục tiêu; hitscan dùng vị trí cuối tick. `SHOT.lens` cũng lấy ở collision để VFX không dừng tại vị trí cũ của mục tiêu. Không phát damage lúc bắt đầu instant cast hoặc di chuyển dash trong damage resolver.
+
+`resetController` xóa input chưa xử lý và transient action khi takeover/transfer; server ngừng nhận intent từ session kicked/leaving trước khi chờ save. Death xóa trigger held/burst/reload, action/buffer/approach ngay khi chết; save/new spawn không mang các trạng thái này. Cooldown và MP đã tiêu vẫn giữ. Replay Colyseus dùng đồng hồ cố định chỉ trong test, nhưng chạy handler, socket, AOI delta decoder và private-state delivery thật; không dùng kết quả đó để kết luận latency hoặc performance production.
+
+Mỗi `World.emit` cấp `eventId` tăng dần riêng cho từng payload, ngoài `actionId`/`projectileId`. Worker và Colyseus validate events bằng Zod, chống phát FX/feedback trùng trong cửa sổ 2048 ID, reset cửa sổ theo join. Payload damage thứ hai của cùng action không bị gộp; fixture legacy chưa có ID vẫn được đọc nguyên vẹn. Prediction/reconcile vị trí vẫn là phase riêng, HP/cooldown luôn authoritative.
+
+Gates cuối tại local: **172 test/27 file**, **20 workspace typecheck**, **291 YAML validate**, **depcruise 167 module/553 dependency không vi phạm**, **build web/PWA qua**, **Biome 55 file thay đổi và git diff --check qua**. Smoke năm súng trên WebGL Low và cảm ứng qua: SHOT, damage quái thật, reload/overheat, đổi sang kiếm, giữ/nhả nút và không có page error. Preview 9 kích thước và responsive 9 kích thước chạy lại đều qua. Artifact ảnh nằm trong `reports/element-preview`, `reports/responsive`, `reports/smoke`, không đưa vào asset runtime đã commit.
+
+`pnpm lint` toàn repo vẫn có **90 lỗi định dạng, 3 warning và 1 info baseline ở file ngoài thay đổi P0**; không tuyên bố global lint/CI xanh. Đây không phải phần gameplay còn thiếu của P0. Đã hoàn tất các contract và gate P0 trong bảng trên; P1–P5, balance/playtest, full eight kits, late-game đổi hành, status/CC mới và performance thiết bị thật vẫn theo scope gốc.
 
 ## 1. Mục tiêu và ràng buộc
 
@@ -264,7 +326,7 @@ HUD tuân [Kenney Fantasy Glass](../game-ui-style.md): mở rộng `fantasy-glas
 
 ## 11. Contract kỹ thuật cần thêm
 
-Tên field dưới đây là đề xuất, chưa tồn tại trong Zod/runtime:
+Bảng dưới đây là contract mục tiêu; phần ngũ hành, mobility/projectile và DamageSpec đã triển khai như báo cáo phía trên. ActionState/timeline, status/stagger, loadout/auto preset và đổi hành late game vẫn là phần cần bổ sung:
 
 | Tầng               | Thay đổi dự kiến                                                                                                                        | Gate                                                                                            |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
@@ -286,14 +348,14 @@ World.step hiện chạy skill/combat/melee/ranged trước movement. Khi bổ s
 
 | Phase                      | Deliverable cụ thể                                                                                                                                                    | Điều kiện xong                                                                                               |
 | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| P0 — contract              | mapping 5 hành/biểu hiện, DamageSpec/action timeline, migration và feature flag                                                                                       | ma trận/data schema validate, audit save cũ, preview thiết kế tạo nhân vật và HUD                            |
+| P0 — contract ✅           | mapping 5 hành/biểu hiện, DamageSpec/action timeline, migration và feature flag                                                                                       | đã nghiệm thu local: ma trận/schema, audit save cũ, preview tạo nhân vật/HUD, pipeline/reset/replay           |
 | P1 — playable combat slice | chọn/khóa hành từ API→DB→sim; debug chọn đủ 5; basic kiếm và pistol có VFX hành; roll/blink/jump; một quái melee và ranged dùng hitbox; Lôi Xuyên Tâm projectile thật | demo đánh tay/né/khắc chế/reconnect chạy Low + online; không trúng ngoài hitbox; không thêm status phức tạp  |
 | P2 — feel và auto          | tuning combo, assist/buffer/cancel, geometry sweep, safe Farm, range hysteresis; finish chuyển cả bảy Lôi và 5 súng                                                   | takeover ngay, auto không gian lận, farm 30 phút ổn định, mob và projectile né được; timing clip khớp impact |
 | P3 — toàn bộ Đạo           | Thể/Pháp/Trận/Ngự Thú/Ảnh theo kit, five-element overlays, một status/hành, mutation/quota T                                                                          | kit matrix đủ 7 Đạo early/mid; each basic/Q/W/E/R có delivery/counterplay/auto policy, balance theo role     |
 | P4 — late game             | Hỗn Nguyên hai Đạo, progression/unlock/balance; đổi hành quest+transaction; elite/boss/hybrid                                                                         | đủ 8 Đạo; không bypass quota/cooldown; đổi hành/reconnect/idempotency không reset tiến độ                    |
 | P5 — nghiệm thu            | benchmark thiết bị, latency tests, tune manual vs auto và onboarding                                                                                                  | gates dưới đây có số đo; chưa có thiết bị thì ghi chưa nghiệm thu, không đánh dấu hoàn tất runtime           |
 
-**Việc phát triển tiếp theo nên bắt đầu:** P0 rồi P1, lấy **Kiếm/Lôi + Pistol + một sói + một robot** làm bãi luyện. Có cả cận/xa, skill projectile, mobility, hành và quái; đủ để kiểm chứng “đã tay + né thật” trước khi nhân số kit. P1 có thể dùng placeholder FX của bốn hành còn lại, nhưng chọn hành/khắc chế/damage phải là luật thật.
+**Việc phát triển tiếp theo nên bắt đầu:** rollout starter/unlock theo progression và nghiệm thu P1. Tiếp tục lấy **Kiếm/Lôi + Pistol + một sói + một robot** làm bãi luyện trước khi nhân số kit. P1 có thể dùng placeholder FX của bốn hành còn lại; chọn hành/khắc chế/damage hiện đã là luật thật.
 
 ### 12.1. Kiểm chứng implementation
 

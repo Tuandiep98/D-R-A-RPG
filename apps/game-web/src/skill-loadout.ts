@@ -1,4 +1,5 @@
 import type { SkillSlot } from '@rpg/babylon-renderer';
+import { z } from 'zod';
 import { create } from 'zustand';
 
 export type SkillPosition =
@@ -24,23 +25,73 @@ export const TOUCH_POSITIONS: readonly SkillPosition[] = [
   'touch-utility',
 ];
 
-const STORAGE_KEY = 'rpg.skill-loadout.v1';
+const STORAGE_KEY = 'rpg.skill-loadout.v2';
+const LEGACY_KEY = 'rpg.skill-loadout.v1';
 type Assignments = Partial<Record<SkillPosition, string | null>>;
-
-function readAssignments(): Assignments {
+const AssignmentsSchema = z.partialRecord(
+  z.enum([
+    'desktop-1',
+    'desktop-2',
+    'desktop-3',
+    'desktop-4',
+    'touch-1',
+    'touch-2',
+    'touch-3',
+    'touch-utility',
+  ]),
+  z.string().max(100).nullable(),
+);
+const EnvelopeSchema = z.object({
+  version: z.literal(2),
+  legacyOwner: z.string().nullable(),
+  characters: z.record(z.string(), AssignmentsSchema),
+});
+interface PreferenceStorage {
+  getItem(key: string): string | null;
+  setItem(key: string, value: string): void;
+}
+function readEnvelope(storage: PreferenceStorage): z.infer<typeof EnvelopeSchema> {
   try {
-    const raw: unknown = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}');
-    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
-    const saved = raw as Record<string, unknown>;
-    const assignments: Assignments = {};
-    for (const position of [...DESKTOP_POSITIONS, ...TOUCH_POSITIONS]) {
-      const value = saved[position];
-      if (typeof value === 'string' || value === null) assignments[position] = value;
-    }
-    return assignments;
+    return EnvelopeSchema.parse(JSON.parse(storage.getItem(STORAGE_KEY) ?? 'null'));
   } catch {
-    return {};
+    return { version: 2, legacyOwner: null, characters: {} };
   }
+}
+
+/** Claim the old global preference once; all subsequent writes are character scoped. */
+export function readCharacterLoadout(storage: PreferenceStorage, identity: string): Assignments {
+  const envelope = readEnvelope(storage);
+  if (Object.hasOwn(envelope.characters, identity)) return envelope.characters[identity] ?? {};
+  let assignments: Assignments = {};
+  if (envelope.legacyOwner === null) {
+    try {
+      assignments = AssignmentsSchema.parse(JSON.parse(storage.getItem(LEGACY_KEY) ?? '{}'));
+      for (const position of [...DESKTOP_POSITIONS, ...TOUCH_POSITIONS]) {
+        if (assignments[position] === 'skill_thunder_step') assignments[position] = 'skill_roll';
+      }
+    } catch {
+      assignments = {};
+    }
+    envelope.legacyOwner = identity;
+  }
+  envelope.characters[identity] = assignments;
+  try {
+    storage.setItem(STORAGE_KEY, JSON.stringify(envelope));
+  } catch {
+    /* Session preference still works. */
+  }
+  return assignments;
+}
+
+export function writeCharacterLoadout(
+  storage: PreferenceStorage,
+  identity: string,
+  assignments: Assignments,
+): void {
+  const envelope = readEnvelope(storage);
+  envelope.legacyOwner ??= identity;
+  envelope.characters[identity] = AssignmentsSchema.parse(assignments);
+  storage.setItem(STORAGE_KEY, JSON.stringify(envelope));
 }
 
 export function allowedInPosition(slot: SkillSlot, position: SkillPosition): boolean {
@@ -90,12 +141,24 @@ export function resolveLoadout(
 }
 
 interface SkillLoadoutStore {
+  identity: string | null;
+  activate(identity: string): void;
   assignments: Assignments;
   assign(position: SkillPosition, skillId: string | null): void;
 }
 
 export const useSkillLoadout = create<SkillLoadoutStore>((set) => ({
-  assignments: readAssignments(),
+  identity: null,
+  assignments: {},
+  activate: (identity) => {
+    let assignments: Assignments = {};
+    try {
+      assignments = readCharacterLoadout(localStorage, identity);
+    } catch {
+      /* No browser storage. */
+    }
+    set({ identity, assignments });
+  },
   assign: (position, skillId) =>
     set((state) => {
       const next = { ...state.assignments, [position]: skillId };
@@ -105,7 +168,7 @@ export const useSkillLoadout = create<SkillLoadoutStore>((set) => ({
           if (other !== position && next[other] === skillId) next[other] = null;
       }
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        if (state.identity) writeCharacterLoadout(localStorage, state.identity, next);
       } catch {
         // Storage may be unavailable; keep the assignment for this session.
       }

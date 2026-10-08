@@ -146,7 +146,7 @@ function TargetPanel({ unit }: { unit: UnitFrame }) {
         {portrait ? <img src={portrait} alt="" draggable={false} /> : <HudGlyph name="target" />}
         {tier && <span className={`tier tier-${unit.tier}`}>{tier}</span>}
       </div>
-      <div className="player-bars">
+      <div className="player-bars target-bars">
         <span className="target-name">{unit.name}</span>
         {unit.maxHp > 0 && <Bar value={unit.hp} max={unit.maxHp} tone="enemy" />}
         {unit.cast && (

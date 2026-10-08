@@ -1,12 +1,32 @@
-import type { ComboVariant, Element, Expression, MonsterTier, RangedDef } from '@rpg/game-data';
+import type {
+  ComboVariant,
+  DamageSpec,
+  Element,
+  Expression,
+  MonsterTier,
+  RangedDef,
+} from '@rpg/game-data';
 import type {
   EntityAction,
   EntityId,
   EntityKind,
+  Intent,
   InventoryItem,
   ItemInstanceId,
 } from '@rpg/game-protocol';
 import type { Vec2 } from './math';
+
+export interface ActionState {
+  id: number;
+  kind: 'skill' | 'melee' | 'mobility' | 'monster' | 'ranged';
+  startTick: number;
+  activeStartTick: number;
+  activeEndTick: number;
+  endTick: number;
+  yaw: number;
+  cancelWindup: boolean;
+  recoveryCancelTick: number | null;
+}
 
 export type Faction = 'players' | 'monsters' | 'neutral';
 
@@ -42,7 +62,20 @@ export interface Stats {
   mpRegen: number;
 }
 
+/** Offensive properties frozen when an action starts; defense is read on contact. */
+export interface DamageSource {
+  actionId?: number | null;
+  stats: Pick<Stats, 'attack' | 'critChance' | 'critMultiplier'>;
+  realm: number;
+  backlash: number;
+  element: Element | null;
+  expression: Expression;
+}
+
 export interface Cast {
+  yaw: number;
+  travelLeft: number;
+  source: DamageSource;
   skillId: string;
   targetId: EntityId | null;
   /** Impact point locked at cast start (telegraphs stay where they were shown). */
@@ -53,6 +86,7 @@ export interface Cast {
 
 /** One basic-attack swing in flight (systems/melee.ts). Times are ticks. */
 export interface Swing {
+  source: DamageSource;
   comboId: string;
   step: number;
   variant: ComboVariant;
@@ -94,6 +128,8 @@ export interface WeaponState {
 
 /** Trigger and firing bookkeeping for the equipped ranged weapon. Times are ticks. */
 export interface TriggerState {
+  /** Offensive state and facing committed while raising the weapon. */
+  windup?: { source: DamageSource; yaw: number; startTick: number } | null;
   /** Weapon instance this state follows; a change means the weapon was swapped. */
   instanceId: ItemInstanceId | null;
   held: boolean;
@@ -137,12 +173,14 @@ export function newTriggerState(): TriggerState {
     lastShotTick: -1_000_000,
     assistId: null,
     reload: null,
+    windup: null,
     move: 1,
   };
 }
 
 /** A bullet in flight (not an entity: never in snapshots, presented from SHOT events). */
 export interface Projectile {
+  source: DamageSource;
   shotId: number;
   pellet: number;
   ownerId: EntityId;
@@ -159,6 +197,8 @@ export interface Projectile {
 }
 
 export interface SkillProjectile {
+  source: DamageSource;
+  damages: DamageSpec[];
   id: number;
   ownerId: EntityId;
   skillId: string;
@@ -166,8 +206,6 @@ export interface SkillProjectile {
   origin: Vec2;
   dir: Vec2;
   left: number;
-  element: Element | null;
-  expression: Expression;
 }
 
 /** Something the entity walks to and then does (pickup, portal, queued skill). */
@@ -176,6 +214,7 @@ export type PendingAction =
   | { type: 'interact'; entityId: EntityId }
   | {
       type: 'cast';
+      expiresTick: number;
       skillId: string;
       targetId: EntityId | null;
       point: Vec2 | null;
@@ -189,6 +228,8 @@ export interface QuestState {
 }
 
 export interface PlayerData {
+  learnedSkills: string[];
+  elementRevision: number;
   characterId: string;
   mobilityReady: Map<string, number>;
   farm: { enabled: boolean; anchor: Vec2; pausedUntil: number };
@@ -230,6 +271,11 @@ export interface PortalData {
 }
 
 export interface Entity {
+  actionBuffer?: {
+    expiresTick: number;
+    intent: Extract<Intent, { type: 'BASIC_ATTACK' | 'CAST_SKILL' | 'MOBILITY' | 'TRIGGER' }>;
+  } | null;
+  actionState?: ActionState | null;
   id: EntityId;
   kind: EntityKind;
   defId: string;
@@ -237,6 +283,7 @@ export interface Entity {
   element?: Element | null;
   expression?: Expression;
   mobility?: {
+    actionId: number;
     action: 'roll' | 'blink' | 'jump';
     startTick: number;
     endTick: number;
@@ -245,7 +292,12 @@ export interface Entity {
     dodgeFrom: number;
     dodgeTo: number;
   } | null;
-  monsterSwing?: { impactTick: number; endTick: number; yaw: number } | null;
+  monsterSwing?: {
+    source: DamageSource;
+    impactTick: number;
+    endTick: number;
+    yaw: number;
+  } | null;
   /** Loot and portals: no movement, combat or AI. */
   inert: boolean;
   /** Cảnh giới rank (index in the realm ladder). There is no character level. */
@@ -324,6 +376,9 @@ export interface CircleObstacle {
 
 /** Persisted character state (DB row in M4, carried across map transfers). */
 export interface PlayerSave {
+  saveVersion?: number;
+  elementRevision?: number;
+  learnedSkills?: string[];
   /** Remaining cooldown seconds, frozen offline; absolute sim ticks are never persisted. */
   cooldowns?: Record<string, number>;
   characterId: string;

@@ -27,6 +27,8 @@ export interface PartyService {
 
 /** What systems may read and mutate during a tick. Implemented by World. */
 export interface SimContext {
+  readonly combatContent?: import('@rpg/game-protocol').CombatContent;
+  readonly combatRuleset?: import('@rpg/game-protocol').CombatRuleset;
   readonly tick: number;
   readonly rng: Rng;
   readonly bounds: Bounds;
@@ -47,6 +49,8 @@ export interface SimContext {
   readonly parties: PartyService;
   /** Bullets in flight (systems/ranged.ts). */
   readonly projectiles: Projectile[];
+  /** Committed shots awaiting presentation lengths from the collision phase. */
+  readonly rangedShots: Extract<SimEvent, { type: 'SHOT' }>[];
   readonly skillProjectiles: SkillProjectile[];
   /** Unique per world: ties SHOT events to the DAMAGE of their bullets. */
   nextShotId(): number;

@@ -5,6 +5,7 @@ icon: "🌩"
 targeting: self
 cooldown: 9
 mpCost: 18
+timeline: { windup: 0.1, active: 0.3, recovery: 0.2, cancelWindup: true, cancelRecoveryAfter: 0.1 }
 barRole: utility
 effects:
   - { type: dash, distance: 5 }

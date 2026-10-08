@@ -250,7 +250,13 @@ export async function buildApi(deps: ApiDeps) {
       }),
       req.body,
     );
-    if (!compatibleExpression(body.element, body.expression))
+    if (
+      !compatibleExpression(
+        body.element,
+        body.expression,
+        deps.content.combat.get('combat_rules')?.expressions,
+      )
+    )
       throw new HttpError(400, 'expression does not match element');
     const existing = await deps.repo.listCharacters(c.sub);
     if (existing.length >= MAX_CHARACTERS)
@@ -287,7 +293,13 @@ export async function buildApi(deps: ApiDeps) {
       z.strictObject({ element: ElementSchema, expression: ExpressionSchema.default('base') }),
       req.body,
     );
-    if (!compatibleExpression(body.element, body.expression))
+    if (
+      !compatibleExpression(
+        body.element,
+        body.expression,
+        deps.content.combat.get('combat_rules')?.expressions,
+      )
+    )
       throw new HttpError(400, 'expression does not match element');
     if (
       !(await deps.repo.chooseLegacyElement(id, claimsOf(req).sub, body.element, body.expression))

@@ -1,9 +1,11 @@
+import type { DamageSpec } from '@rpg/game-data';
 import { inAttackRange, isAlive, type SimContext } from '../context';
-import type { Entity, Stats } from '../entity';
+import type { DamageSource, Entity, Stats } from '../entity';
 import { clearLine, coneTouches } from '../geometry';
 import { sub, yawOf } from '../math';
 import type { Rng } from '../rng';
 import { TICK_RATE } from '../time';
+import { beginAction, currentAction, resetTransientActions } from './action-timeline';
 import { grantGold } from './inventory';
 import { dropLoot } from './loot';
 import { avoidsDamage } from './mobility';
@@ -22,6 +24,57 @@ export interface DamageRoll {
   crit: boolean;
 }
 
+export interface DamageModifiers {
+  distanceFactor?: number;
+  positionFactor?: number;
+  elementFactor?: number;
+  realmFactor?: number;
+  backlashFactor?: number;
+}
+
+/** All factors apply to the unrounded physical/elemental split, including flat damage. */
+export function resolveDamage(
+  rng: Rng,
+  attacker: DamageSource['stats'],
+  defender: Pick<Stats, 'defense'>,
+  spec: Partial<DamageSpec> = {},
+  factors: DamageModifiers = {},
+): DamageRoll {
+  const mitigation = 100 / (100 + defender.defense * DEFENSE_WEIGHT);
+  const variance = 1 + rng.range(-VARIANCE, VARIANCE);
+  // Consume the same seeded draws even when this damage cannot crit.
+  const critRoll = rng.chance(attacker.critChance + (spec.critBonus ?? 0));
+  const crit = (spec.canCrit ?? true) && critRoll;
+  const share = spec.elementalShare ?? 0;
+  const base =
+    (attacker.attack * (spec.multiplier ?? 1) + (spec.flat ?? 0)) *
+    (factors.distanceFactor ?? 1) *
+    (factors.positionFactor ?? 1);
+  const raw =
+    base *
+    ((1 - share) * mitigation + share * (factors.elementFactor ?? 1) * mitigation) *
+    variance *
+    (crit ? attacker.critMultiplier : 1) *
+    (factors.realmFactor ?? 1) *
+    (factors.backlashFactor ?? 1);
+  return { amount: Math.max(1, Math.round(raw)), crit };
+}
+
+export function captureDamageSource(ctx: SimContext, e: Entity): DamageSource {
+  return {
+    actionId: e.actionState?.id ?? null,
+    stats: {
+      attack: e.stats.attack,
+      critChance: e.stats.critChance,
+      critMultiplier: e.stats.critMultiplier,
+    },
+    realm: e.realm,
+    backlash: backlashFactor(ctx, e),
+    element: e.element ?? null,
+    expression: e.expression ?? 'base',
+  };
+}
+
 /** Pure damage formula; exported for tests and future server-side tooling. */
 export function rollDamage(
   rng: Rng,
@@ -31,15 +84,7 @@ export function rollDamage(
   flat = 0,
   critBonus = 0,
 ): DamageRoll {
-  const mitigation = 100 / (100 + defender.defense * DEFENSE_WEIGHT);
-  const variance = 1 + rng.range(-VARIANCE, VARIANCE);
-  const crit = rng.chance(attacker.critChance + critBonus);
-  const raw =
-    (attacker.attack * multiplier + flat) *
-    mitigation *
-    variance *
-    (crit ? attacker.critMultiplier : 1);
-  return { amount: Math.max(1, Math.round(raw)), crit };
+  return resolveDamage(rng, attacker, defender, { multiplier, flat, critBonus });
 }
 
 /**
@@ -50,24 +95,28 @@ export function rollHit(
   ctx: SimContext,
   attacker: Entity,
   defender: Entity,
-  multiplier = 1,
-  flat = 0,
-  critBonus = 0,
-  elementalShare?: number,
+  spec: Partial<DamageSpec> = {},
+  factors: Pick<DamageModifiers, 'distanceFactor' | 'positionFactor'> = {},
+  source: DamageSource = captureDamageSource(ctx, attacker),
 ): DamageRoll {
-  const roll = rollDamage(ctx.rng, attacker.stats, defender.stats, multiplier, flat, critBonus);
   const rules = ctx.content.combat.get('combat_rules');
   let elemental = 1;
-  if (rules && attacker.element && defender.element) {
-    if (rules.counters[attacker.element] === defender.element) elemental = rules.advantage;
-    else if (rules.counters[defender.element] === attacker.element) elemental = rules.disadvantage;
+  if (ctx.combatRuleset !== 'classic' && rules && source.element && defender.element) {
+    if (rules.counters[source.element] === defender.element) elemental = rules.advantage;
+    else if (rules.counters[defender.element] === source.element) elemental = rules.disadvantage;
   }
-  const share = elementalShare ?? rules?.basicShare ?? 0;
-  const f =
-    (1 + share * (elemental - 1)) *
-    realmGapFactor(ctx, attacker, defender) *
-    backlashFactor(ctx, attacker);
-  return f === 1 ? roll : { amount: Math.max(1, Math.round(roll.amount * f)), crit: roll.crit };
+  return resolveDamage(
+    ctx.rng,
+    source.stats,
+    defender.stats,
+    { ...spec, elementalShare: spec.elementalShare ?? rules?.basicShare ?? 0 },
+    {
+      ...factors,
+      elementFactor: elemental,
+      realmFactor: realmGapFactor(ctx, source, defender),
+      backlashFactor: source.backlash,
+    },
+  );
 }
 
 /**
@@ -109,18 +158,26 @@ export function combatSystem(ctx: SimContext): void {
             !clearLine(ctx, e.pos, t.pos)
           )
             continue;
-          const { amount, crit } = rollHit(ctx, e, t);
+          const { amount, crit } = rollHit(ctx, e, t, {}, {}, swing.source);
           applyDamage(ctx, e, t, amount, crit, null, {
             hit: 'solid',
             heavy: false,
             groundLow: def.combat.groundLow,
+            source: swing.source,
           });
         }
         e.monsterSwing = null;
       }
-      continue;
     }
-    if (e.inert || !e.life.alive || e.combat.targetId === null || e.cast) continue;
+  }
+}
+
+/** Chooses approach/windup before movement; impacts remain in combatSystem. */
+export function combatPreparationSystem(ctx: SimContext): void {
+  for (const e of ctx.entities.values()) {
+    if (e.mobility || e.monsterSwing) continue;
+    if (e.inert || !e.life.alive || e.combat.targetId === null || e.cast || currentAction(ctx, e))
+      continue;
     if (e.pending && e.pending.type !== 'cast') continue;
     const target = ctx.entities.get(e.combat.targetId);
     if (!isAlive(target)) {
@@ -151,13 +208,21 @@ export function combatSystem(ctx: SimContext): void {
     const def = ctx.content.monsters.get(e.defId);
     if (!def) continue;
     e.combat.nextAttackTick = ctx.tick + e.combat.attackIntervalTicks;
+    beginAction(ctx, e, 'monster', {
+      windup: def.combat.windup,
+      active: 0,
+      recovery: Math.max(0, e.combat.attackIntervalTicks / TICK_RATE - def.combat.windup),
+      cancelWindup: false,
+    });
     e.monsterSwing = {
+      source: captureDamageSource(ctx, e),
       impactTick: ctx.tick + Math.round(def.combat.windup * TICK_RATE),
       endTick: e.combat.nextAttackTick,
       yaw: e.yaw,
     };
     ctx.emit({
       type: 'ATTACK',
+      actionId: e.actionState?.id ?? null,
       windup: {
         point: { ...e.pos },
         yaw: e.yaw,
@@ -186,6 +251,7 @@ export function applyDamage(
     /** Ranged hits: the SHOT and bullet that landed. */
     shot?: { id: number; pellet: number };
     groundLow?: boolean;
+    source?: DamageSource;
   },
 ): void {
   if (!target.life.alive || avoidsDamage(ctx, target, detail?.groundLow)) return;
@@ -197,8 +263,9 @@ export function applyDamage(
   target.combat.lastCombatTick = ctx.tick;
   ctx.emit({
     type: 'DAMAGE',
-    element: source.element ?? null,
-    expression: source.expression ?? 'base',
+    actionId: detail?.source ? (detail.source.actionId ?? null) : (source.actionState?.id ?? null),
+    element: detail?.source ? detail.source.element : (source.element ?? null),
+    expression: detail?.source?.expression ?? source.expression ?? 'base',
     sourceId: source.id,
     targetId: target.id,
     amount: dealt,
@@ -236,18 +303,9 @@ function updatePhase(ctx: SimContext, e: Entity): void {
 }
 
 function kill(ctx: SimContext, target: Entity, killer: Entity | null): void {
+  resetTransientActions(target);
   target.life.alive = false;
   target.life.respawnAtTick = ctx.tick + target.life.respawnTicks;
-  target.movement.goal = null;
-  target.movement.path = null;
-  target.movement.dir = null;
-  target.combat.targetId = null;
-  target.cast = null;
-  target.mobility = null;
-  target.monsterSwing = null;
-  if (target.player) target.player.farm.enabled = false;
-  target.swing = null;
-  target.pending = null;
   ctx.emit({ type: 'DEATH', id: target.id, killerId: killer?.id ?? null });
   if (target.kind === 'monster') rewardKill(ctx, target);
 }

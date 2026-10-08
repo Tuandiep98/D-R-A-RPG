@@ -107,6 +107,7 @@ function tryUseSkill(ctx: SimContext, e: Entity, target: Entity): void {
 }
 
 function startReturn(e: Entity): void {
+  e.actionState = null;
   e.monsterSwing = null;
   if (!e.ai) return;
   e.ai.state = 'return';

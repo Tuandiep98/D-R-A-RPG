@@ -4,6 +4,9 @@ import {
   SkillCooldownsSchema as CooldownsSchema,
   ElementSchema,
   ExpressionSchema,
+  LearnedSkillsSchema,
+  SAVE_VERSION,
+  SaveVersionSchema,
 } from '@rpg/game-protocol';
 import { and, desc, eq, ilike, inArray, isNull, or, sql } from 'drizzle-orm';
 import { v7 as uuidv7 } from 'uuid';
@@ -162,6 +165,7 @@ export class GameRepository {
         ...input,
         element: input.element ?? 'moc',
         expression: input.expression ?? 'base',
+        elementRevision: 1,
       });
       await tx.insert(wallets).values({ characterId: id, gold: 0 });
     });
@@ -175,14 +179,34 @@ export class GameRepository {
     element: Element,
     expression: 'base' | 'thunder' | 'ice',
   ): Promise<boolean> {
-    const result = await this.db
-      .update(characters)
-      .set({ element, expression })
-      .where(
-        and(eq(characters.id, id), eq(characters.accountId, accountId), isNull(characters.element)),
-      )
-      .returning({ id: characters.id });
-    return result.length === 1;
+    return this.db.transaction(async (tx) => {
+      const result = await tx
+        .update(characters)
+        .set({ element, expression, elementRevision: sql`${characters.elementRevision} + 1` })
+        .where(
+          and(
+            eq(characters.id, id),
+            eq(characters.accountId, accountId),
+            isNull(characters.element),
+          ),
+        )
+        .returning({ revision: characters.elementRevision });
+      const chosen = result[0];
+      if (!chosen) return false;
+      await tx.insert(auditLog).values({
+        id: newId(),
+        actorAccountId: accountId,
+        action: 'character.element.choose',
+        target: id,
+        payload: {
+          reason: 'legacy_choice',
+          element,
+          expression,
+          elementRevision: chosen.revision,
+        },
+      });
+      return true;
+    });
   }
 
   async listCharacters(accountId: string): Promise<CharacterSummary[]> {
@@ -245,6 +269,9 @@ export class GameRepository {
       z: c.z,
       version: c.version,
       save: {
+        saveVersion: SaveVersionSchema.parse(c.saveVersion),
+        elementRevision: c.elementRevision,
+        learnedSkills: LearnedSkillsSchema.parse(c.learnedSkills),
         ...(Object.keys(c.cooldowns).length
           ? { cooldowns: CooldownsSchema.parse(c.cooldowns) }
           : {}),
@@ -288,6 +315,7 @@ export class GameRepository {
     place: { mapId: string; x: number | null; z: number | null },
     ledger: readonly LedgerEntry[] = [],
   ): Promise<SaveResult> {
+    SaveVersionSchema.parse(save.saveVersion ?? 1);
     return this.db.transaction(async (tx) => {
       const prevWallet = await tx
         .select()
@@ -319,6 +347,10 @@ export class GameRepository {
         .update(characters)
         .set({
           realm: save.realm,
+          saveVersion: SAVE_VERSION,
+          ...(save.learnedSkills
+            ? { learnedSkills: LearnedSkillsSchema.parse(save.learnedSkills) }
+            : {}),
           realmRank: save.realmRank ?? 0,
           nodes: save.nodes,
           cooldowns: CooldownsSchema.parse(save.cooldowns ?? {}),

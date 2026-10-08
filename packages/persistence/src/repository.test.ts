@@ -101,7 +101,14 @@ describe('GameRepository', () => {
 
     const loaded = await repo.loadCharacter(id);
     expect(loaded?.mapId).toBe('map_forest_mechanism_01');
-    expect(loaded?.save).toEqual({ ...save, element: 'moc', expression: 'base' });
+    expect(loaded?.save).toEqual({
+      ...save,
+      element: 'moc',
+      expression: 'base',
+      saveVersion: 2,
+      elementRevision: 1,
+      learnedSkills: [],
+    });
     expect(loaded?.realm).toBe('truc_co');
     expect(await repo.ledgerFor(id)).toHaveLength(1);
   });

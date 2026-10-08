@@ -19,6 +19,9 @@ combat:
 combos: { unarmed: combo_unarmed, armed: combo_blade }
 respawnSeconds: 5
 skills:
+  - skill_thunder_arc
+  - skill_thunder_pierce
+prototypeSkills:
   - skill_thunder_step
   - skill_thunder_leap
   - skill_thunder_arc

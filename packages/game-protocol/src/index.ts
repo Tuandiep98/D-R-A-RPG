@@ -4,7 +4,14 @@ import { z } from 'zod';
  * Wire contract between client and simulation host (local or server).
  * Bump PROTOCOL_VERSION on any breaking change to these schemas.
  */
-export const PROTOCOL_VERSION = 9;
+export const PROTOCOL_VERSION = 10;
+export const SAVE_VERSION = 2;
+export const SaveVersionSchema = z.number().int().min(1).max(SAVE_VERSION);
+export const LearnedSkillsSchema = z.array(z.string().regex(/^[a-z][a-z0-9_]*$/)).max(256);
+export const CombatContentSchema = z.enum(['starter', 'prototype']);
+export type CombatContent = z.infer<typeof CombatContentSchema>;
+export const CombatRulesetSchema = z.enum(['classic', 'elements_v1']);
+export type CombatRuleset = z.infer<typeof CombatRulesetSchema>;
 export const ElementSchema = z.enum(['kim', 'moc', 'thuy', 'hoa', 'tho']);
 export type Element = z.infer<typeof ElementSchema>;
 export const ExpressionSchema = z.enum(['base', 'thunder', 'ice']);
@@ -169,6 +176,18 @@ export const EntityActionSchema = z.enum(['idle', 'move', 'combat', 'cast', 'dea
 export type EntityAction = z.infer<typeof EntityActionSchema>;
 
 export const EntitySnapshotSchema = z.object({
+  actionState: z
+    .object({
+      id: z.number().int().positive(),
+      kind: z.enum(['skill', 'melee', 'mobility', 'monster', 'ranged']),
+      startTick: z.number().int(),
+      activeStartTick: z.number().int(),
+      activeEndTick: z.number().int(),
+      endTick: z.number().int(),
+      yaw: z.number().finite(),
+    })
+    .nullable()
+    .optional(),
   id: EntityIdSchema,
   element: ElementSchema.nullable().optional(),
   expression: ExpressionSchema.optional(),
@@ -247,199 +266,207 @@ export const NoticeCodeSchema = z.enum([
 ]);
 export type NoticeCode = z.infer<typeof NoticeCodeSchema>;
 
-export const SimEventSchema = z.discriminatedUnion('type', [
-  z.object({ type: z.literal('SPAWN'), id: EntityIdSchema }),
-  z.object({ type: z.literal('DESPAWN'), id: EntityIdSchema }),
-  z.object({
-    type: z.literal('ATTACK'),
-    element: ElementSchema.nullable().optional(),
-    expression: ExpressionSchema.optional(),
-    sourceId: EntityIdSchema,
-    windup: z
-      .object({
-        point: Vec2Schema,
-        yaw: z.number().finite(),
-        range: z.number().nonnegative(),
-        arc: z.number().min(0).max(360),
-        endTick: z.number().int().nonnegative(),
-      })
-      .optional(),
-    /** Null for a combo swing at nothing in particular. */
-    targetId: EntityIdSchema.nullable(),
-    /** Combo swings: which combo/step/variant (presentation looks up clip + trail). */
-    combo: z
-      .object({
-        comboId: z.string(),
-        step: z.number().int().nonnegative(),
-        variantId: z.string(),
-        yaw: z.number().finite(),
-      })
-      .optional(),
-  }),
-  z.object({
-    type: z.literal('DAMAGE'),
-    element: ElementSchema.nullable().optional(),
-    expression: ExpressionSchema.optional(),
-    sourceId: EntityIdSchema,
-    targetId: EntityIdSchema,
-    amount: z.number().int().nonnegative(),
-    crit: z.boolean(),
-    skillId: z.string().nullable(),
-    /** Combo hits, timed on the impact tick: solid, glancing (sượt) or weak point (yếu hại). */
-    hit: z.enum(['solid', 'graze', 'weak']).optional(),
-    heavy: z.boolean().optional(),
-    /** Ranged hits: which SHOT and bullet (the client stops that tracer at the body). */
-    shot: z.object({ id: z.number().int(), pellet: z.number().int().nonnegative() }).optional(),
-  }),
-  /**
-   * A ranged shot (D-033). One entry per bullet: heading and how far it can
-   * fly before a wall or max range stops it (hitscan: where it stopped).
-   * Bullets that hit a body end early through DAMAGE.shot.
-   */
-  z.object({
-    type: z.literal('SHOT'),
-    element: ElementSchema.nullable().optional(),
-    expression: ExpressionSchema.optional(),
-    sourceId: EntityIdSchema,
-    rangedId: z.string(),
-    shotId: z.number().int(),
-    origin: Vec2Schema,
-    yaws: z.array(z.number().finite()),
-    lens: z.array(z.number().nonnegative()),
-  }),
-  z.object({
-    type: z.literal('SKILL_PROJECTILE'),
-    sourceId: EntityIdSchema,
-    skillId: z.string(),
-    projectileId: z.number().int(),
-    origin: Vec2Schema,
-    destination: Vec2Schema,
-    speed: z.number().positive(),
-    element: ElementSchema.nullable(),
-    expression: ExpressionSchema,
-  }),
-  /** Reload started (ends at endTick) or stopped early (endTick <= startTick). */
-  z.object({
-    type: z.literal('RELOAD'),
-    sourceId: EntityIdSchema,
-    startTick: z.number().int(),
-    endTick: z.number().int(),
-  }),
-  /** The weapon overheated (quá tải): locked until endTick. */
-  z.object({
-    type: z.literal('OVERHEAT'),
-    sourceId: EntityIdSchema,
-    endTick: z.number().int(),
-  }),
-  /** A combo swing whose target stood just out of reach (shown as "Trượt"). */
-  z.object({
-    type: z.literal('MISS'),
-    sourceId: EntityIdSchema,
-    targetId: EntityIdSchema,
-  }),
-  z.object({
-    type: z.literal('HEAL'),
-    targetId: EntityIdSchema,
-    amount: z.number().int().nonnegative(),
-  }),
-  z.object({
-    type: z.literal('DEATH'),
-    id: EntityIdSchema,
-    killerId: EntityIdSchema.nullable(),
-  }),
-  z.object({ type: z.literal('RESPAWN'), id: EntityIdSchema }),
-  z.object({
-    type: z.literal('CAST_START'),
-    element: ElementSchema.nullable().optional(),
-    expression: ExpressionSchema.optional(),
-    sourceId: EntityIdSchema,
-    skillId: z.string(),
-    targetId: EntityIdSchema.nullable(),
-    point: Vec2Schema.nullable(),
-    /** > 0 when the impact area should be telegraphed. */
-    radius: z.number().nonnegative(),
-    telegraph: z.boolean(),
-    endTick: z.number().int(),
-  }),
-  z.object({
-    type: z.literal('SKILL_IMPACT'),
-    projectileId: z.number().int().optional(),
-    element: ElementSchema.nullable().optional(),
-    expression: ExpressionSchema.optional(),
-    sourceId: EntityIdSchema,
-    skillId: z.string(),
-    point: Vec2Schema,
-    radius: z.number().nonnegative(),
-    targetId: EntityIdSchema.nullable(),
-  }),
-  z.object({
-    type: z.literal('PHASE'),
-    id: EntityIdSchema,
-    phase: z.number().int(),
-    name: z.string(),
-  }),
-  /** Public: everyone nearby sees a breakthrough (success or backlash). */
-  z.object({
-    type: z.literal('BREAKTHROUGH'),
-    id: EntityIdSchema,
-    realm: z.number().int().nonnegative(),
-    success: z.boolean(),
-  }),
-  z.object({
-    type: z.literal('NODE_OPENED'),
-    ownerId: EntityIdSchema,
-    nodeId: z.string(),
-  }),
-  z.object({
-    type: z.literal('ITEM_GAINED'),
-    ownerId: EntityIdSchema,
-    itemId: z.string(),
-    count: z.number().int(),
-  }),
-  z.object({
-    type: z.literal('GOLD'),
-    ownerId: EntityIdSchema,
-    amount: z.number().int(),
-    reason: z.string(),
-  }),
-  z.object({
-    type: z.literal('NOTICE'),
-    ownerId: EntityIdSchema,
-    code: NoticeCodeSchema,
-  }),
-  z.object({
-    type: z.literal('TRANSFER'),
-    id: EntityIdSchema,
-    mapId: z.string(),
-    arrival: z.string().nullable(),
-  }),
-  /** Private: the client opens the NPC dialog (quests, shop, crafting, upgrades). */
-  z.object({
-    type: z.literal('NPC_OPEN'),
-    ownerId: EntityIdSchema,
-    npcEntityId: EntityIdSchema,
-    npcId: z.string(),
-  }),
-  z.object({
-    type: z.literal('QUEST'),
-    ownerId: EntityIdSchema,
-    questId: z.string(),
-    status: z.enum(['active', 'ready', 'done']),
-  }),
-  z.object({
-    type: z.literal('PARTY_INVITE'),
-    ownerId: EntityIdSchema,
-    fromId: EntityIdSchema,
-    fromName: z.string(),
-  }),
-  z.object({
-    type: z.literal('UPGRADE_RESULT'),
-    ownerId: EntityIdSchema,
-    instanceId: z.string(),
-    success: z.boolean(),
-    level: z.number().int(),
-  }),
-]);
+export const SimEventSchema = z
+  .discriminatedUnion('type', [
+    z.object({ type: z.literal('SPAWN'), id: EntityIdSchema }),
+    z.object({ type: z.literal('DESPAWN'), id: EntityIdSchema }),
+    z.object({
+      type: z.literal('ATTACK'),
+      actionId: z.number().int().positive().nullable().optional(),
+      element: ElementSchema.nullable().optional(),
+      expression: ExpressionSchema.optional(),
+      sourceId: EntityIdSchema,
+      windup: z
+        .object({
+          point: Vec2Schema,
+          yaw: z.number().finite(),
+          range: z.number().nonnegative(),
+          arc: z.number().min(0).max(360),
+          endTick: z.number().int().nonnegative(),
+        })
+        .optional(),
+      /** Null for a combo swing at nothing in particular. */
+      targetId: EntityIdSchema.nullable(),
+      /** Combo swings: which combo/step/variant (presentation looks up clip + trail). */
+      combo: z
+        .object({
+          comboId: z.string(),
+          step: z.number().int().nonnegative(),
+          variantId: z.string(),
+          yaw: z.number().finite(),
+        })
+        .optional(),
+    }),
+    z.object({
+      type: z.literal('DAMAGE'),
+      actionId: z.number().int().positive().nullable().optional(),
+      element: ElementSchema.nullable().optional(),
+      expression: ExpressionSchema.optional(),
+      sourceId: EntityIdSchema,
+      targetId: EntityIdSchema,
+      amount: z.number().int().nonnegative(),
+      crit: z.boolean(),
+      skillId: z.string().nullable(),
+      /** Combo hits, timed on the impact tick: solid, glancing (sượt) or weak point (yếu hại). */
+      hit: z.enum(['solid', 'graze', 'weak']).optional(),
+      heavy: z.boolean().optional(),
+      /** Ranged hits: which SHOT and bullet (the client stops that tracer at the body). */
+      shot: z.object({ id: z.number().int(), pellet: z.number().int().nonnegative() }).optional(),
+    }),
+    /**
+     * A ranged shot (D-033). One entry per bullet: heading and how far it can
+     * fly before a wall or max range stops it (hitscan: where it stopped).
+     * Bullets that hit a body end early through DAMAGE.shot.
+     */
+    z.object({
+      type: z.literal('SHOT'),
+      actionId: z.number().int().positive().nullable().optional(),
+      element: ElementSchema.nullable().optional(),
+      expression: ExpressionSchema.optional(),
+      sourceId: EntityIdSchema,
+      rangedId: z.string(),
+      shotId: z.number().int(),
+      origin: Vec2Schema,
+      yaws: z.array(z.number().finite()),
+      lens: z.array(z.number().nonnegative()),
+    }),
+    z.object({
+      type: z.literal('SKILL_PROJECTILE'),
+      actionId: z.number().int().positive().nullable().optional(),
+      sourceId: EntityIdSchema,
+      skillId: z.string(),
+      projectileId: z.number().int(),
+      origin: Vec2Schema,
+      destination: Vec2Schema,
+      speed: z.number().positive(),
+      element: ElementSchema.nullable(),
+      expression: ExpressionSchema,
+    }),
+    /** Reload started (ends at endTick) or stopped early (endTick <= startTick). */
+    z.object({
+      type: z.literal('RELOAD'),
+      sourceId: EntityIdSchema,
+      startTick: z.number().int(),
+      endTick: z.number().int(),
+    }),
+    /** The weapon overheated (quá tải): locked until endTick. */
+    z.object({
+      type: z.literal('OVERHEAT'),
+      sourceId: EntityIdSchema,
+      endTick: z.number().int(),
+    }),
+    /** A combo swing whose target stood just out of reach (shown as "Trượt"). */
+    z.object({
+      type: z.literal('MISS'),
+      sourceId: EntityIdSchema,
+      targetId: EntityIdSchema,
+    }),
+    z.object({
+      type: z.literal('HEAL'),
+      targetId: EntityIdSchema,
+      amount: z.number().int().nonnegative(),
+    }),
+    z.object({
+      type: z.literal('DEATH'),
+      id: EntityIdSchema,
+      killerId: EntityIdSchema.nullable(),
+    }),
+    z.object({ type: z.literal('RESPAWN'), id: EntityIdSchema }),
+    z.object({
+      type: z.literal('CAST_START'),
+      actionId: z.number().int().positive().nullable().optional(),
+      element: ElementSchema.nullable().optional(),
+      expression: ExpressionSchema.optional(),
+      sourceId: EntityIdSchema,
+      skillId: z.string(),
+      targetId: EntityIdSchema.nullable(),
+      point: Vec2Schema.nullable(),
+      /** > 0 when the impact area should be telegraphed. */
+      radius: z.number().nonnegative(),
+      telegraph: z.boolean(),
+      endTick: z.number().int(),
+    }),
+    z.object({
+      type: z.literal('SKILL_IMPACT'),
+      actionId: z.number().int().positive().nullable().optional(),
+      projectileId: z.number().int().optional(),
+      element: ElementSchema.nullable().optional(),
+      expression: ExpressionSchema.optional(),
+      sourceId: EntityIdSchema,
+      skillId: z.string(),
+      point: Vec2Schema,
+      radius: z.number().nonnegative(),
+      targetId: EntityIdSchema.nullable(),
+    }),
+    z.object({
+      type: z.literal('PHASE'),
+      id: EntityIdSchema,
+      phase: z.number().int(),
+      name: z.string(),
+    }),
+    /** Public: everyone nearby sees a breakthrough (success or backlash). */
+    z.object({
+      type: z.literal('BREAKTHROUGH'),
+      id: EntityIdSchema,
+      realm: z.number().int().nonnegative(),
+      success: z.boolean(),
+    }),
+    z.object({
+      type: z.literal('NODE_OPENED'),
+      ownerId: EntityIdSchema,
+      nodeId: z.string(),
+    }),
+    z.object({
+      type: z.literal('ITEM_GAINED'),
+      ownerId: EntityIdSchema,
+      itemId: z.string(),
+      count: z.number().int(),
+    }),
+    z.object({
+      type: z.literal('GOLD'),
+      ownerId: EntityIdSchema,
+      amount: z.number().int(),
+      reason: z.string(),
+    }),
+    z.object({
+      type: z.literal('NOTICE'),
+      ownerId: EntityIdSchema,
+      code: NoticeCodeSchema,
+    }),
+    z.object({
+      type: z.literal('TRANSFER'),
+      id: EntityIdSchema,
+      mapId: z.string(),
+      arrival: z.string().nullable(),
+    }),
+    /** Private: the client opens the NPC dialog (quests, shop, crafting, upgrades). */
+    z.object({
+      type: z.literal('NPC_OPEN'),
+      ownerId: EntityIdSchema,
+      npcEntityId: EntityIdSchema,
+      npcId: z.string(),
+    }),
+    z.object({
+      type: z.literal('QUEST'),
+      ownerId: EntityIdSchema,
+      questId: z.string(),
+      status: z.enum(['active', 'ready', 'done']),
+    }),
+    z.object({
+      type: z.literal('PARTY_INVITE'),
+      ownerId: EntityIdSchema,
+      fromId: EntityIdSchema,
+      fromName: z.string(),
+    }),
+    z.object({
+      type: z.literal('UPGRADE_RESULT'),
+      ownerId: EntityIdSchema,
+      instanceId: z.string(),
+      success: z.boolean(),
+      level: z.number().int(),
+    }),
+  ])
+  .and(z.object({ eventId: z.number().int().positive().optional() }));
 export type SimEvent = z.infer<typeof SimEventSchema>;
 
 // ---------------------------------------------------------------------------
@@ -528,6 +555,8 @@ export type PlayerState = z.infer<typeof PlayerStateSchema>;
 
 /** Sent by the host once a client has joined (and again after a map transfer). */
 export const JoinInfoSchema = z.object({
+  combatContent: CombatContentSchema.optional(),
+  combatRuleset: CombatRulesetSchema.optional(),
   protocolVersion: z.literal(PROTOCOL_VERSION),
   playerId: EntityIdSchema,
   mapId: z.string(),

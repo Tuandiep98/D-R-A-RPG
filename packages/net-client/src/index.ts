@@ -1,4 +1,4 @@
-import { Client, type Room } from "@colyseus/sdk";
+import { Client, type Room } from '@colyseus/sdk';
 import {
   type ChatMessage,
   ChatSendSchema,
@@ -8,9 +8,14 @@ import {
   PROTOCOL_VERSION,
   type SimEvent,
   type Snapshot,
-} from "@rpg/game-protocol";
-import { DeltaDecoder, type SnapshotDelta } from "@rpg/game-protocol/net";
-import { HostEmitter, type SimHost } from "@rpg/sim-host";
+} from '@rpg/game-protocol';
+import {
+  DeltaDecoder,
+  EventDeduper,
+  ServerMessages,
+  type SnapshotDelta,
+} from '@rpg/game-protocol/net';
+import { HostEmitter, type SimHost } from '@rpg/sim-host';
 
 export interface ColyseusSimHostOptions {
   /** ws(s)://host:port of the game server. */
@@ -32,6 +37,7 @@ export class ColyseusSimHost implements SimHost {
   private readonly client: Client;
   private readonly emitter = new HostEmitter();
   private readonly decoder = new DeltaDecoder();
+  private readonly eventDeduper = new EventDeduper();
   private room: Room | null = null;
   private mapId: string;
   private disposed = false;
@@ -48,7 +54,7 @@ export class ColyseusSimHost implements SimHost {
   sendIntent(intent: unknown): void {
     // Validate locally too: saves bandwidth and avoids tripping the server's abuse counter.
     const parsed = IntentSchema.safeParse(intent);
-    if (parsed.success) this.room?.send("intent", parsed.data);
+    if (parsed.success) this.room?.send('intent', parsed.data);
   }
 
   onSnapshot(cb: (snapshot: Snapshot) => void): () => void {
@@ -69,7 +75,7 @@ export class ColyseusSimHost implements SimHost {
 
   sendChat(text: string): void {
     const parsed = ChatSendSchema.safeParse({ text });
-    if (parsed.success) this.room?.send("chat", parsed.data);
+    if (parsed.success) this.room?.send('chat', parsed.data);
   }
 
   onChat(cb: (message: ChatMessage) => void): () => void {
@@ -92,16 +98,14 @@ export class ColyseusSimHost implements SimHost {
     this.client.auth.token = await this.opts.getToken();
     let room: Room;
     try {
-      room = await this.client.joinOrCreate("zone", {
+      room = await this.client.joinOrCreate('zone', {
         mapId,
         protocolVersion: PROTOCOL_VERSION,
         ticket,
         instanceKey,
       });
     } catch (err) {
-      const redirect = WRONG_MAP.exec(
-        err instanceof Error ? err.message : String(err),
-      );
+      const redirect = WRONG_MAP.exec(err instanceof Error ? err.message : String(err));
       if (allowRedirect && redirect?.[1])
         return this.joinMap(redirect[1], undefined, false, redirect[2]);
       throw err;
@@ -109,30 +113,32 @@ export class ColyseusSimHost implements SimHost {
     this.room = room;
     this.mapId = mapId;
     this.decoder.reset();
+    this.eventDeduper.reset();
 
     const joined = new Promise<JoinInfo>((resolve) => {
-      room.onMessage("join", (join: JoinInfo) => {
+      room.onMessage('join', (join: JoinInfo) => {
         for (const cb of this.emitter.join) cb(join);
         resolve(join);
       });
     });
-    room.onMessage("snap", (delta: SnapshotDelta) => {
+    room.onMessage('snap', (delta: SnapshotDelta) => {
       const snapshot = this.decoder.apply(delta);
       for (const cb of this.emitter.snapshot) cb(snapshot);
     });
-    room.onMessage("events", (events: SimEvent[]) => {
-      for (const cb of this.emitter.events) cb(events);
+    room.onMessage('events', (events: SimEvent[]) => {
+      if (this.room !== room) return;
+      const parsed = ServerMessages.events.safeParse(events);
+      if (!parsed.success) return;
+      const fresh = this.eventDeduper.filter(parsed.data);
+      if (fresh.length) for (const cb of this.emitter.events) cb(fresh);
     });
-    room.onMessage("player", (state: PlayerState) => {
+    room.onMessage('player', (state: PlayerState) => {
       for (const cb of this.emitter.playerState) cb(state);
     });
-    room.onMessage(
-      "transfer",
-      (msg: { mapId: string; ticket: string; instanceKey?: string }) => {
-        void this.switchMap(room, msg.mapId, msg.ticket, msg.instanceKey);
-      },
-    );
-    room.onMessage("chat", (msg: ChatMessage) => {
+    room.onMessage('transfer', (msg: { mapId: string; ticket: string; instanceKey?: string }) => {
+      void this.switchMap(room, msg.mapId, msg.ticket, msg.instanceKey);
+    });
+    room.onMessage('chat', (msg: ChatMessage) => {
       for (const cb of this.emitter.chat) cb(msg);
     });
     room.onLeave((code: number) => {

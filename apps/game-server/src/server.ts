@@ -1,14 +1,14 @@
-import { createServer } from "node:http";
-import { Server } from "@colyseus/core";
-import { WebSocketTransport } from "@colyseus/ws-transport";
-import { TokenService } from "@rpg/auth";
-import type { NavQuery } from "@rpg/game-core";
-import { loadContentFromDir, readBakedNav } from "@rpg/game-data/node";
-import { createNavQuery, initNavigation } from "@rpg/navigation";
-import { type Database, GameRepository, openDatabase } from "@rpg/persistence";
-import pino from "pino";
-import type { Config } from "./config";
-import { ZoneRoom } from "./zone-room";
+import { createServer } from 'node:http';
+import { Server } from '@colyseus/core';
+import { WebSocketTransport } from '@colyseus/ws-transport';
+import { TokenService } from '@rpg/auth';
+import type { NavQuery } from '@rpg/game-core';
+import { loadContentFromDir, readBakedNav } from '@rpg/game-data/node';
+import { createNavQuery, initNavigation } from '@rpg/navigation';
+import { type Database, GameRepository, openDatabase } from '@rpg/persistence';
+import pino from 'pino';
+import type { Config } from './config';
+import { ZoneRoom } from './zone-room';
 
 export interface RunningGameServer {
   port: number;
@@ -24,15 +24,12 @@ export async function startGameServer(
   config: Config,
   shared?: { database: Database },
 ): Promise<RunningGameServer> {
-  const log = pino({ level: config.LOG_LEVEL, base: { svc: "game-server" } });
+  const log = pino({ level: config.LOG_LEVEL, base: { svc: 'game-server' } });
   const content = loadContentFromDir(config.CONTENT_DIR);
   await initNavigation();
   const navs = new Map<string, NavQuery>();
   for (const map of content.maps.values()) {
-    navs.set(
-      map.id,
-      createNavQuery(map, readBakedNav(config.CONTENT_DIR, map.id)),
-    );
+    navs.set(map.id, createNavQuery(map, readBakedNav(config.CONTENT_DIR, map.id)));
   }
 
   const database =
@@ -41,11 +38,12 @@ export async function startGameServer(
       config.DATABASE_URL
         ? { url: config.DATABASE_URL }
         : {
-            dataDir:
-              config.PGLITE_DIR === "memory" ? undefined : config.PGLITE_DIR,
+            dataDir: config.PGLITE_DIR === 'memory' ? undefined : config.PGLITE_DIR,
           },
     ));
   ZoneRoom.deps = {
+    combatContent: config.COMBAT_CONTENT,
+    combatRuleset: config.COMBAT_RULESET,
     content,
     repo: new GameRepository(database.db),
     tokens: new TokenService(config.AUTH_SECRET),
@@ -60,9 +58,9 @@ export async function startGameServer(
 
   const http = createServer();
   // Only /health is ours; every other route belongs to Colyseus' matchmaker.
-  http.prependListener("request", (req, res) => {
-    if (req.url !== "/health") return;
-    res.writeHead(200, { "content-type": "application/json" });
+  http.prependListener('request', (req, res) => {
+    if (req.url !== '/health') return;
+    res.writeHead(200, { 'content-type': 'application/json' });
     res.end(
       JSON.stringify({
         ok: true,
@@ -76,16 +74,12 @@ export async function startGameServer(
     gracefullyShutdown: false,
   });
   // One room per map; a full room opens another channel (tech plan §29).
-  gameServer.define("zone", ZoneRoom).filterBy(["mapId", "instanceKey"]);
+  gameServer.define('zone', ZoneRoom).filterBy(['mapId', 'instanceKey']);
 
   await gameServer.listen(config.PORT, config.HOST);
   const address = http.address();
-  const port =
-    typeof address === "object" && address ? address.port : config.PORT;
-  log.info(
-    { port, db: database.kind, maps: content.maps.size },
-    "game server listening",
-  );
+  const port = typeof address === 'object' && address ? address.port : config.PORT;
+  log.info({ port, db: database.kind, maps: content.maps.size }, 'game server listening');
 
   return {
     port,

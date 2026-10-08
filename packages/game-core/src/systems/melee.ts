@@ -1,10 +1,11 @@
 import type { ComboDef, ComboVariant } from '@rpg/game-data';
 import { areHostile, inAttackRange, isAlive, type SimContext } from '../context';
-import type { Entity } from '../entity';
+import type { DamageSource, Entity } from '../entity';
 import { clearLine } from '../geometry';
 import { clamp, clampToBounds, distance, sub, type Vec2, yawOf } from '../math';
-import { secondsToTicks } from '../time';
-import { applyDamage, rollHit } from './combat';
+import { secondsToTicks, TICK_RATE } from '../time';
+import { beginAction, currentAction } from './action-timeline';
+import { applyDamage, captureDamageSource, rollHit } from './combat';
 
 /**
  * Basic attacks (đánh thường, D-031): chained swings from game-data/combos.
@@ -42,11 +43,13 @@ export function comboOf(ctx: SimContext, e: Entity): ComboDef | null {
 /** BASIC_ATTACK intent: swing now, or buffer the next step if a swing is running. */
 export function requestBasicAttack(ctx: SimContext, e: Entity, aim: Vec2 | null): boolean {
   if (!e.player || e.cast || e.mobility) return false;
+  if (!e.swing && currentAction(ctx, e)) return false;
   if (e.swing) {
-    e.player.combo.buffered = true;
-    e.player.combo.bufferedUntil =
-      ctx.tick + secondsToTicks(ctx.content.combat.get('combat_rules')?.bufferSeconds ?? 0.2);
-    e.player.combo.aim = aim;
+    e.actionBuffer = {
+      expiresTick:
+        ctx.tick + secondsToTicks(ctx.content.combat.get('combat_rules')?.bufferSeconds ?? 0.2),
+      intent: { type: 'BASIC_ATTACK', ...(aim ? { aim } : {}) },
+    };
     return true;
   }
   return startSwing(ctx, e, aim, null);
@@ -68,8 +71,16 @@ export function startSwing(
 
   const faced = faceFor(ctx, e, combo, variant, aim, target);
   e.yaw = faced.yaw;
+  e.actionBuffer = null;
   const impactTick = ctx.tick + secondsToTicks(variant.windup);
+  beginAction(ctx, e, 'melee', {
+    windup: (impactTick - ctx.tick) / TICK_RATE,
+    active: 0,
+    recovery: variant.recovery,
+    cancelWindup: true,
+  });
   e.swing = {
+    source: captureDamageSource(ctx, e),
     comboId: combo.id,
     step,
     variant,
@@ -85,6 +96,7 @@ export function startSwing(
   e.combat.lastCombatTick = ctx.tick;
   ctx.emit({
     type: 'ATTACK',
+    actionId: e.actionState?.id ?? null,
     element: e.element ?? null,
     expression: e.expression ?? 'base',
     sourceId: e.id,
@@ -94,8 +106,8 @@ export function startSwing(
   return true;
 }
 
-/** Advances swings: lunge, impact, end of recovery (and buffered chaining). */
-export function meleeSystem(ctx: SimContext): void {
+/** Starts automatic swings before movement so the committed pose owns speed and yaw. */
+export function meleePreparationSystem(ctx: SimContext): void {
   for (const e of ctx.entities.values()) {
     if (
       e.player &&
@@ -104,6 +116,7 @@ export function meleeSystem(ctx: SimContext): void {
       !e.swing &&
       !e.cast &&
       !e.mobility &&
+      !currentAction(ctx, e) &&
       !e.pending &&
       e.combat.targetId !== null
     ) {
@@ -111,6 +124,12 @@ export function meleeSystem(ctx: SimContext): void {
       if (isAlive(target) && areHostile(e, target) && inAttackRange(e, target))
         startSwing(ctx, e, null, target);
     }
+  }
+}
+
+/** Lunges finish before any attack or projectile tests this tick's positions. */
+export function meleeMovementSystem(ctx: SimContext): void {
+  for (const e of ctx.entities.values()) {
     const swing = e.swing;
     if (!swing) continue;
     if (!e.life.alive || e.cast) {
@@ -128,20 +147,34 @@ export function meleeSystem(ctx: SimContext): void {
         swing.lungeLeft -= perTick;
       }
     }
-    if (!swing.impacted && ctx.tick >= swing.impactTick) {
-      swing.impacted = true;
-      resolveImpact(ctx, e, swing.comboId, swing.variant, swing.yaw);
-    }
-    if (ctx.tick >= swing.endTick && swing.impacted) {
-      e.swing = null;
-      const state = e.player?.combo;
-      if (!state) continue;
+  }
+}
+
+/** Releases finished payloads before intent/buffer revalidation. */
+export function meleeFinishSystem(ctx: SimContext): void {
+  for (const e of ctx.entities.values()) {
+    const swing = e.swing;
+    if (!swing?.impacted || ctx.tick < swing.endTick) continue;
+    e.swing = null;
+    const state = e.player?.combo;
+    if (state) {
       state.lastEndTick = ctx.tick;
       state.nextStep = swing.step + 1;
-      if (state.buffered && ctx.tick <= (state.bufferedUntil ?? ctx.tick))
-        startSwing(ctx, e, state.aim, null);
     }
   }
+}
+
+/** The sole melee damage pass, after every entity has moved. */
+export function meleeSystem(ctx: SimContext): void {
+  for (const e of ctx.entities.values()) {
+    const swing = e.swing;
+    if (!swing || !e.life.alive || e.cast) continue;
+    if (!swing.impacted && ctx.tick >= swing.impactTick) {
+      swing.impacted = true;
+      resolveImpact(ctx, e, swing.comboId, swing.variant, swing.yaw, swing.source);
+    }
+  }
+  meleeFinishSystem(ctx);
 }
 
 function pickVariant(_ctx: SimContext, variants: readonly ComboVariant[]): ComboVariant | null {
@@ -199,6 +232,7 @@ function resolveImpact(
   comboId: string,
   v: ComboVariant,
   yaw: number,
+  source: DamageSource,
 ): void {
   const combo = ctx.content.combos.get(comboId);
   if (!combo) return;
@@ -220,25 +254,33 @@ function resolveImpact(
   }
   hits.sort((a, b) => a.surface - b.surface);
   for (const { t, surface } of hits.slice(0, v.maxTargets)) {
-    let multiplier = v.damage;
+    let distanceFactor = 1;
+    let positionFactor = 1;
     let hit: 'solid' | 'graze' | 'weak' = 'solid';
     const grazeStart = v.reach * combo.grazeFrom;
     if (surface > grazeStart) {
       const k = clamp((surface - grazeStart) / Math.max(1e-3, v.reach - grazeStart), 0, 1);
-      multiplier *= 1 + (combo.grazeMultiplier - 1) * k;
+      distanceFactor = 1 + (combo.grazeMultiplier - 1) * k;
       hit = 'graze';
     }
     // Yếu hại: where the blow lands relative to the target's facing.
     const back = facingDot(t, e.pos);
     if (back < -0.5) {
-      multiplier *= combo.weakPoint.back;
+      positionFactor = combo.weakPoint.back;
       hit = 'weak';
     } else if (back < 0.26) {
-      multiplier *= combo.weakPoint.flank;
+      positionFactor = combo.weakPoint.flank;
       if (hit === 'solid') hit = 'weak';
     }
-    const { amount, crit } = rollHit(ctx, e, t, multiplier, 0, v.critBonus);
-    applyDamage(ctx, e, t, amount, crit, null, { hit, heavy: v.heavy });
+    const { amount, crit } = rollHit(
+      ctx,
+      e,
+      t,
+      { multiplier: v.damage, critBonus: v.critBonus },
+      { distanceFactor, positionFactor },
+      source,
+    );
+    applyDamage(ctx, e, t, amount, crit, null, { hit, heavy: v.heavy, source });
   }
   if (hits.length === 0)
     for (const t of near.slice(0, MAX_MISS_EVENTS))

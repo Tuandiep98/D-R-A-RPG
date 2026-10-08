@@ -1,5 +1,6 @@
 id: combat_rules
 counters: { kim: moc, moc: tho, tho: thuy, thuy: hoa, hoa: kim }
+expressions: { thunder: moc, ice: thuy }
 advantage: 1.15
 disadvantage: 0.9
 basicShare: 0.3

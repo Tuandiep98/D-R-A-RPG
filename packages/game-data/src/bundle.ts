@@ -264,10 +264,13 @@ function checkReferences(bundle: ContentBundle, issues: ContentIssue[]): void {
 
   for (const c of bundle.characters.values()) {
     const owner = `characters/${c.id}`;
-    if (!compatibleExpression(c.element, c.expression))
+    if (
+      !compatibleExpression(c.element, c.expression, bundle.combat.get('combat_rules')?.expressions)
+    )
       issues.push({ path: owner, message: 'expression must match character element' });
     needAppearance(owner, c.appearanceId);
     for (const s of c.skills) needSkill(owner, s);
+    for (const s of c.prototypeSkills) needSkill(owner, s);
     need(bundle.combos, 'combo')(owner, c.combos.unarmed);
     need(bundle.combos, 'combo')(owner, c.combos.armed);
     for (const it of c.starterItems) {

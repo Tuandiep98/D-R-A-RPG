@@ -2,6 +2,8 @@ import type { EntityId, Intent } from '@rpg/game-protocol';
 import { areHostile, INTERACT_RANGE, isAlive, type SimContext } from '../context';
 import type { Entity } from '../entity';
 import { clampToBounds, distance } from '../math';
+import { secondsToTicks } from '../time';
+import { canCancelAction, cancelAction, currentAction } from './action-timeline';
 import { breakthrough, openNode } from './cultivation';
 import { equip, unequip, useItem } from './inventory';
 import { tryPickup } from './loot';
@@ -34,9 +36,57 @@ export function applyIntents(ctx: SimContext, queue: readonly QueuedIntent[]): n
       rejected++;
       continue;
     }
-    if (!apply(ctx, actor, intent)) rejected++;
+    if (!bufferIfBusy(ctx, actor, intent) && !apply(ctx, actor, intent)) rejected++;
   }
   return rejected;
+}
+
+/** One fresh manual action, replacing the previous one; costs are checked again on execution. */
+function bufferIfBusy(ctx: SimContext, actor: Entity, intent: Intent): boolean {
+  if (!actor.player) return false;
+  const action = currentAction(ctx, actor);
+  let busy = false;
+  switch (intent.type) {
+    case 'BASIC_ATTACK':
+      busy = !!(action || actor.cast || actor.swing || actor.mobility);
+      break;
+    case 'CAST_SKILL':
+      busy = !!(actor.cast || actor.mobility || (action && !canCancelAction(ctx, actor)));
+      break;
+    case 'MOBILITY':
+      busy = !!(actor.mobility || (action && !canCancelAction(ctx, actor)));
+      break;
+    case 'TRIGGER':
+      busy = intent.held && !actor.player.trigger.held && !!action;
+      if (!busy) return false;
+      break;
+    default:
+      return false;
+  }
+  if (!busy) return false;
+  actor.player.farm.enabled = false;
+  dropAutoAttack(actor);
+  actor.player.combo.buffered = false;
+  actor.actionBuffer = {
+    intent,
+    expiresTick:
+      ctx.tick + secondsToTicks(ctx.content.combat.get('combat_rules')?.bufferSeconds ?? 0.2),
+  };
+  return true;
+}
+
+export function bufferedActionSystem(ctx: SimContext): void {
+  for (const actor of ctx.entities.values()) {
+    const buffer = actor.actionBuffer;
+    if (!buffer || !actor.life.alive) continue;
+    if (ctx.tick > buffer.expiresTick) {
+      actor.actionBuffer = null;
+      continue;
+    }
+    if (actor.cast || actor.swing || actor.mobility || currentAction(ctx, actor)) continue;
+    actor.actionBuffer = null;
+    apply(ctx, actor, buffer.intent);
+  }
 }
 
 /** Attacking at will drops auto-attack, queued actions and click-to-move. */
@@ -47,10 +97,13 @@ function dropAutoAttack(e: Entity): void {
   e.movement.path = null;
 }
 
-function clearActions(e: Entity): void {
+function clearActions(ctx: SimContext, e: Entity, stop = false): void {
+  e.actionBuffer = null;
   e.combat.targetId = null;
   e.pending = null;
-  e.cast = null;
+  // Basic attacks explicitly allow walking during their windup.
+  if (stop || !e.swing) cancelAction(ctx, e);
+  if (e.player) e.player.combo.buffered = false;
   e.movement.goal = null;
   e.movement.path = null;
 }
@@ -80,14 +133,14 @@ function apply(ctx: SimContext, actor: Entity, intent: Intent): boolean {
         pausedUntil: ctx.tick,
       };
       if (!intent.enabled) {
-        clearActions(actor);
+        clearActions(ctx, actor);
         releaseTrigger(actor);
       }
       return true;
     case 'MOBILITY':
       return requestMobility(ctx, actor, intent.action, intent.point ?? null);
     case 'MOVE_TO': {
-      clearActions(actor);
+      clearActions(ctx, actor);
       actor.movement.dir = null;
       const target = clampToBounds(intent.target, ctx.bounds, actor.movement.radius);
       actor.movement.goal = {
@@ -105,14 +158,18 @@ function apply(ctx: SimContext, actor: Entity, intent: Intent): boolean {
       }
       // A fresh press cancels click-to-move, auto-attack and queued actions;
       // steering while held (direction changes, keep-alives) does not.
-      if (!actor.movement.dir) clearActions(actor);
+      if (!actor.movement.dir) clearActions(ctx, actor);
+      else {
+        dropAutoAttack(actor);
+        actor.actionBuffer = null;
+        if (actor.player) actor.player.combo.buffered = false;
+      }
       actor.movement.dir = { x: d.x / len, z: d.z / len };
       return true;
     }
     case 'STOP':
-      clearActions(actor);
+      clearActions(ctx, actor, true);
       actor.movement.dir = null;
-      actor.swing = null;
       releaseTrigger(actor);
       return true;
     case 'BASIC_ATTACK':
@@ -122,6 +179,7 @@ function apply(ctx: SimContext, actor: Entity, intent: Intent): boolean {
         ? tapTrigger(ctx, actor, intent.aim ?? null)
         : requestBasicAttack(ctx, actor, intent.aim ?? null);
     case 'TRIGGER': {
+      if (!intent.held && actor.actionBuffer?.intent.type === 'TRIGGER') actor.actionBuffer = null;
       const trigger = actor.player?.trigger;
       if (!trigger) return false;
       const pressed = intent.held && !trigger.held;
@@ -148,7 +206,7 @@ function apply(ctx: SimContext, actor: Entity, intent: Intent): boolean {
     case 'PICKUP': {
       const loot = ctx.entities.get(intent.lootId);
       if (!loot?.loot) return false;
-      clearActions(actor);
+      clearActions(ctx, actor);
       if (!tryPickup(ctx, actor, loot)) {
         actor.pending = { type: 'pickup', lootId: loot.id };
         actor.movement.goal = {
@@ -161,7 +219,7 @@ function apply(ctx: SimContext, actor: Entity, intent: Intent): boolean {
     case 'INTERACT': {
       const target = ctx.entities.get(intent.entityId);
       if (!target?.portal && !target?.npc) return false;
-      clearActions(actor);
+      clearActions(ctx, actor);
       if (distance(actor.pos, target.pos) <= INTERACT_RANGE) interactWith(ctx, actor, target);
       else {
         actor.pending = { type: 'interact', entityId: target.id };

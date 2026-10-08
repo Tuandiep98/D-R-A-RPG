@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 import {
   ChatMessageSchema,
   type EntityId,
@@ -6,9 +6,10 @@ import {
   EntitySnapshotSchema,
   JoinInfoSchema,
   PlayerStateSchema,
+  type SimEvent,
   SimEventSchema,
   type Snapshot,
-} from "./index";
+} from './index';
 
 /**
  * Network layer (M3). Snapshots travel as deltas: only entities whose state
@@ -40,7 +41,7 @@ export const ServerMessages = {
 } as const;
 
 /** Client → server: the only message type is an intent (validated with IntentSchema). */
-export const CLIENT_INTENT_MESSAGE = "intent";
+export const CLIENT_INTENT_MESSAGE = 'intent';
 
 /** Options a client passes when joining a zone room. */
 export const JoinOptionsSchema = z.object({
@@ -112,5 +113,31 @@ export class DeltaDecoder {
   reset(): void {
     this.state.clear();
     this.lastTick = -1;
+  }
+}
+
+/** Bounded per-world replay window. Each damage payload has its own event id. */
+export class EventDeduper {
+  private readonly seen = new Set<number>();
+  private newest = 0;
+  private readonly window = 2048;
+
+  filter(events: readonly SimEvent[]): SimEvent[] {
+    return events.filter((event) => {
+      const id = event.eventId;
+      // Legacy recordings have no event sequence; retain their payloads unchanged.
+      if (id === undefined) return true;
+      if (id <= this.newest - this.window || this.seen.has(id)) return false;
+      this.newest = Math.max(this.newest, id);
+      this.seen.add(id);
+      for (const previous of this.seen)
+        if (previous <= this.newest - this.window) this.seen.delete(previous);
+      return true;
+    });
+  }
+
+  reset(): void {
+    this.seen.clear();
+    this.newest = 0;
   }
 }

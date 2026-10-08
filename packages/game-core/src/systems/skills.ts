@@ -1,15 +1,36 @@
-import type { SkillDef } from '@rpg/game-data';
+import type { DamageSpec, SkillDef } from '@rpg/game-data';
 import type { EntityId } from '@rpg/game-protocol';
 import { areHostile, edgeDistance, isAlive, type SimContext } from '../context';
 import type { Entity } from '../entity';
-import { clearLine, coneTouches, segmentEntry } from '../geometry';
-import { clampToBounds, distance, sub, type Vec2, yawOf } from '../math';
+import { clearLine, coneTouches, segmentEntry, travel } from '../geometry';
+import { distance, sub, type Vec2, yawOf } from '../math';
 import { secondsToTicks, TICK_RATE } from '../time';
-import { applyDamage, rollHit } from './combat';
+import { beginAction, cancelAction, currentAction } from './action-timeline';
+import { applyDamage, captureDamageSource, rollHit } from './combat';
 import { requestMobility } from './mobility';
 
 export const effectRadius = (skill: SkillDef): number =>
   Math.max(0, ...skill.effects.map((e) => (e.type === 'damage' ? e.radius : 0)));
+
+function damageSpecs(ctx: SimContext, skill: SkillDef): DamageSpec[] {
+  return skill.effects.flatMap((effect) =>
+    effect.type === 'damage'
+      ? [
+          {
+            multiplier: effect.multiplier,
+            flat: effect.flat,
+            critBonus: effect.critBonus,
+            canCrit: effect.canCrit,
+            elementalShare:
+              effect.elementalShare ??
+              skill.elementalShare ??
+              ctx.content.combat.get('combat_rules')?.skillShare ??
+              0,
+          },
+        ]
+      : [],
+  );
+}
 
 /**
  * Validates and starts (or queues) a cast. Server authoritative: cooldowns,
@@ -57,11 +78,14 @@ export function requestCast(
     ctx.notice(e.id, 'no_target');
     return false;
   }
+  if (currentAction(ctx, e) && !cancelAction(ctx, e)) return false;
 
   if (!castInRange(e, skill, target, aim)) {
     // Walk into range first, like an auto-attack approach.
     e.pending = {
       type: 'cast',
+      expiresTick:
+        ctx.tick + secondsToTicks(ctx.content.combat.get('combat_rules')?.bufferSeconds ?? 0.2),
       skillId,
       targetId: target?.id ?? null,
       point: aim,
@@ -87,6 +111,7 @@ function startCast(
   aim: Vec2 | null,
 ): void {
   e.pending = null;
+  e.actionBuffer = null;
   e.swing = null;
   if (e.player) e.player.combo.buffered = false;
   e.stats.mp -= skill.mpCost;
@@ -95,18 +120,32 @@ function startCast(
   e.movement.path = null;
   if (skill.effects.some((effect) => effect.type === 'dash')) e.combat.targetId = null;
   if (aim) e.yaw = yawOf(sub(aim, e.pos));
+  else if (skill.effects.some((f) => f.type === 'dash') && e.movement.dir)
+    e.yaw = yawOf(e.movement.dir);
   const castTicks = skill.castTime > 0 ? secondsToTicks(skill.castTime) : 0;
+  const timing = skill.timeline ?? {
+    windup: castTicks / TICK_RATE,
+    active: 0,
+    recovery: 0,
+    cancelWindup: true,
+  };
+  const action = beginAction(ctx, e, 'skill', timing);
+  const travelLeft = Math.max(0, ...skill.effects.map((f) => (f.type === 'dash' ? f.distance : 0)));
   const point = skill.targeting === 'self' ? { ...e.pos } : aim;
   e.cast = {
+    yaw: action.yaw,
+    travelLeft,
+    source: captureDamageSource(ctx, e),
     skillId: skill.id,
     targetId: target?.id ?? null,
     point,
     startTick: ctx.tick,
-    endTick: ctx.tick + castTicks,
+    endTick: travelLeft > 0 ? action.activeEndTick : action.activeStartTick,
   };
   e.combat.lastCombatTick = ctx.tick;
   ctx.emit({
     type: 'CAST_START',
+    actionId: action.id,
     element: e.element ?? null,
     expression: e.expression ?? 'base',
     sourceId: e.id,
@@ -115,19 +154,43 @@ function startCast(
     point: point ? { ...point } : null,
     radius: effectRadius(skill),
     telegraph: skill.telegraph,
-    endTick: ctx.tick + castTicks,
+    endTick: e.cast.endTick,
   });
-  if (castTicks === 0) resolveCast(ctx, e);
 }
 
-/** Starts queued casts once in range and resolves casts whose time is up. */
-export function skillSystem(ctx: SimContext): void {
-  advanceSkillProjectiles(ctx);
+/** Travel is applied before the single collision pass, with direction locked at commitment. */
+export function skillMovementSystem(ctx: SimContext): void {
+  for (const e of ctx.entities.values()) {
+    const cast = e.cast;
+    const action = e.actionState;
+    if (
+      !e.life.alive ||
+      !cast ||
+      !action ||
+      cast.travelLeft <= 0 ||
+      ctx.tick < action.activeStartTick
+    )
+      continue;
+    const metres = cast.travelLeft / Math.max(1, action.activeEndTick - ctx.tick);
+    travel(ctx, e, { x: Math.sin(cast.yaw), z: Math.cos(cast.yaw) }, metres);
+    cast.travelLeft = Math.max(0, cast.travelLeft - metres);
+  }
+}
+
+/** Revalidates bounded approach requests before any movement or collision. */
+export function skillPreparationSystem(ctx: SimContext): void {
   for (const e of ctx.entities.values()) {
     if (e.inert || !e.life.alive) continue;
 
-    if (e.pending?.type === 'cast' && !e.cast) {
+    if (e.pending?.type === 'cast' && !e.cast && !e.mobility && !currentAction(ctx, e)) {
       const pending = e.pending;
+      if (ctx.tick > pending.expiresTick) {
+        e.pending = null;
+        e.movement.goal = null;
+        e.movement.path = null;
+        if (e.combat.targetId === pending.targetId) e.combat.targetId = null;
+        continue;
+      }
       const skill = ctx.content.skills.get(pending.skillId);
       const target = pending.targetId !== null ? ctx.entities.get(pending.targetId) : undefined;
       if (!skill || (pending.targetId !== null && !isAlive(target))) {
@@ -135,7 +198,8 @@ export function skillSystem(ctx: SimContext): void {
       } else {
         const aim = target && skill.targeting === 'point' ? { ...target.pos } : pending.point;
         if (castInRange(e, skill, target ?? null, aim)) {
-          startCast(ctx, e, skill, target ?? null, aim);
+          e.pending = null;
+          requestCast(ctx, e, skill.id, target?.id ?? null, aim);
         } else {
           const goalPos = target ? target.pos : aim;
           if (goalPos)
@@ -146,8 +210,14 @@ export function skillSystem(ctx: SimContext): void {
         }
       }
     }
+  }
+}
 
-    if (e.cast && ctx.tick >= e.cast.endTick) resolveCast(ctx, e);
+/** Resolves damage only after all movement for this tick. */
+export function skillSystem(ctx: SimContext): void {
+  advanceSkillProjectiles(ctx);
+  for (const e of ctx.entities.values()) {
+    if (!e.inert && e.life.alive && e.cast && ctx.tick >= e.cast.endTick) resolveCast(ctx, e);
   }
 }
 
@@ -160,15 +230,13 @@ function resolveCast(ctx: SimContext, e: Entity): void {
   const point = cast.point ?? { ...e.pos };
   const target = cast.targetId !== null ? ctx.entities.get(cast.targetId) : undefined;
 
-  for (const effect of skill.effects) {
-    if (effect.type === 'dash') dash(ctx, e, effect.distance);
-  }
   const impactPoint = skill.targeting === 'self' ? { ...e.pos } : point;
   if (skill.delivery !== 'projectile')
     ctx.emit({
       type: 'SKILL_IMPACT',
-      element: e.element ?? null,
-      expression: e.expression ?? 'base',
+      actionId: cast.source.actionId ?? null,
+      element: cast.source.element,
+      expression: cast.source.expression,
       sourceId: e.id,
       skillId: skill.id,
       point: impactPoint,
@@ -176,6 +244,40 @@ function resolveCast(ctx: SimContext, e: Entity): void {
       targetId: target?.id ?? null,
     });
 
+  const damages = damageSpecs(ctx, skill);
+  if (skill.delivery === 'projectile' && damages.length > 0) {
+    const dx = point.x - e.pos.x,
+      dz = point.z - e.pos.z;
+    const len = Math.hypot(dx, dz);
+    const dir =
+      len > 1e-6 ? { x: dx / len, z: dz / len } : { x: Math.sin(e.yaw), z: Math.cos(e.yaw) };
+    const id = ctx.nextShotId();
+    ctx.skillProjectiles.push({
+      source: cast.source,
+      damages,
+      id,
+      ownerId: e.id,
+      skillId: skill.id,
+      pos: { ...e.pos },
+      origin: { ...e.pos },
+      dir,
+      left: skill.range,
+    });
+    ctx.emit({
+      type: 'SKILL_PROJECTILE',
+      actionId: cast.source.actionId ?? null,
+      sourceId: e.id,
+      skillId: skill.id,
+      projectileId: id,
+      origin: { ...e.pos },
+      destination: { x: e.pos.x + dir.x * skill.range, z: e.pos.z + dir.z * skill.range },
+      speed: skill.projectileSpeed,
+      element: cast.source.element,
+      expression: cast.source.expression,
+    });
+  }
+
+  let damageIndex = 0;
   for (const effect of skill.effects) {
     if (effect.type === 'dash') continue;
     if (effect.type === 'heal') {
@@ -187,44 +289,15 @@ function resolveCast(ctx: SimContext, e: Entity): void {
       ctx.emit({ type: 'HEAL', targetId: e.id, amount });
       continue;
     }
-    if (skill.delivery === 'projectile') {
-      const dx = point.x - e.pos.x,
-        dz = point.z - e.pos.z;
-      const len = Math.hypot(dx, dz);
-      const dir =
-        len > 1e-6 ? { x: dx / len, z: dz / len } : { x: Math.sin(e.yaw), z: Math.cos(e.yaw) };
-      const id = ctx.nextShotId();
-      ctx.skillProjectiles.push({
-        id,
-        ownerId: e.id,
-        skillId: skill.id,
-        pos: { ...e.pos },
-        origin: { ...e.pos },
-        dir,
-        left: skill.range,
-        element: e.element ?? null,
-        expression: e.expression ?? 'base',
-      });
-      ctx.emit({
-        type: 'SKILL_PROJECTILE',
-        sourceId: e.id,
-        skillId: skill.id,
-        projectileId: id,
-        origin: { ...e.pos },
-        destination: { x: e.pos.x + dir.x * skill.range, z: e.pos.z + dir.z * skill.range },
-        speed: skill.projectileSpeed,
-        element: e.element ?? null,
-        expression: e.expression ?? 'base',
-      });
-      continue;
-    }
+    const spec = damages[damageIndex++];
+    if (skill.delivery === 'projectile') continue;
     const victims: Entity[] = [];
     if (skill.delivery === 'cone') {
       for (const other of ctx.entities.values()) {
         if (
           isAlive(other) &&
           areHostile(e, other) &&
-          coneTouches(e.pos, e.yaw, skill.range, skill.arc, other, e.movement.radius)
+          coneTouches(e.pos, cast.yaw, skill.range, skill.arc, other, e.movement.radius)
         )
           victims.push(other);
       }
@@ -246,49 +319,17 @@ function resolveCast(ctx: SimContext, e: Entity): void {
         )
           continue;
       }
-      const roll = rollHit(
-        ctx,
-        e,
-        v,
-        effect.multiplier,
-        effect.flat,
-        0,
-        skill.elementalShare ?? ctx.content.combat.get('combat_rules')?.skillShare,
-      );
+      const roll = rollHit(ctx, e, v, spec, {}, cast.source);
       applyDamage(ctx, e, v, roll.amount, roll.crit, skill.id, {
         hit: 'solid',
         heavy: false,
         groundLow: skill.groundLow,
+        source: cast.source,
       });
     }
   }
   // Keep fighting what we just hit.
   if (isAlive(target) && areHostile(e, target)) e.combat.targetId = target.id;
-}
-
-/** Short, bounded traversal; sample the whole route so a dash cannot cross walls or nav gaps. */
-function dash(ctx: SimContext, e: Entity, metres: number): void {
-  const dir = e.movement.dir ?? { x: Math.sin(e.yaw), z: Math.cos(e.yaw) };
-  const length = Math.hypot(dir.x, dir.z);
-  if (length < 1e-6) return;
-  const dx = dir.x / length;
-  const dz = dir.z / length;
-  const steps = Math.ceil(metres / 0.25);
-  const step = metres / steps;
-  for (let i = 0; i < steps; i++) {
-    const next = clampToBounds(
-      { x: e.pos.x + dx * step, z: e.pos.z + dz * step },
-      ctx.bounds,
-      e.movement.radius,
-    );
-    const p = ctx.nav ? ctx.nav.closest(next) : next;
-    if (distance(p, next) > 0.18 || distance(p, e.pos) > step * 1.5) break;
-    if (ctx.obstacles.some((o) => distance(p, o.pos) < o.radius + e.movement.radius)) break;
-    e.pos.x = p.x;
-    e.pos.z = p.z;
-  }
-  e.yaw = yawOf(dir);
-  e.movement.moved = true;
 }
 
 function advanceSkillProjectiles(ctx: SimContext): void {
@@ -327,35 +368,26 @@ function advanceSkillProjectiles(ctx: SimContext): void {
           x: b.pos.x + (next.x - b.pos.x) * first.k,
           z: b.pos.z + (next.z - b.pos.z) * first.k,
         };
-        // Source properties at launch determine affinity even if weapon changes later.
-        const source = { ...owner, element: b.element, expression: b.expression };
-        for (const f of skill.effects)
-          if (f.type === 'damage') {
-            const roll = rollHit(
-              ctx,
-              source,
-              target,
-              f.multiplier,
-              f.flat,
-              0,
-              skill.elementalShare ?? ctx.content.combat.get('combat_rules')?.skillShare,
-            );
-            applyDamage(ctx, source, target, roll.amount, roll.crit, skill.id, {
-              hit: 'solid',
-              heavy: false,
-              groundLow: skill.groundLow,
-            });
-          }
+        for (const spec of b.damages) {
+          const roll = rollHit(ctx, owner, target, spec, {}, b.source);
+          applyDamage(ctx, owner, target, roll.amount, roll.crit, skill.id, {
+            hit: 'solid',
+            heavy: false,
+            groundLow: skill.groundLow,
+            source: b.source,
+          });
+        }
         ctx.emit({
           type: 'SKILL_IMPACT',
+          actionId: b.source.actionId ?? null,
           projectileId: b.id,
           sourceId: owner.id,
           skillId: skill.id,
           point: contact,
           radius: 0,
           targetId: target.id,
-          element: b.element,
-          expression: b.expression,
+          element: b.source.element,
+          expression: b.source.expression,
         });
         done = true;
       } else if (wall < 1) {
@@ -365,14 +397,15 @@ function advanceSkillProjectiles(ctx: SimContext): void {
         };
         ctx.emit({
           type: 'SKILL_IMPACT',
+          actionId: b.source.actionId ?? null,
           projectileId: b.id,
           sourceId: owner.id,
           skillId: skill.id,
           point: contact,
           radius: 0,
           targetId: null,
-          element: b.element,
-          expression: b.expression,
+          element: b.source.element,
+          expression: b.source.expression,
         });
         done = true;
       }

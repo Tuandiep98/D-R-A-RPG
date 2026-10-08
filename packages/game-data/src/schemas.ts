@@ -14,31 +14,52 @@ export const ElementSchema = z.enum(['kim', 'moc', 'thuy', 'hoa', 'tho']);
 export type Element = z.infer<typeof ElementSchema>;
 export const ExpressionSchema = z.enum(['base', 'thunder', 'ice']);
 export type Expression = z.infer<typeof ExpressionSchema>;
-export function compatibleExpression(element: Element, expression: Expression): boolean {
-  return (
-    expression === 'base' ||
-    (expression === 'thunder' && element === 'moc') ||
-    (expression === 'ice' && element === 'thuy')
-  );
-}
-export const CombatRulesSchema = z.strictObject({
-  id: IdSchema,
-  counters: z.record(ElementSchema, ElementSchema),
-  advantage: z.number().min(1).max(2),
-  disadvantage: chance,
-  basicShare: chance,
-  skillShare: chance,
-  bufferSeconds: seconds,
-  lateRealm: IdSchema,
-  farm: z.strictObject({
-    radius: positive,
-    leash: positive,
-    reaction: seconds,
-    thinkInterval: seconds,
-    hpStop: chance,
-    mpReserve: chance,
-  }),
+export const ExpressionMappingSchema = z.strictObject({
+  thunder: ElementSchema,
+  ice: ElementSchema,
 });
+const LEGACY_EXPRESSION_MAPPING = { thunder: 'moc', ice: 'thuy' } as const;
+export function compatibleExpression(
+  element: Element,
+  expression: Expression,
+  mapping: z.infer<typeof ExpressionMappingSchema> = LEGACY_EXPRESSION_MAPPING,
+): boolean {
+  return expression === 'base' || mapping[expression] === element;
+}
+export const CombatRulesSchema = z
+  .strictObject({
+    id: IdSchema,
+    counters: z.record(ElementSchema, ElementSchema),
+    expressions: ExpressionMappingSchema.default(LEGACY_EXPRESSION_MAPPING),
+    advantage: z.number().min(1).max(2),
+    disadvantage: chance,
+    basicShare: chance,
+    skillShare: chance,
+    bufferSeconds: z.number().min(0.15).max(0.2),
+    lateRealm: IdSchema,
+    farm: z.strictObject({
+      radius: positive,
+      leash: positive,
+      reaction: seconds,
+      thinkInterval: seconds,
+      hpStop: chance,
+      mpReserve: chance,
+    }),
+  })
+  .refine(
+    (rules) => {
+      // Every element must participate in one five-element cycle, without self edges.
+      const seen = new Set<Element>();
+      let next: Element = 'kim';
+      for (let i = 0; i < ElementSchema.options.length; i++) {
+        if (seen.has(next)) return false;
+        seen.add(next);
+        next = rules.counters[next];
+      }
+      return next === 'kim' && seen.size === ElementSchema.options.length;
+    },
+    { message: 'Counters must form one five-element cycle' },
+  );
 export type CombatRules = z.infer<typeof CombatRulesSchema>;
 
 // ---------------------------------------------------------------------------
@@ -104,13 +125,38 @@ export const SkillTargetingSchema = z.enum([
   'point',
 ]);
 
+/** Shared damage payload; geometry and distance/position factors belong to the hit resolver. */
+export const DamageSpecSchema = z.strictObject({
+  multiplier: positive.default(1),
+  flat: nonNegative.default(0),
+  elementalShare: chance.optional(),
+  critBonus: chance.default(0),
+  /** Periodic damage can explicitly opt out of critical hits. */
+  canCrit: z.boolean().default(true),
+});
+export type DamageSpec = z.infer<typeof DamageSpecSchema>;
+
+/** Seconds, quantised by the authoritative simulation to 20 Hz ticks. */
+export const ActionTimingSchema = z
+  .strictObject({
+    windup: z.number().min(0).max(10),
+    active: z.number().min(0).max(10),
+    recovery: z.number().min(0).max(10),
+    cancelWindup: z.boolean().default(true),
+    cancelRecoveryAfter: z.number().min(0).max(10).optional(),
+  })
+  .refine((v) => v.cancelRecoveryAfter === undefined || v.cancelRecoveryAfter <= v.recovery, {
+    message: 'Recovery cancellation must fall within recovery',
+  });
+export type ActionTiming = z.infer<typeof ActionTimingSchema>;
+
 export const SkillEffectSchema = z.discriminatedUnion('type', [
   z.strictObject({
     type: z.literal('dash'),
     /** Travel along the held direction, or facing when standing still. */
     distance: z.number().positive().max(12),
   }),
-  z.strictObject({
+  DamageSpecSchema.extend({
     type: z.literal('damage'),
     /** Multiplier on the caster's attack. */
     multiplier: positive,
@@ -136,6 +182,7 @@ export const SkillDefSchema = z.strictObject({
   /** Max distance to target/point, metres (ignored for `self`). */
   range: nonNegative.default(0),
   castTime: nonNegative.default(0),
+  timeline: ActionTimingSchema.optional(),
   cooldown: seconds,
   mpCost: z.number().int().nonnegative().default(0),
   /** Which mobile action slot may show this skill. Desktop slots accept either. */
@@ -648,6 +695,8 @@ export const CharacterDefSchema = z.strictObject({
   expression: ExpressionSchema.default('base'),
   /** Skill bar, in order. */
   skills: z.array(IdSchema).max(8).default([]),
+  /** Dev kit and legacy prototype unlocks; never granted to a new starter character. */
+  prototypeSkills: z.array(IdSchema).max(8).default([]),
   /** Items granted to a brand-new character. */
   starterItems: z
     .array(

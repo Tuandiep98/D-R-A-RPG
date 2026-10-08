@@ -3,6 +3,7 @@ import type { Entity } from '../entity';
 import { travel } from '../geometry';
 import type { Vec2 } from '../math';
 import { secondsToTicks, TICK_RATE } from '../time';
+import { beginAction, cancelAction } from './action-timeline';
 
 export function requestMobility(
   ctx: SimContext,
@@ -23,9 +24,11 @@ export function requestMobility(
   const len = Math.hypot(raw.x, raw.z);
   if (len < 1e-6) return false;
   const dir = { x: raw.x / len, z: raw.z / len };
+  if (!cancelAction(ctx, e)) return false;
   const metres = Math.max(0, ...skill.effects.map((f) => (f.type === 'dash' ? f.distance : 0)));
   const duration = secondsToTicks(skill.duration);
   p.mobilityReady.set(action, ctx.tick + secondsToTicks(skill.cooldown));
+  e.actionBuffer = null;
   e.cast = null;
   e.swing = null;
   e.pending = null;
@@ -37,17 +40,25 @@ export function requestMobility(
   p.trigger.queued = false;
   p.trigger.burstLeft = 0;
   e.yaw = Math.atan2(dir.x, dir.z);
+  const timeline = beginAction(ctx, e, 'mobility', {
+    windup: 0,
+    active: skill.duration,
+    recovery: 0,
+    cancelWindup: false,
+  });
   e.mobility = {
+    actionId: timeline.id,
     action,
     startTick: ctx.tick,
     endTick: ctx.tick + duration,
-    distanceLeft: metres,
+    distanceLeft: action === 'blink' && point ? Math.min(metres, len) : metres,
     dir,
     dodgeFrom: ctx.tick + Math.round(skill.dodgeWindow[0] * TICK_RATE),
     dodgeTo: ctx.tick + Math.round(skill.dodgeWindow[1] * TICK_RATE),
   };
   ctx.emit({
     type: 'CAST_START',
+    actionId: timeline.id,
     sourceId: e.id,
     skillId: skill.id,
     targetId: null,
@@ -58,10 +69,6 @@ export function requestMobility(
     element: e.element ?? null,
     expression: e.expression ?? 'base',
   });
-  if (action === 'blink') {
-    travel(ctx, e, dir, point ? Math.min(metres, len) : metres);
-    e.mobility.distanceLeft = 0;
-  }
   return true;
 }
 export function mobilitySystem(ctx: SimContext): void {
@@ -73,15 +80,25 @@ export function mobilitySystem(ctx: SimContext): void {
       continue;
     }
     if (m.distanceLeft > 0) {
-      const metres = m.distanceLeft / Math.max(1, m.endTick - ctx.tick);
+      const metres =
+        m.action === 'blink' ? m.distanceLeft : m.distanceLeft / Math.max(1, m.endTick - ctx.tick);
       travel(ctx, e, m.dir, metres);
       m.distanceLeft = Math.max(0, m.distanceLeft - metres);
     }
-    if (ctx.tick >= m.endTick) {
+  }
+  mobilityFinishSystem(ctx);
+}
+
+/** Releases the exclusive payload before processing this tick's buffered input. */
+export function mobilityFinishSystem(ctx: SimContext): void {
+  for (const e of ctx.entities.values()) {
+    const m = e.mobility;
+    if (m && m.distanceLeft <= 0 && ctx.tick >= m.endTick) {
       const skill = [...ctx.content.skills.values()].find((s) => s.mobility === m.action);
       if (skill)
         ctx.emit({
           type: 'SKILL_IMPACT',
+          actionId: m.actionId,
           sourceId: e.id,
           skillId: skill.id,
           point: { ...e.pos },

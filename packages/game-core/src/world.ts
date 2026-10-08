@@ -14,6 +14,13 @@ import type {
   SimEvent,
   Snapshot,
 } from '@rpg/game-protocol';
+import {
+  CombatContentSchema,
+  CombatRulesetSchema,
+  LearnedSkillsSchema,
+  SAVE_VERSION,
+  SaveVersionSchema,
+} from '@rpg/game-protocol';
 import type { NavQuery, SimContext } from './context';
 import {
   type CircleObstacle,
@@ -27,25 +34,38 @@ import {
 } from './entity';
 import { type Bounds, clampToBounds, type Vec2 } from './math';
 import { Rng } from './rng';
+import { resetTransientActions, timelineSystem } from './systems/action-timeline';
 import { aiSystem } from './systems/ai';
-import { combatSystem } from './systems/combat';
+import { combatPreparationSystem, combatSystem } from './systems/combat';
 import { breakthroughChance } from './systems/cultivation';
 import { farmSystem } from './systems/farm';
-import { applyIntents, pendingSystem, type QueuedIntent } from './systems/intents';
+import {
+  applyIntents,
+  bufferedActionSystem,
+  pendingSystem,
+  type QueuedIntent,
+} from './systems/intents';
 import { addItem, equip, INVENTORY_CAPACITY } from './systems/inventory';
 import { actionSystem, lifeSystem } from './systems/life';
 import { lootSystem, makeInert } from './systems/loot';
-import { meleeSystem } from './systems/melee';
-import { mobilitySystem } from './systems/mobility';
+import {
+  meleeFinishSystem,
+  meleeMovementSystem,
+  meleePreparationSystem,
+  meleeSystem,
+} from './systems/melee';
+import { mobilityFinishSystem, mobilitySystem } from './systems/mobility';
 import { movementSystem } from './systems/movement';
 import { questProgress } from './systems/npc';
 import { Parties } from './systems/party';
 import { cultivationLoad, realmRank, recomputePlayerStats } from './systems/progression';
-import { rangedState, rangedSystem } from './systems/ranged';
-import { skillSystem } from './systems/skills';
+import { rangedPreparationSystem, rangedState, rangedSystem } from './systems/ranged';
+import { skillMovementSystem, skillPreparationSystem, skillSystem } from './systems/skills';
 import { secondsToTicks, TICK_RATE } from './time';
 
 export interface WorldOptions {
+  combatContent?: import('@rpg/game-protocol').CombatContent;
+  combatRuleset?: import('@rpg/game-protocol').CombatRuleset;
   content: ContentBundle;
   mapId: string;
   /** Overrides the map seed (tests, replays). */
@@ -79,6 +99,8 @@ export interface SpawnPlayerOptions {
  * no renderer, no wall-clock. Advance with step() at TICK_RATE.
  */
 export class World implements SimContext {
+  readonly combatContent: import('@rpg/game-protocol').CombatContent;
+  readonly combatRuleset: import('@rpg/game-protocol').CombatRuleset;
   readonly rng: Rng;
   readonly bounds: Bounds;
   readonly obstacles: CircleObstacle[];
@@ -88,8 +110,10 @@ export class World implements SimContext {
   readonly nav: NavQuery | null;
   readonly parties = new Parties();
   readonly projectiles: Projectile[] = [];
+  readonly rangedShots: Extract<SimEvent, { type: 'SHOT' }>[] = [];
   readonly skillProjectiles: SkillProjectile[] = [];
   private shotCounter = 0;
+  private eventCounter = 0;
   private readonly entityMap = new Map<EntityId, Entity>();
   private intents: QueuedIntent[] = [];
   private pendingEvents: SimEvent[] = [];
@@ -102,6 +126,8 @@ export class World implements SimContext {
   private readonly itemIdFactory: () => string;
 
   constructor(opts: WorldOptions) {
+    this.combatContent = CombatContentSchema.parse(opts.combatContent ?? 'starter');
+    this.combatRuleset = CombatRulesetSchema.parse(opts.combatRuleset ?? 'elements_v1');
     const map = opts.content.maps.get(opts.mapId);
     if (!map) throw new Error(`Unknown map "${opts.mapId}"`);
     this.content = opts.content;
@@ -162,7 +188,7 @@ export class World implements SimContext {
   // ---- SimContext -------------------------------------------------------
 
   emit(event: SimEvent): void {
-    this.pendingEvents.push(event);
+    this.pendingEvents.push({ ...event, eventId: ++this.eventCounter });
   }
 
   notice(ownerId: EntityId, code: NoticeCode): void {
@@ -177,8 +203,16 @@ export class World implements SimContext {
   }
 
   removeEntity(id: EntityId): void {
+    this.resetController(id);
     if (this.entityMap.get(id)?.player) this.parties.remove(this, id);
     if (this.entityMap.delete(id)) this.emit({ type: 'DESPAWN', id });
+  }
+
+  /** Removes input/action state when a session is replaced; durable costs remain. */
+  resetController(id: EntityId): void {
+    this.intents = this.intents.filter((queued) => queued.entityId !== id);
+    const e = this.entityMap.get(id);
+    if (e) resetTransientActions(e);
   }
 
   newItemInstanceId(): string {
@@ -214,12 +248,18 @@ export class World implements SimContext {
       pos = this.nav ? this.nav.closest(clamped) : clamped;
     }
     const save = opts.save;
+    if (save) SaveVersionSchema.parse(save.saveVersion ?? 1);
+    const legacy = save && (save.saveVersion ?? 1) < SAVE_VERSION;
+    const learnedSkills = LearnedSkillsSchema.parse(
+      save?.learnedSkills ?? (legacy ? def.prototypeSkills : []),
+    );
     const element = opts.element ?? save?.element ?? def.element;
+    const expressions = this.content.combat.get('combat_rules')?.expressions;
     const expression =
       opts.expression ??
       save?.expression ??
-      (compatibleExpression(element, def.expression) ? def.expression : 'base');
-    if (!compatibleExpression(element, expression))
+      (compatibleExpression(element, def.expression, expressions) ? def.expression : 'base');
+    if (!compatibleExpression(element, expression, expressions))
       throw new Error('expression does not match element');
     const e = this.addEntity((id) => ({
       id,
@@ -267,9 +307,13 @@ export class World implements SimContext {
       ai: null,
       skills: new Map(def.skills.map((s) => [s, 0])),
       cast: null,
+      actionState: null,
+      actionBuffer: null,
       swing: null,
       pending: null,
       player: {
+        learnedSkills: learnedSkills.filter((s) => this.content.skills.has(s)),
+        elementRevision: save?.elementRevision ?? 1,
         characterId: def.id,
         mobilityReady: new Map(),
         farm: { enabled: false, anchor: { ...pos }, pausedUntil: 0 },
@@ -339,6 +383,9 @@ export class World implements SimContext {
     const e = this.entityMap.get(id);
     if (!e?.player) return null;
     return {
+      saveVersion: SAVE_VERSION,
+      elementRevision: e.player.elementRevision,
+      learnedSkills: [...e.skills.keys()],
       cooldowns: Object.fromEntries(
         [...e.skills]
           .map(([id, ready]) => {
@@ -459,12 +506,22 @@ export class World implements SimContext {
     this.currentTick++;
     const queue = this.intents;
     this.intents = [];
-    this.rejected += applyIntents(this, queue);
     for (const e of this.entityMap.values()) e.previousPos = { ...e.pos };
+    meleeFinishSystem(this);
+    mobilityFinishSystem(this);
+    timelineSystem(this);
+    this.rejected += applyIntents(this, queue);
+    bufferedActionSystem(this);
     farmSystem(this);
     aiSystem(this);
+    skillPreparationSystem(this);
+    combatPreparationSystem(this);
+    meleePreparationSystem(this);
+    rangedPreparationSystem(this);
     movementSystem(this);
     mobilitySystem(this);
+    skillMovementSystem(this);
+    meleeMovementSystem(this);
     skillSystem(this);
     combatSystem(this);
     meleeSystem(this);
@@ -571,6 +628,17 @@ const round = (v: number): number => Math.round(v * 100) / 100;
 
 function toSnapshot(e: Entity): EntitySnapshot {
   return {
+    actionState: e.actionState
+      ? {
+          id: e.actionState.id,
+          kind: e.actionState.kind,
+          startTick: e.actionState.startTick,
+          activeStartTick: e.actionState.activeStartTick,
+          activeEndTick: e.actionState.activeEndTick,
+          endTick: e.actionState.endTick,
+          yaw: e.actionState.yaw,
+        }
+      : null,
     id: e.id,
     kind: e.kind,
     mobility: e.mobility

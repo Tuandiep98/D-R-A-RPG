@@ -8,7 +8,8 @@ import { setGame } from './game';
 import type { OnlineChoice } from './Login';
 import { loadMedia, mediaUrl } from './media';
 import { navFor } from './nav';
-import { startSession } from './online';
+import { API_URL, startSession } from './online';
+import { useSkillLoadout } from './skill-loadout';
 import { useUiStore } from './store';
 
 const DEFAULT_MAP = 'map_sandbox_01';
@@ -130,6 +131,15 @@ export function GameCanvas({ online = null }: { online?: OnlineChoice | null }) 
           content = { ...content, appearances };
         }
         const { host, kind } = createHost(params, online);
+        useSkillLoadout
+          .getState()
+          .activate(
+            online
+              ? `online:${API_URL}:${online.characterId}`
+              : params.has('online') && params.has('dev')
+                ? `dev:${params.get('server') ?? window.location.host}:${params.get('dev')}`
+                : `offline:${params.get('char') ?? DEFAULT_CHARACTER}`,
+          );
         store.setCharacterId(online?.characterId ?? null);
         store.setHostKind(kind);
         const quality =

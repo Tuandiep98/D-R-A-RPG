@@ -41,7 +41,11 @@ export const realmRank = (ctx: Pick<SimContext, 'realms'>, id: string | undefine
   );
 
 /** Damage multiplier for `attacker` hitting `defender` (master plan §57). */
-export function realmGapFactor(ctx: SimContext, attacker: Entity, defender: Entity): number {
+export function realmGapFactor(
+  ctx: SimContext,
+  attacker: Pick<Entity, 'realm'>,
+  defender: Pick<Entity, 'realm'>,
+): number {
   const gap = attacker.realm - defender.realm;
   if (gap === 0) return 1;
   const r = rules(ctx);
@@ -126,6 +130,8 @@ export function recomputePlayerStats(ctx: SimContext, e: Entity): void {
   const skills = new Map<string, number>();
   const learned = [
     ...def.skills,
+    ...(ctx.combatContent === 'prototype' ? def.prototypeSkills : []),
+    ...p.learnedSkills,
     ...[...ctx.content.skills.values()].filter((s) => s.mobility).map((s) => s.id),
     ...p.nodes.flatMap((id) => ctx.content.cultivation.get(id)?.skillId ?? []),
   ];

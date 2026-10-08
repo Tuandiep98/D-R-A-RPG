@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { buildContentBundle } from '@rpg/game-data';
-import type { JoinInfo, PlayerState, Snapshot } from '@rpg/game-protocol';
+import type { Intent, JoinInfo, PlayerState, SimEvent, Snapshot } from '@rpg/game-protocol';
 import { describe, expect, it } from 'vitest';
 import { LocalSimHost, type MessageEndpoint, serveSimHost, WorkerSimHost } from './index';
 
@@ -92,6 +92,10 @@ describe('LocalSimHost', () => {
     expect(joins[0]?.mapId).toBe('map_forest_mechanism_01');
     expect(host.debug?.mapId).toBe('map_forest_mechanism_01');
     expect(first.mapId).toBe('map_sandbox_01');
+    expect(joins[0]).toMatchObject({
+      combatContent: first.combatContent,
+      combatRuleset: first.combatRuleset,
+    });
     host.dispose();
   });
 });
@@ -124,6 +128,102 @@ function channel(): [MessageEndpoint, MessageEndpoint] {
 }
 
 describe('WorkerSimHost', () => {
+  it('drops repeated event deliveries, preserves multi-effect damage and resets on join', async () => {
+    const [main, worker] = channel();
+    const inner = makeHost();
+    serveSimHost(worker, inner);
+    const host = new WorkerSimHost(main);
+    const join = await host.connect();
+    const received: SimEvent[] = [];
+    host.onEvents((events) => received.push(...events));
+    const first: SimEvent = {
+      type: 'DAMAGE',
+      eventId: 1,
+      actionId: 7,
+      sourceId: join.playerId,
+      targetId: 1,
+      amount: 10,
+      crit: false,
+      skillId: 'skill_thunder_arc',
+    };
+    const second = { ...first, eventId: 2, amount: 5 };
+    worker.postMessage({ t: 'events', events: [first, second] });
+    worker.postMessage({ t: 'events', events: [first, second] });
+    await Promise.resolve();
+    expect(received).toEqual([first, second]);
+    worker.postMessage({ t: 'join', join, reply: false });
+    worker.postMessage({ t: 'events', events: [first] });
+    await Promise.resolve();
+    expect(received).toEqual([first, second, first]);
+    host.dispose();
+  });
+
+  it.each(['classic', 'elements_v1'] as const)(
+    'replays identical seeded combat across local and worker transports with %s rules',
+    async (combatRuleset) => {
+      const opts = {
+        content,
+        mapId: 'map_sandbox_01',
+        characterId: 'player_default',
+        seed: 77123,
+        autoRun: false,
+        combatRuleset,
+        combatContent: 'prototype' as const,
+      };
+      const direct = new LocalSimHost(opts);
+      const inner = new LocalSimHost(opts);
+      const [main, worker] = channel();
+      serveSimHost(worker, inner);
+      const proxied = new WorkerSimHost(main);
+      const trace = () => ({
+        snapshots: [] as Snapshot[],
+        states: [] as PlayerState[],
+        events: [] as SimEvent[],
+      });
+      const a = trace(),
+        b = trace();
+      for (const [host, record] of [
+        [direct, a],
+        [proxied, b],
+      ] as const) {
+        host.onSnapshot((snap) => record.snapshots.push(snap));
+        host.onPlayerState((state) => record.states.push(state));
+        host.onEvents((events) => record.events.push(...events));
+      }
+      expect(await direct.connect()).toEqual(await proxied.connect());
+      const script = new Map<number, Intent[]>([
+        [1, [{ type: 'MOVE_DIR', dir: { x: 0, z: 1 } }]],
+        [8, [{ type: 'MOBILITY', action: 'roll' }]],
+        [20, [{ type: 'STOP' }, { type: 'BASIC_ATTACK', aim: { x: 0, z: 0 } }]],
+        [22, [{ type: 'CAST_SKILL', skillId: 'skill_thunder_leap' }]],
+        [24, [{ type: 'BASIC_ATTACK' }]],
+        [40, [{ type: 'MOBILITY', action: 'blink', point: { x: 0, z: 0 } }]],
+        [60, [{ type: 'MOBILITY', action: 'jump' }]],
+        [80, [{ type: 'CAST_SKILL', skillId: 'skill_thunder_pierce', point: { x: 3, z: 3 } }]],
+        [100, [{ type: 'SET_FARM', enabled: true }]],
+        [130, [{ type: 'MOVE_DIR', dir: { x: 1, z: 0 } }]],
+        [150, [{ type: 'STOP' }]],
+      ]);
+      for (let tick = 1; tick <= 200; tick++) {
+        for (const intent of script.get(tick) ?? []) {
+          direct.sendIntent(intent);
+          proxied.sendIntent(intent);
+        }
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        direct.stepOnce();
+        inner.stepOnce();
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      }
+      expect(b).toEqual(a);
+      expect(a.events.some((event) => event.type === 'CAST_START')).toBe(true);
+      expect(a.events.some((event) => event.type === 'ATTACK')).toBe(true);
+      expect(a.events.some((event) => event.type === 'SKILL_PROJECTILE')).toBe(true);
+      expect(a.snapshots).toHaveLength(200);
+      direct.dispose();
+      proxied.dispose();
+    },
+  );
+
   it('proxies connect, intents and state across a message channel', async () => {
     const [main, worker] = channel();
     const inner = makeHost();

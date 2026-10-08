@@ -1,10 +1,12 @@
 import type { RangedDef } from '@rpg/game-data';
 import type { EntityId, PlayerState } from '@rpg/game-protocol';
 import { areHostile, edgeDistance, isAlive, type SimContext } from '../context';
-import type { Entity, PlayerData, TriggerState, WeaponState } from '../entity';
+import type { DamageSource, Entity, PlayerData, TriggerState, WeaponState } from '../entity';
+import { segmentEntry } from '../geometry';
 import { clamp, sub, type Vec2, yawOf } from '../math';
 import { secondsToTicks, TICK_RATE } from '../time';
-import { applyDamage, rollHit } from './combat';
+import { beginAction, currentAction } from './action-timeline';
+import { applyDamage, captureDamageSource, rollHit } from './combat';
 import { facingDot } from './melee';
 
 /**
@@ -111,6 +113,7 @@ export function releaseTrigger(e: Entity): void {
   t.held = false;
   t.queued = false;
   t.burstLeft = 0;
+  t.windup = null;
 }
 
 /** RELOAD intent. */
@@ -136,8 +139,8 @@ function press(ctx: SimContext, e: Entity, w: Equipped, t: TriggerState): void {
 
 // ---- System -----------------------------------------------------------------
 
-/** Trigger, reload and heat per player, then bullets in flight. Runs before movement. */
-export function rangedSystem(ctx: SimContext): void {
+/** Commits shots and their movement modifier before the movement phase. */
+export function rangedPreparationSystem(ctx: SimContext): void {
   for (const e of ctx.entities.values()) {
     const p = e.player;
     if (!p) continue;
@@ -162,16 +165,43 @@ export function rangedSystem(ctx: SimContext): void {
 
     const def = w.def;
     const target = autoTarget(ctx, e);
-    if (!e.cast) {
+    const action = currentAction(ctx, e);
+    if (!e.cast && (!action || action.kind === 'ranged')) {
       const auto = target !== null && !t.held && !t.queued && t.burstLeft === 0;
       const point = auto ? target.pos : t.aim;
       if (auto) t.assistId = target.id;
       const wants = t.queued || t.burstLeft > 0 || (t.held && def.fireMode === 'auto') || auto;
       if (wants) tryFire(ctx, e, w, ws, t, point);
-      if (ctx.tick < t.raisedUntil) e.yaw = aimYaw(ctx, e, def, t, point, false);
+      if (t.windup) e.yaw = t.windup.yaw;
+      else if (ctx.tick < t.raisedUntil) e.yaw = aimYaw(ctx, e, def, t, point, false);
     }
     const firing = ctx.tick - t.lastShotTick <= secondsToTicks(def.fireInterval) + 2;
     t.move = firing ? def.moveMultiplier : t.reload ? (def.reload?.moveMultiplier ?? 1) : 1;
+  }
+}
+
+/** The sole bullet/hitscan collision pass, after all movement. */
+export function rangedSystem(ctx: SimContext): void {
+  for (const shot of ctx.rangedShots.splice(0)) {
+    const owner = ctx.entities.get(shot.sourceId);
+    const def = ctx.content.ranged.get(shot.rangedId);
+    if (owner && def && def.projectile.speed <= 0) {
+      for (const bullet of ctx.projectiles) {
+        if (bullet.shotId !== shot.shotId) continue;
+        const bodies = bodiesOnRay(
+          ctx,
+          owner,
+          bullet.origin,
+          bullet.dir,
+          0,
+          bullet.stopAt,
+          def.projectile.radius,
+          [],
+        );
+        shot.lens[bullet.pellet] = round(bodies[def.projectile.pierce]?.d ?? bullet.stopAt, 100);
+      }
+    }
+    ctx.emit(shot);
   }
   stepProjectiles(ctx);
 }
@@ -202,6 +232,8 @@ function tryFire(
   point: Vec2 | null,
 ): void {
   const def = w.def;
+  const action = currentAction(ctx, e);
+  if (action && (action.kind !== 'ranged' || !t.windup)) return;
   if (def.projectile.speed > 0 && ctx.projectiles.length + def.projectile.pellets > MAX_PROJECTILES)
     return;
   if (ctx.tick < ws.overheatUntil) {
@@ -230,6 +262,13 @@ function tryFire(
     t.readyTick = Math.max(t.readyTick, ctx.tick + windup);
     t.raisedUntil = t.readyTick + secondsToTicks(def.holdAim);
     e.yaw = aimYaw(ctx, e, def, t, point, true);
+    beginAction(ctx, e, 'ranged', {
+      windup: (t.readyTick - ctx.tick) / TICK_RATE,
+      active: 0,
+      recovery: 0,
+      cancelWindup: true,
+    });
+    t.windup = { source: captureDamageSource(ctx, e), yaw: e.yaw, startTick: ctx.tick };
   }
   if (ctx.tick < t.readyTick) return;
 
@@ -264,7 +303,7 @@ function fire(
 ): void {
   const def = w.def;
   const pr = def.projectile;
-  const yaw = aimYaw(ctx, e, def, t, point, true);
+  const yaw = t.windup?.yaw ?? aimYaw(ctx, e, def, t, point, true);
   e.yaw = yaw;
   const ahead = e.movement.radius + MUZZLE_AHEAD;
   const origin = {
@@ -272,48 +311,51 @@ function fire(
     z: e.pos.z + Math.cos(yaw) * ahead,
   };
   const shotId = ctx.nextShotId();
+  const commitment = t.windup;
+  const committed = commitment?.source;
+  t.windup = null;
+  const timeline = beginAction(ctx, e, 'ranged', {
+    windup: 0,
+    active: 0,
+    recovery:
+      def.fireMode === 'burst' ? (def.burst?.interval ?? def.fireInterval) : def.fireInterval,
+    cancelWindup: false,
+  });
+  if (committed?.actionId && commitment) {
+    timeline.id = committed.actionId;
+    timeline.startTick = commitment.startTick;
+  }
+  const source = committed ?? captureDamageSource(ctx, e);
   const yaws: number[] = [];
   const lens: number[] = [];
-  const instant: { t: Entity; d: number; pellet: number }[] = [];
   for (let i = 0; i < pr.pellets; i++) {
     const fan = pr.pellets > 1 ? (i / (pr.pellets - 1) - 0.5) * pr.spread * DEG : 0;
     const jitter = pr.jitter > 0 ? ctx.rng.range(-1, 1) * pr.jitter * DEG : 0;
     const py = yaw + fan + jitter;
     const dir = { x: Math.sin(py), z: Math.cos(py) };
     const stopAt = wallDistance(ctx, origin, dir, pr.range);
-    let len = stopAt;
-    if (pr.speed <= 0) {
-      // Hitscan: everything on the line up to the wall, nearest first.
-      const bodies = bodiesOnRay(ctx, e, origin, dir, 0, stopAt, pr.radius, []);
-      for (const [n, b] of bodies.entries()) {
-        instant.push({ t: b.t, d: b.d, pellet: i });
-        if (n >= pr.pierce) {
-          len = b.d;
-          break;
-        }
-      }
-    } else {
-      ctx.projectiles.push({
-        shotId,
-        pellet: i,
-        ownerId: e.id,
-        rangedId: def.id,
-        origin,
-        dir,
-        travelled: 0,
-        stopAt,
-        speedPerTick: pr.speed / TICK_RATE,
-        pierceLeft: pr.pierce,
-        hitIds: [],
-      });
-    }
+    ctx.projectiles.push({
+      source,
+      shotId,
+      pellet: i,
+      ownerId: e.id,
+      rangedId: def.id,
+      origin,
+      dir,
+      travelled: 0,
+      stopAt,
+      speedPerTick: pr.speed > 0 ? pr.speed / TICK_RATE : stopAt,
+      pierceLeft: pr.pierce,
+      hitIds: [],
+    });
     yaws.push(round(py, 1000));
-    lens.push(round(len, 100));
+    lens.push(round(stopAt, 100));
   }
-  ctx.emit({
+  ctx.rangedShots.push({
     type: 'SHOT',
-    element: e.element ?? null,
-    expression: e.expression ?? 'base',
+    actionId: source.actionId ?? null,
+    element: source.element,
+    expression: source.expression,
     sourceId: e.id,
     rangedId: def.id,
     shotId,
@@ -321,7 +363,6 @@ function fire(
     yaws,
     lens,
   });
-  for (const h of instant) if (h.t.life.alive) hit(ctx, e, h.t, def, h.d, origin, shotId, h.pellet);
 
   if (def.magazine > 0) ws.ammo = Math.max(0, ws.ammo - 1);
   t.lastShotTick = ctx.tick;
@@ -476,10 +517,22 @@ function bodiesOnRay(
   to: number,
   radius: number,
   skip: readonly EntityId[],
+  swept = false,
 ): { t: Entity; d: number }[] {
   const out: { t: Entity; d: number }[] = [];
   for (const t of ctx.entities.values()) {
     if (t === e || t.inert || !t.life.alive || !areHostile(e, t) || skip.includes(t.id)) continue;
+    if (swept) {
+      const prev = t.previousPos ?? t.pos;
+      const k = segmentEntry(
+        { x: 0, z: 0 },
+        { x: o.x + dir.x * from - prev.x, z: o.z + dir.z * from - prev.z },
+        { x: o.x + dir.x * to - t.pos.x, z: o.z + dir.z * to - t.pos.z },
+        t.movement.radius + radius,
+      );
+      if (k !== null) out.push({ t, d: from + (to - from) * k });
+      continue;
+    }
     const vx = t.pos.x - o.x;
     const vz = t.pos.z - o.z;
     const r = t.movement.radius + radius;
@@ -507,7 +560,7 @@ function stepProjectiles(ctx: SimContext): void {
     let done = !owner || !def;
     if (owner && def) {
       const from = b.travelled;
-      const to = Math.min(b.stopAt, from + b.speedPerTick);
+      const to = from + b.speedPerTick;
       for (const h of bodiesOnRay(
         ctx,
         owner,
@@ -517,15 +570,17 @@ function stepProjectiles(ctx: SimContext): void {
         to,
         def.projectile.radius,
         b.hitIds,
+        def.projectile.speed > 0,
       )) {
-        hit(ctx, owner, h.t, def, h.d, b.origin, b.shotId, b.pellet);
+        if (h.d >= b.stopAt) break;
+        hit(ctx, owner, h.t, def, h.d, b.origin, b.shotId, b.pellet, b.source);
         b.hitIds.push(h.t.id);
         if (b.pierceLeft-- <= 0) {
           done = true;
           break;
         }
       }
-      b.travelled = to;
+      b.travelled = Math.min(to, b.stopAt);
       if (to >= b.stopAt) done = true;
     }
     if (done) {
@@ -544,30 +599,40 @@ function hit(
   origin: Vec2,
   shotId: number,
   pellet: number,
+  source: DamageSource,
 ): void {
   const range = def.projectile.range;
-  let multiplier = def.damage;
+  let distanceFactor = 1;
+  let positionFactor = 1;
   let kind: 'solid' | 'graze' | 'weak' = 'solid';
   const fall = def.falloffFrom * range;
   if (d > fall && range > fall) {
     const k = clamp((d - fall) / (range - fall), 0, 1);
-    multiplier *= 1 + (def.falloffMultiplier - 1) * k;
+    distanceFactor = 1 + (def.falloffMultiplier - 1) * k;
     if (k > 0.5) kind = 'graze';
   }
   // Yếu hại: shots landing on the target's back / flank.
   const back = facingDot(t, origin);
   if (back < -0.5) {
-    multiplier *= def.weakPoint.back;
+    positionFactor = def.weakPoint.back;
     kind = 'weak';
   } else if (back < 0.26) {
-    multiplier *= def.weakPoint.flank;
+    positionFactor = def.weakPoint.flank;
     if (kind === 'solid') kind = 'weak';
   }
-  const { amount, crit } = rollHit(ctx, e, t, multiplier, 0, def.critBonus);
+  const { amount, crit } = rollHit(
+    ctx,
+    e,
+    t,
+    { multiplier: def.damage, critBonus: def.critBonus },
+    { distanceFactor, positionFactor },
+    source,
+  );
   applyDamage(ctx, e, t, amount, crit, null, {
     hit: kind,
     heavy: false,
     shot: { id: shotId, pellet },
+    source,
   });
 }
 

@@ -72,6 +72,9 @@ export const characters = pgTable(
     characterDefId: text('character_def_id').notNull(),
     element: text('element').$type<'kim' | 'moc' | 'thuy' | 'hoa' | 'tho'>(),
     expression: text('expression').$type<'base' | 'thunder' | 'ice'>().notNull().default('base'),
+    saveVersion: integer('save_version').notNull().default(2),
+    elementRevision: integer('element_revision').notNull().default(0),
+    learnedSkills: jsonb('learned_skills').$type<string[]>().notNull().default([]),
     /** Cảnh giới id (game-data/realms). There is no character level (master plan §31). */
     realm: text('realm').notNull().default('luyen_khi'),
     /** Realm order, denormalised for leaderboard sorting. */
