@@ -1,0 +1,6 @@
+# KayKit Space Base "cargo_A_stacked" — Kiện hàng hợp kim (map renovation, D-027; 488 tris)
+id: prop_tech_cargo_01
+kind: environment
+scale: 1.2
+modelAssetId: prop_tech_cargo_01
+placeholder: { shape: box, color: "#6d8aa0", height: 1.22, radius: 0.61 }

@@ -1,242 +1,243 @@
-# Tân Nguyên Trấn — starter hub dressed exclusively with assets available in
-# the approved Medieval Village and Fantasy Props packs.
+# Tân Nguyên Trấn — thị trấn biên giới, vùng khởi đầu (master plan §11, world
+# region_tan_nguyen). Trùng tu theo docs/plan/05_map_renovation_plan.md và
+# docs/map_authoring_rules.md:
+#   - Quảng trường giữa (bia Thiên Cơ + cờ Thiên Kiếm Minh), 4 khu theo góc:
+#     Lò rèn (TB) · Chợ nhỏ (ĐB) · Y quán (ĐN) · Doanh trại (TN);
+#   - Trạm vận chuyển ở cổng nam, hàng rào gỗ bao quanh, 4 cổng theo 2 trục đường;
+#   - Ngoài cổng bắc: Bãi Luyện Công (Thạch Khôi, tây) và Bãi Xác Máy (Cơ Giáp
+#     Trinh Sát, đông), đường bắc dẫn tới cổng Phế Tích Vô Danh.
+# +Z = bắc. Chạy `pnpm content:build` sau khi sửa.
 id: map_sandbox_01
 name: Tân Nguyên Trấn
-seed: 1001
-bounds: { min: { x: -20, z: -20 }, max: { x: 20, z: 20 } }
+seed: 1101
+bounds: { min: { x: -40, z: -40 }, max: { x: 40, z: 40 } }
 chunkSize: 32
 ground:
   color: "#5f8a4a"
   paint:
-    variation: ["#6f9a4a", "#527a3e"]
-    noiseScale: 10
+    variation: ["#6f9a4a", "#527a3e", "#7d9450"]
+    noiseScale: 12
     noiseAmount: 0.6
     pathColor: "#8b6f4a"
-    pathWidthScale: 0.9
+    pathWidthScale: 0.85
     patches:
-      # Packed-earth square where the NPCs stand (replaces the old brick tiles).
-      - { center: { x: 0, z: -8 }, radius: 7, color: "#9a8467", edge: 2.5 }
-playerSpawn: { x: 0, z: -12 }
+      - { center: { x: 0, z: 0 }, radius: 10, color: "#9a8467", edge: 2.5 } # quảng trường
+      - { center: { x: -15, z: 11 }, radius: 6, color: "#6f5f4a", edge: 2 } # lò rèn
+      - { center: { x: 15, z: 10 }, radius: 7, color: "#8f7a5a", edge: 2 } # chợ
+      - { center: { x: 15, z: -12 }, radius: 6, color: "#7d8a55", edge: 2 } # y quán (vườn thuốc)
+      - { center: { x: -15, z: -13 }, radius: 7, color: "#8a7a5e", edge: 2 } # doanh trại
+      - { center: { x: 0, z: -29 }, radius: 7, color: "#7a7468", edge: 2 } # trạm vận chuyển
+      - { center: { x: -29, z: 30 }, radius: 7, color: "#77705f", edge: 3 } # bãi luyện công
+      - { center: { x: 29, z: 30 }, radius: 7, color: "#6e675d", edge: 3 } # bãi xác máy
+playerSpawn: { x: 0, z: -9 }
 arrivals:
-  - { id: from_forest, position: { x: 0, z: 13 } }
+  - { id: from_forest, position: { x: 0, z: 33 } }
+
 paths:
-  - { width: 5, points: [{ x: 0, z: -18 }, { x: 0, z: 18 }] }
-  - { width: 4, points: [{ x: -17, z: 0 }, { x: 17, z: 0 }] }
+  # Trục bắc–nam: trạm vận chuyển → quảng trường → cổng bắc → Phế Tích.
+  - { width: 7, points: [{ x: 0, z: -39 }, { x: 0, z: 39 }] }
+  # Trục đông–tây qua quảng trường.
+  - { width: 5, points: [{ x: -39, z: 0 }, { x: 39, z: 0 }] }
+  # Ngoài cổng bắc: rẽ hai bãi luyện.
+  - { width: 5, points: [{ x: 0, z: 32 }, { x: -14, z: 34 }, { x: -27, z: 30 }] }
+  - { width: 5, points: [{ x: 0, z: 32 }, { x: 14, z: 34 }, { x: 27, z: 30 }] }
+  # Ngõ vào các khu.
+  - { width: 4, points: [{ x: 3, z: -6 }, { x: 11, z: -10 }] }
+  - { width: 4, points: [{ x: -3, z: -6 }, { x: -11, z: -11 }] }
+
 clearings:
-  - { center: { x: 0, z: -11 }, radius: 5 }
-  - { center: { x: 0, z: 12 }, radius: 4 }
+  - { center: { x: 0, z: 0 }, radius: 33 } # trong hàng rào: chỉ đặt tay
+  - { center: { x: -29, z: 30 }, radius: 8 }
+  - { center: { x: 29, z: 30 }, radius: 8 }
+  - { center: { x: 0, z: 36 }, radius: 4 }
+
+groundCovers:
+  # Quảng trường lát đá quanh bia.
+  - appearanceIds: [env_dungeon_floor_01]
+    min: { x: -6, z: -6 }
+    max: { x: 6, z: 6 }
+    tileSize: 4
+    y: 0.02
+    scale: 1.02
+  - appearanceIds: [env_ground_dirt_rocky_01, env_ground_dirt_01]
+    min: { x: -33, z: 26 }
+    max: { x: -25, z: 34 }
+    tileSize: 4
+    y: 0.02
+    scale: 1.03
+
 zones:
-  - {
-      id: village,
-      name: Tân Nguyên Trấn,
-      kind: safe,
-      center: { x: 0, z: -7 },
-      radius: 12,
-    }
+  - { id: village, name: Tân Nguyên Trấn, kind: safe, center: { x: 0, z: -2 }, radius: 27 }
+  - { id: plaza, name: Quảng Trường Thiên Cơ, kind: safe, center: { x: 0, z: 0 }, radius: 9 }
+  - { id: training_yard, name: Bãi Luyện Công, kind: combat, center: { x: -29, z: 30 }, radius: 9 }
+  - { id: scrap_field, name: Bãi Xác Máy, kind: combat, center: { x: 29, z: 30 }, radius: 9 }
+
 npcs:
-  - { npcId: npc_elder, position: { x: -3, z: -10 }, rotationY: 0.5 }
-  - { npcId: npc_merchant, position: { x: 4, z: -7 }, rotationY: -1.2 }
-  - { npcId: npc_smith, position: { x: -8, z: -3 }, rotationY: 1.2 }
+  - { npcId: npc_elder, position: { x: -4, z: 3.5 }, rotationY: 2.6 }
+  - { npcId: npc_merchant, position: { x: 10.5, z: -8.5 }, rotationY: -2.2 }
+  - { npcId: npc_smith, position: { x: -10, z: 5 }, rotationY: 2.4 }
+
 portals:
   - {
       id: town_to_forest,
       name: Phế Tích Vô Danh,
-      position: { x: 0, z: 17 },
+      position: { x: 0, z: 37 },
       targetMapId: map_forest_mechanism_01,
       targetArrival: from_town,
     }
+
 spawns:
-  - {
-      id: stone_guard_post,
-      monsterId: stone_guardian_001,
-      position: { x: 11, z: 12 },
-      count: 3,
-      radius: 2,
-      respawnSeconds: 45,
-    }
-  - {
-      id: robot_camp,
-      monsterId: robot_scout_001,
-      position: { x: -11, z: 12 },
-      count: 2,
-      radius: 2.5,
-      respawnSeconds: 10,
-    }
+  # Tutorial camps sit outside the safe palisade (rules: no spawn in a safe zone).
+  - { id: stone_guard_post, monsterId: stone_guardian_001, position: { x: -29, z: 30 }, count: 3, radius: 3, respawnSeconds: 45 }
+  - { id: robot_camp, monsterId: robot_scout_001, position: { x: 29, z: 30 }, count: 3, radius: 3.5, respawnSeconds: 10 }
+
+# Hàng rào gỗ bao thị trấn, hở 4 cổng theo hai trục đường.
+rings:
+  - appearanceId: env_village_fence_01
+    center: { x: 0, z: 0 }
+    radius: 31
+    count: 64
+    scale: 0.75
+    colliderRadius: 1.5
+    gapAngles: [0, 1.5708, 3.14159, -1.5708]
+    gapWidth: 0.12
+    orient: tangent
 
 prefabs:
   - id: village_house
     members:
-      - {
-          appearanceId: env_village_floor_wood_01,
-          offset: { x: 0, y: 0.03, z: 0 },
-          scale: 2,
-        }
-      - {
-          appearanceId: env_village_door_01,
-          offset: { x: 0, z: -2 },
-          colliderRadius: 0.8,
-        }
-      - {
-          appearanceId: env_village_wall_01,
-          offset: { x: -2, z: 0 },
-          rotationY: 1.5708,
-          colliderRadius: 0.8,
-        }
-      - {
-          appearanceId: env_village_wall_01,
-          offset: { x: 2, z: 0 },
-          rotationY: 1.5708,
-          colliderRadius: 0.8,
-        }
-      - {
-          appearanceId: env_village_wall_01,
-          offset: { x: 0, z: 2 },
-          colliderRadius: 0.8,
-        }
-      - {
-          appearanceId: env_village_corner_01,
-          offset: { x: -2, z: -2 },
-          colliderRadius: 0.25,
-        }
-      - {
-          appearanceId: env_village_corner_01,
-          offset: { x: 2, z: -2 },
-          rotationY: 1.5708,
-          colliderRadius: 0.25,
-        }
-      - {
-          appearanceId: env_village_corner_01,
-          offset: { x: 2, z: 2 },
-          rotationY: 3.14159,
-          colliderRadius: 0.25,
-        }
-      - {
-          appearanceId: env_village_corner_01,
-          offset: { x: -2, z: 2 },
-          rotationY: -1.5708,
-          colliderRadius: 0.25,
-        }
+      - { appearanceId: env_village_floor_wood_01, offset: { x: 0, y: 0.03, z: 0 }, scale: 2 }
+      - { appearanceId: env_village_door_01, offset: { x: 0, z: -2 }, colliderRadius: 0.8 }
+      - { appearanceId: env_village_wall_window_01, offset: { x: -2, z: 0 }, rotationY: 1.5708, colliderRadius: 0.8 }
+      - { appearanceId: env_village_wall_01, offset: { x: 2, z: 0 }, rotationY: 1.5708, colliderRadius: 0.8 }
+      - { appearanceId: env_village_wall_arched_01, offset: { x: 0, z: 2 }, colliderRadius: 0.8 }
+      - { appearanceId: env_village_corner_01, offset: { x: -2, z: -2 }, colliderRadius: 0.25 }
+      - { appearanceId: env_village_corner_01, offset: { x: 2, z: -2 }, rotationY: 1.5708, colliderRadius: 0.25 }
+      - { appearanceId: env_village_corner_01, offset: { x: 2, z: 2 }, rotationY: 3.14159, colliderRadius: 0.25 }
+      - { appearanceId: env_village_corner_01, offset: { x: -2, z: 2 }, rotationY: -1.5708, colliderRadius: 0.25 }
       - { appearanceId: env_village_roof_01, offset: { x: 0, y: 4, z: 0 } }
-      - { appearanceId: prop_lantern_wall_01, offset: { x: 0.9, z: -2.1 } }
-  - id: market
+      - { appearanceId: prop_lantern_wall_01, offset: { x: 0.9, y: 0, z: -2.1 } }
+      - { appearanceId: prop_barrel_01, offset: { x: -1.6, z: -2.8 }, colliderRadius: 0.4 }
+  # Bia Thiên Cơ giữa quảng trường: trụ cổ, nến tế, nền phù văn.
+  - id: plaza_shrine
     members:
-      - {
-          appearanceId: prop_market_stall_01,
-          offset: { x: 0, z: 0 },
-          colliderRadius: 1.3,
-        }
-      - {
-          appearanceId: prop_barrel_01,
-          offset: { x: -1.8, z: 0.8 },
-          colliderRadius: 0.4,
-        }
-      - {
-          appearanceId: prop_crate_01,
-          offset: { x: 1.7, z: 0.7 },
-          rotationY: 0.4,
-          colliderRadius: 0.5,
-        }
-      - {
-          appearanceId: prop_cauldron_01,
-          offset: { x: 2, z: -1 },
-          colliderRadius: 0.5,
-        }
-      - {
-          appearanceId: prop_banner_01,
-          offset: { x: -2, z: -1 },
-          colliderRadius: 0.3,
-        }
+      - { appearanceId: env_floor_rune_01, offset: { x: 0, y: 0.01, z: 0 }, scale: 1.6 }
+      - { appearanceId: env_ruin_pillar_01, offset: { x: 0, z: 0 }, colliderRadius: 1.2 }
+      - { appearanceId: prop_candles_01, offset: { x: -1.3, z: -1.3 } }
+      - { appearanceId: prop_candles_01, offset: { x: 1.3, z: -1.3 }, rotationY: 1.2 }
+      - { appearanceId: prop_bottle_01, offset: { x: 1.2, z: 1.3 } }
+  - id: market_stall
+    members:
+      - { appearanceId: prop_market_stall_01, offset: { x: 0, z: 0 }, rotationY: 1.5708, colliderRadius: 1.3 }
+      - { appearanceId: prop_crates_stacked_01, offset: { x: -2.6, z: 1.6 }, rotationY: 0.3, colliderRadius: 0.7 }
+      - { appearanceId: prop_barrel_01, offset: { x: 2.6, z: 1.4 }, colliderRadius: 0.4 }
+      - { appearanceId: prop_stool_01, offset: { x: 0.6, z: 1.6 } }
   - id: smithy
     members:
-      - {
-          appearanceId: prop_workbench_01,
-          offset: { x: 0, z: 0 },
-          colliderRadius: 0.8,
-        }
-      - {
-          appearanceId: prop_anvil_01,
-          offset: { x: 1.5, z: 0 },
-          colliderRadius: 0.45,
-        }
-      - {
-          appearanceId: prop_weapon_rack_01,
-          offset: { x: -1.5, z: 0 },
-          colliderRadius: 0.7,
-        }
-      - {
-          appearanceId: prop_barrel_01,
-          offset: { x: 0.7, z: 1.4 },
-          colliderRadius: 0.4,
-        }
+      - { appearanceId: prop_workbench_01, offset: { x: 0, z: 0 }, colliderRadius: 0.8 }
+      - { appearanceId: prop_anvil_01, offset: { x: 2, z: -0.4 }, rotationY: 0.4, colliderRadius: 0.45 }
+      - { appearanceId: prop_grindstone_01, offset: { x: -2.2, z: -0.2 }, colliderRadius: 0.6 }
+      - { appearanceId: prop_weapon_rack_01, offset: { x: -1, z: 2.4 }, colliderRadius: 0.7 }
+      - { appearanceId: prop_weapon_rack_01, offset: { x: 1.2, z: 2.4 }, colliderRadius: 0.7 }
+      - { appearanceId: prop_iron_bars_01, offset: { x: 3.6, z: 1.2 }, colliderRadius: 0.35 }
+      - { appearanceId: prop_log_stack_01, offset: { x: -4, z: 2.2 }, rotationY: 0.6, colliderRadius: 0.7 }
+      - { appearanceId: prop_bucket_01, offset: { x: 2.9, z: -1.6 } }
+      - { appearanceId: prop_torch_stand_01, offset: { x: -3.4, z: -1.4 } }
+  - id: apothecary
+    members:
+      - { appearanceId: prop_shelves_01, offset: { x: 0, z: 0 }, colliderRadius: 0.7 }
+      - { appearanceId: prop_shelf_candles_01, offset: { x: 1.8, z: 0 }, colliderRadius: 0.4 }
+      - { appearanceId: prop_table_small_01, offset: { x: 0.2, z: -1.8 }, colliderRadius: 0.5 }
+      - { appearanceId: prop_cauldron_01, offset: { x: -2, z: -1.6 }, colliderRadius: 0.6 }
+      - { appearanceId: prop_bottle_01, offset: { x: 0.6, z: -1.8 }, scale: 0.8 }
+      - { appearanceId: prop_stool_01, offset: { x: 1.4, z: -2.4 } }
+  - id: barracks
+    members:
+      - { appearanceId: prop_banner_shield_01, offset: { x: -2.4, z: 0 }, colliderRadius: 0.4 }
+      - { appearanceId: prop_banner_shield_01, offset: { x: 2.4, z: 0 }, colliderRadius: 0.4 }
+      - { appearanceId: prop_weapon_rack_01, offset: { x: 0, z: 0.4 }, colliderRadius: 0.7 }
+      - { appearanceId: prop_trunk_01, offset: { x: -1.2, z: -1.6 }, rotationY: 0.2, colliderRadius: 0.5 }
+      - { appearanceId: prop_table_long_01, offset: { x: 3.4, z: -3 }, rotationY: 1.5708, colliderRadius: 1.2 }
+      - { appearanceId: prop_stool_01, offset: { x: 3.4, z: -4.3 } }
+      - { appearanceId: prop_keg_01, offset: { x: 5.4, z: -2.4 }, colliderRadius: 0.6 }
+      - { appearanceId: prop_torch_stand_01, offset: { x: -3.6, z: -3 } }
+  - id: transport_station
+    members:
+      - { appearanceId: env_scifi_door_01, offset: { x: 0, z: 0 }, colliderRadius: 1.6 }
+      - { appearanceId: prop_tech_cargo_01, offset: { x: -6, z: 1.5 }, colliderRadius: 0.6 }
+      - { appearanceId: prop_tech_cargo_01, offset: { x: -6.2, z: -0.4 }, rotationY: 0.5, colliderRadius: 0.6 }
+      - { appearanceId: prop_fuel_barrels_01, offset: { x: 6, z: 1.6 }, colliderRadius: 0.6 }
+      - { appearanceId: prop_pallet_01, offset: { x: 6.2, z: -1 }, colliderRadius: 0.6 }
+      - { appearanceId: prop_boxes_stacked_01, offset: { x: -7.4, z: -3 }, colliderRadius: 1.1 }
+      - { appearanceId: prop_lantern_wall_01, offset: { x: 4.2, z: 3.2 } }
+      - { appearanceId: prop_lantern_wall_01, offset: { x: -4.2, z: 3.2 } }
 
 prefabPlacements:
-  - { prefabId: village_house, position: { x: -13, z: -11 }, rotationY: 1.5708 }
-  - { prefabId: village_house, position: { x: 13, z: -11 }, rotationY: -1.5708 }
-  - { prefabId: village_house, position: { x: 12, z: 3 }, rotationY: -1.5708 }
-  - { prefabId: market, position: { x: 10, z: -6 }, rotationY: -1.5708 }
-  - { prefabId: smithy, position: { x: -9, z: -5 }, rotationY: 1.5708 }
+  - { prefabId: plaza_shrine, position: { x: 0, z: 0 } }
+  # Lò rèn (tây bắc) — Lão Mộc.
+  - { prefabId: smithy, position: { x: -15, z: 10 }, rotationY: 3.14159 }
+  - { prefabId: village_house, position: { x: -14, z: 19 } }
+  - { prefabId: village_house, position: { x: -24, z: 9 }, rotationY: -1.5708 }
+  # Chợ nhỏ (đông bắc): ba sạp quay ra đường đông–tây.
+  - { prefabId: market_stall, position: { x: 9, z: 7 } }
+  - { prefabId: market_stall, position: { x: 16, z: 7 } }
+  - { prefabId: market_stall, position: { x: 23, z: 7 } }
+  - { prefabId: village_house, position: { x: 14, z: 19 } }
+  - { prefabId: village_house, position: { x: 24, z: 15 } }
+  # Y quán (đông nam) — Tô Tiểu Linh, vườn thuốc phía sau.
+  - { prefabId: village_house, position: { x: 17, z: -15 }, rotationY: 3.14159 }
+  - { prefabId: apothecary, position: { x: 13, z: -10 }, rotationY: 3.14159 }
+  - { prefabId: village_house, position: { x: 25, z: -6 }, rotationY: 1.5708 }
+  # Doanh trại (tây nam).
+  - { prefabId: barracks, position: { x: -15, z: -13 } }
+  - { prefabId: village_house, position: { x: -24, z: -8 }, rotationY: -1.5708 }
+  - { prefabId: village_house, position: { x: -18, z: -21 }, rotationY: 3.14159 }
+  # Trạm vận chuyển (cổng nam).
+  - { prefabId: transport_station, position: { x: 0, z: -29 } }
 
 landmarks:
-  # Preserve the navigation invariant with a real in-pack prop.
-  - {
-      appearanceId: prop_crate_01,
-      position: { x: 6, z: -5 },
-      scale: 1.4,
-      colliderRadius: 1.2,
-    }
-  - {
-      appearanceId: env_village_vine_01,
-      position: { x: -10.9, y: 2.1, z: -11 },
-      rotationY: 1.5708,
-    }
-  - {
-      appearanceId: env_village_vine_01,
-      position: { x: 10.9, y: 2.1, z: -11 },
-      rotationY: -1.5708,
-    }
-  - {
-      appearanceId: prop_banner_01,
-      position: { x: -2.5, z: 14 },
-      colliderRadius: 0.3,
-    }
-  - {
-      appearanceId: prop_banner_01,
-      position: { x: 2.5, z: 14 },
-      colliderRadius: 0.3,
-    }
-  - {
-      appearanceId: env_village_fence_01,
-      position: { x: -15, z: 7 },
-      rotationY: 1.5708,
-      colliderRadius: 0.8,
-    }
-  - {
-      appearanceId: env_village_fence_01,
-      position: { x: -15, z: 10 },
-      rotationY: 1.5708,
-      colliderRadius: 0.8,
-    }
-  - {
-      appearanceId: env_village_fence_01,
-      position: { x: 15, z: 7 },
-      rotationY: 1.5708,
-      colliderRadius: 0.8,
-    }
-  - {
-      appearanceId: env_village_fence_01,
-      position: { x: 15, z: 10 },
-      rotationY: 1.5708,
-      colliderRadius: 0.8,
-    }
+  # Cờ Thiên Kiếm Minh bốn góc quảng trường, đuốc đứng soi lối.
+  - { appearanceId: prop_banner_green_01, position: { x: -7, z: 7 }, rotationY: 2.356, colliderRadius: 0.3 }
+  - { appearanceId: prop_banner_green_01, position: { x: 7, z: 7 }, rotationY: -2.356, colliderRadius: 0.3 }
+  - { appearanceId: prop_banner_green_01, position: { x: -7, z: -7 }, rotationY: 0.785, colliderRadius: 0.3 }
+  - { appearanceId: prop_banner_green_01, position: { x: 7, z: -7 }, rotationY: -0.785, colliderRadius: 0.3 }
+  - { appearanceId: prop_torch_stand_01, position: { x: -4.6, z: 8.5 } }
+  - { appearanceId: prop_torch_stand_01, position: { x: 4.6, z: 8.5 } }
+  - { appearanceId: prop_torch_stand_01, position: { x: -4.6, z: -8.5 } }
+  - { appearanceId: prop_torch_stand_01, position: { x: 4.6, z: -8.5 } }
+  # Chợ: hàng hoá bày quanh sạp.
+  - { appearanceId: prop_textiles_01, position: { x: 12.5, z: 10.5 }, rotationY: 0.4, colliderRadius: 0.5 }
+  - { appearanceId: prop_coins_01, position: { x: 19.5, z: 10.4 }, colliderRadius: 0.45 }
+  - { appearanceId: prop_plate_food_01, position: { x: 26.2, z: 10.2 } }
+  - { appearanceId: prop_keg_01, position: { x: 27, z: 3.8 }, colliderRadius: 0.6 }
+  # Cổng bắc: cờ hai bên, cột mốc.
+  - { appearanceId: prop_banner_thin_red_01, position: { x: -5, z: 30.6 }, rotationY: 3.14159, colliderRadius: 0.3 }
+  - { appearanceId: prop_banner_thin_red_01, position: { x: 5, z: 30.6 }, rotationY: 3.14159, colliderRadius: 0.3 }
+  - { appearanceId: prop_torch_stand_01, position: { x: -3.2, z: 34.5 } }
+  - { appearanceId: prop_torch_stand_01, position: { x: 3.2, z: 34.5 } }
+  # Bãi Luyện Công: trụ đá cổ Thạch Khôi canh giữ.
+  - { appearanceId: env_ruin_column_01, position: { x: -34, z: 34 }, scale: 1.6, colliderRadius: 0.6 }
+  - { appearanceId: env_ruin_column_01, position: { x: -24, z: 35.5 }, rotationY: 1.2, scale: 1.6, colliderRadius: 0.6 }
+  - { appearanceId: env_ruin_column_01, position: { x: -35, z: 25 }, rotationY: 2.2, scale: 1.6, colliderRadius: 0.6 }
+  - { appearanceId: prop_rubble_02, position: { x: -36, z: 29.5 }, rotationY: 0.6, scale: 0.6, colliderRadius: 1 }
+  - { appearanceId: prop_stone_chunks_01, position: { x: -23, z: 25 }, colliderRadius: 0.5 }
+  # Bãi Xác Máy: khoang Thiên Cơ rơi, đống phế liệu cơ giáp.
+  - { appearanceId: env_tech_module_01, position: { x: 34, z: 34 }, rotationY: 0.5, colliderRadius: 1.5 }
+  - { appearanceId: prop_scrap_pile_01, position: { x: 24, z: 35 }, rotationY: 1, colliderRadius: 0.7 }
+  - { appearanceId: prop_scrap_pile_02, position: { x: 35, z: 25 }, colliderRadius: 0.4 }
+  - { appearanceId: prop_tech_container_01, position: { x: 23.5, z: 25.5 }, rotationY: 0.8, colliderRadius: 0.6 }
+  - { appearanceId: prop_tech_panel_01, position: { x: 33, z: 29 }, rotationY: -0.4, colliderRadius: 0.6 }
 
 scatter:
-  # Outskirts greenery (the paved square and roads stay clear).
-  - { appearanceId: env_bush_02, count: 6, minSpacing: 3, scale: [0.7, 1] }
-  - { appearanceId: env_flowers_01, count: 14, minSpacing: 2, scale: [0.6, 1] }
-  - { appearanceId: env_fern_01, count: 8, minSpacing: 2, scale: [0.6, 0.9] }
-  - {
-      appearanceId: env_grass_01,
-      count: 60,
-      minSpacing: 1.3,
-      scale: [0.6, 1.1],
-    }
+  # Trong hàng rào: hoa/cỏ ven nhà, không lên đường (rules §Dressing: ít, có chủ ý).
+  - { appearanceId: env_flowers_01, count: 10, minSpacing: 2.2, scale: [0.6, 1], area: { center: { x: 15, z: -14 }, radius: 7 }, respectClearings: false }
+  - { appearanceId: env_bush_02, count: 8, minSpacing: 3, scale: [0.7, 1], area: { center: { x: 0, z: 0 }, radius: 28 }, respectClearings: false }
+  - { appearanceId: env_grass_01, count: 70, minSpacing: 1.4, scale: [0.6, 1.1], area: { center: { x: 0, z: 0 }, radius: 29 }, respectClearings: false }
+  # Ngoài hàng rào: rừng thưa → rậm dần ra mép bản đồ.
+  - { appearanceId: env_tree_05, count: 14, minSpacing: 5, colliderRadius: 0.6, scale: [0.8, 1.1] }
+  - { appearanceId: env_tree_01, count: 12, minSpacing: 5, colliderRadius: 0.6, scale: [0.8, 1.1] }
+  - { appearanceId: env_tree_07, count: 10, minSpacing: 5, colliderRadius: 0.6, scale: [0.8, 1.1] }
+  - { appearanceId: env_rock_04, count: 8, minSpacing: 4, colliderRadius: 0.8, scale: [0.6, 1] }
+  - { appearanceId: env_bush_01, count: 24, minSpacing: 2.5, scale: [0.7, 1.1] }
+  - { appearanceId: env_fern_01, count: 24, minSpacing: 2, scale: [0.7, 1.1] }
+  - { appearanceId: env_grass_02, count: 60, minSpacing: 1.6, scale: [0.7, 1.2] }

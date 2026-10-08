@@ -1,0 +1,6 @@
+# KayKit Resource Bits "Textiles_Stack_Large_Colored" — Súc vải (chợ) (map renovation, D-027; 1916 tris)
+id: prop_textiles_01
+kind: environment
+scale: 0.6
+modelAssetId: prop_textiles_01
+placeholder: { shape: box, color: "#a8483c", height: 0.57, radius: 0.5 }

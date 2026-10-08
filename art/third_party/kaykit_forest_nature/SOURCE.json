@@ -84,6 +84,46 @@
       "assetId": "env_village_vine_01",
       "file": "originals/Assets/gltf/Bush_4_A_Color1.gltf",
       "type": "environment"
+    },
+    {
+      "assetId": "env_tree_05",
+      "file": "originals/Assets/gltf/Tree_1_B_Color1.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_tree_06",
+      "file": "originals/Assets/gltf/Tree_2_C_Color1.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_tree_07",
+      "file": "originals/Assets/gltf/Tree_3_B_Color1.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_tree_dead_02",
+      "file": "originals/Assets/gltf/Tree_Bare_2_A_Color1.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_rock_04",
+      "file": "originals/Assets/gltf/Rock_1_D_Color1.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_rock_05",
+      "file": "originals/Assets/gltf/Rock_2_C_Color1.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_bush_03",
+      "file": "originals/Assets/gltf/Bush_3_A_Color1.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_bush_04",
+      "file": "originals/Assets/gltf/Bush_4_B_Color1.gltf",
+      "type": "environment"
     }
   ]
 }

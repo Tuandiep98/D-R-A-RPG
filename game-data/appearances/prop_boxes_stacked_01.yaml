@@ -1,0 +1,6 @@
+# KayKit Dungeon "box_stacked" — Chồng hộp (map renovation, D-027; 2173 tris)
+id: prop_boxes_stacked_01
+kind: environment
+scale: 0.62
+modelAssetId: prop_boxes_stacked_01
+placeholder: { shape: box, color: "#9a6b45", height: 2.05, radius: 1.13 }

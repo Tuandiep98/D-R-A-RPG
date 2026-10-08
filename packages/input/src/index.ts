@@ -32,7 +32,7 @@ export type GameAction =
   | { type: 'USE_POTION' }
   | {
       type: 'TOGGLE_PANEL';
-      panel: 'inventory' | 'character' | 'cultivation' | 'settings';
+      panel: 'inventory' | 'character' | 'cultivation' | 'settings' | 'map';
     }
   | { type: 'TOGGLE_DEBUG' };
 
@@ -282,6 +282,7 @@ export class MouseKeyboardAdapter implements InputAdapter {
       this.emit({ type: 'TOGGLE_PANEL', panel: 'inventory' });
     else if (e.code === 'KeyC') this.emit({ type: 'TOGGLE_PANEL', panel: 'character' });
     else if (e.code === 'KeyK') this.emit({ type: 'TOGGLE_PANEL', panel: 'cultivation' });
+    else if (e.code === 'KeyM') this.emit({ type: 'TOGGLE_PANEL', panel: 'map' });
     else if (e.code === 'Tab') {
       e.preventDefault();
       this.emit({ type: 'TARGET_NEXT' });

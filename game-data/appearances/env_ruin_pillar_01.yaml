@@ -1,0 +1,6 @@
+# KayKit Dungeon "pillar" — Trụ đá cổ (map renovation, D-027; 136 tris)
+id: env_ruin_pillar_01
+kind: environment
+scale: 1
+modelAssetId: env_ruin_pillar_01
+placeholder: { shape: cylinder, color: "#9a958a", height: 4, radius: 0.75 }

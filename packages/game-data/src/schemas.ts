@@ -990,6 +990,55 @@ export const MapDefSchema = z
 export type MapDef = z.infer<typeof MapDefSchema>;
 
 // ---------------------------------------------------------------------------
+// World map (docs/map_authoring_rules.md): the continent split into regions.
+// Presentation + gating data; a region opens by realm, never by level (D-024).
+// ---------------------------------------------------------------------------
+
+/** World-map canvas units: x 0…1000 (west → east), y 0…640 (north → south). */
+const WorldPoint = z.strictObject({
+  x: z.number().min(0).max(1000),
+  y: z.number().min(0).max(640),
+});
+
+export const RegionBiomeSchema = z.enum([
+  'town',
+  'mountain',
+  'city',
+  'desert',
+  'dark_forest',
+  'sky',
+  'rift',
+  'core',
+]);
+export type RegionBiome = z.infer<typeof RegionBiomeSchema>;
+
+export const WorldRegionDefSchema = z.strictObject({
+  id: IdSchema,
+  /** Story order (1 = starting region); the world map lists regions by it. */
+  order: z.number().int().positive(),
+  name: z.string().min(1),
+  tagline: z.string().min(1),
+  biome: RegionBiomeSchema,
+  /** Minimum realm for the region to count as open. */
+  realm: IdSchema,
+  /** Region tint on the world map. */
+  color: HexColorSchema,
+  /** Coastline polygon in world-map units (≥ 3 points, clockwise or not). */
+  shape: z.array(WorldPoint).min(3),
+  /** Where the name plate sits; defaults to the shape's centre. */
+  label: WorldPoint.optional(),
+  /** Built maps of this region and where each one sits on the world map. */
+  maps: z.array(z.strictObject({ mapId: IdSchema, at: WorldPoint })).default([]),
+  /** Neighbouring regions joined by a road on the world map. */
+  links: z.array(IdSchema).default([]),
+  /** Short bullets shown in the region card. */
+  highlights: z.array(z.string().min(1)).max(5).default([]),
+  /** Signature boss or dungeon (display text). */
+  boss: z.string().min(1).optional(),
+});
+export type WorldRegionDef = z.infer<typeof WorldRegionDefSchema>;
+
+// ---------------------------------------------------------------------------
 // Presentation: how a definition looks. Gameplay never reads this.
 // ---------------------------------------------------------------------------
 

@@ -1,0 +1,6 @@
+# KayKit Dungeon "sword_shield_broken" — Giá binh khí gãy (map renovation, D-027; 396 tris)
+id: prop_weapon_rack_broken_01
+kind: environment
+scale: 0.62
+modelAssetId: prop_weapon_rack_broken_01
+placeholder: { shape: box, color: "#7d7f86", height: 1.22, radius: 0.44 }

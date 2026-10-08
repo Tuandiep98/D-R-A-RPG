@@ -22,6 +22,8 @@ import {
   MonsterDefSchema,
   type NpcDef,
   NpcDefSchema,
+  type PetDef,
+  PetDefSchema,
   type ProgressionRules,
   ProgressionRulesSchema,
   type QuestDef,
@@ -38,9 +40,12 @@ import {
   SkillDefSchema,
   type UpgradeRules,
   UpgradeRulesSchema,
+  type WorldRegionDef,
+  WorldRegionDefSchema,
 } from './schemas';
 
 export interface ContentBundle {
+  pets: ReadonlyMap<string, PetDef>;
   combat: ReadonlyMap<string, CombatRules>;
   characters: ReadonlyMap<string, CharacterDef>;
   monsters: ReadonlyMap<string, MonsterDef>;
@@ -59,6 +64,8 @@ export interface ContentBundle {
   shops: ReadonlyMap<string, ShopDef>;
   recipes: ReadonlyMap<string, RecipeDef>;
   upgrades: ReadonlyMap<string, UpgradeRules>;
+  /** World-map regions (game-data/world/). */
+  world: ReadonlyMap<string, WorldRegionDef>;
 }
 
 /** A raw content file. `path` is relative to the game-data root, e.g. `monsters/wolf_001.yaml`. */
@@ -83,6 +90,7 @@ export class ContentError extends Error {
 }
 
 const FOLDERS = {
+  pets: PetDefSchema,
   combat: CombatRulesSchema,
   characters: CharacterDefSchema,
   monsters: MonsterDefSchema,
@@ -101,6 +109,7 @@ const FOLDERS = {
   shops: ShopDefSchema,
   recipes: RecipeDefSchema,
   upgrades: UpgradeRulesSchema,
+  world: WorldRegionDefSchema,
 } as const;
 type Folder = keyof typeof FOLDERS;
 
@@ -124,6 +133,7 @@ type MutableBundle = {
 export function buildContentBundle(files: readonly ContentFile[]): ContentBundle {
   const issues: ContentIssue[] = [];
   const out: MutableBundle = {
+    pets: new Map(),
     combat: new Map(),
     characters: new Map(),
     monsters: new Map(),
@@ -142,6 +152,7 @@ export function buildContentBundle(files: readonly ContentFile[]): ContentBundle
     shops: new Map(),
     recipes: new Map(),
     upgrades: new Map(),
+    world: new Map(),
   };
 
   for (const file of files) {
@@ -223,6 +234,7 @@ function checkReferences(bundle: ContentBundle, issues: ContentIssue[]): void {
       });
   }
   checkRealms(bundle, issues);
+  checkWorld(bundle, issues);
   if (bundle.progression.size === 0)
     issues.push({
       path: 'progression',
@@ -264,6 +276,7 @@ function checkReferences(bundle: ContentBundle, issues: ContentIssue[]): void {
 
   for (const c of bundle.characters.values()) {
     const owner = `characters/${c.id}`;
+    need(bundle.pets, 'petId')(owner, c.petId);
     if (
       !compatibleExpression(c.element, c.expression, bundle.combat.get('combat_rules')?.expressions)
     )
@@ -283,6 +296,42 @@ function checkReferences(bundle: ContentBundle, issues: ContentIssue[]): void {
         });
       }
     }
+  }
+
+  for (const p of bundle.pets.values()) {
+    need(bundle.monsters, 'monsterId')(`pets/${p.id}`, p.monsterId);
+    for (const id of p.skills) needSkill(`pets/${p.id}`, id);
+  }
+  for (const n of bundle.cultivation.values())
+    need(bundle.pets, 'petId')(`cultivation/${n.id}`, n.petId);
+  for (const skill of bundle.skills.values()) {
+    const commands = skill.effects.filter((effect) => effect.type === 'pet_attack');
+    if (commands.length > 1)
+      issues.push({ path: `skills/${skill.id}`, message: 'Only one pet command per cast' });
+    for (const command of commands) {
+      needSkill(`skills/${skill.id}`, command.skillId);
+      if (
+        bundle.skills
+          .get(command.skillId)
+          ?.effects.some((effect) => effect.type === 'pet_attack' || effect.type === 'pet_support')
+      )
+        issues.push({
+          path: `skills/${skill.id}`,
+          message: 'Pet commands cannot recursively command or support pets',
+        });
+    }
+  }
+  for (const combo of bundle.combos.values()) {
+    for (const step of combo.steps)
+      for (const variant of step.variants) {
+        if (!variant.projectileSkillId) continue;
+        needSkill(`combos/${combo.id}`, variant.projectileSkillId);
+        if (bundle.skills.get(variant.projectileSkillId)?.delivery !== 'projectile')
+          issues.push({
+            path: `combos/${combo.id}`,
+            message: 'Basic spell must reference projectile delivery',
+          });
+      }
   }
   for (const m of bundle.monsters.values()) {
     const owner = `monsters/${m.id}`;
@@ -407,6 +456,33 @@ function checkReferences(bundle: ContentBundle, issues: ContentIssue[]): void {
       for (const inst of chunk.instances) needAppearance(`${owner}#${chunk.id}`, inst.appearanceId);
     }
   }
+}
+
+/**
+ * Every built map belongs to exactly one region; regions reference real realms,
+ * maps and neighbours (docs/map_authoring_rules.md §World).
+ */
+function checkWorld(bundle: ContentBundle, issues: ContentIssue[]): void {
+  if (bundle.world.size === 0) return;
+  const owner = new Map<string, string>();
+  const orders = new Set<number>();
+  for (const r of bundle.world.values()) {
+    const path = `world/${r.id}`;
+    if (!bundle.realms.has(r.realm)) issues.push({ path, message: `unknown realm "${r.realm}"` });
+    if (orders.has(r.order)) issues.push({ path, message: `duplicate order ${r.order}` });
+    orders.add(r.order);
+    for (const l of r.links)
+      if (!bundle.world.has(l)) issues.push({ path, message: `unknown linked region "${l}"` });
+    for (const m of r.maps) {
+      if (!bundle.maps.has(m.mapId)) issues.push({ path, message: `unknown mapId "${m.mapId}"` });
+      const prev = owner.get(m.mapId);
+      if (prev) issues.push({ path, message: `map "${m.mapId}" already belongs to ${prev}` });
+      owner.set(m.mapId, r.id);
+    }
+  }
+  for (const id of bundle.maps.keys())
+    if (!owner.has(id))
+      issues.push({ path: `maps/${id}`, message: 'map is not listed in any world region' });
 }
 
 /** Realm orders must be 0…n-1; the starting realm has no breakthrough. */

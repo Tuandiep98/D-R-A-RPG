@@ -1,0 +1,6 @@
+# KayKit Dungeon "candle_triple" — Nến ba ngọn (đàn tế) (map renovation, D-027; 198 tris)
+id: prop_candles_01
+kind: environment
+scale: 0.62
+modelAssetId: prop_candles_01
+placeholder: { shape: cylinder, color: "#efe0b0", height: 0.54, radius: 0.16 }

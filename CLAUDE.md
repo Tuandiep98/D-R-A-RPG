@@ -8,6 +8,8 @@ Tài liệu chính:
 - `docs/plan/01_tech_stack_plan.md` — tech stack, kiến trúc, security baseline (mục 54–57)
 - `docs/plan/02_assets_models_maps_plan.md` — art bible, rig, equipment, map, asset pipeline
 - `docs/plan/03_implementation_roadmap.md` — trạng thái từng phase/hạng mục, việc tiếp theo
+- `docs/plan/05_map_renovation_plan.md` — trùng tu map, minimap, bản đồ thế giới 8 vùng (mở theo cảnh giới)
+- `docs/map_authoring_rules.md` — **luật tạo map bắt buộc** (R1–R8 có test, bày trí theo phong cách vùng)
 - `docs/plan/04_combat_elements_skills_redesign.md` — plan combat RPG × MOBA, ngũ hành, skill tám Đạo, migration Lôi/súng và auto farm (nền tảng/combat slice đã triển khai; kit tám Đạo còn trong roadmap)
 - `docs/asset_sourcing.md` — pack asset/model/map đề xuất theo lore mới, khoảng trống phải tự làm
 - `docs/game-ui-style.md` — quy tắc UI bắt buộc: Kenney Fantasy Glass, source/element, blur và fallback
@@ -37,6 +39,7 @@ pnpm assets:sheet <out> <dir>  # ảnh ghép có nhãn để chọn icon/khung b
 pnpm smoke:gear [url]    # chụp cận nhân vật (hình nộm UAL) để căn socket/xoay vũ khí
 pnpm smoke [url]         # headless Chrome smoke test against a running dev/preview server
 pnpm smoke:controls [url] # WASD desktop + joystick điện thoại dọc/ngang (touch thật qua CDP)
+pnpm smoke:maps [url]    # mỗi map: scene, minimap, bản đồ thế giới + khu vực → reports/maps/
 pnpm smoke:responsive [url] # 9 kích thước desktop/tablet/phone: tràn màn, đè nhau, vùng chạm <44px, chữ <11px
 pnpm smoke:login [url]   # đăng ký → tạo nhân vật → vào game → bang hội → chat (cần dev:stack)
 pnpm db:generate         # drizzle-kit migration sau khi sửa packages/persistence/src/schema.ts
@@ -66,7 +69,7 @@ packages/auth/             JWT, ticket, argon2id, refresh token, TOTP
 packages/input/            InputManager + mouse/keyboard, touch, gamepad
 packages/asset-runtime/    manifest, load/dedupe/retry GLB, decoder local
 packages/babylon-renderer/ engine, camera, environment, entity views, VFX, quality, GameView
-game-data/                 YAML content + nav/ (navmesh đã bake)
+game-data/                 YAML content (+ world/: 8 vùng bản đồ thế giới) + nav/ (navmesh đã bake)
 maps/source/               layout map (đầu vào map-builder)
 art/third_party/<pack>/    originals/ (không commit) + LICENSE.txt + SOURCE.json
 tools/                     asset-processor, map-builder, navmesh-builder, data-validator, smoke
@@ -92,6 +95,10 @@ infra/                     docker (compose, Dockerfiles), deploy (Caddyfile)
 14. Không microservice hoá khi chưa có lý do.
 15. Ưu tiên frame time ổn định hơn chất lượng hình ảnh; feature mới phải chạy được ở preset Low.
 16. Thao tác GM/admin phải có RBAC + TOTP và ghi `audit_log`.
+
+## Quy tắc map
+
+Đọc `docs/map_authoring_rules.md` trước khi tạo/sửa map. Map thuộc đúng 1 vùng `game-data/world/`; bãi quái/cổng/spawn không nằm trong collider hay vùng an toàn; đấu trường boss trống; bày trí theo cụm (prefab) và `scatter.area` theo phong cách vùng; vùng mở theo cảnh giới, không theo level.
 
 ## Quy tắc asset
 

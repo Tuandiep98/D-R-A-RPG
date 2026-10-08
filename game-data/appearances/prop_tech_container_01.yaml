@@ -1,0 +1,6 @@
+# KayKit Space Base "containers_A" — Khoang chứa Thiên Cơ (map renovation, D-027; 280 tris)
+id: prop_tech_container_01
+kind: environment
+scale: 2.4
+modelAssetId: prop_tech_container_01
+placeholder: { shape: box, color: "#5f7f99", height: 0.48, radius: 0.6 }

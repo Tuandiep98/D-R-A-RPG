@@ -1,0 +1,24 @@
+# Núi non, môn phái, linh thú (master plan §12). Huyền Vũ Cổ Mộ thuộc vùng này.
+id: region_thanh_van
+order: 2
+name: Thanh Vân Sơn Mạch
+tagline: Núi non, môn phái, linh thú
+biome: mountain
+realm: truc_co
+color: "#5fa86f"
+shape:
+  - { x: 140, y: 190 }
+  - { x: 240, y: 160 }
+  - { x: 330, y: 175 }
+  - { x: 350, y: 240 }
+  - { x: 338, y: 300 }
+  - { x: 292, y: 345 }
+  - { x: 210, y: 352 }
+  - { x: 150, y: 312 }
+  - { x: 118, y: 250 }
+links: [region_van_hai]
+highlights:
+  - Trúc Lâm, Linh Khê, Vạn Kiếm Nhai
+  - Học kỹ năng môn phái, farm linh thú
+  - Tuyến truyện Thanh Vân
+boss: Huyền Vũ / Guardian X-04

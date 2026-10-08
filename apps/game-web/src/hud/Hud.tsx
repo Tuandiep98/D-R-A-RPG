@@ -25,6 +25,8 @@ import {
   TOUCH_POSITIONS,
   useSkillLoadout,
 } from '../skill-loadout';
+import { Minimap } from '../map/Minimap';
+import { WorldMap } from '../map/WorldMap';
 import { useUiStore } from '../store';
 import { CultivationPanel } from './CultivationPanel';
 import { GameIcon } from './GameIcon';
@@ -1308,6 +1310,9 @@ function MenuButtons() {
             <HudGlyph name="social" />
           </button>
         )}
+        <button type="button" title="Bản đồ (M)" aria-label="Bản đồ" onClick={() => show('map')}>
+          <HudGlyph name="map" />
+        </button>
         <FullscreenButton />
         <button type="button" title="Cài đặt" aria-label="Cài đặt" onClick={() => show('settings')}>
           <HudGlyph name="settings" />
@@ -1342,6 +1347,7 @@ export function Hud() {
       <ZoneBanner />
       <DebugOverlay />
       <TouchJoystick />
+      <Minimap />
       <MenuButtons />
       <ActionBar />
       {(panel || npc) && <div className="panel-backdrop" aria-hidden="true" />}
@@ -1352,6 +1358,7 @@ export function Hud() {
       {panel === 'settings' && <SettingsPanel />}
       {panel === 'leaderboard' && <LeaderboardPanel />}
       {panel === 'social' && <SocialPanel />}
+      {panel === 'map' && <WorldMap />}
       <NpcPanel />
       <QuestTracker />
       <ChatBox />

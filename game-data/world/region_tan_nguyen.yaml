@@ -1,0 +1,28 @@
+# Vùng khởi đầu (master plan §11). Mở từ Luyện Khí; chứa toàn bộ map đã dựng.
+id: region_tan_nguyen
+order: 1
+name: Tân Nguyên Trấn
+tagline: Thị trấn biên giới — khởi đầu hành trình
+biome: town
+realm: luyen_khi
+color: "#a7c46a"
+shape:
+  - { x: 370, y: 275 }
+  - { x: 455, y: 255 }
+  - { x: 530, y: 272 }
+  - { x: 552, y: 325 }
+  - { x: 522, y: 388 }
+  - { x: 452, y: 405 }
+  - { x: 385, y: 385 }
+  - { x: 358, y: 330 }
+label: { x: 452, y: 372 }
+maps:
+  - { mapId: map_sandbox_01, at: { x: 418, y: 334 } }
+  - { mapId: map_forest_mechanism_01, at: { x: 470, y: 304 } }
+  - { mapId: map_golem_sanctum_01, at: { x: 512, y: 296 } }
+links: [region_thanh_van, region_co_thanh, region_u_minh]
+highlights:
+  - Thị trấn biên giới, quest đầu
+  - Phế Tích Vô Danh — nơi nhận Mảnh Thiên Tâm
+  - Tầng sâu cửa hợp kim, terminal cổ
+boss: Phế Tích Vô Danh · Guardian X-04

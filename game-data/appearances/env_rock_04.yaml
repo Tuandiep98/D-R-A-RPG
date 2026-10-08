@@ -1,0 +1,6 @@
+# KayKit Forest Nature "Rock_1_D_Color1" — Đá (map renovation, D-027; 84 tris)
+id: env_rock_04
+kind: environment
+scale: 2.2
+modelAssetId: env_rock_04
+placeholder: { shape: sphere, color: "#7d7f86", height: 2.49, radius: 1.27 }

@@ -1,0 +1,6 @@
+# KayKit Dungeon "coin_stack_large" — Chồng xu (quầy đổi tiền) (map renovation, D-027; 1776 tris)
+id: prop_coins_01
+kind: environment
+scale: 0.62
+modelAssetId: prop_coins_01
+placeholder: { shape: cylinder, color: "#e3c25a", height: 0.72, radius: 0.51 }

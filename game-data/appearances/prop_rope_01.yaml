@@ -1,0 +1,6 @@
+# KayKit RPG Tools "rope_bundle_A" — Cuộn dây (map renovation, D-027; 1248 tris)
+id: prop_rope_01
+kind: environment
+scale: 0.5
+modelAssetId: prop_rope_01
+placeholder: { shape: cylinder, color: "#b08a5a", height: 0.13, radius: 0.35 }

@@ -152,6 +152,27 @@ export interface RangedView {
   reload: number | null;
 }
 
+/** One entity on the minimap (GameView.radar). */
+export interface RadarBlip {
+  id: EntityId;
+  kind: EntitySnapshot['kind'];
+  x: number;
+  z: number;
+  /** Monster tier (normal/elite/boss…), undefined for other kinds. */
+  tier?: string;
+  /** A monster currently targeting the local player. */
+  engaged: boolean;
+  selected: boolean;
+}
+
+export interface RadarFrame {
+  mapId: string;
+  /** yaw: radians, 0 = +Z (north on the map), atan2(x, z) like the sim. */
+  player: { x: number; z: number; yaw: number } | null;
+  cameraYaw: number;
+  blips: RadarBlip[];
+}
+
 export interface UiState {
   mapName: string;
   element?: import('@rpg/game-protocol').Element;
@@ -711,6 +732,36 @@ export class GameView {
       });
     }
     return out;
+  }
+
+  /**
+   * Minimap feed: interpolated positions of what the player can see (AOI) plus
+   * the camera heading. Pulled by the HUD canvas at ~10 Hz; never stored in React.
+   */
+  radar(): RadarFrame {
+    const me = this.sampled.get(this.join.playerId);
+    const a = this.rig.camera.alpha;
+    const blips: RadarBlip[] = [];
+    for (const e of this.sampled.values()) {
+      if (e.state.id === this.join.playerId || e.state.action === 'dead') continue;
+      const kind = e.state.kind;
+      blips.push({
+        id: e.state.id,
+        kind,
+        x: e.x,
+        z: e.z,
+        tier: kind === 'monster' ? this.opts.content.monsters.get(e.state.defId)?.tier : undefined,
+        engaged: kind === 'monster' && e.state.targetId === this.join.playerId,
+        selected: e.state.id === this.selectedId,
+      });
+    }
+    return {
+      mapId: this.join.mapId,
+      player: me ? { x: me.x, z: me.z, yaw: me.yaw } : null,
+      // Camera looks from its position toward the player: forward on the ground plane.
+      cameraYaw: Math.atan2(-Math.cos(a), -Math.sin(a)),
+      blips,
+    };
   }
 
   dispose(): void {

@@ -44,6 +44,31 @@
       "assetId": "prop_scifi_access_point_01",
       "file": "originals/Assets/gltf/windturbine_low.gltf",
       "type": "prop"
+    },
+    {
+      "assetId": "prop_tech_container_01",
+      "file": "originals/Assets/gltf/containers_A.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_tech_cargo_01",
+      "file": "originals/Assets/gltf/cargo_A_stacked.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "env_tech_drill_01",
+      "file": "originals/Assets/gltf/drill_structure.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "prop_tech_panel_01",
+      "file": "originals/Assets/gltf/solarpanel.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "env_tech_module_01",
+      "file": "originals/Assets/gltf/basemodule_A.gltf",
+      "type": "environment"
     }
   ]
 }

@@ -1,0 +1,6 @@
+# KayKit Dungeon "chair" — Ghế (map renovation, D-027; 294 tris)
+id: prop_chair_01
+kind: environment
+scale: 0.62
+modelAssetId: prop_chair_01
+placeholder: { shape: box, color: "#8a5a3a", height: 0.76, radius: 0.23 }

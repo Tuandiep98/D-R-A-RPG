@@ -1,0 +1,6 @@
+# KayKit Dungeon "column" — Cột đá đổ (phế tích) (map renovation, D-027; 44 tris)
+id: env_ruin_column_01
+kind: environment
+scale: 1
+modelAssetId: env_ruin_column_01
+placeholder: { shape: cylinder, color: "#9a958a", height: 1.4, radius: 0.35 }

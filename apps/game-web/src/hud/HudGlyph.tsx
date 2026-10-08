@@ -23,7 +23,9 @@ export type HudGlyphName =
   | 'reload'
   | 'potion'
   | 'ranking'
-  | 'social';
+  | 'social'
+  | 'map'
+  | 'lock';
 
 /**
  * Chunky filled silhouettes in the style of the Kenney Fantasy UI sample
@@ -39,6 +41,13 @@ const line = (d: string) => (
 );
 
 const glyphs: Record<HudGlyphName, ReactNode> = {
+  // Folded scroll map with a route pin.
+  map: cut(
+    'M1.5 4.5 8 2l8 2.5L22.5 2v17.5L16 22l-8-2.5L1.5 22ZM8.8 5.2v11.9l6.4 2V7.2ZM12 9.6a2 2 0 1 0 .01 0Z',
+  ),
+  lock: cut(
+    'M6 10V7.5a6 6 0 0 1 12 0V10h1.5v12.5h-15V10Zm3 0h6V7.5a3 3 0 0 0-6 0Zm3 3.6a1.8 1.8 0 0 0-.9 3.4v2.4h1.8V17a1.8 1.8 0 0 0-.9-3.4Z',
+  ),
   blade: (
     <g transform="translate(12 12) rotate(45) scale(1.15) translate(-12 -12)">
       <path d="M12 .8 14.2 3.6V14H9.8V3.6Z" />

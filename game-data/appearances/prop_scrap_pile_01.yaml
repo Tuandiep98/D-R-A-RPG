@@ -1,0 +1,6 @@
+# KayKit Resource Bits "Parts_Pile_Large" — Đống xác máy lớn (map renovation, D-027; 2736 tris)
+id: prop_scrap_pile_01
+kind: environment
+scale: 0.8
+modelAssetId: prop_scrap_pile_01
+placeholder: { shape: sphere, color: "#6f7680", height: 0.58, radius: 0.7 }

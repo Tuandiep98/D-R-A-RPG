@@ -85,7 +85,8 @@ describe('LocalSimHost', () => {
     host.stepOnce();
     const portal = (snap as unknown as Snapshot).entities.find((e) => e.kind === 'portal');
     host.sendIntent({ type: 'INTERACT', entityId: portal?.id });
-    for (let i = 0; i < 20 * 8 && joins.length === 0; i++) {
+    // The town gate is ~46 m from the plaza spawn (5 m/s): allow 15 s of sim.
+    for (let i = 0; i < 20 * 15 && joins.length === 0; i++) {
       host.stepOnce();
       await Promise.resolve();
     }

@@ -1,0 +1,6 @@
+# KayKit Dungeon "barrel_small_stack" — Chồng thùng nhỏ (map renovation, D-027; 1149 tris)
+id: prop_barrels_small_01
+kind: environment
+scale: 0.62
+modelAssetId: prop_barrels_small_01
+placeholder: { shape: cylinder, color: "#7a5232", height: 1.1, radius: 0.57 }

@@ -74,6 +74,56 @@
       "assetId": "item_kr_parts_pile_small",
       "file": "originals/Assets/gltf/Parts_Pile_Small.gltf",
       "type": "prop"
+    },
+    {
+      "assetId": "prop_scrap_pile_01",
+      "file": "originals/Assets/gltf/Parts_Pile_Large.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_scrap_pile_02",
+      "file": "originals/Assets/gltf/Parts_Pile_Medium.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_log_stack_01",
+      "file": "originals/Assets/gltf/Wood_Log_Stack.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_planks_01",
+      "file": "originals/Assets/gltf/Wood_Planks_Stack_Medium.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_iron_bars_01",
+      "file": "originals/Assets/gltf/Iron_Bars_Stack_Medium.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_textiles_01",
+      "file": "originals/Assets/gltf/Textiles_Stack_Large_Colored.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_pallet_01",
+      "file": "originals/Assets/gltf/Pallet_Wood_Covered_A.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_stone_bricks_01",
+      "file": "originals/Assets/gltf/Stone_Bricks_Stack_Medium.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_fuel_barrels_01",
+      "file": "originals/Assets/gltf/Fuel_A_Barrels.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_stone_chunks_01",
+      "file": "originals/Assets/gltf/Stone_Chunks_Large.gltf",
+      "type": "prop"
     }
   ]
 }

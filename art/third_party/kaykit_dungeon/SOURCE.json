@@ -149,6 +149,156 @@
       "assetId": "prop_workbench_01",
       "file": "originals/Assets/gltf/table_medium_decorated_A.gltf",
       "type": "prop"
+    },
+    {
+      "assetId": "env_ruin_column_01",
+      "file": "originals/Assets/gltf/column.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_ruin_pillar_01",
+      "file": "originals/Assets/gltf/pillar.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "prop_rubble_02",
+      "file": "originals/Assets/gltf/rubble_half.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "env_ruin_wall_broken_01",
+      "file": "originals/Assets/gltf/wall_broken.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_ruin_wall_cracked_01",
+      "file": "originals/Assets/gltf/wall_cracked.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_wall_half_01",
+      "file": "originals/Assets/gltf/wall_half.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_village_wall_window_01",
+      "file": "originals/Assets/gltf/wall_window_open.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_village_wall_arched_01",
+      "file": "originals/Assets/gltf/wall_archedwindow_open.gltf",
+      "type": "environment"
+    },
+    {
+      "assetId": "env_floor_broken_01",
+      "file": "originals/Assets/gltf/floor_tile_small_broken_A.gltf",
+      "type": "ground"
+    },
+    {
+      "assetId": "env_floor_rune_01",
+      "file": "originals/Assets/gltf/floor_tile_small_decorated.gltf",
+      "type": "ground"
+    },
+    {
+      "assetId": "prop_banner_green_01",
+      "file": "originals/Assets/gltf/banner_patternA_green.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_banner_thin_red_01",
+      "file": "originals/Assets/gltf/banner_thin_red.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_banner_shield_01",
+      "file": "originals/Assets/gltf/banner_shield_green.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_torch_stand_01",
+      "file": "originals/Assets/gltf/torch_lit.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_candles_01",
+      "file": "originals/Assets/gltf/candle_triple.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_shelves_01",
+      "file": "originals/Assets/gltf/shelves.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_shelf_candles_01",
+      "file": "originals/Assets/gltf/shelf_small_candles.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_bottle_01",
+      "file": "originals/Assets/gltf/bottle_A_labeled_green.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_table_small_01",
+      "file": "originals/Assets/gltf/table_small_decorated_A.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_table_long_01",
+      "file": "originals/Assets/gltf/table_long.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_stool_01",
+      "file": "originals/Assets/gltf/stool.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_chair_01",
+      "file": "originals/Assets/gltf/chair.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_keg_01",
+      "file": "originals/Assets/gltf/keg.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_barrels_small_01",
+      "file": "originals/Assets/gltf/barrel_small_stack.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_crates_stacked_01",
+      "file": "originals/Assets/gltf/crates_stacked.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_boxes_stacked_01",
+      "file": "originals/Assets/gltf/box_stacked.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_trunk_01",
+      "file": "originals/Assets/gltf/trunk_large_A.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_weapon_rack_broken_01",
+      "file": "originals/Assets/gltf/sword_shield_broken.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_coins_01",
+      "file": "originals/Assets/gltf/coin_stack_large.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_plate_food_01",
+      "file": "originals/Assets/gltf/plate_food_A.gltf",
+      "type": "prop"
     }
   ]
 }

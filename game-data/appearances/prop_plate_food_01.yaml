@@ -1,0 +1,6 @@
+# KayKit Dungeon "plate_food_A" — Đĩa đồ ăn (map renovation, D-027; 547 tris)
+id: prop_plate_food_01
+kind: environment
+scale: 0.62
+modelAssetId: prop_plate_food_01
+placeholder: { shape: cylinder, color: "#d9a05b", height: 0.49, radius: 0.32 }

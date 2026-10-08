@@ -1,0 +1,6 @@
+# KayKit Space Base "drill_structure" — Giàn khoan cổ (map renovation, D-027; 1198 tris)
+id: env_tech_drill_01
+kind: environment
+scale: 1.6
+modelAssetId: env_tech_drill_01
+placeholder: { shape: cylinder, color: "#5f7f99", height: 3.2, radius: 1.4 }

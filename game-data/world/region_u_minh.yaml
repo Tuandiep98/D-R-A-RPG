@@ -1,0 +1,22 @@
+# Rừng đen, Thiên Tâm rò rỉ (master plan §15).
+id: region_u_minh
+order: 5
+name: U Minh Lâm
+tagline: Rừng đen, sinh vật đột biến
+biome: dark_forest
+realm: kim_dan
+color: "#8d66cc"
+shape:
+  - { x: 362, y: 432 }
+  - { x: 450, y: 420 }
+  - { x: 560, y: 440 }
+  - { x: 610, y: 500 }
+  - { x: 580, y: 570 }
+  - { x: 480, y: 602 }
+  - { x: 390, y: 582 }
+  - { x: 340, y: 520 }
+highlights:
+  - Sương độc, debuff, corruption
+  - Robot bị thực vật xuyên qua
+  - Câu chuyện Vô Sinh Giáo
+boss: Mộc Linh Cự Thụ

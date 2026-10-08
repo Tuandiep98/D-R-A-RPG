@@ -1,0 +1,6 @@
+# KayKit Dungeon "shelves" — Kệ hàng (map renovation, D-027; 152 tris)
+id: prop_shelves_01
+kind: environment
+scale: 0.62
+modelAssetId: prop_shelves_01
+placeholder: { shape: box, color: "#8a5a3a", height: 1.21, radius: 0.62 }

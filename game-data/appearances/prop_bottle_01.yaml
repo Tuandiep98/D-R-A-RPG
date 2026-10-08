@@ -1,0 +1,6 @@
+# KayKit Dungeon "bottle_A_labeled_green" — Bình thuốc (map renovation, D-027; 144 tris)
+id: prop_bottle_01
+kind: environment
+scale: 0.62
+modelAssetId: prop_bottle_01
+placeholder: { shape: cylinder, color: "#4f9a6a", height: 0.55, radius: 0.11 }

@@ -1,0 +1,6 @@
+# KayKit Resource Bits "Stone_Chunks_Large" — Khối đá vỡ (map renovation, D-027; 1578 tris)
+id: prop_stone_chunks_01
+kind: environment
+scale: 0.7
+modelAssetId: prop_stone_chunks_01
+placeholder: { shape: sphere, color: "#8f8a80", height: 0.75, radius: 0.53 }

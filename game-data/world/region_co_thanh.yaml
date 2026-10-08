@@ -1,0 +1,23 @@
+# Đông phương cổ × máy móc (master plan §13).
+id: region_co_thanh
+order: 3
+name: Cơ Thành Thiên Môn
+tagline: Đô thị công nghệ, nghiên cứu Thiên Cơ
+biome: city
+realm: truc_co
+color: "#6fa9cf"
+shape:
+  - { x: 572, y: 215 }
+  - { x: 650, y: 190 }
+  - { x: 740, y: 205 }
+  - { x: 780, y: 262 }
+  - { x: 758, y: 330 }
+  - { x: 690, y: 350 }
+  - { x: 610, y: 340 }
+  - { x: 578, y: 290 }
+links: [region_hoang_vuc, region_thien_liet]
+highlights:
+  - Module, drone, cơ giáp
+  - Học Viện Thiên Công
+  - Chính truyện Cơ Đình
+boss: Hạch Tâm Chiến Hạm

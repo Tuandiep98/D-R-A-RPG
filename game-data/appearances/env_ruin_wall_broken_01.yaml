@@ -1,0 +1,6 @@
+# KayKit Dungeon "wall_broken" — Tường vỡ (map renovation, D-027; 784 tris)
+id: env_ruin_wall_broken_01
+kind: environment
+scale: 1
+modelAssetId: env_ruin_wall_broken_01
+placeholder: { shape: box, color: "#8d8a84", height: 4, radius: 2 }

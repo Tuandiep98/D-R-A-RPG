@@ -2,14 +2,14 @@
 id: map_sandbox_01
 name: Tân Nguyên Trấn
 schemaVersion: 1
-seed: 1001
+seed: 1101
 bounds:
   min:
-    x: -20
-    z: -20
+    x: -40
+    z: -40
   max:
-    x: 20
-    z: 20
+    x: 40
+    z: 40
 chunkSize: 32
 ground:
   color: "#5f8a4a"
@@ -17,953 +17,616 @@ ground:
     variation:
       - "#6f9a4a"
       - "#527a3e"
-    noiseScale: 10
+      - "#7d9450"
+    noiseScale: 12
     noiseAmount: 0.6
     strokes:
       - points:
           - x: 0
-            z: -18
+            z: -39
           - x: 0
-            z: 18
-        width: 4.5
+            z: 39
+        width: 5.95
         color: "#8b6f4a"
       - points:
-          - x: -17
+          - x: -39
             z: 0
-          - x: 17
+          - x: 39
             z: 0
-        width: 3.6
+        width: 4.25
+        color: "#8b6f4a"
+      - points:
+          - x: 0
+            z: 32
+          - x: -14
+            z: 34
+          - x: -27
+            z: 30
+        width: 4.25
+        color: "#8b6f4a"
+      - points:
+          - x: 0
+            z: 32
+          - x: 14
+            z: 34
+          - x: 27
+            z: 30
+        width: 4.25
+        color: "#8b6f4a"
+      - points:
+          - x: 3
+            z: -6
+          - x: 11
+            z: -10
+        width: 3.4
+        color: "#8b6f4a"
+      - points:
+          - x: -3
+            z: -6
+          - x: -11
+            z: -11
+        width: 3.4
         color: "#8b6f4a"
     patches:
       - center:
           x: 0
-          z: -8
-        radius: 7
+          z: 0
+        radius: 10
         color: "#9a8467"
         edge: 2.5
+      - center:
+          x: -15
+          z: 11
+        radius: 6
+        color: "#6f5f4a"
+        edge: 2
+      - center:
+          x: 15
+          z: 10
+        radius: 7
+        color: "#8f7a5a"
+        edge: 2
+      - center:
+          x: 15
+          z: -12
+        radius: 6
+        color: "#7d8a55"
+        edge: 2
+      - center:
+          x: -15
+          z: -13
+        radius: 7
+        color: "#8a7a5e"
+        edge: 2
+      - center:
+          x: 0
+          z: -29
+        radius: 7
+        color: "#7a7468"
+        edge: 2
+      - center:
+          x: -29
+          z: 30
+        radius: 7
+        color: "#77705f"
+        edge: 3
+      - center:
+          x: 29
+          z: 30
+        radius: 7
+        color: "#6e675d"
+        edge: 3
 playerSpawn:
   x: 0
-  z: -12
+  z: -9
 arrivals:
-  - { id: from_forest, position: { x: 0, z: 13 } }
+  - { id: from_forest, position: { x: 0, z: 33 } }
 zones:
-  - {
-      id: village,
-      name: Tân Nguyên Trấn,
-      kind: safe,
-      center: { x: 0, z: -7 },
-      radius: 12,
-    }
+  - { id: village, name: Tân Nguyên Trấn, kind: safe, center: { x: 0, z: -2 }, radius: 27 }
+  - { id: plaza, name: Quảng Trường Thiên Cơ, kind: safe, center: { x: 0, z: 0 }, radius: 9 }
+  - { id: training_yard, name: Bãi Luyện Công, kind: combat, center: { x: -29, z: 30 }, radius: 9 }
+  - { id: scrap_field, name: Bãi Xác Máy, kind: combat, center: { x: 29, z: 30 }, radius: 9 }
 spawns:
-  - {
-      id: stone_guard_post,
-      monsterId: stone_guardian_001,
-      position: { x: 11, z: 12 },
-      count: 3,
-      radius: 2,
-      respawnSeconds: 45,
-    }
-  - {
-      id: robot_camp,
-      monsterId: robot_scout_001,
-      position: { x: -11, z: 12 },
-      count: 2,
-      radius: 2.5,
-      respawnSeconds: 10,
-    }
+  - { id: stone_guard_post, monsterId: stone_guardian_001, position: { x: -29, z: 30 }, count: 3, radius: 3, respawnSeconds: 45 }
+  - { id: robot_camp, monsterId: robot_scout_001, position: { x: 29, z: 30 }, count: 3, radius: 3.5, respawnSeconds: 10 }
 portals:
-  - {
-      id: town_to_forest,
-      name: Phế Tích Vô Danh,
-      position: { x: 0, z: 17 },
-      targetMapId: map_forest_mechanism_01,
-      targetArrival: from_town,
-    }
+  - { id: town_to_forest, name: Phế Tích Vô Danh, position: { x: 0, z: 37 }, targetMapId: map_forest_mechanism_01, targetArrival: from_town }
 npcs:
-  - { npcId: npc_elder, position: { x: -3, z: -10 }, rotationY: 0.5 }
-  - { npcId: npc_merchant, position: { x: 4, z: -7 }, rotationY: -1.2 }
-  - { npcId: npc_smith, position: { x: -8, z: -3 }, rotationY: 1.2 }
+  - { npcId: npc_elder, position: { x: -4, z: 3.5 }, rotationY: 2.6 }
+  - { npcId: npc_merchant, position: { x: 10.5, z: -8.5 }, rotationY: -2.2 }
+  - { npcId: npc_smith, position: { x: -10, z: 5 }, rotationY: 2.4 }
 instance: shared
 chunks:
   - id: chunk_0_0
     instances:
-      - {
-          appearanceId: prop_crate_01,
-          position: [6, 0, -5],
-          rotationY: 0,
-          scale: 1.4,
-          colliderRadius: 1.2,
-        }
-      - {
-          appearanceId: env_village_vine_01,
-          position: [-10.9, 2.1, -11],
-          rotationY: 1.57,
-          scale: 1,
-        }
-      - {
-          appearanceId: env_village_vine_01,
-          position: [10.9, 2.1, -11],
-          rotationY: -1.57,
-          scale: 1,
-        }
-      - {
-          appearanceId: env_village_fence_01,
-          position: [-15, 0, 7],
-          rotationY: 1.57,
-          scale: 1,
-          colliderRadius: 0.8,
-        }
-      - {
-          appearanceId: env_village_fence_01,
-          position: [-15, 0, 10],
-          rotationY: 1.57,
-          scale: 1,
-          colliderRadius: 0.8,
-        }
-      - {
-          appearanceId: env_village_floor_wood_01,
-          position: [-13, 0.03, -11],
-          rotationY: 1.57,
-          scale: 2,
-        }
-      - {
-          appearanceId: env_village_door_01,
-          position: [-15, 0, -11],
-          rotationY: 1.57,
-          scale: 1,
-          colliderRadius: 0.8,
-        }
-      - {
-          appearanceId: env_village_wall_01,
-          position: [-13, 0, -9],
-          rotationY: 3.14,
-          scale: 1,
-          colliderRadius: 0.8,
-        }
-      - {
-          appearanceId: env_village_wall_01,
-          position: [-13, 0, -13],
-          rotationY: 3.14,
-          scale: 1,
-          colliderRadius: 0.8,
-        }
-      - {
-          appearanceId: env_village_wall_01,
-          position: [-11, 0, -11],
-          rotationY: 1.57,
-          scale: 1,
-          colliderRadius: 0.8,
-        }
-      - {
-          appearanceId: env_village_corner_01,
-          position: [-15, 0, -9],
-          rotationY: 1.57,
-          scale: 1,
-          colliderRadius: 0.25,
-        }
-      - {
-          appearanceId: env_village_corner_01,
-          position: [-15, 0, -13],
-          rotationY: 3.14,
-          scale: 1,
-          colliderRadius: 0.25,
-        }
-      - {
-          appearanceId: env_village_corner_01,
-          position: [-11, 0, -13],
-          rotationY: 4.71,
-          scale: 1,
-          colliderRadius: 0.25,
-        }
-      - {
-          appearanceId: env_village_corner_01,
-          position: [-11, 0, -9],
-          rotationY: 0,
-          scale: 1,
-          colliderRadius: 0.25,
-        }
-      - {
-          appearanceId: env_village_roof_01,
-          position: [-13, 4, -11],
-          rotationY: 1.57,
-          scale: 1,
-        }
-      - {
-          appearanceId: prop_lantern_wall_01,
-          position: [-15.1, 0, -11.9],
-          rotationY: 1.57,
-          scale: 1,
-        }
-      - {
-          appearanceId: env_village_wall_01,
-          position: [11, 0, -11],
-          rotationY: -1.57,
-          scale: 1,
-          colliderRadius: 0.8,
-        }
-      - {
-          appearanceId: env_village_corner_01,
-          position: [11, 0, -9],
-          rotationY: 1.57,
-          scale: 1,
-          colliderRadius: 0.25,
-        }
-      - {
-          appearanceId: env_village_corner_01,
-          position: [11, 0, -13],
-          rotationY: -3.14,
-          scale: 1,
-          colliderRadius: 0.25,
-        }
-      - {
-          appearanceId: env_village_wall_01,
-          position: [12, 0, 5],
-          rotationY: 0,
-          scale: 1,
-          colliderRadius: 0.8,
-        }
-      - {
-          appearanceId: env_village_wall_01,
-          position: [10, 0, 3],
-          rotationY: -1.57,
-          scale: 1,
-          colliderRadius: 0.8,
-        }
-      - {
-          appearanceId: env_village_corner_01,
-          position: [10, 0, 5],
-          rotationY: 1.57,
-          scale: 1,
-          colliderRadius: 0.25,
-        }
-      - {
-          appearanceId: env_village_corner_01,
-          position: [10, 0, 1],
-          rotationY: -3.14,
-          scale: 1,
-          colliderRadius: 0.25,
-        }
-      - {
-          appearanceId: prop_market_stall_01,
-          position: [10, 0, -6],
-          rotationY: -1.57,
-          scale: 1,
-          colliderRadius: 1.3,
-        }
-      - {
-          appearanceId: prop_barrel_01,
-          position: [9.2, 0, -7.8],
-          rotationY: -1.57,
-          scale: 1,
-          colliderRadius: 0.4,
-        }
-      - {
-          appearanceId: prop_crate_01,
-          position: [9.3, 0, -4.3],
-          rotationY: -1.17,
-          scale: 1,
-          colliderRadius: 0.5,
-        }
-      - {
-          appearanceId: prop_cauldron_01,
-          position: [11, 0, -4],
-          rotationY: -1.57,
-          scale: 1,
-          colliderRadius: 0.5,
-        }
-      - {
-          appearanceId: prop_banner_01,
-          position: [11, 0, -8],
-          rotationY: -1.57,
-          scale: 1,
-          colliderRadius: 0.3,
-        }
-      - {
-          appearanceId: prop_workbench_01,
-          position: [-9, 0, -5],
-          rotationY: 1.57,
-          scale: 1,
-          colliderRadius: 0.8,
-        }
-      - {
-          appearanceId: prop_anvil_01,
-          position: [-9, 0, -6.5],
-          rotationY: 1.57,
-          scale: 1,
-          colliderRadius: 0.45,
-        }
-      - {
-          appearanceId: prop_weapon_rack_01,
-          position: [-9, 0, -3.5],
-          rotationY: 1.57,
-          scale: 1,
-          colliderRadius: 0.7,
-        }
-      - {
-          appearanceId: prop_barrel_01,
-          position: [-7.6, 0, -5.7],
-          rotationY: 1.57,
-          scale: 1,
-          colliderRadius: 0.4,
-        }
-      - {
-          appearanceId: env_bush_02,
-          position: [-8.21, 0.01, 6.85],
-          rotationY: 0.42,
-          scale: 0.85,
-        }
-      - {
-          appearanceId: env_bush_02,
-          position: [9.57, 0.01, -15.91],
-          rotationY: 2.58,
-          scale: 0.85,
-        }
-      - {
-          appearanceId: env_flowers_01,
-          position: [-6.22, 0.01, -10.53],
-          rotationY: 4.94,
-          scale: 0.95,
-        }
-      - {
-          appearanceId: env_flowers_01,
-          position: [-11.99, 0.01, -16.21],
-          rotationY: 2.54,
-          scale: 0.7,
-        }
-      - {
-          appearanceId: env_flowers_01,
-          position: [-11.68, 0.01, -7.08],
-          rotationY: 1.8,
-          scale: 0.75,
-        }
-      - {
-          appearanceId: env_flowers_01,
-          position: [-10.42, 0.01, 8.04],
-          rotationY: 5.24,
-          scale: 0.64,
-        }
-      - {
-          appearanceId: env_flowers_01,
-          position: [-17.57, 0.01, 4.03],
-          rotationY: 2.57,
-          scale: 0.91,
-        }
-      - {
-          appearanceId: env_flowers_01,
-          position: [3.79, 0.01, 6.81],
-          rotationY: 0.63,
-          scale: 0.99,
-        }
-      - {
-          appearanceId: env_flowers_01,
-          position: [8.33, 0.01, -10.52],
-          rotationY: 1.08,
-          scale: 0.78,
-        }
-      - {
-          appearanceId: env_flowers_01,
-          position: [-4.12, 0.01, 7.55],
-          rotationY: 1.19,
-          scale: 0.86,
-        }
-      - {
-          appearanceId: env_flowers_01,
-          position: [-7.09, 0.01, -14.12],
-          rotationY: 0.87,
-          scale: 0.86,
-        }
-      - {
-          appearanceId: env_flowers_01,
-          position: [-18.41, 0.01, 7.06],
-          rotationY: 1.64,
-          scale: 0.68,
-        }
-      - {
-          appearanceId: env_fern_01,
-          position: [-13.53, 0.01, 5.58],
-          rotationY: 1.92,
-          scale: 0.86,
-        }
-      - {
-          appearanceId: env_fern_01,
-          position: [-14.43, 0.01, -6.22],
-          rotationY: 1.74,
-          scale: 0.86,
-        }
-      - {
-          appearanceId: env_fern_01,
-          position: [-10.37, 0.01, 2.92],
-          rotationY: 4.23,
-          scale: 0.71,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [9.48, 0.01, -9.1],
-          rotationY: 5.72,
-          scale: 1.02,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [-5.61, 0.01, 9.63],
-          rotationY: 1.46,
-          scale: 1.04,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [-4.43, 0.01, -15.02],
-          rotationY: 5.95,
-          scale: 0.69,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [-7.23, 0.01, 4.9],
-          rotationY: 1.87,
-          scale: 1.05,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [-6.89, 0.01, 7.99],
-          rotationY: 1.88,
-          scale: 0.92,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [8.77, 0.01, 10.45],
-          rotationY: 3.56,
-          scale: 0.84,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [-17.96, 0.01, 10.38],
-          rotationY: 4.49,
-          scale: 0.8,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [-11.14, 0.01, -4.15],
-          rotationY: 2.31,
-          scale: 0.95,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [-7.65, 0.01, -17.98],
-          rotationY: 5.88,
-          scale: 0.87,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [7.57, 0.01, -6.64],
-          rotationY: 5.24,
-          scale: 0.83,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [-3.6, 0.01, -3.1],
-          rotationY: 4.92,
-          scale: 1.04,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [7.3, 0.01, 11.65],
-          rotationY: 2.71,
-          scale: 0.77,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [-10.19, 0.01, 5.07],
-          rotationY: 4.03,
-          scale: 0.76,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [-10.57, 0.01, 9.89],
-          rotationY: 0.51,
-          scale: 0.62,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [-4.3, 0.01, -17.36],
-          rotationY: 5.25,
-          scale: 0.89,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [-16.82, 0.01, 7.38],
-          rotationY: 5.99,
-          scale: 0.6,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [9.72, 0.01, -17.78],
-          rotationY: 5.9,
-          scale: 0.61,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [-13.76, 0.01, 11.64],
-          rotationY: 4,
-          scale: 0.77,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [-16.21, 0.01, -4.14],
-          rotationY: 4.33,
-          scale: 0.91,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [6.62, 0.01, -9.37],
-          rotationY: 3.93,
-          scale: 0.71,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [-12.33, 0.01, -17.58],
-          rotationY: 0.46,
-          scale: 0.93,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [4.03, 0.01, 3.59],
-          rotationY: 2.97,
-          scale: 1.09,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [-6.4, 0.01, -16.94],
-          rotationY: 0.63,
-          scale: 1.07,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [8.63, 0.01, -17.02],
-          rotationY: 0.2,
-          scale: 1.03,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [6.41, 0.01, -18.27],
-          rotationY: 1.53,
-          scale: 1.02,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [7.03, 0.01, -16.9],
-          rotationY: 3.99,
-          scale: 0.88,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [10.12, 0.01, -3],
-          rotationY: 4.31,
-          scale: 0.86,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [7.26, 0.01, -11.54],
-          rotationY: 3.71,
-          scale: 0.97,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [6.25, 0.01, -6.29],
-          rotationY: 1.89,
-          scale: 1.02,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [-16.93, 0.01, 9.06],
-          rotationY: 3.2,
-          scale: 0.68,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [-15.52, 0.01, 5.26],
-          rotationY: 3.26,
-          scale: 0.88,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [-17.41, 0.01, -11.93],
-          rotationY: 5.05,
-          scale: 0.89,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [9.37, 0.01, 6.46],
-          rotationY: 3.05,
-          scale: 0.77,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [-6.55, 0.01, -15.5],
-          rotationY: 2.99,
-          scale: 0.97,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [-7.68, 0.01, -10.99],
-          rotationY: 5.39,
-          scale: 0.64,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [-8.54, 0.01, 10.25],
-          rotationY: 0.1,
-          scale: 0.63,
-        }
+      - { appearanceId: prop_banner_shield_01, position: [ -17.4, 0, -13 ], rotationY: 0, scale: 1, colliderRadius: 0.4 }
+      - { appearanceId: prop_banner_shield_01, position: [ -12.6, 0, -13 ], rotationY: 0, scale: 1, colliderRadius: 0.4 }
+      - { appearanceId: prop_weapon_rack_01, position: [ -15, 0, -12.6 ], rotationY: 0, scale: 1, colliderRadius: 0.7 }
+      - { appearanceId: prop_trunk_01, position: [ -16.2, 0, -14.6 ], rotationY: 0.2, scale: 1, colliderRadius: 0.5 }
+      - { appearanceId: prop_table_long_01, position: [ -11.6, 0, -16 ], rotationY: 1.57, scale: 1, colliderRadius: 1.2 }
+      - { appearanceId: prop_stool_01, position: [ -11.6, 0, -17.3 ], rotationY: 0, scale: 1 }
+      - { appearanceId: prop_keg_01, position: [ -9.6, 0, -15.4 ], rotationY: 0, scale: 1, colliderRadius: 0.6 }
+      - { appearanceId: prop_torch_stand_01, position: [ -18.6, 0, -16 ], rotationY: 0, scale: 1 }
+      - { appearanceId: env_village_wall_window_01, position: [ -24, 0, -10 ], rotationY: 0, scale: 1, colliderRadius: 0.8 }
+      - { appearanceId: env_village_wall_arched_01, position: [ -26, 0, -8 ], rotationY: -1.57, scale: 1, colliderRadius: 0.8 }
+      - { appearanceId: env_village_corner_01, position: [ -22, 0, -10 ], rotationY: -1.57, scale: 1, colliderRadius: 0.25 }
+      - { appearanceId: env_village_corner_01, position: [ -26, 0, -10 ], rotationY: -3.14, scale: 1, colliderRadius: 0.25 }
+      - { appearanceId: prop_barrel_01, position: [ -21.2, 0, -9.6 ], rotationY: -1.57, scale: 1, colliderRadius: 0.4 }
+      - { appearanceId: env_village_floor_wood_01, position: [ -18, 0.03, -21 ], rotationY: 3.14, scale: 2 }
+      - { appearanceId: env_village_door_01, position: [ -18, 0, -19 ], rotationY: 3.14, scale: 1, colliderRadius: 0.8 }
+      - { appearanceId: env_village_wall_window_01, position: [ -16, 0, -21 ], rotationY: 4.71, scale: 1, colliderRadius: 0.8 }
+      - { appearanceId: env_village_wall_01, position: [ -20, 0, -21 ], rotationY: 4.71, scale: 1, colliderRadius: 0.8 }
+      - { appearanceId: env_village_wall_arched_01, position: [ -18, 0, -23 ], rotationY: 3.14, scale: 1, colliderRadius: 0.8 }
+      - { appearanceId: env_village_corner_01, position: [ -16, 0, -19 ], rotationY: 3.14, scale: 1, colliderRadius: 0.25 }
+      - { appearanceId: env_village_corner_01, position: [ -20, 0, -19 ], rotationY: 4.71, scale: 1, colliderRadius: 0.25 }
+      - { appearanceId: env_village_corner_01, position: [ -20, 0, -23 ], rotationY: 6.28, scale: 1, colliderRadius: 0.25 }
+      - { appearanceId: env_village_corner_01, position: [ -16, 0, -23 ], rotationY: 1.57, scale: 1, colliderRadius: 0.25 }
+      - { appearanceId: env_village_roof_01, position: [ -18, 4, -21 ], rotationY: 3.14, scale: 1 }
+      - { appearanceId: prop_lantern_wall_01, position: [ -18.9, 0, -18.9 ], rotationY: 3.14, scale: 1 }
+      - { appearanceId: prop_barrel_01, position: [ -16.4, 0, -18.2 ], rotationY: 3.14, scale: 1, colliderRadius: 0.4 }
+      - { appearanceId: env_village_fence_01, position: [ -29.67, 0, -9 ], rotationY: -5.01, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ -28.64, 0, -11.86 ], rotationY: -5.11, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ -27.34, 0, -14.61 ], rotationY: -5.2, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ -25.78, 0, -17.22 ], rotationY: -5.3, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ -23.96, 0, -19.67 ], rotationY: -5.4, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ -21.92, 0, -21.92 ], rotationY: -5.5, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ -19.67, 0, -23.96 ], rotationY: -5.6, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ -17.22, 0, -25.78 ], rotationY: -5.69, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ -14.61, 0, -27.34 ], rotationY: -5.79, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ -11.86, 0, -28.64 ], rotationY: -5.89, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ -9, 0, -29.67 ], rotationY: -5.99, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_grass_01, position: [ -9.19, 0.01, -21.52 ], rotationY: 1.08, scale: 0.89 }
+      - { appearanceId: env_grass_01, position: [ -10.6, 0.01, -25.9 ], rotationY: 2.31, scale: 0.95 }
+      - { appearanceId: env_grass_01, position: [ -20.83, 0.01, -12.25 ], rotationY: 3.15, scale: 0.96 }
+      - { appearanceId: env_grass_01, position: [ -14.31, 0.01, -23.56 ], rotationY: 5.9, scale: 1.08 }
+      - { appearanceId: env_grass_01, position: [ -21.54, 0.01, -18.29 ], rotationY: 1.74, scale: 0.77 }
+      - { appearanceId: env_grass_01, position: [ -24.44, 0.01, -12.25 ], rotationY: 4.87, scale: 0.82 }
+      - { appearanceId: env_grass_01, position: [ -21.01, 0.01, -16.66 ], rotationY: 0.63, scale: 0.62 }
+      - { appearanceId: env_grass_01, position: [ -13.15, 0.01, -25.5 ], rotationY: 6.16, scale: 0.72 }
+      - { appearanceId: env_grass_01, position: [ -15.8, 0.01, -10.89 ], rotationY: 2.4, scale: 1.05 }
+      - { appearanceId: env_grass_01, position: [ -9.04, 0.01, -19.95 ], rotationY: 5.43, scale: 0.78 }
+      - { appearanceId: env_grass_01, position: [ -19.76, 0.01, -14.46 ], rotationY: 4.64, scale: 0.9 }
+      - { appearanceId: env_tree_05, position: [ -25.56, 0.01, -34.18 ], rotationY: 3.23, scale: 1.04, colliderRadius: 0.6 }
+      - { appearanceId: env_tree_05, position: [ -28.78, 0.01, -27.94 ], rotationY: 3.63, scale: 0.88, colliderRadius: 0.6 }
+      - { appearanceId: env_tree_05, position: [ -34.16, 0.01, -34.19 ], rotationY: 2.32, scale: 0.9, colliderRadius: 0.6 }
+      - { appearanceId: env_tree_05, position: [ -21.69, 0.01, -30.91 ], rotationY: 0.71, scale: 0.94, colliderRadius: 0.6 }
+      - { appearanceId: env_tree_05, position: [ -37.03, 0.01, -14.74 ], rotationY: 3.03, scale: 0.95, colliderRadius: 0.6 }
+      - { appearanceId: env_tree_01, position: [ -35.28, 0.01, -23.63 ], rotationY: 3.09, scale: 0.88, colliderRadius: 0.6 }
+      - { appearanceId: env_tree_01, position: [ -14.14, 0.01, -36.82 ], rotationY: 2.76, scale: 0.91, colliderRadius: 0.6 }
+      - { appearanceId: env_tree_07, position: [ -19.85, 0.01, -37.64 ], rotationY: 3.9, scale: 1.07, colliderRadius: 0.6 }
+      - { appearanceId: env_tree_07, position: [ -28.39, 0.01, -22.43 ], rotationY: 1.07, scale: 1.03, colliderRadius: 0.6 }
+      - { appearanceId: env_tree_07, position: [ -33.24, 0.01, -18.03 ], rotationY: 4.83, scale: 1.09, colliderRadius: 0.6 }
+      - { appearanceId: env_rock_04, position: [ -35.26, 0.01, -29.12 ], rotationY: 5.36, scale: 0.92, colliderRadius: 0.8 }
+      - { appearanceId: env_rock_04, position: [ -38.16, 0.01, -20.83 ], rotationY: 3.34, scale: 0.87, colliderRadius: 0.8 }
+      - { appearanceId: env_bush_01, position: [ -32.54, 0.01, -11.82 ], rotationY: 2.7, scale: 0.92 }
+      - { appearanceId: env_bush_01, position: [ -36.25, 0.01, -32.23 ], rotationY: 4.37, scale: 0.77 }
+      - { appearanceId: env_bush_01, position: [ -37.8, 0.01, -25.08 ], rotationY: 3.95, scale: 0.7 }
+      - { appearanceId: env_bush_01, position: [ -17.34, 0.01, -30.17 ], rotationY: 5.23, scale: 1.08 }
+      - { appearanceId: env_bush_01, position: [ -33.56, 0.01, -21.11 ], rotationY: 0.18, scale: 0.81 }
+      - { appearanceId: env_fern_01, position: [ -33.9, 0.01, -37.06 ], rotationY: 4.18, scale: 1.09 }
+      - { appearanceId: env_fern_01, position: [ -14.89, 0.01, -30.84 ], rotationY: 0.92, scale: 0.84 }
+      - { appearanceId: env_fern_01, position: [ -8.92, 0.01, -36.33 ], rotationY: 5.75, scale: 0.93 }
+      - { appearanceId: env_fern_01, position: [ -27.73, 0.01, -19.77 ], rotationY: 2.6, scale: 1 }
+      - { appearanceId: env_fern_01, position: [ -18.87, 0.01, -35.36 ], rotationY: 2.24, scale: 0.8 }
+      - { appearanceId: env_fern_01, position: [ -10.32, 0.01, -34.79 ], rotationY: 0.74, scale: 1.1 }
+      - { appearanceId: env_fern_01, position: [ -27.9, 0.01, -30.28 ], rotationY: 0.66, scale: 0.75 }
+      - { appearanceId: env_fern_01, position: [ -38.15, 0.01, -10.54 ], rotationY: 5.95, scale: 1.07 }
+      - { appearanceId: env_fern_01, position: [ -11.87, 0.01, -37.56 ], rotationY: 3.28, scale: 0.76 }
+      - { appearanceId: env_fern_01, position: [ -31.41, 0.01, -14.03 ], rotationY: 2.29, scale: 0.96 }
+      - { appearanceId: env_grass_02, position: [ -30.65, 0.01, -24.67 ], rotationY: 2.41, scale: 1.06 }
+      - { appearanceId: env_grass_02, position: [ -25.58, 0.01, -29.61 ], rotationY: 1.16, scale: 1.2 }
+      - { appearanceId: env_grass_02, position: [ -16.38, 0.01, -34.54 ], rotationY: 1.79, scale: 0.71 }
+      - { appearanceId: env_grass_02, position: [ -25.91, 0.01, -25.1 ], rotationY: 2.77, scale: 1.08 }
+      - { appearanceId: env_grass_02, position: [ -36.17, 0.01, -35.85 ], rotationY: 4.12, scale: 1.18 }
+      - { appearanceId: env_grass_02, position: [ -22.37, 0.01, -33.81 ], rotationY: 6.15, scale: 1.06 }
+      - { appearanceId: env_grass_02, position: [ -31.88, 0.01, -31.3 ], rotationY: 5.07, scale: 0.85 }
+      - { appearanceId: env_grass_02, position: [ -34.95, 0.01, -16.9 ], rotationY: 3.26, scale: 0.97 }
+      - { appearanceId: env_grass_02, position: [ -29.4, 0.01, -21.12 ], rotationY: 3.2, scale: 1.15 }
+      - { appearanceId: env_grass_02, position: [ -26.25, 0.01, -23.27 ], rotationY: 4.14, scale: 0.95 }
+      - { appearanceId: env_grass_02, position: [ -18.51, 0.01, -31.81 ], rotationY: 0.8, scale: 0.81 }
+      - { appearanceId: env_grass_02, position: [ -30.09, 0.01, -26.28 ], rotationY: 4.16, scale: 1.07 }
+      - { appearanceId: env_grass_02, position: [ -33.26, 0.01, -29.23 ], rotationY: 0.57, scale: 1.04 }
+      - { appearanceId: env_grass_02, position: [ -25.92, 0.01, -27.15 ], rotationY: 0.88, scale: 0.96 }
+      - { appearanceId: env_grass_02, position: [ -35.27, 0.01, -21.99 ], rotationY: 1.41, scale: 1.03 }
+      - { appearanceId: env_grass_02, position: [ -37.52, 0.01, -34.49 ], rotationY: 3.65, scale: 1.08 }
+      - { appearanceId: env_grass_02, position: [ -38.34, 0.01, -18.41 ], rotationY: 5.76, scale: 1.18 }
+      - { appearanceId: env_grass_02, position: [ -36.21, 0.01, -37.8 ], rotationY: 1.39, scale: 1 }
+      - { appearanceId: env_grass_02, position: [ -34.26, 0.01, -27.4 ], rotationY: 0.2, scale: 0.83 }
+      - { appearanceId: env_grass_02, position: [ -23.8, 0.01, -28.73 ], rotationY: 1.61, scale: 1.16 }
+      - { appearanceId: env_grass_02, position: [ -31.45, 0.01, -35.55 ], rotationY: 0.36, scale: 0.82 }
+      - { appearanceId: env_grass_02, position: [ -22.83, 0.01, -26.3 ], rotationY: 5.99, scale: 0.71 }
+      - { appearanceId: env_grass_02, position: [ -27.38, 0.01, -31.93 ], rotationY: 5.87, scale: 1.16 }
+      - { appearanceId: env_grass_02, position: [ -34.26, 0.01, -31.33 ], rotationY: 0.45, scale: 0.95 }
   - id: chunk_0_1
     instances:
-      - {
-          appearanceId: prop_banner_01,
-          position: [-2.5, 0, 14],
-          rotationY: 0,
-          scale: 1,
-          colliderRadius: 0.3,
-        }
-      - {
-          appearanceId: prop_banner_01,
-          position: [2.5, 0, 14],
-          rotationY: 0,
-          scale: 1,
-          colliderRadius: 0.3,
-        }
-      - {
-          appearanceId: env_bush_02,
-          position: [5.81, 0.01, 17.61],
-          rotationY: 5.36,
-          scale: 0.88,
-        }
-      - {
-          appearanceId: env_bush_02,
-          position: [10.44, 0.01, 17.49],
-          rotationY: 3.64,
-          scale: 0.86,
-        }
-      - {
-          appearanceId: env_bush_02,
-          position: [-18.09, 0.01, 18.16],
-          rotationY: 3.8,
-          scale: 0.81,
-        }
-      - {
-          appearanceId: env_flowers_01,
-          position: [-13.66, 0.01, 14.04],
-          rotationY: 0.95,
-          scale: 0.9,
-        }
-      - {
-          appearanceId: env_fern_01,
-          position: [-16.01, 0.01, 16.12],
-          rotationY: 5.49,
-          scale: 0.9,
-        }
-      - {
-          appearanceId: env_fern_01,
-          position: [-8.35, 0.01, 17.7],
-          rotationY: 4.51,
-          scale: 0.72,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [3.7, 0.01, 15.31],
-          rotationY: 4.96,
-          scale: 0.75,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [-4.81, 0.01, 18.14],
-          rotationY: 2.32,
-          scale: 0.81,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [-9.16, 0.01, 15.38],
-          rotationY: 5.85,
-          scale: 0.74,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [-10.38, 0.01, 13.67],
-          rotationY: 5.12,
-          scale: 0.62,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [8.41, 0.01, 16.8],
-          rotationY: 1.95,
-          scale: 0.62,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [8.77, 0.01, 18.41],
-          rotationY: 2.77,
-          scale: 0.8,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [-11.61, 0.01, 17.98],
-          rotationY: 4.49,
-          scale: 0.91,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [6.43, 0.01, 14.73],
-          rotationY: 2.76,
-          scale: 0.84,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [-7.56, 0.01, 12.78],
-          rotationY: 1.89,
-          scale: 0.83,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [-11.83, 0.01, 16.41],
-          rotationY: 5.26,
-          scale: 0.91,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [-13.39, 0.01, 16.92],
-          rotationY: 0.03,
-          scale: 1,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [-7.84, 0.01, 14.76],
-          rotationY: 2.74,
-          scale: 0.98,
-        }
+      - { appearanceId: prop_workbench_01, position: [ -15, 0, 10 ], rotationY: 3.14, scale: 1, colliderRadius: 0.8 }
+      - { appearanceId: prop_anvil_01, position: [ -17, 0, 10.4 ], rotationY: 3.54, scale: 1, colliderRadius: 0.45 }
+      - { appearanceId: prop_grindstone_01, position: [ -12.8, 0, 10.2 ], rotationY: 3.14, scale: 1, colliderRadius: 0.6 }
+      - { appearanceId: prop_weapon_rack_01, position: [ -14, 0, 7.6 ], rotationY: 3.14, scale: 1, colliderRadius: 0.7 }
+      - { appearanceId: prop_weapon_rack_01, position: [ -16.2, 0, 7.6 ], rotationY: 3.14, scale: 1, colliderRadius: 0.7 }
+      - { appearanceId: prop_iron_bars_01, position: [ -18.6, 0, 8.8 ], rotationY: 3.14, scale: 1, colliderRadius: 0.35 }
+      - { appearanceId: prop_log_stack_01, position: [ -11, 0, 7.8 ], rotationY: 3.74, scale: 1, colliderRadius: 0.7 }
+      - { appearanceId: prop_bucket_01, position: [ -17.9, 0, 11.6 ], rotationY: 3.14, scale: 1 }
+      - { appearanceId: prop_torch_stand_01, position: [ -11.6, 0, 11.4 ], rotationY: 3.14, scale: 1 }
+      - { appearanceId: env_village_floor_wood_01, position: [ -14, 0.03, 19 ], rotationY: 0, scale: 2 }
+      - { appearanceId: env_village_door_01, position: [ -14, 0, 17 ], rotationY: 0, scale: 1, colliderRadius: 0.8 }
+      - { appearanceId: env_village_wall_window_01, position: [ -16, 0, 19 ], rotationY: 1.57, scale: 1, colliderRadius: 0.8 }
+      - { appearanceId: env_village_wall_01, position: [ -12, 0, 19 ], rotationY: 1.57, scale: 1, colliderRadius: 0.8 }
+      - { appearanceId: env_village_wall_arched_01, position: [ -14, 0, 21 ], rotationY: 0, scale: 1, colliderRadius: 0.8 }
+      - { appearanceId: env_village_corner_01, position: [ -16, 0, 17 ], rotationY: 0, scale: 1, colliderRadius: 0.25 }
+      - { appearanceId: env_village_corner_01, position: [ -12, 0, 17 ], rotationY: 1.57, scale: 1, colliderRadius: 0.25 }
+      - { appearanceId: env_village_corner_01, position: [ -12, 0, 21 ], rotationY: 3.14, scale: 1, colliderRadius: 0.25 }
+      - { appearanceId: env_village_corner_01, position: [ -16, 0, 21 ], rotationY: -1.57, scale: 1, colliderRadius: 0.25 }
+      - { appearanceId: env_village_roof_01, position: [ -14, 4, 19 ], rotationY: 0, scale: 1 }
+      - { appearanceId: prop_lantern_wall_01, position: [ -13.1, 0, 16.9 ], rotationY: 0, scale: 1 }
+      - { appearanceId: prop_barrel_01, position: [ -15.6, 0, 16.2 ], rotationY: 0, scale: 1, colliderRadius: 0.4 }
+      - { appearanceId: env_village_floor_wood_01, position: [ -24, 0.03, 9 ], rotationY: -1.57, scale: 2 }
+      - { appearanceId: env_village_door_01, position: [ -22, 0, 9 ], rotationY: -1.57, scale: 1, colliderRadius: 0.8 }
+      - { appearanceId: env_village_wall_window_01, position: [ -24, 0, 7 ], rotationY: 0, scale: 1, colliderRadius: 0.8 }
+      - { appearanceId: env_village_wall_01, position: [ -24, 0, 11 ], rotationY: 0, scale: 1, colliderRadius: 0.8 }
+      - { appearanceId: env_village_wall_arched_01, position: [ -26, 0, 9 ], rotationY: -1.57, scale: 1, colliderRadius: 0.8 }
+      - { appearanceId: env_village_corner_01, position: [ -22, 0, 7 ], rotationY: -1.57, scale: 1, colliderRadius: 0.25 }
+      - { appearanceId: env_village_corner_01, position: [ -22, 0, 11 ], rotationY: 0, scale: 1, colliderRadius: 0.25 }
+      - { appearanceId: env_village_corner_01, position: [ -26, 0, 11 ], rotationY: 1.57, scale: 1, colliderRadius: 0.25 }
+      - { appearanceId: env_village_corner_01, position: [ -26, 0, 7 ], rotationY: -3.14, scale: 1, colliderRadius: 0.25 }
+      - { appearanceId: env_village_roof_01, position: [ -24, 4, 9 ], rotationY: -1.57, scale: 1 }
+      - { appearanceId: prop_lantern_wall_01, position: [ -21.9, 0, 9.9 ], rotationY: -1.57, scale: 1 }
+      - { appearanceId: prop_barrel_01, position: [ -21.2, 0, 7.4 ], rotationY: -1.57, scale: 1, colliderRadius: 0.4 }
+      - { appearanceId: env_village_floor_wood_01, position: [ -24, 0.03, -8 ], rotationY: -1.57, scale: 2 }
+      - { appearanceId: env_village_door_01, position: [ -22, 0, -8 ], rotationY: -1.57, scale: 1, colliderRadius: 0.8 }
+      - { appearanceId: env_village_wall_01, position: [ -24, 0, -6 ], rotationY: 0, scale: 1, colliderRadius: 0.8 }
+      - { appearanceId: env_village_corner_01, position: [ -22, 0, -6 ], rotationY: 0, scale: 1, colliderRadius: 0.25 }
+      - { appearanceId: env_village_corner_01, position: [ -26, 0, -6 ], rotationY: 1.57, scale: 1, colliderRadius: 0.25 }
+      - { appearanceId: env_village_roof_01, position: [ -24, 4, -8 ], rotationY: -1.57, scale: 1 }
+      - { appearanceId: prop_lantern_wall_01, position: [ -21.9, 0, -7.1 ], rotationY: -1.57, scale: 1 }
+      - { appearanceId: env_village_fence_01, position: [ -19.67, 0, 23.96 ], rotationY: -3.83, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ -21.92, 0, 21.92 ], rotationY: -3.93, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ -23.96, 0, 19.67 ], rotationY: -4.03, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ -25.78, 0, 17.22 ], rotationY: -4.12, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ -27.34, 0, 14.61 ], rotationY: -4.22, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ -28.64, 0, 11.86 ], rotationY: -4.32, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ -29.67, 0, 9 ], rotationY: -4.42, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ -30.4, 0, 6.05 ], rotationY: -4.52, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ -30.4, 0, -6.05 ], rotationY: -4.91, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_bush_02, position: [ -11.45, 0.01, 3.96 ], rotationY: 5.45, scale: 0.8 }
+      - { appearanceId: env_grass_01, position: [ -23.1, 0.01, -4.77 ], rotationY: 0.96, scale: 0.84 }
+      - { appearanceId: env_grass_01, position: [ -25.41, 0.01, 12.8 ], rotationY: 1.48, scale: 0.9 }
+      - { appearanceId: env_grass_01, position: [ -19.59, 0.01, -6.71 ], rotationY: 2.25, scale: 0.64 }
+      - { appearanceId: env_grass_01, position: [ -16.82, 0.01, -6.24 ], rotationY: 5.62, scale: 0.95 }
+      - { appearanceId: env_grass_01, position: [ -19.07, 0.01, 5.26 ], rotationY: 6.13, scale: 0.8 }
+      - { appearanceId: env_grass_01, position: [ -12.74, 0.01, 5.12 ], rotationY: 0.74, scale: 0.99 }
+      - { appearanceId: env_grass_01, position: [ -10.3, 0.01, -6.22 ], rotationY: 2.13, scale: 0.7 }
+      - { appearanceId: env_grass_01, position: [ -22.14, 0.01, 18.26 ], rotationY: 4.32, scale: 0.62 }
+      - { appearanceId: env_grass_01, position: [ -14.53, 0.01, 14.54 ], rotationY: 4.48, scale: 1.06 }
+      - { appearanceId: env_grass_01, position: [ -16.53, 0.01, -7.66 ], rotationY: 4.58, scale: 0.66 }
+      - { appearanceId: env_grass_01, position: [ -9.43, 0.01, 16.44 ], rotationY: 0.61, scale: 0.93 }
+      - { appearanceId: env_grass_01, position: [ -13.62, 0.01, -4.1 ], rotationY: 1.29, scale: 1.04 }
+      - { appearanceId: env_grass_01, position: [ -25.01, 0.01, 14.17 ], rotationY: 4.71, scale: 0.98 }
+      - { appearanceId: env_grass_01, position: [ -9.55, 0.01, 20.73 ], rotationY: 3.99, scale: 0.67 }
+      - { appearanceId: env_grass_01, position: [ -9.86, 0.01, 5.41 ], rotationY: 0.86, scale: 1.05 }
+      - { appearanceId: env_grass_01, position: [ -19.71, 0.01, 9.87 ], rotationY: 3.92, scale: 0.86 }
+      - { appearanceId: env_grass_01, position: [ -14.21, 0.01, 3.45 ], rotationY: 1.81, scale: 0.91 }
+      - { appearanceId: env_grass_01, position: [ -14.58, 0.01, -6.69 ], rotationY: 3.34, scale: 1.02 }
+      - { appearanceId: env_grass_01, position: [ -19.06, 0.01, 13.33 ], rotationY: 1.68, scale: 0.63 }
+      - { appearanceId: env_grass_01, position: [ -12.74, 0.01, -5.66 ], rotationY: 3.92, scale: 0.72 }
+      - { appearanceId: env_grass_01, position: [ -16.26, 0.01, 13.97 ], rotationY: 2.42, scale: 0.77 }
+      - { appearanceId: env_grass_01, position: [ -14.16, 0.01, 11.13 ], rotationY: 1.02, scale: 0.82 }
+      - { appearanceId: env_grass_01, position: [ -15.72, 0.01, 23.62 ], rotationY: 5.07, scale: 0.85 }
+      - { appearanceId: env_tree_05, position: [ -38.3, 0.01, 14.31 ], rotationY: 5.09, scale: 0.85, colliderRadius: 0.6 }
+      - { appearanceId: env_tree_05, position: [ -37.46, 0.01, 19.59 ], rotationY: 1.84, scale: 1.07, colliderRadius: 0.6 }
+      - { appearanceId: env_tree_05, position: [ -36.88, 0.01, -4.9 ], rotationY: 2.54, scale: 0.94, colliderRadius: 0.6 }
+      - { appearanceId: env_tree_01, position: [ -32.39, 0.01, 19.33 ], rotationY: 3.15, scale: 1.05, colliderRadius: 0.6 }
+      - { appearanceId: env_tree_01, position: [ -36.97, 0.01, 4.88 ], rotationY: 2.06, scale: 0.84, colliderRadius: 0.6 }
+      - { appearanceId: env_bush_01, position: [ -34.26, 0.01, 3.45 ], rotationY: 5.83, scale: 0.76 }
+      - { appearanceId: env_bush_01, position: [ -32.69, 0.01, 12.02 ], rotationY: 3.96, scale: 0.94 }
+      - { appearanceId: env_fern_01, position: [ -38.38, 0.01, 23.15 ], rotationY: 6.12, scale: 0.97 }
+      - { appearanceId: env_fern_01, position: [ -38.38, 0.01, 17.13 ], rotationY: 5.87, scale: 0.85 }
+      - { appearanceId: env_fern_01, position: [ -28.73, 0.01, 20.43 ], rotationY: 4.23, scale: 0.89 }
+      - { appearanceId: env_fern_01, position: [ -36.33, 0.01, 10.45 ], rotationY: 3, scale: 0.95 }
+      - { appearanceId: env_fern_01, position: [ -34.61, 0.01, 15.06 ], rotationY: 5.13, scale: 0.93 }
+      - { appearanceId: env_grass_02, position: [ -34.27, 0.01, 13.25 ], rotationY: 1.7, scale: 1.05 }
+      - { appearanceId: env_grass_02, position: [ -34.69, 0.01, -6.22 ], rotationY: 4.73, scale: 1.15 }
+      - { appearanceId: env_grass_02, position: [ -36.82, 0.01, 13.03 ], rotationY: 3.73, scale: 1.06 }
+      - { appearanceId: env_grass_02, position: [ -30.67, 0.01, 19.89 ], rotationY: 5.98, scale: 0.97 }
+  - id: chunk_0_2
+    instances:
+      - { appearanceId: env_ruin_column_01, position: [ -34, 0, 34 ], rotationY: 0, scale: 1.6, colliderRadius: 0.6 }
+      - { appearanceId: env_ruin_column_01, position: [ -24, 0, 35.5 ], rotationY: 1.2, scale: 1.6, colliderRadius: 0.6 }
+      - { appearanceId: env_ruin_column_01, position: [ -35, 0, 25 ], rotationY: 2.2, scale: 1.6, colliderRadius: 0.6 }
+      - { appearanceId: prop_rubble_02, position: [ -36, 0, 29.5 ], rotationY: 0.6, scale: 0.6, colliderRadius: 1 }
+      - { appearanceId: prop_stone_chunks_01, position: [ -23, 0, 25 ], rotationY: 0, scale: 1, colliderRadius: 0.5 }
+      - { appearanceId: env_village_fence_01, position: [ -9, 0, 29.67 ], rotationY: -3.44, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ -11.86, 0, 28.64 ], rotationY: -3.53, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ -14.61, 0, 27.34 ], rotationY: -3.63, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ -17.22, 0, 25.78 ], rotationY: -3.73, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_grass_01, position: [ -12.17, 0.01, 26.01 ], rotationY: 3.13, scale: 0.95 }
+      - { appearanceId: env_tree_05, position: [ -18.96, 0.01, 38.07 ], rotationY: 4.19, scale: 0.81, colliderRadius: 0.6 }
+      - { appearanceId: env_tree_01, position: [ -38.19, 0.01, 37.12 ], rotationY: 3.48, scale: 0.95, colliderRadius: 0.6 }
+      - { appearanceId: env_fern_01, position: [ -35.49, 0.01, 36.91 ], rotationY: 6.27, scale: 0.84 }
+      - { appearanceId: env_grass_02, position: [ -16.59, 0.01, 37.27 ], rotationY: 3.05, scale: 1 }
+      - { appearanceId: env_grass_02, position: [ -14.15, 0.01, 37.49 ], rotationY: 3.55, scale: 0.99 }
+      - { appearanceId: env_ground_dirt_rocky_01, position: [ -31, 0.02, 28 ], rotationY: 0, scale: 1.03 }
+      - { appearanceId: env_ground_dirt_01, position: [ -27, 0.02, 28 ], rotationY: 0, scale: 1.03 }
+      - { appearanceId: env_ground_dirt_rocky_01, position: [ -31, 0.02, 32 ], rotationY: 0, scale: 1.03 }
+      - { appearanceId: env_ground_dirt_01, position: [ -27, 0.02, 32 ], rotationY: 0, scale: 1.03 }
   - id: chunk_1_0
     instances:
-      - {
-          appearanceId: env_village_fence_01,
-          position: [15, 0, 7],
-          rotationY: 1.57,
-          scale: 1,
-          colliderRadius: 0.8,
-        }
-      - {
-          appearanceId: env_village_fence_01,
-          position: [15, 0, 10],
-          rotationY: 1.57,
-          scale: 1,
-          colliderRadius: 0.8,
-        }
-      - {
-          appearanceId: env_village_floor_wood_01,
-          position: [13, 0.03, -11],
-          rotationY: -1.57,
-          scale: 2,
-        }
-      - {
-          appearanceId: env_village_door_01,
-          position: [15, 0, -11],
-          rotationY: -1.57,
-          scale: 1,
-          colliderRadius: 0.8,
-        }
-      - {
-          appearanceId: env_village_wall_01,
-          position: [13, 0, -13],
-          rotationY: 0,
-          scale: 1,
-          colliderRadius: 0.8,
-        }
-      - {
-          appearanceId: env_village_wall_01,
-          position: [13, 0, -9],
-          rotationY: 0,
-          scale: 1,
-          colliderRadius: 0.8,
-        }
-      - {
-          appearanceId: env_village_corner_01,
-          position: [15, 0, -13],
-          rotationY: -1.57,
-          scale: 1,
-          colliderRadius: 0.25,
-        }
-      - {
-          appearanceId: env_village_corner_01,
-          position: [15, 0, -9],
-          rotationY: 0,
-          scale: 1,
-          colliderRadius: 0.25,
-        }
-      - {
-          appearanceId: env_village_roof_01,
-          position: [13, 4, -11],
-          rotationY: -1.57,
-          scale: 1,
-        }
-      - {
-          appearanceId: prop_lantern_wall_01,
-          position: [15.1, 0, -10.1],
-          rotationY: -1.57,
-          scale: 1,
-        }
-      - {
-          appearanceId: env_village_floor_wood_01,
-          position: [12, 0.03, 3],
-          rotationY: -1.57,
-          scale: 2,
-        }
-      - {
-          appearanceId: env_village_door_01,
-          position: [14, 0, 3],
-          rotationY: -1.57,
-          scale: 1,
-          colliderRadius: 0.8,
-        }
-      - {
-          appearanceId: env_village_wall_01,
-          position: [12, 0, 1],
-          rotationY: 0,
-          scale: 1,
-          colliderRadius: 0.8,
-        }
-      - {
-          appearanceId: env_village_corner_01,
-          position: [14, 0, 1],
-          rotationY: -1.57,
-          scale: 1,
-          colliderRadius: 0.25,
-        }
-      - {
-          appearanceId: env_village_corner_01,
-          position: [14, 0, 5],
-          rotationY: 0,
-          scale: 1,
-          colliderRadius: 0.25,
-        }
-      - {
-          appearanceId: env_village_roof_01,
-          position: [12, 4, 3],
-          rotationY: -1.57,
-          scale: 1,
-        }
-      - {
-          appearanceId: prop_lantern_wall_01,
-          position: [14.1, 0, 3.9],
-          rotationY: -1.57,
-          scale: 1,
-        }
-      - {
-          appearanceId: env_bush_02,
-          position: [14.33, 0.01, -5.9],
-          rotationY: 1.43,
-          scale: 0.74,
-        }
-      - {
-          appearanceId: env_flowers_01,
-          position: [12.34, 0.01, 9.48],
-          rotationY: 3.26,
-          scale: 0.99,
-        }
-      - {
-          appearanceId: env_flowers_01,
-          position: [16.84, 0.01, -16.62],
-          rotationY: 4.53,
-          scale: 0.85,
-        }
-      - {
-          appearanceId: env_fern_01,
-          position: [17.1, 0.01, -5.4],
-          rotationY: 0.94,
-          scale: 0.83,
-        }
-      - {
-          appearanceId: env_fern_01,
-          position: [17.92, 0.01, -10.65],
-          rotationY: 0.84,
-          scale: 0.88,
-        }
-      - {
-          appearanceId: env_fern_01,
-          position: [17.29, 0.01, -8.73],
-          rotationY: 5.77,
-          scale: 0.63,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [16.42, 0.01, -3.86],
-          rotationY: 5.28,
-          scale: 0.65,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [17, 0.01, 5.09],
-          rotationY: 0.87,
-          scale: 1.03,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [15.82, 0.01, -5.94],
-          rotationY: 3.54,
-          scale: 0.73,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [17.85, 0.01, -13.97],
-          rotationY: 6.08,
-          scale: 0.73,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [17.05, 0.01, 9.92],
-          rotationY: 4.53,
-          scale: 0.98,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [13.74, 0.01, 6.39],
-          rotationY: 1.06,
-          scale: 1,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [14.76, 0.01, -3.07],
-          rotationY: 2.81,
-          scale: 1.08,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [14.57, 0.01, -7.43],
-          rotationY: 1.39,
-          scale: 0.82,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [12.84, 0.01, -6.67],
-          rotationY: 3.95,
-          scale: 0.98,
-        }
+      - { appearanceId: prop_torch_stand_01, position: [ -4.6, 0, -8.5 ], rotationY: 0, scale: 1 }
+      - { appearanceId: prop_torch_stand_01, position: [ 4.6, 0, -8.5 ], rotationY: 0, scale: 1 }
+      - { appearanceId: env_village_floor_wood_01, position: [ 17, 0.03, -15 ], rotationY: 3.14, scale: 2 }
+      - { appearanceId: env_village_door_01, position: [ 17, 0, -13 ], rotationY: 3.14, scale: 1, colliderRadius: 0.8 }
+      - { appearanceId: env_village_wall_window_01, position: [ 19, 0, -15 ], rotationY: 4.71, scale: 1, colliderRadius: 0.8 }
+      - { appearanceId: env_village_wall_01, position: [ 15, 0, -15 ], rotationY: 4.71, scale: 1, colliderRadius: 0.8 }
+      - { appearanceId: env_village_wall_arched_01, position: [ 17, 0, -17 ], rotationY: 3.14, scale: 1, colliderRadius: 0.8 }
+      - { appearanceId: env_village_corner_01, position: [ 19, 0, -13 ], rotationY: 3.14, scale: 1, colliderRadius: 0.25 }
+      - { appearanceId: env_village_corner_01, position: [ 15, 0, -13 ], rotationY: 4.71, scale: 1, colliderRadius: 0.25 }
+      - { appearanceId: env_village_corner_01, position: [ 15, 0, -17 ], rotationY: 6.28, scale: 1, colliderRadius: 0.25 }
+      - { appearanceId: env_village_corner_01, position: [ 19, 0, -17 ], rotationY: 1.57, scale: 1, colliderRadius: 0.25 }
+      - { appearanceId: env_village_roof_01, position: [ 17, 4, -15 ], rotationY: 3.14, scale: 1 }
+      - { appearanceId: prop_lantern_wall_01, position: [ 16.1, 0, -12.9 ], rotationY: 3.14, scale: 1 }
+      - { appearanceId: prop_barrel_01, position: [ 18.6, 0, -12.2 ], rotationY: 3.14, scale: 1, colliderRadius: 0.4 }
+      - { appearanceId: prop_shelves_01, position: [ 13, 0, -10 ], rotationY: 3.14, scale: 1, colliderRadius: 0.7 }
+      - { appearanceId: prop_shelf_candles_01, position: [ 11.2, 0, -10 ], rotationY: 3.14, scale: 1, colliderRadius: 0.4 }
+      - { appearanceId: prop_table_small_01, position: [ 12.8, 0, -8.2 ], rotationY: 3.14, scale: 1, colliderRadius: 0.5 }
+      - { appearanceId: prop_cauldron_01, position: [ 15, 0, -8.4 ], rotationY: 3.14, scale: 1, colliderRadius: 0.6 }
+      - { appearanceId: prop_bottle_01, position: [ 12.4, 0, -8.2 ], rotationY: 3.14, scale: 0.8 }
+      - { appearanceId: env_scifi_door_01, position: [ 0, 0, -29 ], rotationY: 0, scale: 1, colliderRadius: 1.6 }
+      - { appearanceId: prop_tech_cargo_01, position: [ -6, 0, -27.5 ], rotationY: 0, scale: 1, colliderRadius: 0.6 }
+      - { appearanceId: prop_tech_cargo_01, position: [ -6.2, 0, -29.4 ], rotationY: 0.5, scale: 1, colliderRadius: 0.6 }
+      - { appearanceId: prop_fuel_barrels_01, position: [ 6, 0, -27.4 ], rotationY: 0, scale: 1, colliderRadius: 0.6 }
+      - { appearanceId: prop_pallet_01, position: [ 6.2, 0, -30 ], rotationY: 0, scale: 1, colliderRadius: 0.6 }
+      - { appearanceId: prop_boxes_stacked_01, position: [ -7.4, 0, -32 ], rotationY: 0, scale: 1, colliderRadius: 1.1 }
+      - { appearanceId: prop_lantern_wall_01, position: [ 4.2, 0, -25.8 ], rotationY: 0, scale: 1 }
+      - { appearanceId: prop_lantern_wall_01, position: [ -4.2, 0, -25.8 ], rotationY: 0, scale: 1 }
+      - { appearanceId: env_village_fence_01, position: [ -6.05, 0, -30.4 ], rotationY: -6.09, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ 6.05, 0, -30.4 ], rotationY: -6.48, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ 9, 0, -29.67 ], rotationY: -6.58, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ 11.86, 0, -28.64 ], rotationY: -6.68, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ 14.61, 0, -27.34 ], rotationY: -6.77, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ 17.22, 0, -25.78 ], rotationY: -6.87, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ 19.67, 0, -23.96 ], rotationY: -6.97, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ 21.92, 0, -21.92 ], rotationY: -7.07, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ 23.96, 0, -19.67 ], rotationY: -7.17, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_flowers_01, position: [ 18.02, 0.01, -8.5 ], rotationY: 6.12, scale: 0.88 }
+      - { appearanceId: env_flowers_01, position: [ 15.1, 0.01, -19.28 ], rotationY: 2.32, scale: 0.95 }
+      - { appearanceId: env_flowers_01, position: [ 11.79, 0.01, -17.12 ], rotationY: 3.26, scale: 0.65 }
+      - { appearanceId: env_flowers_01, position: [ 11.62, 0.01, -13.82 ], rotationY: 3.17, scale: 0.86 }
+      - { appearanceId: env_flowers_01, position: [ 16.18, 0.01, -10.46 ], rotationY: 0.59, scale: 0.67 }
+      - { appearanceId: env_flowers_01, position: [ 20.09, 0.01, -9.36 ], rotationY: 4.52, scale: 0.65 }
+      - { appearanceId: env_flowers_01, position: [ 9.51, 0.01, -14.61 ], rotationY: 2.01, scale: 0.67 }
+      - { appearanceId: env_flowers_01, position: [ 18.12, 0.01, -19.43 ], rotationY: 5.71, scale: 0.94 }
+      - { appearanceId: env_flowers_01, position: [ 11.86, 0.01, -19.36 ], rotationY: 5.26, scale: 0.61 }
+      - { appearanceId: env_flowers_01, position: [ 9.53, 0.01, -17.91 ], rotationY: 2.28, scale: 0.86 }
+      - { appearanceId: env_bush_02, position: [ 22.83, 0.01, -11.12 ], rotationY: 3.45, scale: 0.89 }
+      - { appearanceId: env_bush_02, position: [ 10.06, 0.01, -22.64 ], rotationY: 2.03, scale: 0.86 }
+      - { appearanceId: env_bush_02, position: [ 5.29, 0.01, -22.33 ], rotationY: 1.84, scale: 0.71 }
+      - { appearanceId: env_grass_01, position: [ 22.22, 0.01, -13.12 ], rotationY: 4.38, scale: 0.62 }
+      - { appearanceId: env_grass_01, position: [ 16.33, 0.01, -19.98 ], rotationY: 4.14, scale: 0.66 }
+      - { appearanceId: env_grass_01, position: [ 21.55, 0.01, -8.23 ], rotationY: 2.86, scale: 0.8 }
+      - { appearanceId: env_grass_01, position: [ 10.16, 0.01, -16.13 ], rotationY: 0.9, scale: 0.64 }
+      - { appearanceId: env_grass_01, position: [ 5.92, 0.01, -15.7 ], rotationY: 2.75, scale: 1.09 }
+      - { appearanceId: env_tree_05, position: [ 18.4, 0.01, -33.4 ], rotationY: 4.84, scale: 0.99, colliderRadius: 0.6 }
+      - { appearanceId: env_tree_01, position: [ 11.57, 0.01, -35.37 ], rotationY: 4.36, scale: 1.01, colliderRadius: 0.6 }
+      - { appearanceId: env_tree_07, position: [ 16.63, 0.01, -38.23 ], rotationY: 3.12, scale: 0.93, colliderRadius: 0.6 }
+      - { appearanceId: env_tree_07, position: [ 22.74, 0.01, -30.82 ], rotationY: 1.94, scale: 0.88, colliderRadius: 0.6 }
+      - { appearanceId: env_tree_07, position: [ 5.05, 0.01, -36.78 ], rotationY: 1.77, scale: 0.94, colliderRadius: 0.6 }
+      - { appearanceId: env_bush_01, position: [ 9.4, 0.01, -33.28 ], rotationY: 4.15, scale: 0.85 }
+      - { appearanceId: env_bush_01, position: [ 21.34, 0.01, -36.23 ], rotationY: 1.94, scale: 1.08 }
+      - { appearanceId: env_bush_01, position: [ 21.89, 0.01, -33.36 ], rotationY: 4.62, scale: 0.88 }
+      - { appearanceId: env_bush_01, position: [ 22.34, 0.01, -28.35 ], rotationY: 0.72, scale: 0.81 }
+      - { appearanceId: env_bush_01, position: [ 19.93, 0.01, -30.49 ], rotationY: 2.83, scale: 0.96 }
+      - { appearanceId: env_bush_01, position: [ 10.28, 0.01, -37.7 ], rotationY: 2.17, scale: 0.97 }
+      - { appearanceId: env_fern_01, position: [ -5.4, 0.01, -37.64 ], rotationY: 5.88, scale: 0.92 }
+      - { appearanceId: env_grass_02, position: [ 12.15, 0.01, -33.04 ], rotationY: 2.14, scale: 1.19 }
+      - { appearanceId: env_grass_02, position: [ 14.5, 0.01, -34.7 ], rotationY: 5.61, scale: 1.12 }
+      - { appearanceId: env_grass_02, position: [ 16.49, 0.01, -32.91 ], rotationY: 5.6, scale: 1.17 }
+      - { appearanceId: env_grass_02, position: [ -5.09, 0.01, -35.65 ], rotationY: 5.22, scale: 1.17 }
+      - { appearanceId: env_grass_02, position: [ 16.24, 0.01, -35.43 ], rotationY: 3.61, scale: 1.08 }
   - id: chunk_1_1
     instances:
-      - {
-          appearanceId: env_flowers_01,
-          position: [14.78, 0.01, 12.76],
-          rotationY: 4.2,
-          scale: 0.92,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [13.64, 0.01, 15.27],
-          rotationY: 5.26,
-          scale: 1.03,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [13.85, 0.01, 18.29],
-          rotationY: 6.16,
-          scale: 0.97,
-        }
-      - {
-          appearanceId: env_grass_01,
-          position: [17.28, 0.01, 17.59],
-          rotationY: 1.02,
-          scale: 0.79,
-        }
+      - { appearanceId: prop_banner_green_01, position: [ -7, 0, 7 ], rotationY: 2.36, scale: 1, colliderRadius: 0.3 }
+      - { appearanceId: prop_banner_green_01, position: [ 7, 0, 7 ], rotationY: -2.36, scale: 1, colliderRadius: 0.3 }
+      - { appearanceId: prop_banner_green_01, position: [ -7, 0, -7 ], rotationY: 0.79, scale: 1, colliderRadius: 0.3 }
+      - { appearanceId: prop_banner_green_01, position: [ 7, 0, -7 ], rotationY: -0.78, scale: 1, colliderRadius: 0.3 }
+      - { appearanceId: prop_torch_stand_01, position: [ -4.6, 0, 8.5 ], rotationY: 0, scale: 1 }
+      - { appearanceId: prop_torch_stand_01, position: [ 4.6, 0, 8.5 ], rotationY: 0, scale: 1 }
+      - { appearanceId: prop_textiles_01, position: [ 12.5, 0, 10.5 ], rotationY: 0.4, scale: 1, colliderRadius: 0.5 }
+      - { appearanceId: prop_coins_01, position: [ 19.5, 0, 10.4 ], rotationY: 0, scale: 1, colliderRadius: 0.45 }
+      - { appearanceId: env_floor_rune_01, position: [ 0, 0.01, 0 ], rotationY: 0, scale: 1.6 }
+      - { appearanceId: env_ruin_pillar_01, position: [ 0, 0, 0 ], rotationY: 0, scale: 1, colliderRadius: 1.2 }
+      - { appearanceId: prop_candles_01, position: [ -1.3, 0, -1.3 ], rotationY: 0, scale: 1 }
+      - { appearanceId: prop_candles_01, position: [ 1.3, 0, -1.3 ], rotationY: 1.2, scale: 1 }
+      - { appearanceId: prop_bottle_01, position: [ 1.2, 0, 1.3 ], rotationY: 0, scale: 1 }
+      - { appearanceId: prop_market_stall_01, position: [ 9, 0, 7 ], rotationY: 1.57, scale: 1, colliderRadius: 1.3 }
+      - { appearanceId: prop_crates_stacked_01, position: [ 6.4, 0, 8.6 ], rotationY: 0.3, scale: 1, colliderRadius: 0.7 }
+      - { appearanceId: prop_barrel_01, position: [ 11.6, 0, 8.4 ], rotationY: 0, scale: 1, colliderRadius: 0.4 }
+      - { appearanceId: prop_stool_01, position: [ 9.6, 0, 8.6 ], rotationY: 0, scale: 1 }
+      - { appearanceId: prop_market_stall_01, position: [ 16, 0, 7 ], rotationY: 1.57, scale: 1, colliderRadius: 1.3 }
+      - { appearanceId: prop_crates_stacked_01, position: [ 13.4, 0, 8.6 ], rotationY: 0.3, scale: 1, colliderRadius: 0.7 }
+      - { appearanceId: prop_barrel_01, position: [ 18.6, 0, 8.4 ], rotationY: 0, scale: 1, colliderRadius: 0.4 }
+      - { appearanceId: prop_stool_01, position: [ 16.6, 0, 8.6 ], rotationY: 0, scale: 1 }
+      - { appearanceId: prop_market_stall_01, position: [ 23, 0, 7 ], rotationY: 1.57, scale: 1, colliderRadius: 1.3 }
+      - { appearanceId: prop_crates_stacked_01, position: [ 20.4, 0, 8.6 ], rotationY: 0.3, scale: 1, colliderRadius: 0.7 }
+      - { appearanceId: prop_stool_01, position: [ 23.6, 0, 8.6 ], rotationY: 0, scale: 1 }
+      - { appearanceId: env_village_floor_wood_01, position: [ 14, 0.03, 19 ], rotationY: 0, scale: 2 }
+      - { appearanceId: env_village_door_01, position: [ 14, 0, 17 ], rotationY: 0, scale: 1, colliderRadius: 0.8 }
+      - { appearanceId: env_village_wall_window_01, position: [ 12, 0, 19 ], rotationY: 1.57, scale: 1, colliderRadius: 0.8 }
+      - { appearanceId: env_village_wall_01, position: [ 16, 0, 19 ], rotationY: 1.57, scale: 1, colliderRadius: 0.8 }
+      - { appearanceId: env_village_wall_arched_01, position: [ 14, 0, 21 ], rotationY: 0, scale: 1, colliderRadius: 0.8 }
+      - { appearanceId: env_village_corner_01, position: [ 12, 0, 17 ], rotationY: 0, scale: 1, colliderRadius: 0.25 }
+      - { appearanceId: env_village_corner_01, position: [ 16, 0, 17 ], rotationY: 1.57, scale: 1, colliderRadius: 0.25 }
+      - { appearanceId: env_village_corner_01, position: [ 16, 0, 21 ], rotationY: 3.14, scale: 1, colliderRadius: 0.25 }
+      - { appearanceId: env_village_corner_01, position: [ 12, 0, 21 ], rotationY: -1.57, scale: 1, colliderRadius: 0.25 }
+      - { appearanceId: env_village_roof_01, position: [ 14, 4, 19 ], rotationY: 0, scale: 1 }
+      - { appearanceId: prop_lantern_wall_01, position: [ 14.9, 0, 16.9 ], rotationY: 0, scale: 1 }
+      - { appearanceId: prop_barrel_01, position: [ 12.4, 0, 16.2 ], rotationY: 0, scale: 1, colliderRadius: 0.4 }
+      - { appearanceId: env_village_wall_window_01, position: [ 22, 0, 15 ], rotationY: 1.57, scale: 1, colliderRadius: 0.8 }
+      - { appearanceId: env_village_corner_01, position: [ 22, 0, 13 ], rotationY: 0, scale: 1, colliderRadius: 0.25 }
+      - { appearanceId: env_village_corner_01, position: [ 22, 0, 17 ], rotationY: -1.57, scale: 1, colliderRadius: 0.25 }
+      - { appearanceId: prop_barrel_01, position: [ 22.4, 0, 12.2 ], rotationY: 0, scale: 1, colliderRadius: 0.4 }
+      - { appearanceId: prop_stool_01, position: [ 11.6, 0, -7.6 ], rotationY: 3.14, scale: 1 }
+      - { appearanceId: env_village_door_01, position: [ 23, 0, -6 ], rotationY: 1.57, scale: 1, colliderRadius: 0.8 }
+      - { appearanceId: env_village_corner_01, position: [ 23, 0, -4 ], rotationY: 1.57, scale: 1, colliderRadius: 0.25 }
+      - { appearanceId: env_village_corner_01, position: [ 23, 0, -8 ], rotationY: 3.14, scale: 1, colliderRadius: 0.25 }
+      - { appearanceId: prop_lantern_wall_01, position: [ 22.9, 0, -6.9 ], rotationY: 1.57, scale: 1 }
+      - { appearanceId: prop_barrel_01, position: [ 22.2, 0, -4.4 ], rotationY: 1.57, scale: 1, colliderRadius: 0.4 }
+      - { appearanceId: env_village_fence_01, position: [ 23.96, 0, 19.67 ], rotationY: -2.26, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ 21.92, 0, 21.92 ], rotationY: -2.36, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ 19.67, 0, 23.96 ], rotationY: -2.45, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_bush_02, position: [ 12.06, 0.01, 5.26 ], rotationY: 6.07, scale: 0.81 }
+      - { appearanceId: env_bush_02, position: [ 5.2, 0.01, 4.04 ], rotationY: 5.56, scale: 0.91 }
+      - { appearanceId: env_bush_02, position: [ 16.5, 0.01, -5 ], rotationY: 4.59, scale: 0.89 }
+      - { appearanceId: env_grass_01, position: [ 17.98, 0.01, 11.44 ], rotationY: 2.02, scale: 0.61 }
+      - { appearanceId: env_grass_01, position: [ 18.53, 0.01, 18.27 ], rotationY: 2.61, scale: 0.99 }
+      - { appearanceId: env_grass_01, position: [ 16.3, 0.01, 12.88 ], rotationY: 6.19, scale: 0.94 }
+      - { appearanceId: env_grass_01, position: [ 7.75, 0.01, 9.02 ], rotationY: 1.48, scale: 0.73 }
+      - { appearanceId: env_grass_01, position: [ 6.36, 0.01, -4.37 ], rotationY: 6.05, scale: 0.71 }
+      - { appearanceId: env_grass_01, position: [ 7.06, 0.01, 21.17 ], rotationY: 0.6, scale: 0.94 }
+      - { appearanceId: env_grass_01, position: [ -5.12, 0.01, 12.13 ], rotationY: 5.31, scale: 0.67 }
+      - { appearanceId: env_grass_01, position: [ 13.19, 0.01, 3.54 ], rotationY: 5.56, scale: 0.83 }
+      - { appearanceId: env_grass_01, position: [ 16.65, 0.01, -7.89 ], rotationY: 5.48, scale: 1 }
+      - { appearanceId: env_grass_01, position: [ 5.47, 0.01, 18.6 ], rotationY: 5.31, scale: 1.06 }
+      - { appearanceId: env_grass_01, position: [ 20.22, 0.01, 5.89 ], rotationY: 3.92, scale: 1.04 }
+      - { appearanceId: env_grass_01, position: [ 5.58, 0.01, 13.75 ], rotationY: 2.44, scale: 0.95 }
+      - { appearanceId: env_grass_01, position: [ 15.16, 0.01, 4 ], rotationY: 5.37, scale: 0.93 }
+      - { appearanceId: env_grass_01, position: [ -7.21, 0.01, 12.82 ], rotationY: 2.32, scale: 0.65 }
+      - { appearanceId: env_grass_01, position: [ 21.43, 0.01, 10.99 ], rotationY: 1.98, scale: 0.76 }
+      - { appearanceId: env_grass_01, position: [ 9.76, 0.01, -5.23 ], rotationY: 3.47, scale: 0.78 }
+      - { appearanceId: env_grass_01, position: [ 8.26, 0.01, 22.13 ], rotationY: 5.87, scale: 1.05 }
+      - { appearanceId: env_grass_01, position: [ 16.18, 0.01, 10.94 ], rotationY: 6.18, scale: 0.69 }
+      - { appearanceId: env_grass_01, position: [ 19.3, 0.01, 20.83 ], rotationY: 0.64, scale: 0.62 }
+      - { appearanceId: env_grass_01, position: [ 14.53, 0.01, 14.41 ], rotationY: 3.5, scale: 1.03 }
+      - { appearanceId: env_grass_01, position: [ 6.42, 0.01, 10.09 ], rotationY: 4.93, scale: 1.04 }
+      - { appearanceId: env_grass_01, position: [ 17.41, 0.01, 14.02 ], rotationY: 5.16, scale: 0.75 }
+      - { appearanceId: env_grass_01, position: [ 9.1, 0.01, 17.2 ], rotationY: 2.27, scale: 0.62 }
+      - { appearanceId: env_grass_01, position: [ 20.43, 0.01, 12.1 ], rotationY: 1.11, scale: 0.61 }
+      - { appearanceId: env_grass_01, position: [ 10.52, 0.01, 11.25 ], rotationY: 3.09, scale: 0.89 }
+      - { appearanceId: env_grass_01, position: [ 6.71, 0.01, 17.13 ], rotationY: 2.29, scale: 0.89 }
+      - { appearanceId: env_dungeon_floor_01, position: [ -4, 0.02, -4 ], rotationY: 0, scale: 1.02 }
+      - { appearanceId: env_dungeon_floor_01, position: [ 0, 0.02, -4 ], rotationY: 0, scale: 1.02 }
+      - { appearanceId: env_dungeon_floor_01, position: [ 4, 0.02, -4 ], rotationY: 0, scale: 1.02 }
+      - { appearanceId: env_dungeon_floor_01, position: [ -4, 0.02, 0 ], rotationY: 0, scale: 1.02 }
+      - { appearanceId: env_dungeon_floor_01, position: [ 0, 0.02, 0 ], rotationY: 0, scale: 1.02 }
+      - { appearanceId: env_dungeon_floor_01, position: [ 4, 0.02, 0 ], rotationY: 0, scale: 1.02 }
+      - { appearanceId: env_dungeon_floor_01, position: [ -4, 0.02, 4 ], rotationY: 0, scale: 1.02 }
+      - { appearanceId: env_dungeon_floor_01, position: [ 0, 0.02, 4 ], rotationY: 0, scale: 1.02 }
+      - { appearanceId: env_dungeon_floor_01, position: [ 4, 0.02, 4 ], rotationY: 0, scale: 1.02 }
+  - id: chunk_1_2
+    instances:
+      - { appearanceId: prop_banner_thin_red_01, position: [ -5, 0, 30.6 ], rotationY: 3.14, scale: 1, colliderRadius: 0.3 }
+      - { appearanceId: prop_banner_thin_red_01, position: [ 5, 0, 30.6 ], rotationY: 3.14, scale: 1, colliderRadius: 0.3 }
+      - { appearanceId: prop_torch_stand_01, position: [ -3.2, 0, 34.5 ], rotationY: 0, scale: 1 }
+      - { appearanceId: prop_torch_stand_01, position: [ 3.2, 0, 34.5 ], rotationY: 0, scale: 1 }
+      - { appearanceId: prop_tech_container_01, position: [ 23.5, 0, 25.5 ], rotationY: 0.8, scale: 1, colliderRadius: 0.6 }
+      - { appearanceId: env_village_fence_01, position: [ 17.22, 0, 25.78 ], rotationY: -2.55, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ 14.61, 0, 27.34 ], rotationY: -2.65, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ 11.86, 0, 28.64 ], rotationY: -2.75, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ 9, 0, 29.67 ], rotationY: -2.85, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ 6.05, 0, 30.4 ], rotationY: -2.95, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ -6.05, 0, 30.4 ], rotationY: -3.34, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_bush_02, position: [ -6.92, 0.01, 25.05 ], rotationY: 4.89, scale: 0.85 }
+      - { appearanceId: env_grass_01, position: [ 12.05, 0.01, 25.09 ], rotationY: 5.06, scale: 1.01 }
+      - { appearanceId: env_tree_07, position: [ -7.05, 0.01, 37.93 ], rotationY: 5.24, scale: 1.03, colliderRadius: 0.6 }
+      - { appearanceId: env_rock_04, position: [ 17.14, 0.01, 37.55 ], rotationY: 4.93, scale: 0.78, colliderRadius: 0.8 }
+      - { appearanceId: env_rock_04, position: [ 5.88, 0.01, 38.42 ], rotationY: 2.72, scale: 0.94, colliderRadius: 0.8 }
+      - { appearanceId: env_fern_01, position: [ 20.18, 0.01, 36.69 ], rotationY: 3.53, scale: 0.86 }
+      - { appearanceId: env_fern_01, position: [ 22.09, 0.01, 37.3 ], rotationY: 4.85, scale: 1.08 }
+  - id: chunk_2_0
+    instances:
+      - { appearanceId: env_village_corner_01, position: [ 27, 0, -8 ], rotationY: 4.71, scale: 1, colliderRadius: 0.25 }
+      - { appearanceId: env_village_fence_01, position: [ 25.78, 0, -17.22 ], rotationY: -7.26, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ 27.34, 0, -14.61 ], rotationY: -7.36, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ 28.64, 0, -11.86 ], rotationY: -7.46, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ 29.67, 0, -9 ], rotationY: -7.56, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_grass_01, position: [ 24.53, 0.01, -11.94 ], rotationY: 5.93, scale: 0.67 }
+      - { appearanceId: env_tree_05, position: [ 28, 0.01, -28.78 ], rotationY: 3.9, scale: 1.03, colliderRadius: 0.6 }
+      - { appearanceId: env_tree_05, position: [ 34.97, 0.01, -13.16 ], rotationY: 5.23, scale: 1.02, colliderRadius: 0.6 }
+      - { appearanceId: env_tree_01, position: [ 35.25, 0.01, -20.75 ], rotationY: 1.24, scale: 1.02, colliderRadius: 0.6 }
+      - { appearanceId: env_tree_01, position: [ 32.98, 0.01, -36.33 ], rotationY: 3.36, scale: 1.07, colliderRadius: 0.6 }
+      - { appearanceId: env_tree_01, position: [ 28.2, 0.01, -22.91 ], rotationY: 5.26, scale: 1.04, colliderRadius: 0.6 }
+      - { appearanceId: env_tree_01, position: [ 24.96, 0.01, -36.31 ], rotationY: 3.71, scale: 0.84, colliderRadius: 0.6 }
+      - { appearanceId: env_tree_01, position: [ 32.95, 0.01, -30.05 ], rotationY: 4.62, scale: 0.96, colliderRadius: 0.6 }
+      - { appearanceId: env_tree_07, position: [ 38.21, 0.01, -30.55 ], rotationY: 2.16, scale: 0.97, colliderRadius: 0.6 }
+      - { appearanceId: env_rock_04, position: [ 37.4, 0.01, -35.08 ], rotationY: 5.37, scale: 0.97, colliderRadius: 0.8 }
+      - { appearanceId: env_rock_04, position: [ 28.93, 0.01, -37.42 ], rotationY: 3.87, scale: 0.88, colliderRadius: 0.8 }
+      - { appearanceId: env_bush_01, position: [ 37.22, 0.01, -27.82 ], rotationY: 0.81, scale: 0.87 }
+      - { appearanceId: env_bush_01, position: [ 30.14, 0.01, -18.4 ], rotationY: 1.77, scale: 0.78 }
+      - { appearanceId: env_bush_01, position: [ 30.22, 0.01, -34.99 ], rotationY: 3.47, scale: 1.09 }
+      - { appearanceId: env_bush_01, position: [ 37.54, 0.01, -19.66 ], rotationY: 2.89, scale: 1.04 }
+      - { appearanceId: env_bush_01, position: [ 32.99, 0.01, -32.77 ], rotationY: 2.99, scale: 0.78 }
+      - { appearanceId: env_bush_01, position: [ 37.18, 0.01, -11.1 ], rotationY: 0.93, scale: 0.87 }
+      - { appearanceId: env_fern_01, position: [ 26.47, 0.01, -34.21 ], rotationY: 3.58, scale: 0.96 }
+      - { appearanceId: env_fern_01, position: [ 25.1, 0.01, -32.25 ], rotationY: 5.28, scale: 0.77 }
+      - { appearanceId: env_grass_02, position: [ 33.67, 0.01, -21.3 ], rotationY: 3.14, scale: 0.73 }
+      - { appearanceId: env_grass_02, position: [ 30.7, 0.01, -15.84 ], rotationY: 0.72, scale: 0.87 }
+      - { appearanceId: env_grass_02, position: [ 28.98, 0.01, -32.2 ], rotationY: 5.06, scale: 1.09 }
+      - { appearanceId: env_grass_02, position: [ 26.57, 0.01, -38.02 ], rotationY: 1.42, scale: 0.98 }
+      - { appearanceId: env_grass_02, position: [ 28.77, 0.01, -19.65 ], rotationY: 2.9, scale: 0.86 }
+      - { appearanceId: env_grass_02, position: [ 27.11, 0.01, -24.66 ], rotationY: 0.65, scale: 0.73 }
+      - { appearanceId: env_grass_02, position: [ 35.18, 0.01, -32.81 ], rotationY: 5.64, scale: 0.9 }
+      - { appearanceId: env_grass_02, position: [ 36.86, 0.01, -25.34 ], rotationY: 2.79, scale: 0.97 }
+      - { appearanceId: env_grass_02, position: [ 34.23, 0.01, -28.53 ], rotationY: 1.24, scale: 0.84 }
+      - { appearanceId: env_grass_02, position: [ 34.23, 0.01, -16.74 ], rotationY: 5.26, scale: 0.72 }
+      - { appearanceId: env_grass_02, position: [ 37.85, 0.01, -17.64 ], rotationY: 0.38, scale: 0.9 }
+      - { appearanceId: env_grass_02, position: [ 31.99, 0.01, -19.9 ], rotationY: 4.59, scale: 0.9 }
+      - { appearanceId: env_grass_02, position: [ 24.31, 0.01, -24.15 ], rotationY: 3.02, scale: 0.79 }
+      - { appearanceId: env_grass_02, position: [ 26.3, 0.01, -28.79 ], rotationY: 0.83, scale: 0.94 }
+      - { appearanceId: env_grass_02, position: [ 36.83, 0.01, -22.49 ], rotationY: 3.21, scale: 0.75 }
+      - { appearanceId: env_grass_02, position: [ 35.48, 0.01, -11.04 ], rotationY: 5.53, scale: 0.94 }
+  - id: chunk_2_1
+    instances:
+      - { appearanceId: prop_plate_food_01, position: [ 26.2, 0, 10.2 ], rotationY: 0, scale: 1 }
+      - { appearanceId: prop_keg_01, position: [ 27, 0, 3.8 ], rotationY: 0, scale: 1, colliderRadius: 0.6 }
+      - { appearanceId: prop_barrel_01, position: [ 25.6, 0, 8.4 ], rotationY: 0, scale: 1, colliderRadius: 0.4 }
+      - { appearanceId: env_village_floor_wood_01, position: [ 24, 0.03, 15 ], rotationY: 0, scale: 2 }
+      - { appearanceId: env_village_door_01, position: [ 24, 0, 13 ], rotationY: 0, scale: 1, colliderRadius: 0.8 }
+      - { appearanceId: env_village_wall_01, position: [ 26, 0, 15 ], rotationY: 1.57, scale: 1, colliderRadius: 0.8 }
+      - { appearanceId: env_village_wall_arched_01, position: [ 24, 0, 17 ], rotationY: 0, scale: 1, colliderRadius: 0.8 }
+      - { appearanceId: env_village_corner_01, position: [ 26, 0, 13 ], rotationY: 1.57, scale: 1, colliderRadius: 0.25 }
+      - { appearanceId: env_village_corner_01, position: [ 26, 0, 17 ], rotationY: 3.14, scale: 1, colliderRadius: 0.25 }
+      - { appearanceId: env_village_roof_01, position: [ 24, 4, 15 ], rotationY: 0, scale: 1 }
+      - { appearanceId: prop_lantern_wall_01, position: [ 24.9, 0, 12.9 ], rotationY: 0, scale: 1 }
+      - { appearanceId: env_village_floor_wood_01, position: [ 25, 0.03, -6 ], rotationY: 1.57, scale: 2 }
+      - { appearanceId: env_village_wall_window_01, position: [ 25, 0, -4 ], rotationY: 3.14, scale: 1, colliderRadius: 0.8 }
+      - { appearanceId: env_village_wall_01, position: [ 25, 0, -8 ], rotationY: 3.14, scale: 1, colliderRadius: 0.8 }
+      - { appearanceId: env_village_wall_arched_01, position: [ 27, 0, -6 ], rotationY: 1.57, scale: 1, colliderRadius: 0.8 }
+      - { appearanceId: env_village_corner_01, position: [ 27, 0, -4 ], rotationY: 0, scale: 1, colliderRadius: 0.25 }
+      - { appearanceId: env_village_roof_01, position: [ 25, 4, -6 ], rotationY: 1.57, scale: 1 }
+      - { appearanceId: env_village_fence_01, position: [ 30.4, 0, 6.05 ], rotationY: -1.77, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ 29.67, 0, 9 ], rotationY: -1.87, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ 28.64, 0, 11.86 ], rotationY: -1.96, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ 27.34, 0, 14.61 ], rotationY: -2.06, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ 25.78, 0, 17.22 ], rotationY: -2.16, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_village_fence_01, position: [ 30.4, 0, -6.05 ], rotationY: -7.66, scale: 0.75, colliderRadius: 1.5 }
+      - { appearanceId: env_grass_01, position: [ 26.26, 0.01, 5.16 ], rotationY: 3.19, scale: 1.05 }
+      - { appearanceId: env_grass_01, position: [ 27.19, 0.01, 7.11 ], rotationY: 3.28, scale: 0.68 }
+      - { appearanceId: env_tree_05, position: [ 36.67, 0.01, -6.56 ], rotationY: 2.55, scale: 0.92, colliderRadius: 0.6 }
+      - { appearanceId: env_tree_05, position: [ 37.47, 0.01, 7.79 ], rotationY: 5.57, scale: 0.81, colliderRadius: 0.6 }
+      - { appearanceId: env_tree_01, position: [ 33.69, 0.01, 13.56 ], rotationY: 2.24, scale: 1.09, colliderRadius: 0.6 }
+      - { appearanceId: env_tree_07, position: [ 32.26, 0.01, 19.37 ], rotationY: 5.03, scale: 0.91, colliderRadius: 0.6 }
+      - { appearanceId: env_rock_04, position: [ 36.04, 0.01, 21.1 ], rotationY: 5.74, scale: 0.83, colliderRadius: 0.8 }
+      - { appearanceId: env_rock_04, position: [ 38.08, 0.01, 13.76 ], rotationY: 4.27, scale: 0.7, colliderRadius: 0.8 }
+      - { appearanceId: env_bush_01, position: [ 33.96, 0.01, 8.5 ], rotationY: 2.17, scale: 0.77 }
+      - { appearanceId: env_bush_01, position: [ 27.84, 0.01, 19.48 ], rotationY: 0.76, scale: 1.07 }
+      - { appearanceId: env_bush_01, position: [ 34.73, 0.01, 17.58 ], rotationY: 3.28, scale: 1.01 }
+      - { appearanceId: env_bush_01, position: [ 36.43, 0.01, 4.08 ], rotationY: 2.5, scale: 0.96 }
+      - { appearanceId: env_fern_01, position: [ 35.49, 0.01, 14.87 ], rotationY: 1.68, scale: 0.75 }
+      - { appearanceId: env_fern_01, position: [ 38.06, 0.01, 18 ], rotationY: 1.1, scale: 0.79 }
+      - { appearanceId: env_grass_02, position: [ 35.55, 0.01, -5.37 ], rotationY: 0.09, scale: 1.1 }
+      - { appearanceId: env_grass_02, position: [ 34.78, 0.01, 4.01 ], rotationY: 5.95, scale: 1.11 }
+      - { appearanceId: env_grass_02, position: [ 33.73, 0.01, 5.5 ], rotationY: 1.49, scale: 1.02 }
+      - { appearanceId: env_grass_02, position: [ 35.98, 0.01, 19.07 ], rotationY: 6.28, scale: 0.87 }
+      - { appearanceId: env_grass_02, position: [ 36.1, 0.01, 6.43 ], rotationY: 3.47, scale: 0.82 }
+      - { appearanceId: env_grass_02, position: [ 37.72, 0.01, 10.05 ], rotationY: 2.09, scale: 1.08 }
+      - { appearanceId: env_grass_02, position: [ 31.48, 0.01, 15.85 ], rotationY: 3.93, scale: 0.83 }
+      - { appearanceId: env_grass_02, position: [ 36.25, 0.01, 13.43 ], rotationY: 3.74, scale: 1.03 }
+  - id: chunk_2_2
+    instances:
+      - { appearanceId: env_tech_module_01, position: [ 34, 0, 34 ], rotationY: 0.5, scale: 1, colliderRadius: 1.5 }
+      - { appearanceId: prop_scrap_pile_01, position: [ 24, 0, 35 ], rotationY: 1, scale: 1, colliderRadius: 0.7 }
+      - { appearanceId: prop_scrap_pile_02, position: [ 35, 0, 25 ], rotationY: 0, scale: 1, colliderRadius: 0.4 }
+      - { appearanceId: prop_tech_panel_01, position: [ 33, 0, 29 ], rotationY: -0.4, scale: 1, colliderRadius: 0.6 }
+      - { appearanceId: env_tree_07, position: [ 37.27, 0.01, 37.99 ], rotationY: 2.41, scale: 1, colliderRadius: 0.6 }
+      - { appearanceId: env_bush_01, position: [ 37.91, 0.01, 32.4 ], rotationY: 5.45, scale: 0.83 }
+      - { appearanceId: env_fern_01, position: [ 34.4, 0.01, 37.3 ], rotationY: 0.69, scale: 0.88 }
+      - { appearanceId: env_grass_02, position: [ 38.4, 0.01, 25.05 ], rotationY: 1.37, scale: 0.78 }

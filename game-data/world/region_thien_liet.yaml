@@ -1,0 +1,23 @@
+# Chiến trường cổ, không gian méo (master plan §17).
+id: region_thien_liet
+order: 7
+name: Thiên Liệt Chi Địa
+tagline: Chiến trường cổ, không gian méo mó
+biome: rift
+realm: nguyen_anh
+color: "#cf5a6c"
+shape:
+  - { x: 542, y: 42 }
+  - { x: 640, y: 26 }
+  - { x: 720, y: 50 }
+  - { x: 736, y: 110 }
+  - { x: 700, y: 165 }
+  - { x: 615, y: 176 }
+  - { x: 546, y: 146 }
+  - { x: 526, y: 90 }
+links: [region_thien_tam]
+highlights:
+  - Trọng lực bất thường
+  - Khám phá quá khứ Thiên Liệt
+  - Khôi phục ký ức Sở Thiên
+boss: Chiến Hạm Thiên Liệt

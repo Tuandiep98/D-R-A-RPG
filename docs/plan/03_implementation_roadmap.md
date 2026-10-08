@@ -81,6 +81,8 @@ Ký hiệu: ✅ xong · 🟡 có nền tảng/placeholder, cần hoàn thiện �
 3. P2: feel/combo, cả bảy skill Lôi, năm súng và Farm cùng luật hitbox.
 4. P3–P5: kit các Đạo còn lại, Hỗn Nguyên/đổi hành late game, balance và nghiệm thu thiết bị/latency. Gate chi tiết trong plan mới.
 
+Map & thế giới ([plan 05](05_map_renovation_plan.md), luật [map_authoring_rules](../map_authoring_rules.md)): đợt trùng tu 1 ✅ — 3 map đã dựng lại theo phong cách vùng, minimap góc phải trên, bản đồ thế giới 8 vùng mở theo cảnh giới (phím M), test luật map R1–R8, `pnpm smoke:maps`. Tiếp theo: lưu "đã khám phá" theo nhân vật, dấu nhiệm vụ trên minimap, boss riêng cho Phế Tích Vô Danh và dời Huyền Vũ Cổ Mộ về Thanh Vân, asset kiến trúc Đông phương ✋.
+
 Backlog hạ tầng/social hiện có:
 
 1. Kênh chat bang hội / thì thầm bạn bè (cần presence qua Redis giữa các room).

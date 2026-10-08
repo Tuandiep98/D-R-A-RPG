@@ -1,0 +1,6 @@
+# KayKit Resource Bits "Pallet_Wood_Covered_A" — Kiện hàng phủ bạt (map renovation, D-027; 366 tris)
+id: prop_pallet_01
+kind: environment
+scale: 0.7
+modelAssetId: prop_pallet_01
+placeholder: { shape: box, color: "#9a7a52", height: 0.21, radius: 0.6 }

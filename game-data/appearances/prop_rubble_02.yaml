@@ -1,0 +1,6 @@
+# KayKit Dungeon "rubble_half" — Đá vụn thấp (map renovation, D-027; 390 tris)
+id: prop_rubble_02
+kind: environment
+scale: 0.8
+modelAssetId: prop_rubble_02
+placeholder: { shape: box, color: "#8f8a80", height: 2.8, radius: 1.6 }

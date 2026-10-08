@@ -1,0 +1,6 @@
+# KayKit Resource Bits "Wood_Log_Stack" — Đống củi (map renovation, D-027; 3576 tris)
+id: prop_log_stack_01
+kind: environment
+scale: 0.7
+modelAssetId: prop_log_stack_01
+placeholder: { shape: cylinder, color: "#7a5232", height: 1.05, radius: 0.59 }

@@ -1,0 +1,6 @@
+# KayKit Dungeon "wall_archedwindow_open" — Tường cửa vòm (map renovation, D-027; 635 tris)
+id: env_village_wall_arched_01
+kind: environment
+scale: 1
+modelAssetId: env_village_wall_arched_01
+placeholder: { shape: box, color: "#c9b28a", height: 4, radius: 2 }

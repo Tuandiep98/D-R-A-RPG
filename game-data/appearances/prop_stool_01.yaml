@@ -1,0 +1,6 @@
+# KayKit Dungeon "stool" — Ghế đẩu (map renovation, D-027; 172 tris)
+id: prop_stool_01
+kind: environment
+scale: 0.62
+modelAssetId: prop_stool_01
+placeholder: { shape: cylinder, color: "#8a5a3a", height: 0.31, radius: 0.23 }

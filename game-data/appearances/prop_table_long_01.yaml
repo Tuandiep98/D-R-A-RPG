@@ -1,0 +1,6 @@
+# KayKit Dungeon "table_long" — Bàn dài (map renovation, D-027; 280 tris)
+id: prop_table_long_01
+kind: environment
+scale: 0.62
+modelAssetId: prop_table_long_01
+placeholder: { shape: box, color: "#8a5a3a", height: 0.62, radius: 1.24 }

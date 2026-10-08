@@ -10,3 +10,7 @@ source assets, existing elements, tokens and glyphs before making new ones.
 Extend `apps/game-web/src/fantasy-glass.css` and the existing HUD components;
 keep desktop/touch layouts, readable gameplay states and the Low/fallback styles.
 The older stone/metal/brass look and the old instruction to avoid blur are superseded.
+
+For every change that creates or modifies a map (layout, dressing, world region),
+read and follow `docs/map_authoring_rules.md` (rules R1–R8 are enforced by
+`tools/map-builder/map-rules.test.ts`) and the plan in `docs/plan/05_map_renovation_plan.md`.

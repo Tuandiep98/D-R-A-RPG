@@ -1,0 +1,6 @@
+# KayKit Dungeon "floor_tile_small_broken_A" — Nền đá vỡ (map renovation, D-027; 94 tris)
+id: env_floor_broken_01
+kind: environment
+scale: 1
+modelAssetId: env_floor_broken_01
+placeholder: { shape: box, color: "#7f7a72", height: 0.15, radius: 1 }

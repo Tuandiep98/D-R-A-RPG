@@ -1,0 +1,6 @@
+# KayKit Resource Bits "Wood_Planks_Stack_Medium" — Chồng ván (map renovation, D-027; 704 tris)
+id: prop_planks_01
+kind: environment
+scale: 0.7
+modelAssetId: prop_planks_01
+placeholder: { shape: box, color: "#a47a4f", height: 0.44, radius: 0.58 }

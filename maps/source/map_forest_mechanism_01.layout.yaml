@@ -1,9 +1,12 @@
-# Phế Tích Vô Danh — first real map (assets plan §8.2).
-# West → east: safe outpost → forest path → wolf/fox hills → robot ruins + elite
-# → boss arena → portal home. Run `pnpm maps:build` after editing.
+# Phế Tích Vô Danh — lớp ngoài di tích (master plan §11: hang cổ, tượng đá, phù
+# văn, linh thú; tầng sâu: cửa hợp kim, terminal). World region_tan_nguyen.
+# Tây → đông: Doanh Trại Tiền Tiêu (safe) → rừng → Đồi Sói / Hang Hồ Ly →
+# Cửa Hợp Kim (phế tích + xác máy Thiên Cơ) + Linh Lộc Đài → Đài Tượng Đá (boss)
+# → cổng về trấn. Gameplay (paths/zones/spawns/portals) giữ nguyên khi trùng tu;
+# dressing theo docs/map_authoring_rules.md. Chạy `pnpm content:build` sau khi sửa.
 id: map_forest_mechanism_01
 name: Phế Tích Vô Danh
-seed: 20261006
+seed: 20261008
 bounds: { min: { x: -80, z: -48 }, max: { x: 80, z: 48 } }
 chunkSize: 32
 ground:
@@ -50,9 +53,9 @@ clearings:
   - { center: { x: -68, z: 0 }, radius: 10 } # outpost
   - { center: { x: -34, z: 16 }, radius: 7 } # wolf den
   - { center: { x: -24, z: -24 }, radius: 7 } # fox burrows
-  - { center: { x: 16, z: 22 }, radius: 9 } # robot ruins
+  - { center: { x: 16, z: 22 }, radius: 10 } # robot ruins
   - { center: { x: 24, z: -26 }, radius: 8 } # elite yard
-  - { center: { x: 60, z: 0 }, radius: 14 } # boss arena
+  - { center: { x: 60, z: 0 }, radius: 17 } # boss arena + pillars
   - { center: { x: 22, z: 34 }, radius: 5 } # dungeon gate
 
 groundCovers:
@@ -74,129 +77,40 @@ groundCovers:
     tileSize: 4
     y: 0.02
     scale: 1.03
+  # Nền đá vỡ lộ ra trước cửa hợp kim (phù văn cổ dưới lớp đất).
+  - appearanceIds: [env_floor_broken_01, env_floor_rune_01, env_floor_broken_01]
+    min: { x: 18, z: 24 }
+    max: { x: 24, z: 30 }
+    tileSize: 2
+    y: 0.03
+    scale: 1
 
 zones:
-  - {
-      id: outpost,
-      name: Doanh Trại Tiền Tiêu,
-      kind: safe,
-      center: { x: -68, z: 0 },
-      radius: 9,
-    }
-  - {
-      id: wolf_hills,
-      name: Đồi Sói,
-      kind: combat,
-      center: { x: -30, z: 0 },
-      radius: 26,
-    }
-  - {
-      id: ruins,
-      name: Cửa Hợp Kim,
-      kind: combat,
-      center: { x: 18, z: 4 },
-      radius: 28,
-    }
-  - {
-      id: boss_arena,
-      name: Đài Tượng Đá,
-      kind: boss_arena,
-      center: { x: 60, z: 0 },
-      radius: 14,
-    }
+  - { id: outpost, name: Doanh Trại Tiền Tiêu, kind: safe, center: { x: -68, z: 0 }, radius: 9 }
+  - { id: wolf_hills, name: Đồi Sói, kind: combat, center: { x: -30, z: 0 }, radius: 26 }
+  - { id: ruins, name: Cửa Hợp Kim, kind: combat, center: { x: 18, z: 4 }, radius: 28 }
+  - { id: boss_arena, name: Đài Tượng Đá, kind: boss_arena, center: { x: 60, z: 0 }, radius: 14 }
 
 spawns:
-  - {
-      id: wolf_den,
-      monsterId: wolf_001,
-      position: { x: -34, z: 16 },
-      count: 4,
-      radius: 4,
-      respawnSeconds: 12,
-    }
-  - {
-      id: wolf_path,
-      monsterId: wolf_001,
-      position: { x: -10, z: 10 },
-      count: 2,
-      radius: 3,
-      respawnSeconds: 12,
-    }
-  - {
-      id: fox_burrows,
-      monsterId: fox_001,
-      position: { x: -24, z: -24 },
-      count: 4,
-      radius: 4,
-      respawnSeconds: 10,
-    }
-  - {
-      id: fox_path,
-      monsterId: fox_001,
-      position: { x: -44, z: -10 },
-      count: 2,
-      radius: 3,
-      respawnSeconds: 10,
-    }
-  - {
-      id: robot_ruins,
-      monsterId: robot_scout_001,
-      position: { x: 16, z: 22 },
-      count: 4,
-      radius: 5,
-      respawnSeconds: 15,
-    }
-  - {
-      id: stone_guard,
-      monsterId: stone_guardian_001,
-      position: { x: 38, z: 8 },
-      count: 2,
-      radius: 3,
-      respawnSeconds: 45,
-    }
-  - {
-      id: elite_yard,
-      monsterId: stag_elite_001,
-      position: { x: 24, z: -26 },
-      count: 1,
-      respawnSeconds: 90,
-    }
-  - {
-      id: boss,
-      monsterId: mech_golem_001,
-      position: { x: 62, z: 0 },
-      count: 1,
-      respawnSeconds: 180,
-    }
+  - { id: wolf_den, monsterId: wolf_001, position: { x: -34, z: 16 }, count: 4, radius: 4, respawnSeconds: 12 }
+  - { id: wolf_path, monsterId: wolf_001, position: { x: -10, z: 10 }, count: 2, radius: 3, respawnSeconds: 12 }
+  - { id: fox_burrows, monsterId: fox_001, position: { x: -24, z: -24 }, count: 4, radius: 4, respawnSeconds: 10 }
+  - { id: fox_path, monsterId: fox_001, position: { x: -44, z: -10 }, count: 2, radius: 3, respawnSeconds: 10 }
+  - { id: robot_ruins, monsterId: robot_scout_001, position: { x: 16, z: 22 }, count: 4, radius: 5, respawnSeconds: 15 }
+  - { id: stone_guard, monsterId: stone_guardian_001, position: { x: 38, z: 8 }, count: 2, radius: 3, respawnSeconds: 45 }
+  - { id: elite_yard, monsterId: stag_elite_001, position: { x: 24, z: -26 }, count: 1, respawnSeconds: 90 }
+  - { id: boss, monsterId: mech_golem_001, position: { x: 62, z: 0 }, count: 1, respawnSeconds: 180 }
 
 npcs:
   - { npcId: npc_scout, position: { x: -66, z: -4 }, rotationY: 1.2 }
 
 portals:
-  - {
-      id: forest_to_town,
-      name: Về Tân Nguyên Trấn,
-      position: { x: -77, z: 0 },
-      targetMapId: map_sandbox_01,
-      targetArrival: from_forest,
-    }
-  - {
-      id: sanctum_gate,
-      name: Huyền Vũ Cổ Mộ (phó bản),
-      position: { x: 22, z: 35 },
-      targetMapId: map_golem_sanctum_01,
-      targetArrival: entrance,
-    }
-  - {
-      id: arena_exit,
-      name: Lối Tắt Về Trấn,
-      position: { x: 77, z: 0 },
-      targetMapId: map_sandbox_01,
-      targetArrival: from_forest,
-    }
+  - { id: forest_to_town, name: Về Tân Nguyên Trấn, position: { x: -77, z: 0 }, targetMapId: map_sandbox_01, targetArrival: from_forest }
+  - { id: sanctum_gate, name: Huyền Vũ Cổ Mộ (phó bản), position: { x: 22, z: 35 }, targetMapId: map_golem_sanctum_01, targetArrival: entrance }
+  - { id: arena_exit, name: Lối Tắt Về Trấn, position: { x: 77, z: 0 }, targetMapId: map_sandbox_01, targetArrival: from_forest }
 
-# Arena wall with entrances on the west (path in) and east (exit portal).
 rings:
+  # Arena wall with entrances on the west (path in) and east (exit portal).
   - appearanceId: env_rock_01
     center: { x: 60, z: 0 }
     radius: 15
@@ -205,241 +119,141 @@ rings:
     colliderRadius: 1.1
     gapAngles: [3.14159, 0]
     gapWidth: 0.35
-
-landmarks:
-  # Ruins: rocks standing in for broken machinery until the tech kit exists.
-  - {
-      appearanceId: env_rock_01,
-      position: { x: 10, z: 26 },
-      scale: 1.6,
-      colliderRadius: 1.3,
-    }
-  - {
-      appearanceId: env_rock_01,
-      position: { x: 22, z: 28 },
-      rotationY: 1.2,
-      scale: 1.3,
-      colliderRadius: 1.1,
-    }
-  - {
-      appearanceId: env_rock_01,
-      position: { x: 25, z: 17 },
-      rotationY: 2.4,
-      scale: 1.2,
-      colliderRadius: 1,
-    }
-  - {
-      appearanceId: env_rock_01,
-      position: { x: 30, z: -30 },
-      scale: 1.5,
-      colliderRadius: 1.2,
-    }
-  - {
-      appearanceId: env_rock_01,
-      position: { x: 17, z: -31 },
-      rotationY: 0.8,
-      scale: 1.3,
-      colliderRadius: 1.1,
-    }
-  # Outpost
-  - {
-      appearanceId: env_tree_02,
-      position: { x: -72, z: 7 },
-      scale: 1.1,
-      colliderRadius: 0.6,
-    }
-  - {
-      appearanceId: env_tree_02,
-      position: { x: -72, z: -7 },
-      scale: 1.1,
-      colliderRadius: 0.6,
-    }
+  # Hàng rào gỗ doanh trại tiền tiêu, hở lối tây (về trấn) và đông (vào rừng).
+  - appearanceId: env_village_fence_01
+    center: { x: -68, z: 0 }
+    radius: 11
+    count: 22
+    scale: 0.75
+    colliderRadius: 1.4
+    gapAngles: [0.3, 3.14159]
+    gapWidth: 0.42
+    orient: tangent
+  # Linh Lộc Đài: vòng cột đá cổ quanh bãi tinh anh, hở lối bắc.
+  - appearanceId: env_ruin_column_01
+    center: { x: 24, z: -26 }
+    radius: 8.5
+    count: 9
+    scale: 1.7
+    colliderRadius: 0.6
+    gapAngles: [1.5708]
+    gapWidth: 0.5
+    orient: tangent
 
 prefabs:
   - id: forward_market
     members:
-      - {
-          appearanceId: prop_market_stall_01,
-          offset: { x: 0, z: 0 },
-          colliderRadius: 1.3,
-        }
-      - {
-          appearanceId: prop_barrel_01,
-          offset: { x: -1.8, z: 0.8 },
-          colliderRadius: 0.4,
-        }
-      - {
-          appearanceId: prop_crate_01,
-          offset: { x: 1.7, z: 0.7 },
-          rotationY: 0.4,
-          colliderRadius: 0.5,
-        }
-      - {
-          appearanceId: prop_workbench_01,
-          offset: { x: 0, z: 2.2 },
-          rotationY: 3.14159,
-          colliderRadius: 0.8,
-        }
-      - {
-          appearanceId: prop_anvil_01,
-          offset: { x: 1.5, z: 2.2 },
-          rotationY: 0.7,
-          colliderRadius: 0.4,
-        }
+      - { appearanceId: prop_market_stall_01, offset: { x: 0, z: 0 }, colliderRadius: 1.3 }
+      - { appearanceId: prop_barrel_01, offset: { x: -1.8, z: 0.8 }, colliderRadius: 0.4 }
+      - { appearanceId: prop_crate_01, offset: { x: 1.7, z: 0.7 }, rotationY: 0.4, colliderRadius: 0.5 }
+      - { appearanceId: prop_workbench_01, offset: { x: 0, z: 2.2 }, rotationY: 3.14159, colliderRadius: 0.8 }
+      - { appearanceId: prop_anvil_01, offset: { x: 1.5, z: 2.2 }, rotationY: 0.7, colliderRadius: 0.4 }
+  - id: camp_store
+    members:
+      - { appearanceId: prop_banner_shield_01, offset: { x: 0, z: 0 }, colliderRadius: 0.4 }
+      - { appearanceId: prop_weapon_rack_01, offset: { x: 1.8, z: 0.2 }, colliderRadius: 0.7 }
+      - { appearanceId: prop_log_stack_01, offset: { x: -2, z: 0.4 }, rotationY: 0.5, colliderRadius: 0.7 }
+      - { appearanceId: prop_trunk_01, offset: { x: 0.4, z: -1.6 }, rotationY: 0.2, colliderRadius: 0.5 }
+      - { appearanceId: prop_torch_stand_01, offset: { x: -1.6, z: -2 } }
   - id: alloy_gate
     members:
-      - {
-          appearanceId: env_scifi_door_frame_01,
-          offset: { x: 0, z: 0 },
-          colliderRadius: 1.4,
-        }
-      - {
-          appearanceId: env_scifi_door_01,
-          offset: { x: 0, z: 0.1 },
-          colliderRadius: 1.2,
-        }
-      - {
-          appearanceId: env_scifi_wall_broken_01,
-          offset: { x: -3, z: 0 },
-          colliderRadius: 1.4,
-        }
-      - {
-          appearanceId: env_scifi_wall_01,
-          offset: { x: 3, z: 0 },
-          colliderRadius: 1.4,
-        }
-      - {
-          appearanceId: prop_scifi_terminal_01,
-          offset: { x: 2, z: -1.2 },
-          rotationY: -1.5708,
-          colliderRadius: 0.5,
-        }
-      - {
-          appearanceId: prop_scifi_access_point_01,
-          offset: { x: -2, z: -1.2 },
-          rotationY: 1.5708,
-          colliderRadius: 0.35,
-        }
-      - {
-          appearanceId: env_scifi_column_01,
-          offset: { x: -4.5, z: 0 },
-          colliderRadius: 0.55,
-        }
-      - {
-          appearanceId: env_scifi_column_01,
-          offset: { x: 4.5, z: 0 },
-          colliderRadius: 0.55,
-        }
+      - { appearanceId: env_scifi_door_frame_01, offset: { x: 0, z: 0 }, colliderRadius: 1.4 }
+      - { appearanceId: env_scifi_door_01, offset: { x: 0, z: 0.1 }, colliderRadius: 1.2 }
+      - { appearanceId: env_scifi_wall_broken_01, offset: { x: -3, z: 0 }, colliderRadius: 1.4 }
+      - { appearanceId: env_scifi_wall_01, offset: { x: 3, z: 0 }, colliderRadius: 1.4 }
+      - { appearanceId: prop_scifi_terminal_01, offset: { x: 2, z: -1.2 }, rotationY: -1.5708, colliderRadius: 0.5 }
+      - { appearanceId: prop_scifi_access_point_01, offset: { x: -2, z: -1.2 }, rotationY: 1.5708, colliderRadius: 0.35 }
+      - { appearanceId: env_scifi_column_01, offset: { x: -4.5, z: 0 }, colliderRadius: 0.55 }
+      - { appearanceId: env_scifi_column_01, offset: { x: 4.5, z: 0 }, colliderRadius: 0.55 }
+  # Đoạn tường cổ đổ: tường vỡ + cột + đá vụn (lặp lại quanh phế tích).
+  - id: ruin_wall
+    members:
+      - { appearanceId: env_ruin_wall_broken_01, offset: { x: 0, z: 0 }, colliderRadius: 1.6 }
+      - { appearanceId: env_ruin_column_01, offset: { x: 2.4, z: 0.2 }, scale: 1.6, colliderRadius: 0.5 }
+      - { appearanceId: prop_rubble_02, offset: { x: -0.8, z: 1.8 }, rotationY: 0.9, scale: 0.45, colliderRadius: 0.7 }
+  # Xác máy Thiên Cơ: khoang vỡ, giàn khoan, phế liệu.
+  - id: tech_wreck
+    members:
+      - { appearanceId: env_tech_module_01, offset: { x: 0, z: 0 }, rotationY: 0.4, colliderRadius: 1.5 }
+      - { appearanceId: prop_scrap_pile_01, offset: { x: 2.4, z: -1 }, colliderRadius: 0.7 }
+      - { appearanceId: prop_fuel_barrels_01, offset: { x: -2.2, z: -1.2 }, colliderRadius: 0.6 }
+      - { appearanceId: prop_tech_container_01, offset: { x: -1.2, z: 2 }, rotationY: 0.8, colliderRadius: 0.6 }
 
 prefabPlacements:
+  # Doanh Trại Tiền Tiêu.
   - { prefabId: forward_market, position: { x: -68, z: 6 }, rotationY: 3.14159 }
-  - { prefabId: alloy_gate, position: { x: 16, z: 26 }, rotationY: 1.5708 }
-  - { prefabId: alloy_gate, position: { x: 22, z: 34 } }
+  - { prefabId: camp_store, position: { x: -70, z: -6 } }
+  # Cửa Hợp Kim: cổng ngang lối rẽ, cổng phó bản phía bắc, tường cổ bao sân.
+  - { prefabId: alloy_gate, position: { x: 9, z: 30 }, rotationY: 0.5 }
+  - { prefabId: alloy_gate, position: { x: 22, z: 37.5 } }
+  - { prefabId: ruin_wall, position: { x: 2, z: 25 }, rotationY: 1.2 }
+  - { prefabId: ruin_wall, position: { x: 8, z: 15 }, rotationY: -0.6 }
+  - { prefabId: ruin_wall, position: { x: 27, z: 17 }, rotationY: 2.2 }
+  - { prefabId: tech_wreck, position: { x: 28, z: 25 } }
+  - { prefabId: tech_wreck, position: { x: 3, z: 16 }, rotationY: 2.4 }
+
+landmarks:
+  # Doanh trại: cờ cổng, đuốc.
+  - { appearanceId: prop_banner_thin_red_01, position: { x: -60, z: 4.2 }, rotationY: -1.5708, colliderRadius: 0.3 }
+  - { appearanceId: prop_banner_thin_red_01, position: { x: -59.6, z: -2.6 }, rotationY: -1.5708, colliderRadius: 0.3 }
+  - { appearanceId: prop_torch_stand_01, position: { x: -64, z: 1 } }
+  # Đồi Sói: hang đá (đá lớn ôm lấy ổ sói), cây khô.
+  - { appearanceId: env_rock_05, position: { x: -39, z: 21 }, rotationY: 0.4, scale: 1.2, colliderRadius: 1.4 }
+  - { appearanceId: env_rock_04, position: { x: -33, z: 23 }, rotationY: 2.1, scale: 1.3, colliderRadius: 1.3 }
+  - { appearanceId: env_rock_01, position: { x: -41, z: 14 }, rotationY: 1.1, scale: 1.3, colliderRadius: 1.2 }
+  - { appearanceId: env_tree_dead_02, position: { x: -28, z: 21 }, colliderRadius: 0.4 }
+  - { appearanceId: env_tree_dead_01, position: { x: -40, z: 9 }, colliderRadius: 0.4 }
+  # Hang Hồ Ly: đá thấp, gốc cây khô.
+  - { appearanceId: env_rock_02, position: { x: -29, z: -28 }, scale: 1.2, colliderRadius: 1 }
+  - { appearanceId: env_rock_04, position: { x: -19, z: -29 }, rotationY: 1.4, colliderRadius: 1.1 }
+  - { appearanceId: env_tree_dead_02, position: { x: -30, z: -20 }, rotationY: 2, colliderRadius: 0.4 }
+  # Tượng đá canh lối vào đài (Thạch Khôi Tiền Vệ đứng giữa).
+  - { appearanceId: env_ruin_pillar_01, position: { x: 40, z: 6 }, colliderRadius: 0.9 }
+  - { appearanceId: env_ruin_pillar_01, position: { x: 40, z: -6 }, colliderRadius: 0.9 }
+  # Đài Tượng Đá: trụ cổ ở 4 góc ngoài vòng đá, đuốc ở lối vào.
+  - { appearanceId: env_ruin_pillar_01, position: { x: 72, z: 12 }, colliderRadius: 0.9 }
+  - { appearanceId: env_ruin_pillar_01, position: { x: 72, z: -12 }, colliderRadius: 0.9 }
+  - { appearanceId: env_ruin_pillar_01, position: { x: 48, z: 12 }, colliderRadius: 0.9 }
+  - { appearanceId: env_ruin_pillar_01, position: { x: 48, z: -12 }, colliderRadius: 0.9 }
+  - { appearanceId: prop_torch_stand_01, position: { x: 44, z: 3.6 } }
+  - { appearanceId: prop_torch_stand_01, position: { x: 44, z: -3.6 } }
+  # Cổng phó bản: đuốc + cờ.
+  - { appearanceId: prop_torch_stand_01, position: { x: 19.4, z: 31.6 } }
+  - { appearanceId: prop_torch_stand_01, position: { x: 24.6, z: 31.6 } }
+  - { appearanceId: env_tech_drill_01, position: { x: 31, z: 33 }, colliderRadius: 1.3 }
+  # Linh Lộc Đài: nền phù văn giữa vòng cột.
+  - { appearanceId: env_floor_rune_01, position: { x: 24, y: 0.03, z: -26 }, scale: 2 }
 
 scatter:
-  - {
-      appearanceId: env_ground_weeds_01,
-      count: 24,
-      minSpacing: 4,
-      scale: [0.8, 1.1],
-      allowOnPath: false,
-    }
-  - {
-      appearanceId: env_ground_stone_weeds_01,
-      count: 10,
-      minSpacing: 5,
-      scale: [0.8, 1.1],
-      allowOnPath: false,
-    }
-  - {
-      appearanceId: env_tree_01,
-      count: 34,
-      minSpacing: 5,
-      colliderRadius: 0.6,
-      scale: [0.8, 1.2],
-    }
-  - {
-      appearanceId: env_tree_02,
-      count: 44,
-      minSpacing: 4.5,
-      colliderRadius: 0.5,
-      scale: [0.8, 1.25],
-    }
-  - {
-      appearanceId: env_rock_01,
-      count: 20,
-      minSpacing: 4,
-      colliderRadius: 0.8,
-      scale: [0.6, 1.1],
-    }
-  - {
-      appearanceId: env_bush_01,
-      count: 50,
-      minSpacing: 2.5,
-      scale: [0.7, 1.2],
-      allowOnPath: false,
-    }
-  # Nature MegaKit variety (large → small: minSpacing checks everything already placed).
-  - {
-      appearanceId: env_tree_03,
-      count: 18,
-      minSpacing: 5,
-      colliderRadius: 0.6,
-      scale: [0.8, 1.15],
-    }
-  - {
-      appearanceId: env_tree_04,
-      count: 16,
-      minSpacing: 5,
-      colliderRadius: 0.6,
-      scale: [0.8, 1.2],
-    }
-  - {
-      appearanceId: env_tree_dead_01,
-      count: 6,
-      minSpacing: 5,
-      colliderRadius: 0.5,
-      scale: [0.8, 1],
-    }
-  - {
-      appearanceId: env_rock_02,
-      count: 12,
-      minSpacing: 4,
-      colliderRadius: 0.7,
-      scale: [0.6, 1.1],
-    }
-  - {
-      appearanceId: env_rock_03,
-      count: 10,
-      minSpacing: 4.5,
-      colliderRadius: 0.8,
-      scale: [0.6, 1],
-    }
+  # Rừng rậm hai mép bắc/nam, thưa dần về đường chính (rules §Dressing: mật độ theo vai trò).
+  - { appearanceId: env_tree_06, count: 26, minSpacing: 5, colliderRadius: 0.6, scale: [0.8, 1.15], area: { min: { x: -80, z: 28 }, max: { x: 80, z: 48 } } }
+  - { appearanceId: env_tree_05, count: 26, minSpacing: 5, colliderRadius: 0.6, scale: [0.8, 1.15], area: { min: { x: -80, z: -48 }, max: { x: 80, z: -30 } } }
+  - { appearanceId: env_tree_01, count: 30, minSpacing: 5, colliderRadius: 0.6, scale: [0.8, 1.2] }
+  - { appearanceId: env_tree_02, count: 34, minSpacing: 4.5, colliderRadius: 0.5, scale: [0.8, 1.25] }
+  - { appearanceId: env_tree_03, count: 16, minSpacing: 5, colliderRadius: 0.6, scale: [0.8, 1.15] }
+  - { appearanceId: env_tree_04, count: 14, minSpacing: 5, colliderRadius: 0.6, scale: [0.8, 1.2] }
+  - { appearanceId: env_tree_07, count: 14, minSpacing: 5, colliderRadius: 0.6, scale: [0.8, 1.15] }
+  # Đồi Sói: cây khô, đá lởm chởm.
+  - { appearanceId: env_tree_dead_01, count: 5, minSpacing: 5, colliderRadius: 0.5, scale: [0.8, 1], area: { center: { x: -34, z: 14 }, radius: 16 } }
+  - { appearanceId: env_rock_05, count: 8, minSpacing: 4, colliderRadius: 0.8, scale: [0.6, 1], area: { center: { x: -34, z: 14 }, radius: 18 } }
+  # Hang Hồ Ly: nấm, dương xỉ dày.
+  - { appearanceId: env_mushroom_01, count: 18, minSpacing: 1.8, scale: [0.6, 1], area: { center: { x: -24, z: -24 }, radius: 13 } }
+  - { appearanceId: env_fern_01, count: 30, minSpacing: 1.8, scale: [0.7, 1.1], area: { center: { x: -24, z: -24 }, radius: 14 } }
+  # Phế tích: đá vụn, phế liệu rải quanh cổng hợp kim (không cây).
+  - { appearanceId: prop_stone_chunks_01, count: 4, minSpacing: 3, colliderRadius: 0.5, scale: [0.7, 1], area: { center: { x: 16, z: 22 }, radius: 14 } }
+  # Linh Lộc Đài: hoa.
+  - { appearanceId: env_flowers_01, count: 18, minSpacing: 2, scale: [0.7, 1.1], area: { center: { x: 24, z: -26 }, radius: 13 } }
+  # Nền chung.
+  - { appearanceId: env_rock_01, count: 14, minSpacing: 4, colliderRadius: 0.8, scale: [0.6, 1.1] }
+  - { appearanceId: env_rock_02, count: 10, minSpacing: 4, colliderRadius: 0.7, scale: [0.6, 1.1] }
+  - { appearanceId: env_rock_03, count: 8, minSpacing: 4.5, colliderRadius: 0.8, scale: [0.6, 1] }
+  - { appearanceId: env_bush_01, count: 44, minSpacing: 2.5, scale: [0.7, 1.2], allowOnPath: false }
   - { appearanceId: env_bush_02, count: 20, minSpacing: 3, scale: [0.7, 1.1] }
-  - { appearanceId: env_fern_01, count: 40, minSpacing: 2.2, scale: [0.7, 1.1] }
-  - {
-      appearanceId: env_flowers_01,
-      count: 30,
-      minSpacing: 2.5,
-      scale: [0.7, 1.1],
-    }
-  - { appearanceId: env_mushroom_01, count: 20, minSpacing: 2, scale: [0.6, 1] }
-  - {
-      appearanceId: env_grass_02,
-      count: 120,
-      minSpacing: 1.6,
-      scale: [0.7, 1.2],
-    }
-  - {
-      appearanceId: env_grass_01,
-      count: 180,
-      minSpacing: 1.4,
-      scale: [0.7, 1.2],
-    }
-  - {
-      appearanceId: env_pebble_01,
-      count: 40,
-      minSpacing: 2,
-      scale: [0.6, 1.2],
-      allowOnPath: true,
-    }
+  - { appearanceId: env_ground_weeds_01, count: 20, minSpacing: 4, scale: [0.8, 1.1], allowOnPath: false }
+  - { appearanceId: env_ground_stone_weeds_01, count: 6, minSpacing: 3, scale: [0.8, 1.1], allowOnPath: false }
+  - { appearanceId: env_fern_01, count: 30, minSpacing: 2.2, scale: [0.7, 1.1] }
+  - { appearanceId: env_flowers_01, count: 20, minSpacing: 2.5, scale: [0.7, 1.1] }
+  - { appearanceId: env_mushroom_01, count: 10, minSpacing: 2, scale: [0.6, 1] }
+  - { appearanceId: env_grass_02, count: 120, minSpacing: 1.6, scale: [0.7, 1.2] }
+  - { appearanceId: env_grass_01, count: 180, minSpacing: 1.4, scale: [0.7, 1.2] }
+  - { appearanceId: env_pebble_01, count: 40, minSpacing: 2, scale: [0.6, 1.2], allowOnPath: true }

@@ -1,0 +1,6 @@
+# KayKit Dungeon "banner_patternA_green" — Cờ Thiên Kiếm Minh (map renovation, D-027; 110 tris)
+id: prop_banner_green_01
+kind: environment
+scale: 0.62
+modelAssetId: prop_banner_green_01
+placeholder: { shape: cylinder, color: "#3f7d53", height: 1.98, radius: 0.47 }

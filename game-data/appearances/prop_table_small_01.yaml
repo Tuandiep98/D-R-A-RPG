@@ -1,0 +1,6 @@
+# KayKit Dungeon "table_small_decorated_A" — Bàn nhỏ (map renovation, D-027; 986 tris)
+id: prop_table_small_01
+kind: environment
+scale: 0.62
+modelAssetId: prop_table_small_01
+placeholder: { shape: box, color: "#8a5a3a", height: 1.01, radius: 0.38 }

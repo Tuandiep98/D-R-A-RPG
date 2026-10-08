@@ -1,0 +1,6 @@
+# KayKit Resource Bits "Iron_Bars_Stack_Medium" — Thỏi sắt (lò rèn) (map renovation, D-027; 1296 tris)
+id: prop_iron_bars_01
+kind: environment
+scale: 0.6
+modelAssetId: prop_iron_bars_01
+placeholder: { shape: box, color: "#7d838a", height: 0.9, radius: 0.24 }

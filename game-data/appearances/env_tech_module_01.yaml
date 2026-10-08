@@ -1,0 +1,6 @@
+# KayKit Space Base "basemodule_A" — Khoang máy đổ nát (map renovation, D-027; 586 tris)
+id: env_tech_module_01
+kind: environment
+scale: 1.4
+modelAssetId: env_tech_module_01
+placeholder: { shape: box, color: "#6d8aa0", height: 1.4, radius: 1.57 }

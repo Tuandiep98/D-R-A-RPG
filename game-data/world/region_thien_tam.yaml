@@ -1,0 +1,22 @@
+# Lõi hành tinh — endgame (master plan §18).
+id: region_thien_tam
+order: 8
+name: Thiên Tâm Thâm Tầng
+tagline: Lõi hành tinh, sự thật cuối cùng
+biome: core
+realm: hoa_than
+color: "#6693ec"
+shape:
+  - { x: 772, y: 42 }
+  - { x: 870, y: 22 }
+  - { x: 950, y: 56 }
+  - { x: 966, y: 130 }
+  - { x: 920, y: 190 }
+  - { x: 830, y: 202 }
+  - { x: 776, y: 160 }
+  - { x: 756, y: 96 }
+highlights:
+  - Raid, endgame
+  - Đối mặt Mẫu Thể 0 — Nữ Oa
+  - Quyết định tương lai thế giới
+boss: Mẫu Thể 0 — Nữ Oa

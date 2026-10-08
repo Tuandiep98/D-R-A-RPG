@@ -1,5 +1,7 @@
 # Huyền Vũ Cổ Mộ — solo dungeon (tech plan §29: one private instance per character).
 # Corridor of robot guards → sanctum with a copy of the boss → exit portal.
+# Trùng tu: tầng sâu di tích — cửa hợp kim, terminal, mộ thất tường đá nứt,
+# trại khảo cổ ở cửa mộ (docs/map_authoring_rules.md).
 id: map_golem_sanctum_01
 name: Huyền Vũ Cổ Mộ
 seed: 777
@@ -63,9 +65,9 @@ spawns:
   - {
       id: stone_sentinels,
       monsterId: stone_guardian_001,
-      position: { x: 0, z: 9 },
+      position: { x: 0, z: 6.5 },
       count: 2,
-      radius: 3,
+      radius: 2.5,
       respawnSeconds: 600,
     }
   - {
@@ -170,48 +172,51 @@ prefabPlacements:
 
 landmarks:
   - { appearanceId: env_dungeon_floor_01, position: { x: 0, z: 20 }, scale: 5 }
-  - {
-      appearanceId: prop_dungeon_chest_01,
-      position: { x: -8, z: 26 },
-      rotationY: 1.1,
-      colliderRadius: 0.65,
-    }
-  - {
-      appearanceId: prop_dungeon_chest_01,
-      position: { x: 8, z: 26 },
-      rotationY: -1.1,
-      colliderRadius: 0.65,
-    }
+  # Mộ thất: nền phù văn giữa, rương hai bên, nến tế, trụ cổ ở 4 góc (ngoài vùng telegraph).
+  - { appearanceId: env_floor_rune_01, position: { x: 0, y: 0.03, z: 20 }, scale: 2.5 }
+  - { appearanceId: prop_dungeon_chest_01, position: { x: -8, z: 26 }, rotationY: 1.1, colliderRadius: 0.65 }
+  - { appearanceId: prop_dungeon_chest_01, position: { x: 8, z: 26 }, rotationY: -1.1, colliderRadius: 0.65 }
+  - { appearanceId: prop_coins_01, position: { x: -9.5, z: 24 }, colliderRadius: 0.45 }
+  - { appearanceId: prop_trunk_01, position: { x: 9.6, z: 23.8 }, rotationY: -0.6, colliderRadius: 0.5 }
+  - { appearanceId: env_ruin_pillar_01, position: { x: -9.5, z: 29.5 }, colliderRadius: 0.9 }
+  - { appearanceId: env_ruin_pillar_01, position: { x: 9.5, z: 29.5 }, colliderRadius: 0.9 }
+  - { appearanceId: env_ruin_pillar_01, position: { x: -9.5, z: 10.5 }, colliderRadius: 0.9 }
+  - { appearanceId: env_ruin_pillar_01, position: { x: 9.5, z: 10.5 }, colliderRadius: 0.9 }
+  - { appearanceId: prop_candles_01, position: { x: -8.4, z: 28.4 } }
+  - { appearanceId: prop_candles_01, position: { x: 8.4, z: 28.4 } }
+  - { appearanceId: prop_candles_01, position: { x: -8.4, z: 11.6 } }
+  - { appearanceId: prop_candles_01, position: { x: 8.4, z: 11.6 } }
+  # Cửa mộ: trại khảo cổ của đoàn thám hiểm (bàn bản vẽ, đèn, hàng tiếp tế).
+  - { appearanceId: prop_table_small_01, position: { x: -5.6, z: -35 }, rotationY: 1.5708, colliderRadius: 0.5 }
+  - { appearanceId: prop_blueprints_01, position: { x: -5.6, z: -33.4 }, rotationY: 0.3 }
+  - { appearanceId: prop_crates_stacked_01, position: { x: 5.8, z: -36 }, colliderRadius: 0.7 }
+  - { appearanceId: prop_rope_01, position: { x: 4.6, z: -33.6 } }
+  - { appearanceId: prop_torch_stand_01, position: { x: -3.4, z: -32 } }
+  - { appearanceId: prop_torch_stand_01, position: { x: 3.4, z: -32 } }
+  # Sau cửa hợp kim thứ hai: terminal cổ và xác máy canh giữ.
+  - { appearanceId: prop_scrap_pile_01, position: { x: -6, z: 7 }, colliderRadius: 0.7 }
+  - { appearanceId: prop_tech_container_01, position: { x: 6, z: 6.4 }, rotationY: 0.5, colliderRadius: 0.6 }
+  - { appearanceId: prop_tech_panel_01, position: { x: 6.4, z: 8.4 }, rotationY: -0.4, colliderRadius: 0.6 }
 
 rings:
-  - appearanceId: env_rock_01
+  # Mộ thất: vòng tường đá nứt, hở lối nam (vào) và bắc (cổng ra).
+  - appearanceId: env_ruin_wall_cracked_01
     center: { x: 0, z: 20 }
     radius: 14
     count: 22
-    scale: 1.5
-    colliderRadius: 1.1
+    scale: 1
+    colliderRadius: 2
     gapAngles: [-1.5708, 1.5708]
     gapWidth: 0.3
+    orient: tangent
 
 scatter:
-  - {
-      appearanceId: env_ground_stone_weeds_01,
-      count: 18,
-      minSpacing: 3,
-      scale: [0.8, 1.1],
-      allowOnPath: true,
-    }
-  - {
-      appearanceId: env_rock_01,
-      count: 18,
-      minSpacing: 3.5,
-      colliderRadius: 0.8,
-      scale: [0.7, 1.3],
-    }
-  - {
-      appearanceId: env_tree_02,
-      count: 6,
-      minSpacing: 6,
-      colliderRadius: 0.5,
-      scale: [0.7, 0.9],
-    }
+  - { appearanceId: env_ground_stone_weeds_01, count: 18, minSpacing: 3, scale: [0.8, 1.1], allowOnPath: true }
+  # Hai bên hành lang: tường đổ, trụ gãy, đá vụn — không cây trong lòng mộ.
+  - { appearanceId: env_ruin_wall_broken_01, count: 6, minSpacing: 6, colliderRadius: 1.6, scale: [0.9, 1], area: { min: { x: -24, z: -30 }, max: { x: -7, z: 5 } } }
+  - { appearanceId: env_ruin_wall_broken_01, count: 6, minSpacing: 6, colliderRadius: 1.6, scale: [0.9, 1], area: { min: { x: 7, z: -30 }, max: { x: 24, z: 5 } } }
+  - { appearanceId: env_ruin_column_01, count: 12, minSpacing: 3.5, colliderRadius: 0.5, scale: [1.4, 1.8] }
+  - { appearanceId: prop_rubble_02, count: 8, minSpacing: 4, colliderRadius: 0.9, scale: [0.4, 0.6] }
+  - { appearanceId: prop_stone_chunks_01, count: 14, minSpacing: 3, colliderRadius: 0.5, scale: [0.7, 1.1] }
+  - { appearanceId: env_rock_04, count: 8, minSpacing: 3.5, colliderRadius: 0.8, scale: [0.6, 1] }
+  - { appearanceId: env_floor_broken_01, count: 20, minSpacing: 2.5, scale: [0.9, 1.2], allowOnPath: true }

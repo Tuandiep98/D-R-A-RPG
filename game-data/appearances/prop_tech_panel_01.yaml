@@ -1,0 +1,6 @@
+# KayKit Space Base "solarpanel" — Tấm hấp linh (pin) (map renovation, D-027; 118 tris)
+id: prop_tech_panel_01
+kind: environment
+scale: 1.6
+modelAssetId: prop_tech_panel_01
+placeholder: { shape: box, color: "#4f6f99", height: 0.59, radius: 0.72 }

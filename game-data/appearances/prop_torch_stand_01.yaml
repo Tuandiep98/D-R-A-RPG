@@ -1,0 +1,6 @@
+# KayKit Dungeon "torch_lit" — Đuốc đứng (map renovation, D-027; 270 tris)
+id: prop_torch_stand_01
+kind: environment
+scale: 0.62
+modelAssetId: prop_torch_stand_01
+placeholder: { shape: cylinder, color: "#e7a63d", height: 0.7, radius: 0.17 }

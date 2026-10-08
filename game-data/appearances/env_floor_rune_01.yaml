@@ -1,0 +1,6 @@
+# KayKit Dungeon "floor_tile_small_decorated" — Nền phù văn (map renovation, D-027; 390 tris)
+id: env_floor_rune_01
+kind: environment
+scale: 1
+modelAssetId: env_floor_rune_01
+placeholder: { shape: box, color: "#8c8a7d", height: 0.77, radius: 1 }

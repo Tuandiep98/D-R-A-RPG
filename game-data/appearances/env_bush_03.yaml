@@ -1,0 +1,6 @@
+# KayKit Forest Nature "Bush_3_A_Color1" — Bụi cây (map renovation, D-027; 208 tris)
+id: env_bush_03
+kind: environment
+scale: 0.9
+modelAssetId: env_bush_03
+placeholder: { shape: sphere, color: "#3d7a3a", height: 0.44, radius: 0.46 }

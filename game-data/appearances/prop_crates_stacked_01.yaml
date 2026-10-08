@@ -1,0 +1,6 @@
+# KayKit Dungeon "crates_stacked" — Chồng sọt (map renovation, D-027; 1331 tris)
+id: prop_crates_stacked_01
+kind: environment
+scale: 0.62
+modelAssetId: prop_crates_stacked_01
+placeholder: { shape: box, color: "#9a6b45", height: 1.33, radius: 0.7 }

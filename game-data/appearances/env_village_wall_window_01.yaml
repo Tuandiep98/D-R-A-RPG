@@ -1,0 +1,6 @@
+# KayKit Dungeon "wall_window_open" — Tường nhà có cửa sổ (map renovation, D-027; 604 tris)
+id: env_village_wall_window_01
+kind: environment
+scale: 1
+modelAssetId: env_village_wall_window_01
+placeholder: { shape: box, color: "#c9b28a", height: 4, radius: 2 }

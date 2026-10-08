@@ -1,0 +1,6 @@
+# KayKit RPG Tools "bucket_metal" — Thùng nước (map renovation, D-027; 466 tris)
+id: prop_bucket_01
+kind: environment
+scale: 0.5
+modelAssetId: prop_bucket_01
+placeholder: { shape: cylinder, color: "#7d838a", height: 0.58, radius: 0.23 }

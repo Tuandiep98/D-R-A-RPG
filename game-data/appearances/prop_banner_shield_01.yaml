@@ -1,0 +1,6 @@
+# KayKit Dungeon "banner_shield_green" — Cờ khiên doanh trại (map renovation, D-027; 639 tris)
+id: prop_banner_shield_01
+kind: environment
+scale: 0.62
+modelAssetId: prop_banner_shield_01
+placeholder: { shape: cylinder, color: "#3f7d53", height: 1.98, radius: 0.69 }

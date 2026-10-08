@@ -9,6 +9,8 @@ export {
   type ItemView,
   type Notice,
   type QuestView,
+  type RadarBlip,
+  type RadarFrame,
   type SkillSlot,
   type UiState,
   type UnitFrame,

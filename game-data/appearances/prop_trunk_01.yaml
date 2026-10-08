@@ -1,0 +1,6 @@
+# KayKit Dungeon "trunk_large_A" — Rương gỗ (map renovation, D-027; 204 tris)
+id: prop_trunk_01
+kind: environment
+scale: 0.62
+modelAssetId: prop_trunk_01
+placeholder: { shape: box, color: "#6d4a33", height: 0.62, radius: 0.47 }

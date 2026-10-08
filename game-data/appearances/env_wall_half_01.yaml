@@ -1,0 +1,6 @@
+# KayKit Dungeon "wall_half" — Tường thấp / bờ rào đá (map renovation, D-027; 272 tris)
+id: env_wall_half_01
+kind: environment
+scale: 1
+modelAssetId: env_wall_half_01
+placeholder: { shape: box, color: "#9b958b", height: 4, radius: 1 }

@@ -1,0 +1,6 @@
+# KayKit Resource Bits "Stone_Bricks_Stack_Medium" — Gạch đá xếp (map renovation, D-027; 768 tris)
+id: prop_stone_bricks_01
+kind: environment
+scale: 0.7
+modelAssetId: prop_stone_bricks_01
+placeholder: { shape: box, color: "#8f8a80", height: 0.44, radius: 0.56 }

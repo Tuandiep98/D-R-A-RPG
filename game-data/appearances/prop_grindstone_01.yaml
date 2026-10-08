@@ -1,0 +1,6 @@
+# KayKit RPG Tools "grindstone" — Đá mài (map renovation, D-027; 1114 tris)
+id: prop_grindstone_01
+kind: environment
+scale: 0.6
+modelAssetId: prop_grindstone_01
+placeholder: { shape: cylinder, color: "#8a8d93", height: 0.93, radius: 0.68 }

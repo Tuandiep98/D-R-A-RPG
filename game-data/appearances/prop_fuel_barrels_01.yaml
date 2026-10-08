@@ -1,0 +1,6 @@
+# KayKit Resource Bits "Fuel_A_Barrels" — Thùng Nguyên Khí (map renovation, D-027; 4400 tris)
+id: prop_fuel_barrels_01
+kind: environment
+scale: 0.8
+modelAssetId: prop_fuel_barrels_01
+placeholder: { shape: cylinder, color: "#5f7f99", height: 0.81, radius: 0.61 }

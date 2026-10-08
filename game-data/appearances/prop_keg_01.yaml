@@ -1,0 +1,6 @@
+# KayKit Dungeon "keg" — Thùng rượu (map renovation, D-027; 807 tris)
+id: prop_keg_01
+kind: environment
+scale: 0.62
+modelAssetId: prop_keg_01
+placeholder: { shape: cylinder, color: "#7a5232", height: 1.27, radius: 0.62 }

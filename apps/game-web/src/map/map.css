@@ -1,0 +1,742 @@
+/*
+ * Minimap + world map (docs/game-ui-style.md): Kenney slot frame like the
+ * avatar, blue-black glass, jade accents. Blur is dropped on Low.
+ */
+:root {
+  --minimap-size: 152px;
+  --minimap-top: max(10px, env(safe-area-inset-top));
+}
+:root[data-controls="touch"] {
+  --minimap-size: 124px;
+}
+
+/* ---------- Minimap dock (top-right) ---------- */
+.hud .minimap-dock {
+  position: absolute;
+  z-index: 6;
+  top: var(--minimap-top);
+  right: max(10px, env(safe-area-inset-right));
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+  pointer-events: none;
+}
+.hud .minimap {
+  position: relative;
+  display: block;
+  width: var(--minimap-size);
+  height: var(--minimap-size);
+  padding: 0;
+  border: 8px solid transparent;
+  border-image: var(--fui-slot) 16 fill / 8px stretch;
+  background: #0b141a;
+  cursor: pointer;
+  pointer-events: auto;
+  image-rendering: pixelated;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+.hud .minimap:hover {
+  border-image-source: var(--fui-slot-active);
+}
+.hud .minimap canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: auto;
+}
+.hud .minimap-north {
+  position: absolute;
+  top: -3px;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 18px;
+  padding: 1px 4px 0;
+  border: 1px solid rgba(205, 218, 218, 0.5);
+  background: rgba(7, 14, 20, 0.92);
+  color: #f1d697;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 14px;
+}
+.hud .minimap-zoom {
+  position: absolute;
+  /* Bottom-left corner inside the frame. */
+  top: calc(var(--minimap-size) - 62px);
+  right: calc(var(--minimap-size) - 36px);
+  display: grid;
+  gap: 3px;
+  pointer-events: auto;
+}
+.hud .minimap-zoom button {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-image: var(--fui-slot) 16 fill / 8px stretch;
+  background: rgba(7, 14, 20, 0.6);
+  color: var(--hud-text);
+  font: 700 15px / 1 inherit;
+  cursor: pointer;
+}
+.hud .minimap-zoom button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.hud .minimap-place {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  max-width: calc(var(--minimap-size) + 40px);
+  padding: 2px 8px;
+  background: rgba(7, 14, 20, 0.78);
+  border: 1px solid rgba(205, 218, 218, 0.28);
+  color: var(--hud-text);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: right;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+.hud .minimap-place span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.hud .minimap-place.is-safe {
+  color: #c5f3d8;
+}
+.hud .minimap-safe {
+  width: 13px;
+  height: 13px;
+  color: #8fe0b4;
+}
+
+/* The menu column moves under the minimap. */
+.hud .menu,
+:root[data-controls="touch"] .hud .menu {
+  top: calc(var(--minimap-top) + var(--minimap-size) + 32px);
+}
+:root[data-controls="touch"][data-hand="right"] .hud .menu {
+  top: calc(max(10px, env(safe-area-inset-top)) + 170px);
+}
+
+/* Desktop quest list sits beside the minimap (touch hides it). */
+.hud .quest-tracker {
+  top: var(--minimap-top);
+  right: calc(max(10px, env(safe-area-inset-right)) + var(--minimap-size) + 12px);
+}
+
+/* Touch: no tiny zoom buttons (tap opens the full map instead; targets must be ≥ 44 px). */
+:root[data-controls="touch"] .hud .minimap-zoom {
+  display: none;
+}
+
+/* Short desktop windows: the menu folds into two columns under the minimap. */
+@media (max-height: 700px) and (min-height: 481px) {
+  :root:not([data-controls="touch"]) .hud .menu-items {
+    grid-template-columns: repeat(2, auto);
+  }
+}
+/* Short landscape phones: small minimap, the menu row sits to its left. */
+@media (max-height: 480px) {
+  :root {
+    --minimap-size: 96px;
+  }
+  :root[data-controls="touch"] {
+    --minimap-size: 96px;
+  }
+  .hud .menu,
+  :root[data-controls="touch"] .hud .menu,
+  :root[data-controls="touch"][data-hand="right"] .hud .menu {
+    top: max(8px, env(safe-area-inset-top));
+    right: calc(var(--safe-r) + var(--minimap-size) + 8px);
+    left: auto;
+  }
+  .hud .minimap-zoom {
+    display: none;
+  }
+  .hud .minimap-place {
+    font-size: 11px;
+    max-width: calc(var(--minimap-size) + 24px);
+  }
+}
+
+/* Portrait phones: minimap top-right, menu wraps underneath. */
+@media (orientation: portrait) and (max-width: 600px) {
+  :root,
+  :root[data-controls="touch"] {
+    --minimap-size: 104px;
+  }
+  .hud .menu,
+  :root[data-controls="touch"] .hud .menu,
+  :root[data-controls="touch"][data-hand="right"] .hud .menu {
+    top: calc(var(--minimap-top) + var(--minimap-size) + 30px);
+    right: var(--safe-r);
+    left: auto;
+  }
+  .hud .minimap-zoom {
+    display: none;
+  }
+}
+
+/* ---------- World map (full screen) ---------- */
+.world-map {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: stretch;
+  padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
+    max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+  background: rgba(4, 9, 13, 0.62);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  color: var(--hud-text);
+  pointer-events: auto;
+}
+.wm-frame {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 8px;
+  min-height: 0;
+  padding: 4px 8px 8px;
+  border: 16px solid transparent;
+  border-image: var(--fui-panel) 16 fill / 16px stretch;
+  image-rendering: pixelated;
+  box-shadow: 0 18px 64px rgba(0, 0, 0, 0.45);
+}
+.wm-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  image-rendering: auto;
+}
+.wm-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  margin-right: auto;
+}
+.wm-title > .hud-glyph {
+  width: 28px;
+  height: 28px;
+  color: var(--hud-brass);
+  fill: currentColor;
+}
+.wm-title h2 {
+  margin: 0;
+  font-size: 20px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #f1e4c3;
+}
+.wm-title p {
+  margin: 0;
+  color: var(--hud-muted);
+  font-size: 12px;
+}
+.wm-tabs {
+  display: flex;
+  gap: 6px;
+}
+/* biome-ignore lint/style/noDescendingSpecificity: world-map buttons never nest inside the HUD minimap */
+.wm-tabs button,
+.wm-close {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 4px solid transparent;
+  border-image: var(--fui-button) 16 fill / 8px stretch;
+  background: none;
+  color: var(--hud-text);
+  font: 700 14px / 1 inherit;
+  cursor: pointer;
+}
+.wm-tabs button.active {
+  border-image-source: var(--fui-button-primary);
+  color: #0d1a14;
+}
+/* biome-ignore lint/style/noDescendingSpecificity: separate component from .minimap-zoom */
+.wm-tabs button:disabled {
+  opacity: 0.45;
+}
+.wm-close {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  padding: 0;
+}
+.wm-close .hud-glyph {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+}
+.wm-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 10px;
+  min-height: 0;
+  image-rendering: auto;
+}
+.wm-stage {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid rgba(205, 218, 218, 0.28);
+  background: #081c27;
+}
+.wm-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.wm-local-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.wm-side {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* Regions */
+.wm-region {
+  cursor: pointer;
+  outline: none;
+}
+.wm-continent path {
+  stroke-linejoin: round;
+}
+.wm-continent-shallows {
+  fill: #8fd3e0;
+  fill-opacity: 0.16;
+  stroke: #8fd3e0;
+  stroke-opacity: 0.16;
+  stroke-width: 70;
+}
+.wm-continent-beach {
+  fill: #e6d6a8;
+  stroke: #e6d6a8;
+  stroke-width: 36;
+}
+.wm-continent-land {
+  fill: #34503b;
+  stroke: #34503b;
+  stroke-width: 30;
+}
+.wm-coast {
+  /* Territory border, not a beach: the continent draws the coast. */
+  fill: none;
+  stroke: #f3ead0;
+  stroke-opacity: 0.7;
+  stroke-width: 2;
+  stroke-dasharray: 9 4 2 4;
+}
+.wm-region.is-locked .wm-land {
+  filter: grayscale(0.65) brightness(0.48);
+}
+.wm-region.is-locked .wm-coast {
+  stroke: #8a979c;
+  stroke-opacity: 0.45;
+  stroke-dasharray: 5 4;
+}
+.wm-region.is-open .wm-land {
+  filter: saturate(1.08);
+}
+.wm-region.is-current .wm-coast {
+  stroke: #d8ffe6;
+  stroke-width: 3;
+}
+.wm-region:hover .wm-coast,
+.wm-region:focus-visible .wm-coast,
+.wm-region.is-selected .wm-coast {
+  stroke: #ffffff;
+  stroke-opacity: 1;
+  stroke-width: 3.6;
+}
+.wm-region.is-locked:hover .wm-land,
+.wm-region.is-locked.is-selected .wm-land {
+  filter: grayscale(0.7) brightness(0.55);
+}
+
+.wm-road {
+  fill: none;
+  stroke: #e6d6a8;
+  stroke-opacity: 0.32;
+  stroke-width: 2;
+  stroke-dasharray: 2 7;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+.wm-road.is-open {
+  stroke: #fff2c8;
+  stroke-opacity: 0.9;
+  stroke-width: 3;
+  stroke-dasharray: none;
+}
+
+.wm-pin {
+  pointer-events: none;
+}
+.wm-pin path {
+  fill: #f2cf6b;
+  stroke: #2a1d0a;
+  stroke-width: 1.6;
+}
+.wm-pin-core {
+  fill: #2a1d0a;
+}
+.wm-pin.is-here path {
+  fill: #d8ffe6;
+}
+.wm-pin-pulse {
+  fill: none;
+  stroke: #d8ffe6;
+  stroke-width: 2;
+  transform-origin: 0 0;
+  animation: wm-pulse 1.6s ease-out infinite;
+}
+@keyframes wm-pulse {
+  from {
+    opacity: 0.9;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+
+.wm-plate {
+  pointer-events: none;
+}
+.wm-plate rect {
+  fill: rgba(7, 14, 20, 0.86);
+  stroke: rgba(225, 232, 230, 0.55);
+  stroke-width: 1;
+}
+.wm-plate.is-locked rect {
+  fill: rgba(7, 14, 20, 0.74);
+  stroke: rgba(160, 172, 176, 0.35);
+}
+.wm-plate text {
+  text-anchor: middle;
+  font-family: "League Spartan", "Segoe UI", system-ui, sans-serif;
+}
+.wm-plate-name {
+  fill: #f6eed6;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+.wm-plate-sub {
+  fill: #b9d9c4;
+  font-size: 9.5px;
+  font-weight: 600;
+}
+.wm-plate.is-locked .wm-plate-name {
+  fill: #9aa7ab;
+}
+.wm-plate.is-locked .wm-plate-sub {
+  fill: #e0b07a;
+}
+
+.wm-compass {
+  pointer-events: none;
+}
+.wm-compass circle {
+  fill: rgba(7, 14, 20, 0.55);
+  stroke: rgba(239, 226, 189, 0.6);
+}
+.wm-compass-needle {
+  fill: #efe2bd;
+}
+.wm-compass-north {
+  fill: #cf5a6c;
+}
+.wm-compass text {
+  fill: #efe2bd;
+  font-size: 12px;
+  font-weight: 800;
+  text-anchor: middle;
+}
+
+/* Region card */
+.wm-card {
+  display: grid;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 8px solid transparent;
+  border-image: var(--fui-panel) 16 fill / 8px stretch;
+  image-rendering: pixelated;
+}
+.wm-card > * {
+  image-rendering: auto;
+}
+.wm-card header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.wm-card-order {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border: 2px solid transparent;
+  border-image: var(--fui-slot-active) 16 fill / 8px stretch;
+  color: #0d1a14;
+  font-weight: 800;
+}
+.wm-card-order .hud-glyph {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+.wm-card h3 {
+  margin: 0;
+  font-size: 17px;
+  color: #f6eed6;
+}
+.wm-card header p {
+  margin: 2px 0 0;
+  color: var(--hud-muted);
+  font-size: 12px;
+}
+.wm-card h4 {
+  margin: 0 0 4px;
+  color: var(--hud-brass);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.wm-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.wm-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 7px;
+  border: 1px solid rgba(205, 218, 218, 0.3);
+  background: rgba(38, 58, 68, 0.6);
+  font-size: 11px;
+  font-weight: 650;
+}
+.wm-chip .hud-glyph {
+  width: 12px;
+  height: 12px;
+  fill: currentColor;
+}
+.wm-chip.is-current,
+.wm-chip.is-open {
+  border-color: #8fe0b4;
+  color: #c5f3d8;
+}
+.wm-chip.is-locked,
+.wm-chip.is-unbuilt {
+  border-color: #c99a62;
+  color: #f0c890;
+}
+.wm-maps,
+.wm-highlights,
+.wm-legend {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.wm-maps li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(205, 218, 218, 0.12);
+  font-size: 13px;
+}
+.wm-maps li.is-here {
+  color: #d8ffe6;
+}
+.wm-maps b {
+  color: #8fe0b4;
+  font-size: 11px;
+}
+.wm-highlights li {
+  position: relative;
+  padding: 2px 0 2px 14px;
+  color: #dbe4e1;
+  font-size: 12.5px;
+}
+.wm-highlights li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 8px;
+  width: 5px;
+  height: 5px;
+  background: var(--hud-brass);
+  transform: rotate(45deg);
+}
+.wm-boss {
+  display: grid;
+  margin: 0;
+  color: #ffb39a;
+  font-weight: 700;
+}
+.wm-boss small {
+  color: var(--hud-muted);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.wm-card.is-locked,
+.wm-card.is-unbuilt {
+  opacity: 0.88;
+}
+
+/* Legend */
+.wm-legend {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(205, 218, 218, 0.18);
+  background: rgba(7, 14, 20, 0.5);
+  font-size: 11.5px;
+  color: #dbe4e1;
+}
+.wm-legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.wm-key {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.6);
+}
+.wm-key.is-open {
+  background: #a7c46a;
+  box-shadow: 0 0 0 1px #efe2bd;
+}
+.wm-key.is-locked {
+  background: repeating-linear-gradient(35deg, #263239 0 3px, #3b4a50 3px 5px);
+}
+.wm-key.is-pin {
+  width: 11px;
+  height: 11px;
+  background: #f2cf6b;
+  transform: rotate(45deg);
+}
+.wm-key.is-here {
+  border-radius: 50%;
+  background: #d8ffe6;
+  box-shadow: 0 0 0 3px rgba(216, 255, 230, 0.35);
+}
+.wm-key.is-road {
+  height: 0;
+  border: 0;
+  border-top: 3px solid #fff2c8;
+}
+.wm-key.is-me {
+  border: 0;
+  background: #f4fbf6;
+  clip-path: polygon(50% 0, 100% 100%, 50% 72%, 0 100%);
+}
+.wm-key.is-npc {
+  width: 11px;
+  height: 11px;
+  background: #f2cf6b;
+  transform: rotate(45deg);
+}
+.wm-key.is-mob {
+  border-radius: 50%;
+  background: #e2604c;
+}
+.wm-key.is-boss {
+  border-radius: 50%;
+  background: #ff4a3a;
+  box-shadow: 0 0 0 2px rgba(255, 74, 58, 0.45);
+}
+.wm-key.is-portal {
+  border-radius: 50%;
+  border: 2px solid #7fe6ff;
+  background: transparent;
+}
+.wm-key.is-safe {
+  border-radius: 50%;
+  border: 2px dashed #96e6be;
+  background: transparent;
+}
+
+@media (max-width: 860px), (max-height: 480px) {
+  .wm-body {
+    grid-template-columns: minmax(0, 1fr) 230px;
+  }
+  .wm-title h2 {
+    font-size: 16px;
+  }
+  .wm-legend {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-height: 480px) {
+  .wm-frame {
+    border-width: 8px;
+    border-image-width: 8px;
+    padding: 2px 4px 4px;
+    gap: 4px;
+  }
+  .wm-title p {
+    display: none;
+  }
+  .wm-tabs button,
+  .wm-close {
+    min-height: 44px;
+  }
+  .wm-card {
+    gap: 6px;
+    padding: 6px 8px;
+  }
+  .wm-highlights {
+    display: none;
+  }
+}
+@media (orientation: portrait) and (max-width: 600px) {
+  .wm-head {
+    flex-wrap: wrap;
+  }
+  .wm-body {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1.1fr) minmax(0, 1fr);
+  }
+}
+
+/* Low preset / reduced transparency: solid fill, no blur (game-ui-style). */
+.hud[data-quality="low"] ~ .world-map,
+.hud[data-quality="low"] .world-map {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background: rgba(4, 9, 13, 0.94);
+}
+@media (prefers-reduced-transparency: reduce) {
+  .world-map {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: rgba(4, 9, 13, 0.96);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wm-pin-pulse {
+    animation: none;
+  }
+}

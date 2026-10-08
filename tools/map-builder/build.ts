@@ -9,16 +9,16 @@
  *
  * Usage: pnpm maps:build
  */
-import { readdirSync, readFileSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
-import { Rng } from "@rpg/game-core";
-import { MapDefSchema } from "@rpg/game-data";
-import { Document, isMap, isSeq, parse } from "yaml";
-import { z } from "zod";
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+import { Rng } from '@rpg/game-core';
+import { MapDefSchema } from '@rpg/game-data';
+import { Document, isMap, isSeq, parse } from 'yaml';
+import { z } from 'zod';
 
-const repo = resolve(import.meta.dirname, "../..");
-const sourceDir = join(repo, "maps/source");
-const outDir = join(repo, "game-data/maps");
+const repo = resolve(import.meta.dirname, '../..');
+const sourceDir = join(repo, 'maps/source');
+const outDir = join(repo, 'game-data/maps');
 
 const P = z.strictObject({ x: z.number(), z: z.number() });
 const P3 = z.strictObject({
@@ -76,9 +76,7 @@ const LayoutSchema = z.strictObject({
       .optional(),
   }),
   playerSpawn: P,
-  arrivals: z
-    .array(z.strictObject({ id: z.string(), position: P }))
-    .default([]),
+  arrivals: z.array(z.strictObject({ id: z.string(), position: P })).default([]),
   /** Polylines kept clear of blocking decoration. */
   paths: z
     .array(
@@ -94,7 +92,7 @@ const LayoutSchema = z.strictObject({
   spawns: z.array(z.unknown()).default([]),
   portals: z.array(z.unknown()).default([]),
   npcs: z.array(z.unknown()).default([]),
-  instance: z.enum(["shared", "solo"]).default("shared"),
+  instance: z.enum(['shared', 'solo']).default('shared'),
   /** Explicit hand-placed instances. */
   landmarks: z.array(PlacedAsset).default([]),
   /** Repeating visual floor tiles. They never affect navigation. */
@@ -113,9 +111,7 @@ const LayoutSchema = z.strictObject({
     .default([]),
   /** Reusable groups of modular pieces, expanded before chunk assignment. */
   prefabs: z
-    .array(
-      z.strictObject({ id: z.string(), members: z.array(PrefabMember).min(1) }),
-    )
+    .array(z.strictObject({ id: z.string(), members: z.array(PrefabMember).min(1) }))
     .default([]),
   prefabPlacements: z
     .array(
@@ -139,6 +135,8 @@ const LayoutSchema = z.strictObject({
         colliderRadius: z.number().positive().optional(),
         gapAngles: z.array(z.number()).default([]),
         gapWidth: z.number().default(0.5),
+        /** random: rocks; tangent: fences/walls run along the circle (model X axis). */
+        orient: z.enum(['random', 'tangent']).default('random'),
       }),
     )
     .default([]),
@@ -148,12 +146,17 @@ const LayoutSchema = z.strictObject({
         appearanceId: z.string(),
         count: z.number().int().nonnegative(),
         minSpacing: z.number().positive(),
-        scale: z
-          .tuple([z.number().positive(), z.number().positive()])
-          .default([0.9, 1.15]),
+        scale: z.tuple([z.number().positive(), z.number().positive()]).default([0.9, 1.15]),
         colliderRadius: z.number().positive().optional(),
         /** Decoration without a collider may sit on paths (grass, bushes). */
         allowOnPath: z.boolean().default(false),
+        /**
+         * Limit this scatter to one area (circle or rectangle) so each district
+         * gets its own dressing (docs/map_authoring_rules.md §Dressing).
+         */
+        area: z.union([Circle, z.strictObject({ min: P, max: P })]).optional(),
+        /** Clearings still block this scatter unless false (props inside a camp). */
+        respectClearings: z.boolean().default(true),
       }),
     )
     .default([]),
@@ -178,18 +181,11 @@ const distToSegment = (
   const dx = b.x - a.x;
   const dz = b.z - a.z;
   const len = dx * dx + dz * dz;
-  const t =
-    len === 0
-      ? 0
-      : Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.z - a.z) * dz) / len));
+  const t = len === 0 ? 0 : Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.z - a.z) * dz) / len));
   return Math.hypot(p.x - (a.x + dx * t), p.z - (a.z + dz * t));
 };
 
-function onPath(
-  layout: Layout,
-  p: { x: number; z: number },
-  margin: number,
-): boolean {
+function onPath(layout: Layout, p: { x: number; z: number }, margin: number): boolean {
   return layout.paths.some((path) =>
     path.points.some((a, i) => {
       const b = path.points[i + 1];
@@ -198,14 +194,8 @@ function onPath(
   );
 }
 
-const inClearing = (
-  layout: Layout,
-  p: { x: number; z: number },
-  margin: number,
-) =>
-  layout.clearings.some(
-    (c) => Math.hypot(p.x - c.center.x, p.z - c.center.z) < c.radius + margin,
-  );
+const inClearing = (layout: Layout, p: { x: number; z: number }, margin: number) =>
+  layout.clearings.some((c) => Math.hypot(p.x - c.center.x, p.z - c.center.z) < c.radius + margin);
 
 /** Expands layout painting into the map's GroundPaint (paths become strokes). */
 function groundOf(layout: Layout) {
@@ -215,12 +205,8 @@ function groundOf(layout: Layout) {
     color,
     paint: {
       variation: paint.variation,
-      ...(paint.noiseScale !== undefined
-        ? { noiseScale: paint.noiseScale }
-        : {}),
-      ...(paint.noiseAmount !== undefined
-        ? { noiseAmount: paint.noiseAmount }
-        : {}),
+      ...(paint.noiseScale !== undefined ? { noiseScale: paint.noiseScale } : {}),
+      ...(paint.noiseAmount !== undefined ? { noiseAmount: paint.noiseAmount } : {}),
       strokes: paint.pathColor
         ? layout.paths.map((path) => ({
             points: path.points,
@@ -252,8 +238,7 @@ function build(layout: Layout) {
   const prefabs = new Map(layout.prefabs.map((prefab) => [prefab.id, prefab]));
   for (const placement of layout.prefabPlacements) {
     const prefab = prefabs.get(placement.prefabId);
-    if (!prefab)
-      throw new Error(`${layout.id}: unknown prefab ${placement.prefabId}`);
+    if (!prefab) throw new Error(`${layout.id}: unknown prefab ${placement.prefabId}`);
     const cos = Math.cos(placement.rotationY);
     const sin = Math.sin(placement.rotationY);
     for (const member of prefab.members) {
@@ -274,9 +259,7 @@ function build(layout: Layout) {
     for (let i = 0; i < ring.count; i++) {
       const angle = (i / ring.count) * Math.PI * 2;
       const gap = ring.gapAngles.some(
-        (g) =>
-          Math.abs(Math.atan2(Math.sin(angle - g), Math.cos(angle - g))) <
-          ring.gapWidth,
+        (g) => Math.abs(Math.atan2(Math.sin(angle - g), Math.cos(angle - g))) < ring.gapWidth,
       );
       if (gap) continue;
       placed.push({
@@ -284,8 +267,8 @@ function build(layout: Layout) {
         x: ring.center.x + Math.cos(angle) * ring.radius,
         y: 0,
         z: ring.center.z + Math.sin(angle) * ring.radius,
-        rotationY: rng.range(0, Math.PI * 2),
-        scale: ring.scale * rng.range(0.9, 1.1),
+        rotationY: ring.orient === 'tangent' ? -angle - Math.PI / 2 : rng.range(0, Math.PI * 2),
+        scale: ring.orient === 'tangent' ? ring.scale : ring.scale * rng.range(0.9, 1.1),
         colliderRadius: ring.colliderRadius,
       });
     }
@@ -294,16 +277,32 @@ function build(layout: Layout) {
   const { min, max } = layout.bounds;
   for (const s of layout.scatter) {
     let made = 0;
+    const area = s.area;
+    const lo = area
+      ? 'center' in area
+        ? { x: area.center.x - area.radius, z: area.center.z - area.radius }
+        : area.min
+      : { x: min.x, z: min.z };
+    const hi = area
+      ? 'center' in area
+        ? { x: area.center.x + area.radius, z: area.center.z + area.radius }
+        : area.max
+      : { x: max.x, z: max.z };
     for (let attempt = 0; attempt < s.count * 60 && made < s.count; attempt++) {
       const p = {
-        x: rng.range(min.x + 1.5, max.x - 1.5),
-        z: rng.range(min.z + 1.5, max.z - 1.5),
+        x: rng.range(Math.max(min.x, lo.x) + 1.5, Math.min(max.x, hi.x) - 1.5),
+        z: rng.range(Math.max(min.z, lo.z) + 1.5, Math.min(max.z, hi.z) - 1.5),
       };
-      const margin = (s.colliderRadius ?? 0.3) + 0.6;
-      if (inClearing(layout, p, margin)) continue;
-      if (!s.allowOnPath && onPath(layout, p, margin)) continue;
-      if (placed.some((o) => Math.hypot(o.x - p.x, o.z - p.z) < s.minSpacing))
+      if (
+        area &&
+        'center' in area &&
+        Math.hypot(p.x - area.center.x, p.z - area.center.z) > area.radius
+      )
         continue;
+      const margin = (s.colliderRadius ?? 0.3) + 0.6;
+      if (s.respectClearings && inClearing(layout, p, margin)) continue;
+      if (!s.allowOnPath && onPath(layout, p, margin)) continue;
+      if (placed.some((o) => Math.hypot(o.x - p.x, o.z - p.z) < s.minSpacing)) continue;
       const scale = rng.range(s.scale[0], s.scale[1]);
       placed.push({
         appearanceId: s.appearanceId,
@@ -317,28 +316,17 @@ function build(layout: Layout) {
       made++;
     }
     if (made < s.count)
-      console.warn(
-        `  ${layout.id}: only placed ${made}/${s.count} ${s.appearanceId}`,
-      );
+      console.warn(`  ${layout.id}: only placed ${made}/${s.count} ${s.appearanceId}`);
   }
 
   // Add visual floor last so it does not consume scatter spacing.
   for (const cover of layout.groundCovers) {
     let tile = 0;
-    for (
-      let z = cover.min.z + cover.tileSize / 2;
-      z < cover.max.z;
-      z += cover.tileSize
-    ) {
-      for (
-        let x = cover.min.x + cover.tileSize / 2;
-        x < cover.max.x;
-        x += cover.tileSize
-      ) {
+    for (let z = cover.min.z + cover.tileSize / 2; z < cover.max.z; z += cover.tileSize) {
+      for (let x = cover.min.x + cover.tileSize / 2; x < cover.max.x; x += cover.tileSize) {
         placed.push({
           appearanceId:
-            cover.appearanceIds[tile % cover.appearanceIds.length] ??
-            cover.appearanceIds[0]!,
+            cover.appearanceIds[tile % cover.appearanceIds.length] ?? cover.appearanceIds[0]!,
           x,
           y: cover.y,
           z,
@@ -353,8 +341,7 @@ function build(layout: Layout) {
   const chunks = new Map<string, unknown[]>();
   const cx = Math.ceil((max.x - min.x) / layout.chunkSize);
   const cz = Math.ceil((max.z - min.z) / layout.chunkSize);
-  for (let i = 0; i < cx; i++)
-    for (let j = 0; j < cz; j++) chunks.set(`chunk_${i}_${j}`, []);
+  for (let i = 0; i < cx; i++) for (let j = 0; j < cz; j++) chunks.set(`chunk_${i}_${j}`, []);
   for (const p of placed) {
     const i = Math.min(cx - 1, Math.floor((p.x - min.x) / layout.chunkSize));
     const j = Math.min(cz - 1, Math.floor((p.z - min.z) / layout.chunkSize));
@@ -363,9 +350,7 @@ function build(layout: Layout) {
       position: [r2(p.x), r2(p.y), r2(p.z)],
       rotationY: r2(p.rotationY),
       scale: r2(p.scale),
-      ...(p.colliderRadius !== undefined
-        ? { colliderRadius: p.colliderRadius }
-        : {}),
+      ...(p.colliderRadius !== undefined ? { colliderRadius: p.colliderRadius } : {}),
     });
   }
 
@@ -390,18 +375,12 @@ function build(layout: Layout) {
   return { map, count: placed.length };
 }
 
-for (const file of readdirSync(sourceDir).filter((f) =>
-  f.endsWith(".layout.yaml"),
-)) {
-  const layout = LayoutSchema.parse(
-    parse(readFileSync(join(sourceDir, file), "utf8")),
-  );
+for (const file of readdirSync(sourceDir).filter((f) => f.endsWith('.layout.yaml'))) {
+  const layout = LayoutSchema.parse(parse(readFileSync(join(sourceDir, file), 'utf8')));
   const { map, count } = build(layout);
   const header = `# GENERATED by \`pnpm maps:build\` from maps/source/${file} — edit the layout, not this file.\n`;
   writeFileSync(join(outDir, `${layout.id}.yaml`), header + toCompactYaml(map));
-  console.log(
-    `  ${layout.id}: ${count} instances in ${map.chunks.length} chunks`,
-  );
+  console.log(`  ${layout.id}: ${count} instances in ${map.chunks.length} chunks`);
 }
 
 /** One line per instance/spawn/zone keeps generated diffs readable. */
@@ -409,15 +388,13 @@ function toCompactYaml(value: unknown): string {
   const doc = new Document(value);
   const flowItems = (path: string[]) => {
     const node = doc.getIn(path, true);
-    if (isSeq(node))
-      for (const item of node.items) if (isMap(item)) item.flow = true;
+    if (isSeq(node)) for (const item of node.items) if (isMap(item)) item.flow = true;
   };
-  for (const key of ["spawns", "portals", "zones", "arrivals", "npcs"])
-    flowItems([key]);
-  const chunks = doc.get("chunks", true);
+  for (const key of ['spawns', 'portals', 'zones', 'arrivals', 'npcs']) flowItems([key]);
+  const chunks = doc.get('chunks', true);
   if (isSeq(chunks)) {
     chunks.items.forEach((_, i) => {
-      flowItems(["chunks", String(i), "instances"]);
+      flowItems(['chunks', String(i), 'instances']);
     });
   }
   return doc.toString({ lineWidth: 0 });

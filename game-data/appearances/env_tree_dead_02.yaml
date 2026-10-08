@@ -1,0 +1,6 @@
+# KayKit Forest Nature "Tree_Bare_2_A_Color1" — Cây khô (map renovation, D-027; 404 tris)
+id: env_tree_dead_02
+kind: environment
+scale: 1.2
+modelAssetId: env_tree_dead_02
+placeholder: { shape: cone, color: "#6b5a46", height: 4.61, radius: 0.72 }

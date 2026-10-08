@@ -1,0 +1,6 @@
+# KayKit Dungeon "banner_thin_red" — Cờ hẹp đỏ (map renovation, D-027; 83 tris)
+id: prop_banner_thin_red_01
+kind: environment
+scale: 0.62
+modelAssetId: prop_banner_thin_red_01
+placeholder: { shape: cylinder, color: "#a8483c", height: 1.97, radius: 0.34 }

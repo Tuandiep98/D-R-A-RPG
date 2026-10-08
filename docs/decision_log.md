@@ -270,3 +270,15 @@ Mỗi quyết định: ngày, bối cảnh, quyết định, hệ quả. Khi mâ
 - **Bối cảnh:** chủ dự án không muốn quái dùng model mẫu (KayKit Mannequin_Large) và thấy các quái có `tint` bị nhợt màu.
 - **Quyết định:** Thạch Khôi Tiền Vệ (`mob_guardian_stone_01`) đổi sang Goleling Evolved (Quaternius Ultimate Monsters, CC0, 5.9k tris): golem đá bay, clip Flying_Idle / Fast_Flying / Punch / Headbutt / HitReact / Death, scale 0.5, không tint. Pack chuyển `approved` nhưng chỉ vendor file này (ghi đè một phần D-029). `tint` của appearance giờ nhân vào màu gốc (albedo, 65% về phía màu tint) thay cho emissive × 0.35 — emissive cộng cùng một lượng sáng lên mọi mặt nên làm model bạc màu.
 - **Hệ quả:** quái tint giữ được sáng tối; tint không đổi được hẳn màu texture (vd. mũ đỏ của Skeleton Mage không thành xanh lam). Guardian X-04 (boss) vẫn dùng Mannequin_Large tint đỏ — cần model riêng sau.
+
+## D-035 — Bản đồ thế giới theo vùng, mở bằng cảnh giới; minimap; luật tạo map
+
+- **Ngày:** 2026-10-08
+- **Bối cảnh:** chủ dự án gửi concept bản đồ thế giới Thiên Cơ Kỷ (8 vùng, "Lv. 1–10 … Lv. 80+") và yêu cầu trùng tu các map đã có, rút ra luật tạo map, thêm minimap góc phải trên và bản đồ toàn màn hình có vùng mở sáng / chưa mở tối mờ.
+- **Quyết định:**
+  - Thế giới là dữ liệu: `game-data/world/region_*.yaml` (8 vùng, shape, links, map pin). Mỗi map thuộc đúng một vùng (validator).
+  - Mức "Lv." trong concept được đổi thành **cảnh giới** mở vùng (D-024): Tân Nguyên Luyện Khí; Thanh Vân, Cơ Thành Trúc Cơ; Xích Sa, U Minh Kim Đan; Vân Hải, Thiên Liệt Nguyên Anh; Thiên Tâm Hóa Thần. Vùng sáng khi cảnh giới (từ PlayerState của server) đủ và vùng đã có map; client chỉ hiển thị, không gate gameplay.
+  - Minimap cố định bắc lên trên, mũi tên theo hướng nhân vật, nón theo camera; vẽ từ MapDef + `GameView.radar()` trên canvas riêng (không qua React state). Màu vật thể = `placeholder.color` của appearance.
+  - Luật tạo map: `docs/map_authoring_rules.md` (R1–R8 có test `tools/map-builder/map-rules.test.ts`). Plan: `docs/plan/05_map_renovation_plan.md`.
+  - Tân Nguyên Trấn mở rộng 40 → 80 m; bãi quái nhập môn dời ra ngoài cổng bắc (không đặt quái trong vùng an toàn).
+- **Hệ quả:** thêm 57 model KayKit (pack đã duyệt) cho dressing. Kiến trúc Đông phương (mái ngói, đình) vẫn thiếu asset — nhà tạm ghép từ tường KayKit Dungeon. "Đã khám phá" theo nhân vật (persist) là bước sau.

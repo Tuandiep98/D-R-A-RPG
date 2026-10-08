@@ -69,6 +69,26 @@
       "assetId": "item_kt_grindstone",
       "file": "originals/Assets/gltf/grindstone.gltf",
       "type": "prop"
+    },
+    {
+      "assetId": "prop_grindstone_01",
+      "file": "originals/Assets/gltf/grindstone.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_bucket_01",
+      "file": "originals/Assets/gltf/bucket_metal.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_rope_01",
+      "file": "originals/Assets/gltf/rope_bundle_A.gltf",
+      "type": "prop"
+    },
+    {
+      "assetId": "prop_blueprints_01",
+      "file": "originals/Assets/gltf/blueprint_stacked.gltf",
+      "type": "prop"
     }
   ]
 }

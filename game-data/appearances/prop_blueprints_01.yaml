@@ -1,0 +1,6 @@
+# KayKit RPG Tools "blueprint_stacked" — Chồng bản vẽ (map renovation, D-027; 384 tris)
+id: prop_blueprints_01
+kind: environment
+scale: 0.45
+modelAssetId: prop_blueprints_01
+placeholder: { shape: box, color: "#5f8fc0", height: 0.12, radius: 0.48 }

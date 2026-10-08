@@ -1,6 +1,6 @@
 # Map Contract
 
-Tech plan §5–8, §23, §39; assets plan §8, §13.3.
+Tech plan §5–8, §23, §39; assets plan §8, §13.3. **Quy tắc thiết kế/bày trí: docs/map_authoring_rules.md** (đọc trước khi làm map); plan trùng tu: docs/plan/05_map_renovation_plan.md.
 
 ## Nguồn và sinh map
 
@@ -27,6 +27,10 @@ game-data/nav/<mapId>.navmesh.bin + .json (hash nguồn)
 | `portals[]`                 | `targetMapId` + `targetArrival`; server cấp ticket ký số khi dùng             |
 | `zones[]`                   | `safe` (quái không aggro), `combat`, `boss_arena`, `hazard`                   |
 
+## Bản đồ thế giới
+
+`game-data/world/region_<id>.yaml`: vùng trên lục địa (`shape` đa giác trên canvas 1000×640, `realm` mở vùng, `maps[]` = `{ mapId, at }`, `links`). Mỗi map thuộc đúng một vùng (validator). Minimap/bản đồ thế giới vẽ hoàn toàn từ data này + MapDef.
+
 ## Quy tắc thiết kế
 
 1. Blockout trước, trang trí sau (assets plan §8.2). Clearings giữ trống khu trại, đấu trường.
@@ -35,6 +39,7 @@ game-data/nav/<mapId>.navmesh.bin + .json (hash nguồn)
 4. Mỗi map có ít nhất 1 portal về khu an toàn.
 5. Không đặt spawn trong collider; validator kiểm tra spawn/portal/arrival trong `bounds`.
 6. Decoration lặp lại → cùng appearance (thin instances, 1 draw call/material/loại).
+7. Dressing theo khu bằng `scatter.area`; hàng rào/tường dùng `rings.orient: tangent`. Chi tiết và luật R1–R8 (có test): `docs/map_authoring_rules.md`.
 
 ## Runtime
 
@@ -47,5 +52,6 @@ game-data/nav/<mapId>.navmesh.bin + .json (hash nguồn)
 
 | mapId                     | Tên            | Kích thước | Chunk | Nội dung                                                                                                                      |
 | ------------------------- | -------------- | ---------- | ----- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `map_sandbox_01`          | Thôn Thanh Vân | 40×40 m    | 1     | Vùng an toàn, 2 trại quái nhập môn, portal sang rừng                                                                          |
-| `map_forest_mechanism_01` | Rừng Cơ Quan   | 160×96 m   | 15    | Trạm gác (safe) → Đồi Sói (sói, hồ ly) → Phế Tích Cơ Giới (robot + Linh Lộc Tinh Anh) → Đấu Trường Cơ Quan (boss) → portal về |
+| `map_sandbox_01`          | Tân Nguyên Trấn | 80×80 m   | 9     | Quảng trường + lò rèn / chợ / y quán / doanh trại / trạm vận chuyển, hàng rào 4 cổng; ngoài cổng bắc 2 bãi luyện; portal sang Phế Tích |
+| `map_forest_mechanism_01` | Phế Tích Vô Danh | 160×96 m | 15    | Doanh Trại Tiền Tiêu (safe) → Đồi Sói / Hang Hồ Ly → Cửa Hợp Kim (phế tích + xác máy, robot) + Linh Lộc Đài (tinh anh) → Đài Tượng Đá (boss) → portal về |
+| `map_golem_sanctum_01`    | Huyền Vũ Cổ Mộ (tầng sâu Phế Tích, phó bản solo) | 48×80 m | 6 | Trại khảo cổ ở cửa mộ → hành lang robot → cửa hợp kim + xác máy → mộ thất tường đá nứt (boss) → cổng ra |

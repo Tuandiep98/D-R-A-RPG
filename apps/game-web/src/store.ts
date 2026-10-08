@@ -16,6 +16,7 @@ export type Panel =
   | "settings"
   | "leaderboard"
   | "social"
+  | "map"
   | null;
 
 export interface ToastNotice extends Notice {
