@@ -1,0 +1,7 @@
+{
+  "name": "Thiên Cơ Kỷ sword app icon",
+  "source": "User supplied Ornate Blue and Gold Sword Icon.png on 2026-10-08",
+  "processing": "Built-in imagegen background extraction: remove only the black exterior outside the gold frame; preserve the blue interior, sword and frame; real transparent alpha.",
+  "file": "sword.png",
+  "derivatives": "pnpm pwa:icons; favicon and regular PWA icons preserve alpha; Apple and maskable icons have a solid background."
+}

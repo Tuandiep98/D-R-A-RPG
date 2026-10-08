@@ -1,35 +1,35 @@
 /**
- * Renders PWA icons from apps/game-web/public/favicon.svg.
+ * Renders favicon and PWA icons from art/app-icon/sword.png (transparent source).
  * Usage: pnpm pwa:icons   (outputs are committed; rerun when the logo changes)
  */
-import { mkdirSync, readFileSync } from "node:fs";
-import { join, resolve } from "node:path";
-import sharp from "sharp";
+import { mkdirSync, readFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+import sharp from 'sharp';
 
-const pub = resolve(import.meta.dirname, "../../apps/game-web/public");
-const svg = readFileSync(join(pub, "favicon.svg"));
-mkdirSync(join(pub, "icons"), { recursive: true });
+const pub = resolve(import.meta.dirname, '../../apps/game-web/public');
+const source = readFileSync(resolve(import.meta.dirname, '../../art/app-icon/sword.png'));
+mkdirSync(join(pub, 'icons'), { recursive: true });
+
+await sharp(source).resize(48, 48).png().toFile(join(pub, 'favicon-sword.png'));
 
 for (const size of [192, 512]) {
-  await sharp(svg, { density: 512 })
+  await sharp(source)
     .resize(size, size)
     .png()
-    .toFile(join(pub, "icons", `icon-${size}.png`));
+    .toFile(join(pub, 'icons', `sword-${size}.png`));
 }
 // Maskable: keep the logo inside the 80% safe zone on a solid background.
 const inner = Math.round(512 * 0.7);
-const logo = await sharp(svg, { density: 512 })
-  .resize(inner, inner)
-  .png()
-  .toBuffer();
+const logo = await sharp(source).resize(inner, inner).png().toBuffer();
 await sharp({
-  create: { width: 512, height: 512, channels: 4, background: "#1b2430" },
+  create: { width: 512, height: 512, channels: 4, background: '#1b2430' },
 })
-  .composite([{ input: logo, gravity: "center" }])
+  .composite([{ input: logo, gravity: 'center' }])
   .png()
-  .toFile(join(pub, "icons", "maskable-512.png"));
-await sharp(svg, { density: 512 })
+  .toFile(join(pub, 'icons', 'sword-maskable-512.png'));
+await sharp(source)
   .resize(180, 180)
+  .flatten({ background: '#1b2430' })
   .png()
-  .toFile(join(pub, "icons", "apple-touch-icon.png"));
-console.log("icons → apps/game-web/public/icons");
+  .toFile(join(pub, 'icons', 'sword-apple-touch.png'));
+console.log('icons → apps/game-web/public/icons');

@@ -1,58 +1,57 @@
-import { fileURLToPath } from "node:url";
-import basicSsl from "@vitejs/plugin-basic-ssl";
-import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
-import { VitePWA } from "vite-plugin-pwa";
+import { fileURLToPath } from 'node:url';
+import basicSsl from '@vitejs/plugin-basic-ssl';
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
+import { VitePWA } from 'vite-plugin-pwa';
 
-const repoRoot = fileURLToPath(new URL("../..", import.meta.url));
+const repoRoot = fileURLToPath(new URL('../..', import.meta.url));
 
 export default defineConfig(({ mode }) => ({
-  base: mode === "pages" ? "/D-R-A-RPG/" : "/",
+  base: mode === 'pages' ? '/D-R-A-RPG/' : '/',
   plugins: [
     react(),
     // `pnpm dev:mobile` serves HTTPS on the LAN: Safari only exposes WebGPU in a
     // secure context, and plain http://<lan-ip> is not one.
-    ...(mode === "mobile" ? [basicSsl()] : []),
+    ...(mode === 'mobile' ? [basicSsl()] : []),
     VitePWA({
-      registerType: "autoUpdate",
-      injectRegister: "auto",
-      includeAssets: ["favicon.svg", "icons/apple-touch-icon.png"],
+      registerType: 'autoUpdate',
+      injectRegister: 'auto',
+      includeAssets: ['favicon-sword.png', 'icons/sword-apple-touch.png'],
       manifest: {
-        name: "Thiên Cơ Kỷ",
-        short_name: "Thiên Cơ Kỷ",
-        description: "RPG 2.5D semi-mini: Robot · Tu tiên · Võ hiệp",
-        lang: "vi",
-        display: "fullscreen",
+        name: 'Thiên Cơ Kỷ',
+        short_name: 'Thiên Cơ Kỷ',
+        description: 'RPG 2.5D semi-mini: Robot · Tu tiên · Võ hiệp',
+        lang: 'vi',
+        display: 'fullscreen',
         // No lock: the HUD adapts to portrait and landscape (see controls.ts).
-        orientation: "any",
-        background_color: "#1b2430",
-        theme_color: "#1b2430",
-        start_url: ".",
+        orientation: 'any',
+        background_color: '#1b2430',
+        theme_color: '#1b2430',
+        start_url: '.',
         icons: [
-          { src: "icons/icon-192.png", sizes: "192x192", type: "image/png" },
-          { src: "icons/icon-512.png", sizes: "512x512", type: "image/png" },
+          { src: 'icons/sword-192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'icons/sword-512.png', sizes: '512x512', type: 'image/png' },
           {
-            src: "icons/maskable-512.png",
-            sizes: "512x512",
-            type: "image/png",
-            purpose: "maskable",
+            src: 'icons/sword-maskable-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
           },
         ],
       },
       workbox: {
         // Precache only the app shell (tech plan §19). Game content is cached at runtime.
-        globPatterns: ["**/*.{js,css,html,svg,png,woff2,json}"],
-        globIgnores: ["assets/**", "media/**", "**/*.navmesh.*"],
+        globPatterns: ['**/*.{js,css,html,svg,png,woff2,json}'],
+        globIgnores: ['assets/**', 'media/**', '**/*.navmesh.*'],
         maximumFileSizeToCacheInBytes: 12 * 1024 * 1024,
-        navigateFallback: "index.html",
+        navigateFallback: 'index.html',
         runtimeCaching: [
           {
             // Hashed asset files never change: cache first, keep a bounded number.
-            urlPattern: ({ url }) =>
-              /\/assets\/.+\.[0-9a-f]{10}\.(glb|js)$/.test(url.pathname),
-            handler: "CacheFirst",
+            urlPattern: ({ url }) => /\/assets\/.+\.[0-9a-f]{10}\.(glb|js)$/.test(url.pathname),
+            handler: 'CacheFirst',
             options: {
-              cacheName: "game-assets",
+              cacheName: 'game-assets',
               expiration: {
                 maxEntries: 300,
                 maxAgeSeconds: 60 * 60 * 24 * 60,
@@ -63,12 +62,10 @@ export default defineConfig(({ mode }) => ({
           {
             // Icons, UI frames and sounds (pnpm media:build), also content-hashed.
             urlPattern: ({ url }) =>
-              /\/media\/.+\.[0-9a-f]{10}\.(webp|png|m4a|ogg)$/.test(
-                url.pathname,
-              ),
-            handler: "CacheFirst",
+              /\/media\/.+\.[0-9a-f]{10}\.(webp|png|m4a|ogg)$/.test(url.pathname),
+            handler: 'CacheFirst',
             options: {
-              cacheName: "game-media",
+              cacheName: 'game-media',
               expiration: {
                 maxEntries: 400,
                 maxAgeSeconds: 60 * 60 * 24 * 60,
@@ -77,47 +74,46 @@ export default defineConfig(({ mode }) => ({
             },
           },
           {
-            urlPattern: ({ url }) => url.pathname.endsWith(".navmesh.bin"),
-            handler: "CacheFirst",
+            urlPattern: ({ url }) => url.pathname.endsWith('.navmesh.bin'),
+            handler: 'CacheFirst',
             options: {
-              cacheName: "game-nav",
+              cacheName: 'game-nav',
               expiration: { maxEntries: 50, purgeOnQuotaError: true },
             },
           },
           {
             // The manifest points at the current hashes; prefer fresh, fall back offline.
-            urlPattern: ({ url }) =>
-              url.pathname.endsWith("assets.manifest.json"),
-            handler: "NetworkFirst",
-            options: { cacheName: "game-manifest", networkTimeoutSeconds: 3 },
+            urlPattern: ({ url }) => url.pathname.endsWith('assets.manifest.json'),
+            handler: 'NetworkFirst',
+            options: { cacheName: 'game-manifest', networkTimeoutSeconds: 3 },
           },
         ],
       },
     }),
   ],
-  worker: { format: "es" },
+  worker: { format: 'es' },
   server: {
     port: 5173,
     // game-data/ lives at the repo root and is imported via import.meta.glob.
     fs: { allow: [repoRoot] },
   },
   build: {
-    target: "es2022",
+    target: 'es2022',
     // App code goes to static/; assets/ is reserved for hashed game content.
-    assetsDir: "static",
+    assetsDir: 'static',
     chunkSizeWarningLimit: 7000,
     rolldownOptions: {
       output: {
         // Engine and UI libraries change rarely: separate chunks stay cached across game updates.
         codeSplitting: {
           groups: [
-            { name: "babylon", test: /node_modules[/]\.pnpm[/]@babylonjs/ },
+            { name: 'babylon', test: /node_modules[/]\.pnpm[/]@babylonjs/ },
             {
-              name: "recast",
+              name: 'recast',
               test: /node_modules[/]\.pnpm[/]@?recast-navigation/,
             },
             {
-              name: "react",
+              name: 'react',
               test: /node_modules[/]\.pnpm[/](react|react-dom|scheduler|zustand)@/,
             },
           ],
