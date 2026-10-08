@@ -1,0 +1,12 @@
+id: tien_loi_vuc
+name: Kiếm Pháp · Lôi Vực
+description: Sau khi trừ đàn sói, học đặt kiếm trận sét. Mở Lôi Vực với vùng báo trước cố định.
+icon: "✴"
+axis: dao
+path: tien
+realm: luyen_khi
+requires: [tien_loi_anh]
+quests: [q_wolf_cull]
+cost: { gold: 100, materials: [{ itemId: item_wolf_fang, count: 4 }] }
+meridian: 5
+skillId: skill_thunder_field

@@ -1,0 +1,11 @@
+id: tien_the_guard
+name: Thể Pháp · Cường Thể
+description: Học tạo khiên từ khí huyết. Thể Tu có sẵn kỹ năng này từ đầu.
+icon: "🛡"
+axis: than
+path: tien
+realm: luyen_khi
+requires: [tien_cuong_cot]
+cost: { gold: 80, materials: [{ itemId: item_fox_fur, count: 4 }] }
+meridian: 5
+skillId: skill_the_guard

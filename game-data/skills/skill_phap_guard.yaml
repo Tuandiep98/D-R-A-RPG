@@ -1,0 +1,15 @@
+id: skill_phap_guard
+name: Hộ Pháp
+description: Khiên hấp thụ sát thương bằng 20% HP tối đa trong 4 giây. Không cộng dồn.
+icon: "🛡"
+iconImage: icon_item_crystal1
+targeting: self
+autoPolicy: defense
+castTime: 0.15
+delivery: support
+cooldown: 14
+mpCost: 18
+effects: [{ type: shield, fraction: 0.2, duration: 4 }]
+vfx: heal
+anim: { cast: Ranged_Magic_Spellcasting, castSpeed: 2 }
+barRole: utility

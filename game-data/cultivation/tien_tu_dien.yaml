@@ -1,0 +1,11 @@
+id: tien_tu_dien
+name: Kiếm Pháp · Tử Điện
+description: Kiếm ý vững mới tụ được điện vào một nhát chém. Mở Tử Điện Trảm, cần áp sát và nhắm đúng hướng.
+icon: "⚔"
+axis: dao
+path: tien
+realm: truc_co
+requires: [tien_loi_anh, tien_kiem_co]
+cost: { gold: 180, materials: [{ itemId: item_robot_scrap, count: 6 }] }
+meridian: 5
+skillId: skill_thunder_execution

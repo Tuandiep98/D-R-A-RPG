@@ -1,0 +1,12 @@
+id: tien_cuu_thien
+name: Tuyệt Kỹ · Cửu Thiên
+description: Sau khi thắng tinh anh và ổn định kiếm cơ, học Cửu Thiên Lôi Kiếm. Tuyệt kỹ có thời gian tụ lực và vùng báo trước để đối thủ né.
+icon: "☄"
+axis: dao
+path: tien
+realm: truc_co
+requires: [tien_kiem_co, tien_loi_vuc, tien_tu_dien]
+quests: [q_elite_stag]
+cost: { gold: 300, materials: [{ itemId: item_elite_antler, count: 1 }] }
+meridian: 10
+skillId: skill_thunder_judgement

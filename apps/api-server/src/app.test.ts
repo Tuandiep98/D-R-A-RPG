@@ -107,6 +107,31 @@ describe('auth', () => {
 });
 
 describe('characters', () => {
+  it('creates each starter kit with the chosen affinity and preserves its definition in the DB', async () => {
+    for (const [index, characterDefId] of [
+      'player_default',
+      'player_phap',
+      'player_the',
+      'player_tran',
+      'player_anh',
+      'player_thu',
+    ].entries()) {
+      const account = { username: `starter_kits_${index}`, password: 'password123' };
+      expect((await post('/auth/register', account)).statusCode).toBe(201);
+      const token = (await post('/auth/login', account)).json().accessToken;
+      const created = await post(
+        '/characters',
+        { name: `Kit Tester ${index}`, characterDefId, element: 'kim', expression: 'base' },
+        token,
+      );
+      expect(created.statusCode).toBe(201);
+      expect(await repo.loadCharacter(created.json().id)).toMatchObject({
+        characterDefId,
+        element: 'kim',
+        expression: 'base',
+      });
+    }
+  });
   it('creates characters and issues a session token bound to one of them', async () => {
     await post('/auth/register', {
       username: 'player1',

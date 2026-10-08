@@ -1,0 +1,17 @@
+id: skill_thu_combo
+name: Hợp Kích
+description: Player chém nón trước mặt và ra lệnh pet đánh nón riêng, mỗi thân kiểm hitbox và tường tại impact.
+icon: "⚔"
+iconImage: icon_skill_whirlwind
+targeting: self
+range: 3
+delivery: cone
+arc: 100
+cooldown: 10
+mpCost: 20
+timeline: { windup: 0.3, active: 0, recovery: 0.25, cancelWindup: true }
+effects:
+  - { type: damage, multiplier: 1.5, radius: 3 }
+  - { type: pet_attack, skillId: skill_pet_cone }
+vfx: slash
+anim: { cast: Melee_1H_Attack_Slice_Horizontal, castSpeed: 1.1666666666666667 }

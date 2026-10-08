@@ -1,0 +1,13 @@
+id: skill_pet_wave
+name: Linh Lang · Thú Triều
+description: Sóng thú phóng thẳng theo hướng đã ngắm, hữu hạn tốc độ và dừng ở thân/tường đầu tiên.
+targeting: point
+range: 9
+delivery: projectile
+projectileSpeed: 10
+projectileRadius: 0.7
+telegraph: true
+cooldown: 1
+timeline: { windup: 0.5, active: 0, recovery: 0.2, cancelWindup: false }
+effects: [{ type: damage, multiplier: 4 }]
+vfx: projectile

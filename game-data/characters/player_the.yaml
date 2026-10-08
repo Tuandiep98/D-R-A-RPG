@@ -1,0 +1,13 @@
+id: player_the
+name: Thể Tu · Thử Nghiệm
+appearanceId: char_kk_barbarian
+stats: { hp: 1000, mp: 120, attack: 34, defense: 14, critChance: 0.1, critMultiplier: 1.6, hpRegen: 14, mpRegen: 4 }
+movement: { speed: 4.6, radius: 0.45 }
+combat: { range: 1.3, attackInterval: 0.8, poise: { threshold: 24, breakSeconds: 0.3, immunitySeconds: 2, decaySeconds: 3 } }
+combos: { unarmed: combo_unarmed, armed: combo_unarmed }
+respawnSeconds: 5
+skills: [skill_the_mountain, skill_the_guard]
+prototypeSkills: [skill_the_mountain, skill_the_guard, skill_the_quake, skill_the_avatar]
+starterItems: [{ itemId: item_potion_hp_small, count: 5 }]
+element: tho
+expression: base

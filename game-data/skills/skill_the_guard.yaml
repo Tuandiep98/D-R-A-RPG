@@ -1,0 +1,15 @@
+id: skill_the_guard
+name: Cường Thể
+description: Tụ khí huyết thành khiên bằng 25% HP tối đa trong 3 giây. Không cộng dồn hoặc làm mới cooldown.
+icon: "🛡"
+iconImage: icon_item_armor_metal
+targeting: self
+autoPolicy: defense
+delivery: support
+castTime: 0.1
+cooldown: 10
+mpCost: 12
+effects: [{ type: shield, fraction: 0.25, duration: 3 }]
+vfx: heal
+anim: { cast: Melee_Block, castSpeed: 3 }
+barRole: utility

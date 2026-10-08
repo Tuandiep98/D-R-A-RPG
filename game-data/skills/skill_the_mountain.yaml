@@ -1,0 +1,16 @@
+id: skill_the_mountain
+name: Phá Sơn
+description: Trọng quyền đánh capsule ngắn trước mặt; khóa vị trí và hướng khi tụ lực. Rời vùng hoặc nấp sau tường để né.
+icon: "👊"
+iconImage: icon_skill_heavy_slash
+targeting: self
+range: 2.4
+castTime: 0.3
+timeline: { windup: 0.3, active: 0, recovery: 0.25, cancelWindup: true }
+delivery: line
+telegraph: true
+cooldown: 5
+mpCost: 10
+effects: [{ type: damage, multiplier: 2.3, radius: 0.35 }]
+vfx: burst
+anim: { cast: Melee_Unarmed_Attack_Punch_A, castSpeed: 1.6666666666666667 }

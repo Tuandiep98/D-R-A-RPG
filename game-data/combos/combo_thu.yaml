@@ -1,0 +1,48 @@
+id: combo_thu
+name: Ngự Phù · Tam Nhịp
+resetAfter: 1.4
+grazeFrom: 1
+grazeMultiplier: 1
+weakPoint: { back: 1, flank: 1 }
+assistAngle: 35
+steps:
+  - variants:
+      - id: thu_first
+        name: Dẫn Thú
+        clip: Ranged_Magic_Spellcasting
+        projectileSkillId: skill_thu_bolt
+        animSpeed: 1.5
+        windup: 0.2
+        recovery: 0.35
+        damage: 1
+        reach: 8
+        arc: 20
+        moveMultiplier: 0.65
+        trail: { shape: thrust, glow: [hand_r], impact: spark }
+  - variants:
+      - id: thu_second
+        name: Liên Phù
+        clip: Ranged_Magic_Spellcasting
+        projectileSkillId: skill_thu_bolt
+        animSpeed: 1.5
+        windup: 0.2
+        recovery: 0.35
+        damage: 1.1
+        reach: 8
+        arc: 20
+        moveMultiplier: 0.65
+        trail: { shape: thrust, glow: [hand_l], impact: spark }
+  - variants:
+      - id: thu_third
+        name: Hợp Thú
+        clip: Ranged_Magic_Spellcasting
+        projectileSkillId: skill_thu_bolt_heavy
+        animSpeed: 0.8571428571428571
+        windup: 0.35
+        recovery: 0.4
+        damage: 1.5
+        reach: 8
+        arc: 25
+        moveMultiplier: 0.45
+        heavy: true
+        trail: { shape: thrust, glow: [hand_r, hand_l], impact: burst }

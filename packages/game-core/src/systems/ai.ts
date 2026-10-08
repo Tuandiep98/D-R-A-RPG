@@ -37,7 +37,9 @@ export function aiSystem(ctx: SimContext): void {
       case 'idle': {
         const attacker = ctx.entities.get(e.life.lastAttackerId ?? 0);
         const target =
-          isAlive(attacker) && !ctx.inSafeZone(attacker.pos)
+          isAlive(attacker) &&
+          !(attacker.cloakEndTick && attacker.cloakEndTick > ctx.tick) &&
+          !ctx.inSafeZone(attacker.pos)
             ? attacker
             : findNearestHostile(ctx, e, ai.aggroRadius);
         if (target) {
@@ -66,6 +68,15 @@ export function aiSystem(ctx: SimContext): void {
       }
       case 'chase': {
         const target = ctx.entities.get(e.combat.targetId ?? 0);
+        if (target?.cloakEndTick && target.cloakEndTick > ctx.tick) {
+          // Drop pursuit but preserve a strike that has already committed its geometry.
+          ai.state = 'idle';
+          e.combat.targetId = null;
+          e.movement.goal = null;
+          e.movement.path = null;
+          e.pending = null;
+          break;
+        }
         const leashed = distance(e.pos, ai.home) > ai.leashRadius;
         if (!isAlive(target) || leashed || ctx.inSafeZone(target.pos)) {
           startReturn(e);
@@ -123,6 +134,7 @@ function findNearestHostile(ctx: SimContext, self: Entity, radius: number): Enti
   let bestDist = radius;
   for (const other of ctx.entities.values()) {
     if (other === self || !isAlive(other) || !areHostile(self, other)) continue;
+    if (other.cloakEndTick && other.cloakEndTick > ctx.tick) continue;
     if (ctx.inSafeZone(other.pos)) continue;
     const d = distance(self.pos, other.pos);
     if (d <= bestDist) {

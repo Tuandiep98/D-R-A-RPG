@@ -1,11 +1,11 @@
 import type { DamageSpec } from '@rpg/game-data';
-import { inAttackRange, isAlive, type SimContext } from '../context';
+import { basicReach, edgeDistance, isAlive, isStaggered, type SimContext } from '../context';
 import type { DamageSource, Entity, Stats } from '../entity';
 import { clearLine, coneTouches } from '../geometry';
 import { sub, yawOf } from '../math';
 import type { Rng } from '../rng';
 import { TICK_RATE } from '../time';
-import { beginAction, currentAction, resetTransientActions } from './action-timeline';
+import { beginAction, cancelAction, currentAction, resetTransientActions } from './action-timeline';
 import { grantGold } from './inventory';
 import { dropLoot } from './loot';
 import { avoidsDamage } from './mobility';
@@ -108,7 +108,13 @@ export function rollHit(
   return resolveDamage(
     ctx.rng,
     source.stats,
-    defender.stats,
+    {
+      defense:
+        defender.stats.defense +
+        (defender.guardChain && defender.guardChain.endTick > ctx.tick
+          ? defender.guardChain.defense
+          : 0),
+    },
     { ...spec, elementalShare: spec.elementalShare ?? rules?.basicShare ?? 0 },
     {
       ...factors,
@@ -163,6 +169,7 @@ export function combatSystem(ctx: SimContext): void {
             hit: 'solid',
             heavy: false,
             groundLow: def.combat.groundLow,
+            poiseDamage: def.combat.poiseDamage,
             source: swing.source,
           });
         }
@@ -175,7 +182,7 @@ export function combatSystem(ctx: SimContext): void {
 /** Chooses approach/windup before movement; impacts remain in combatSystem. */
 export function combatPreparationSystem(ctx: SimContext): void {
   for (const e of ctx.entities.values()) {
-    if (e.mobility || e.monsterSwing) continue;
+    if (e.mobility || e.monsterSwing || isStaggered(ctx, e)) continue;
     if (e.inert || !e.life.alive || e.combat.targetId === null || e.cast || currentAction(ctx, e))
       continue;
     if (e.pending && e.pending.type !== 'cast') continue;
@@ -189,9 +196,9 @@ export function combatPreparationSystem(ctx: SimContext): void {
     // Farm owns its positioning goal; attacks still use the same range checks.
     if (e.player?.farm.enabled) continue;
 
-    if (!inAttackRange(e, target)) {
+    if (edgeDistance(e, target) > basicReach(ctx, e)) {
       if (e.pending) continue; // a queued skill is driving the approach
-      const reach = e.combat.range + e.movement.radius + target.movement.radius;
+      const reach = basicReach(ctx, e) + e.movement.radius + target.movement.radius;
       e.movement.goal = {
         pos: { ...target.pos },
         stopWithin: Math.max(0.05, reach * 0.9),
@@ -213,6 +220,8 @@ export function combatPreparationSystem(ctx: SimContext): void {
       active: 0,
       recovery: Math.max(0, e.combat.attackIntervalTicks / TICK_RATE - def.combat.windup),
       cancelWindup: false,
+      // Owner commands may replace a pet's recovery after its bite has resolved.
+      ...(e.pet ? { cancelRecoveryAfter: 0 } : {}),
     });
     e.monsterSwing = {
       source: captureDamageSource(ctx, e),
@@ -248,6 +257,7 @@ export function applyDamage(
   detail?: {
     hit: 'solid' | 'graze' | 'weak';
     heavy: boolean;
+    poiseDamage?: number;
     /** Ranged hits: the SHOT and bullet that landed. */
     shot?: { id: number; pellet: number };
     groundLow?: boolean;
@@ -255,12 +265,74 @@ export function applyDamage(
   },
 ): void {
   if (!target.life.alive || avoidsDamage(ctx, target, detail?.groundLow)) return;
+  if (source.pet && !isAlive(ctx.entities.get(source.pet.ownerId))) return;
+  source.cloakEndTick = null;
+  target.cloakEndTick = null;
+  if (target.shield && ctx.tick >= target.shield.endTick) target.shield = null;
+  if (target.shield) {
+    const absorbed = Math.min(target.shield.amount, amount);
+    target.shield.amount -= absorbed;
+    amount -= absorbed;
+    ctx.emit({
+      type: 'SHIELD',
+      targetId: target.id,
+      amount: absorbed,
+      remaining: target.shield.amount,
+      endTick: target.shield.endTick,
+      phase: 'absorb',
+    });
+    if (target.shield.amount === 0) target.shield = null;
+  }
   const dealt = Math.min(amount, target.stats.hp);
   target.stats.hp -= dealt;
+  const poiseDef = target.player
+    ? ctx.content.characters.get(target.player.characterId)?.combat.poise
+    : ctx.content.monsters.get(target.defId)?.combat.poise;
+  if (dealt > 0 && target.stats.hp > 0 && poiseDef && (detail?.poiseDamage ?? 0) > 0) {
+    const previous = target.poise;
+    if (!previous || ctx.tick >= previous.immuneUntilTick) {
+      const chain = target.guardChain;
+      const bonus =
+        chain && chain.endTick > ctx.tick
+          ? (ctx.content.combos.get(chain.comboId)?.guardChain?.poisePerStack ?? 0) * chain.stacks
+          : 0;
+      const threshold = poiseDef.threshold + bonus;
+      const pressure =
+        (previous && ctx.tick < previous.lastHitTick + Math.round(poiseDef.decaySeconds * TICK_RATE)
+          ? previous.pressure
+          : 0) + (detail?.poiseDamage ?? 0);
+      const broken = pressure >= threshold;
+      target.poise = {
+        pressure: broken ? 0 : pressure,
+        threshold,
+        lastHitTick: ctx.tick,
+        staggerUntilTick: broken
+          ? ctx.tick + Math.round(poiseDef.breakSeconds * TICK_RATE)
+          : (previous?.staggerUntilTick ?? 0),
+        immuneUntilTick: broken
+          ? ctx.tick + Math.round(poiseDef.immunitySeconds * TICK_RATE)
+          : (previous?.immuneUntilTick ?? 0),
+      };
+      if (broken) {
+        // Interrupt preparation only. Released projectiles and committed active travel remain valid.
+        cancelAction(ctx, target, true);
+        target.pending = null;
+        target.actionBuffer = null;
+      }
+    }
+  }
+  const creditId = source.pet?.ownerId ?? source.id;
   target.life.lastAttackerId = source.id;
-  target.life.damageBy.set(source.id, (target.life.damageBy.get(source.id) ?? 0) + dealt);
+  target.life.damageBy.set(creditId, (target.life.damageBy.get(creditId) ?? 0) + dealt);
   source.combat.lastCombatTick = ctx.tick;
   target.combat.lastCombatTick = ctx.tick;
+  const petOwner = source.pet ? ctx.entities.get(source.pet.ownerId) : undefined;
+  if (petOwner) {
+    petOwner.combat.lastCombatTick = ctx.tick;
+    petOwner.cloakEndTick = null;
+  }
+  const hurtPetOwner = target.pet ? ctx.entities.get(target.pet.ownerId) : undefined;
+  if (hurtPetOwner) hurtPetOwner.combat.lastCombatTick = ctx.tick;
   ctx.emit({
     type: 'DAMAGE',
     actionId: detail?.source ? (detail.source.actionId ?? null) : (source.actionState?.id ?? null),

@@ -1,0 +1,19 @@
+id: skill_tran_place
+name: Đặt Trận
+description: Đặt vùng cố định, gây sáu nhịp sát thương có báo trước. Tối đa hai trận; khi đầy, lần đặt mới bị từ chối trước khi tiêu MP.
+icon: "◉"
+iconImage: icon_skill_ground_slam
+targeting: point
+autoAnchorRadius: 3
+range: 9
+castTime: 0.6
+timeline: { windup: 0.6, active: 0, recovery: 0.2, cancelWindup: true }
+delivery: circle
+telegraph: true
+pulses: { count: 6, interval: 1 }
+field: { maxOwned: 2, maxDuration: 8 }
+cooldown: 3
+mpCost: 16
+effects: [{ type: damage, multiplier: 0.55, radius: 1.8 }]
+vfx: burst
+anim: { cast: Ranged_Magic_Raise, castSpeed: 2.4 }

@@ -1,0 +1,12 @@
+id: tien_anh_pursuit
+name: Ảnh Pháp · Truy Ảnh
+description: Học dash tiếp cận có kiểm tra địa hình, sau đó chém nón.
+icon: "↠"
+axis: dao
+path: tien
+realm: luyen_khi
+requires: [tien_khai_mach]
+quests: [q_wolf_cull]
+cost: { gold: 120, materials: [{ itemId: item_wolf_fang, count: 4 }] }
+meridian: 10
+skillId: skill_anh_pursuit

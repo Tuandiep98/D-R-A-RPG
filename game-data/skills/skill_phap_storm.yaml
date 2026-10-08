@@ -1,0 +1,17 @@
+id: skill_phap_storm
+name: Thiên Tượng
+description: Ba nhịp thiên tượng trên vùng đã khóa, mỗi nhịp có báo trước và kiểm tra va chạm riêng. Tổng hệ số 4.8.
+icon: "☄"
+iconImage: icon_skill_boss_barrage
+targeting: point
+range: 10
+castTime: 0.9
+timeline: { windup: 0.9, active: 0, recovery: 0.25, cancelWindup: true }
+delivery: circle
+telegraph: true
+pulses: { count: 3, interval: 0.5 }
+cooldown: 28
+mpCost: 45
+effects: [{ type: damage, multiplier: 1.6, radius: 3 }]
+vfx: burst
+anim: { cast: Ranged_Magic_Raise, castSpeed: 1.6 }

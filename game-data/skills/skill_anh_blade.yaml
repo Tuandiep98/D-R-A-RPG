@@ -1,0 +1,16 @@
+id: skill_anh_blade
+name: Ảnh Nhận
+description: Phóng đạn hẹp theo hướng đã ngắm; có thể né hoặc chặn bằng địa hình.
+icon: "➶"
+iconImage: icon_skill_sword_qi
+targeting: point
+range: 8
+delivery: projectile
+projectileSpeed: 20
+projectileRadius: 0.14
+cooldown: 4
+mpCost: 10
+timeline: { windup: 0.2, active: 0, recovery: 0.2, cancelWindup: true }
+effects: [{ type: damage, multiplier: 1.7 }]
+vfx: projectile
+anim: { cast: Melee_1H_Attack_Stab, castSpeed: 1.5 }

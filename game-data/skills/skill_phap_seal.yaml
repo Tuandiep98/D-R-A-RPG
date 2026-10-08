@@ -1,0 +1,16 @@
+id: skill_phap_seal
+name: Pháp Ấn
+description: Khóa một vùng pháp ấn, phát nổ sau thời gian báo trước. Rời vòng để né.
+icon: "✴"
+iconImage: icon_skill_ground_slam
+targeting: point
+range: 9
+castTime: 0.65
+timeline: { windup: 0.65, active: 0, recovery: 0.2, cancelWindup: true }
+delivery: circle
+telegraph: true
+cooldown: 8
+mpCost: 20
+effects: [{ type: damage, multiplier: 2.2, radius: 2.2 }]
+vfx: burst
+anim: { cast: Ranged_Magic_Raise, castSpeed: 2.2153846153846155 }

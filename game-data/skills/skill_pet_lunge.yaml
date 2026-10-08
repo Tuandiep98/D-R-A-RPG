@@ -1,0 +1,15 @@
+id: skill_pet_lunge
+name: Linh Lang · Lao Cắn
+description: Pet khóa hướng lướt tới điểm đã chọn rồi cắn nón ngắn; không xuyên địa hình.
+targeting: point
+range: 7
+impactRange: 1.5
+delivery: cone
+arc: 75
+telegraph: true
+cooldown: 1
+timeline: { windup: 0.3, active: 0.25, recovery: 0.2, cancelWindup: false }
+effects:
+  - { type: dash, distance: 6, stopAtAim: true }
+  - { type: damage, multiplier: 2, radius: 1.5 }
+vfx: slash

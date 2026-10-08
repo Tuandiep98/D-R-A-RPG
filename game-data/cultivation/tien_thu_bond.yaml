@@ -1,0 +1,12 @@
+id: tien_thu_bond
+name: Ngự Thú · Đồng Tâm
+description: Hồi HP và tạo khiên có hạn cho pet còn sống, không hồi sinh pet.
+icon: "◈"
+axis: dao
+path: tien
+realm: luyen_khi
+requires: [tien_thu_strike]
+quests: [q_meet_scout]
+cost: { gold: 100, materials: [{ itemId: item_wolf_fang, count: 4 }] }
+meridian: 5
+skillId: skill_thu_bond

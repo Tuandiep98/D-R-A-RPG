@@ -1,0 +1,19 @@
+id: skill_tran_great
+name: Đại Trận
+description: Đại trận cố định gây bốn nhịp có báo trước. Chia sẻ giới hạn hai trận với Đặt Trận; đối thủ rời vòng để né.
+icon: "☄"
+iconImage: icon_skill_boss_barrage
+targeting: point
+autoAnchorRadius: 3
+range: 10
+castTime: 0.9
+timeline: { windup: 0.9, active: 0, recovery: 0.25, cancelWindup: true }
+delivery: circle
+telegraph: true
+pulses: { count: 4, interval: 1 }
+field: { maxOwned: 2, maxDuration: 6 }
+cooldown: 28
+mpCost: 42
+effects: [{ type: damage, multiplier: 1.2, radius: 3.2 }]
+vfx: burst
+anim: { cast: Ranged_Magic_Raise, castSpeed: 1.6 }

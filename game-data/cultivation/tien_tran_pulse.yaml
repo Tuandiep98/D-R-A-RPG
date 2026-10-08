@@ -1,0 +1,12 @@
+id: tien_tran_pulse
+name: Trận Pháp · Kích Trận
+description: Học kích hoạt các trận của mình trong tầm và tầm nhìn. Trận Tu có sẵn kỹ năng này từ đầu.
+icon: "◎"
+axis: dao
+path: tien
+realm: luyen_khi
+requires: [tien_tran_place]
+quests: [q_wolf_cull]
+cost: { gold: 100, materials: [{ itemId: item_wolf_fang, count: 4 }] }
+meridian: 5
+skillId: skill_tran_pulse

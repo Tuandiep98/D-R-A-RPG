@@ -1,0 +1,17 @@
+id: skill_tran_link
+name: Liên Trận
+description: Liên kết với một trận trong tầm và LOS để tạo khiên bằng 20% HP tối đa trong 4 giây. Cần có trận đang tồn tại.
+icon: "🛡"
+iconImage: icon_item_crystal1
+targeting: self
+range: 12
+requiresField: true
+autoPolicy: defense
+castTime: 0.15
+delivery: support
+cooldown: 14
+mpCost: 18
+effects: [{ type: shield, fraction: 0.2, duration: 4 }]
+vfx: heal
+anim: { cast: Ranged_Magic_Spellcasting, castSpeed: 2 }
+barRole: utility

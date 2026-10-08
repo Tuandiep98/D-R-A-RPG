@@ -76,17 +76,89 @@
       "animationSource": [
         "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb"
       ],
-      "animationClips": ["Idle_A", "Idle_B", "Interact"],
+      "animationClips": [
+        "Idle_A",
+        "Idle_B",
+        "Interact"
+      ],
       "type": "character"
     },
     {
       "assetId": "char_kk_mage",
       "file": "originals/Characters/gltf/Mage.glb",
       "animationSource": [
-        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb"
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb",
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_MovementBasic.glb",
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_CombatMelee.glb",
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_CombatRanged.glb",
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_MovementAdvanced.glb"
       ],
-      "animationClips": ["Idle_A", "Idle_B", "Interact"],
-      "type": "character"
+      "animationClips": [
+        "Idle_A",
+        "Idle_B",
+        "Running_A",
+        "Walking_A",
+        "Hit_A",
+        "Death_A",
+        "Interact",
+        "Use_Item",
+        "PickUp",
+        "Melee_1H_Attack_Slice_Diagonal",
+        "Melee_1H_Attack_Chop",
+        "Melee_1H_Attack_Stab",
+        "Melee_2H_Attack_Slice",
+        "Melee_2H_Attack_Spin",
+        "Melee_Block",
+        "Melee_Unarmed_Attack_Punch_A",
+        "Ranged_Magic_Shoot",
+        "Ranged_Magic_Spellcasting",
+        "Ranged_1H_Shoot",
+        "Ranged_Bow_Release",
+        "Melee_1H_Attack_Slice_Horizontal",
+        "Melee_1H_Attack_Jump_Chop",
+        "Melee_2H_Attack_Spinning",
+        "Melee_Dualwield_Attack_Stab",
+        "Melee_Dualwield_Attack_Slice",
+        "Melee_Unarmed_Attack_Kick",
+        "Dodge_Forward",
+        "Ranged_Magic_Raise",
+        "Ranged_Magic_Spellcasting_Long",
+        "Ranged_1H_Aiming",
+        "Ranged_1H_Reload",
+        "Ranged_1H_Shooting",
+        "Ranged_2H_Aiming",
+        "Ranged_2H_Reload",
+        "Ranged_2H_Shoot",
+        "Ranged_2H_Shooting"
+      ],
+      "type": "character",
+      "derivedClips": [
+        {
+          "name": "Melee_1H_Attack_Slice_Horizontal_Rev",
+          "from": "Melee_1H_Attack_Slice_Horizontal",
+          "reverse": true,
+          "trimStart": 0.3
+        },
+        {
+          "name": "Melee_Unarmed_Attack_Punch_A_Mirror",
+          "from": "Melee_Unarmed_Attack_Punch_A",
+          "mirror": true
+        },
+        {
+          "name": "Melee_1H_Attack_Jump_Chop_InPlace",
+          "from": "Melee_1H_Attack_Jump_Chop",
+          "inPlace": [
+            "hips"
+          ]
+        },
+        {
+          "name": "Dodge_Forward_InPlace",
+          "from": "Dodge_Forward",
+          "inPlace": [
+            "hips"
+          ]
+        }
+      ]
     },
     {
       "assetId": "char_kk_rogue",
@@ -152,12 +224,16 @@
         {
           "name": "Melee_1H_Attack_Jump_Chop_InPlace",
           "from": "Melee_1H_Attack_Jump_Chop",
-          "inPlace": ["hips"]
+          "inPlace": [
+            "hips"
+          ]
         },
         {
           "name": "Dodge_Forward_InPlace",
           "from": "Dodge_Forward",
-          "inPlace": ["hips"]
+          "inPlace": [
+            "hips"
+          ]
         }
       ]
     },
@@ -165,10 +241,78 @@
       "assetId": "char_kk_barbarian",
       "file": "originals/Characters/gltf/Barbarian.glb",
       "animationSource": [
-        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb"
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb",
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_MovementBasic.glb",
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_CombatMelee.glb",
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_CombatRanged.glb",
+        "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_MovementAdvanced.glb"
       ],
-      "animationClips": ["Idle_A", "Idle_B", "Interact"],
-      "type": "character"
+      "animationClips": [
+        "Idle_A",
+        "Idle_B",
+        "Running_A",
+        "Walking_A",
+        "Hit_A",
+        "Death_A",
+        "Interact",
+        "Use_Item",
+        "PickUp",
+        "Melee_1H_Attack_Slice_Diagonal",
+        "Melee_1H_Attack_Chop",
+        "Melee_1H_Attack_Stab",
+        "Melee_2H_Attack_Slice",
+        "Melee_2H_Attack_Spin",
+        "Melee_Block",
+        "Melee_Unarmed_Attack_Punch_A",
+        "Ranged_Magic_Shoot",
+        "Ranged_Magic_Spellcasting",
+        "Ranged_1H_Shoot",
+        "Ranged_Bow_Release",
+        "Melee_1H_Attack_Slice_Horizontal",
+        "Melee_1H_Attack_Jump_Chop",
+        "Melee_2H_Attack_Spinning",
+        "Melee_Dualwield_Attack_Stab",
+        "Melee_Dualwield_Attack_Slice",
+        "Melee_Unarmed_Attack_Kick",
+        "Dodge_Forward",
+        "Ranged_Magic_Raise",
+        "Ranged_Magic_Spellcasting_Long",
+        "Ranged_1H_Aiming",
+        "Ranged_1H_Reload",
+        "Ranged_1H_Shooting",
+        "Ranged_2H_Aiming",
+        "Ranged_2H_Reload",
+        "Ranged_2H_Shoot",
+        "Ranged_2H_Shooting"
+      ],
+      "type": "character",
+      "derivedClips": [
+        {
+          "name": "Melee_1H_Attack_Slice_Horizontal_Rev",
+          "from": "Melee_1H_Attack_Slice_Horizontal",
+          "reverse": true,
+          "trimStart": 0.3
+        },
+        {
+          "name": "Melee_Unarmed_Attack_Punch_A_Mirror",
+          "from": "Melee_Unarmed_Attack_Punch_A",
+          "mirror": true
+        },
+        {
+          "name": "Melee_1H_Attack_Jump_Chop_InPlace",
+          "from": "Melee_1H_Attack_Jump_Chop",
+          "inPlace": [
+            "hips"
+          ]
+        },
+        {
+          "name": "Dodge_Forward_InPlace",
+          "from": "Dodge_Forward",
+          "inPlace": [
+            "hips"
+          ]
+        }
+      ]
     },
     {
       "assetId": "char_kk_ranger",
@@ -234,12 +378,16 @@
         {
           "name": "Melee_1H_Attack_Jump_Chop_InPlace",
           "from": "Melee_1H_Attack_Jump_Chop",
-          "inPlace": ["hips"]
+          "inPlace": [
+            "hips"
+          ]
         },
         {
           "name": "Dodge_Forward_InPlace",
           "from": "Dodge_Forward",
-          "inPlace": ["hips"]
+          "inPlace": [
+            "hips"
+          ]
         }
       ]
     },
@@ -249,7 +397,11 @@
       "animationSource": [
         "../kaykit_character_animations/originals/Animations/gltf/Rig_Medium/Rig_Medium_General.glb"
       ],
-      "animationClips": ["Idle_A", "Idle_B", "Interact"],
+      "animationClips": [
+        "Idle_A",
+        "Idle_B",
+        "Interact"
+      ],
       "type": "character"
     },
     {

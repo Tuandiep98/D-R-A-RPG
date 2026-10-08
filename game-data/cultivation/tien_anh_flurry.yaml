@@ -1,0 +1,12 @@
+id: tien_anh_flurry
+name: Ảnh Pháp · Vô Ảnh
+description: Học chuỗi ba nhát chém theo đường đã báo trước.
+icon: "≋"
+axis: dao
+path: tien
+realm: truc_co
+requires: [tien_anh_pursuit]
+quests: [q_elite_stag]
+cost: { gold: 300, materials: [{ itemId: item_elite_antler, count: 1 }] }
+meridian: 20
+skillId: skill_anh_flurry

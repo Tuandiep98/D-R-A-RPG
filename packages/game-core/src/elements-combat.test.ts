@@ -1,7 +1,10 @@
 import { CombatRulesSchema, compatibleExpression, SkillDefSchema } from '@rpg/game-data';
 import { describe, expect, it } from 'vitest';
+import type { Intent } from '@rpg/game-protocol';
 import { Rng } from './rng';
 import { applyDamage, rollHit } from './systems/combat';
+import { farmSystem } from './systems/farm';
+import { applyIntents } from './systems/intents';
 import { requestMobility } from './systems/mobility';
 import { makeContent } from './test-fixtures';
 import { World } from './world';
@@ -61,6 +64,86 @@ function setup() {
   return { world, id, player, mob };
 }
 describe('authoritative element combat', () => {
+  it('farm keeps approach through range noise until it reaches the inner threshold', () => {
+    const { world, player, mob } = setup();
+    if (!player.player) throw new Error('missing player');
+    player.stats.mp = 0;
+    player.player.farm.enabled = true;
+    const optimal = player.combat.range * 0.65;
+    const body = player.movement.radius + mob.movement.radius;
+    for (const [offset, moving] of [
+      [0.4, true],
+      [0.2, true],
+      [0.1, true],
+      [0, false],
+      [0.1, false],
+      [0.29, false],
+      [0.31, true],
+    ] as const) {
+      mob.pos.z = optimal + body + offset;
+      farmSystem(world);
+      expect(!!player.movement.goal, `edge offset ${offset}`).toBe(moving);
+    }
+    mob.faction = 'neutral';
+    farmSystem(world);
+    expect(player.player.farm.approach).toBeNull();
+  });
+
+  it.each([
+    'MOVE_TO',
+    'MOVE_DIR',
+    'STOP',
+    'CAST_SKILL',
+    'MOBILITY',
+    'BASIC_ATTACK',
+    'TRIGGER',
+    'ATTACK_TARGET',
+    'RELOAD',
+    'PICKUP',
+    'INTERACT',
+    'EQUIP',
+    'UNEQUIP',
+  ] as const)('%s takes over farm immediately and clears future auto fire/approach', (type) => {
+    const { world, id, player, mob } = setup();
+    if (!player.player) throw new Error('missing player');
+    player.player.farm.enabled = true;
+    player.combat.targetId = mob.id;
+    player.pending = {
+      type: 'cast',
+      skillId: shot.id,
+      expiresTick: 4,
+      targetId: mob.id,
+      point: null,
+    };
+    player.actionBuffer = { expiresTick: 4, intent: { type: 'BASIC_ATTACK' } };
+    player.player.trigger.held = true;
+    player.player.trigger.queued = true;
+    player.player.trigger.burstLeft = 2;
+    const commands: Record<typeof type, Intent> = {
+      MOVE_TO: { type: 'MOVE_TO', target: { x: 4, z: 0 } },
+      MOVE_DIR: { type: 'MOVE_DIR', dir: { x: 1, z: 0 } },
+      STOP: { type: 'STOP' },
+      CAST_SKILL: { type: 'CAST_SKILL', skillId: shot.id, point: { x: 4, z: 0 } },
+      MOBILITY: { type: 'MOBILITY', action: 'roll', point: { x: 4, z: 0 } },
+      BASIC_ATTACK: { type: 'BASIC_ATTACK', aim: { x: 4, z: 0 } },
+      TRIGGER: { type: 'TRIGGER', held: false },
+      ATTACK_TARGET: { type: 'ATTACK_TARGET', targetId: mob.id },
+      RELOAD: { type: 'RELOAD' },
+      PICKUP: { type: 'PICKUP', lootId: mob.id },
+      INTERACT: { type: 'INTERACT', entityId: mob.id },
+      EQUIP: { type: 'EQUIP', instanceId: 'missing' },
+      UNEQUIP: { type: 'UNEQUIP', slot: 'main_hand' },
+    };
+    applyIntents(world, [{ entityId: id, intent: commands[type] }]);
+    expect(player.player.farm.enabled).toBe(false);
+    expect(player.player.trigger).toMatchObject({ held: false, queued: false, burstLeft: 0 });
+    expect(player.pending).toBeNull();
+    expect(player.actionBuffer).toBeNull();
+    // Farm cannot replace the manual command on the next think pass.
+    const goal = player.movement.goal;
+    farmSystem(world);
+    expect(player.movement.goal).toEqual(goal);
+  });
   it('resolves expression compatibility from mapping data without adding a sixth element', () => {
     expect(compatibleExpression('moc', 'thunder', combat.expressions)).toBe(true);
     expect(compatibleExpression('thuy', 'ice', combat.expressions)).toBe(true);
@@ -253,5 +336,74 @@ describe('authoritative element combat', () => {
     expect(requestMobility(other, restored, 'roll')).toBe(false);
     for (let i = 0; i < 100; i++) other.step();
     expect(requestMobility(other, restored, 'roll')).toBe(true);
+  });
+  it('farm safety stop clears approach, followups and held fire without refunding cooldowns', () => {
+    const { world, player, mob } = setup();
+    if (!player.player) throw new Error('missing player');
+    player.player.farm.enabled = true;
+    player.stats.hp = 1;
+    player.combat.targetId = mob.id;
+    player.movement.goal = { pos: { ...mob.pos }, stopWithin: 0.2 };
+    player.movement.path = [{ ...mob.pos }];
+    player.pending = {
+      type: 'cast',
+      expiresTick: 4,
+      skillId: shot.id,
+      targetId: mob.id,
+      point: null,
+    };
+    player.actionBuffer = { expiresTick: 4, intent: { type: 'BASIC_ATTACK' } };
+    player.player.trigger.held = true;
+    player.player.trigger.queued = true;
+    player.player.trigger.burstLeft = 2;
+    player.skills.set(shot.id, 80);
+    farmSystem(world);
+    expect(player).toMatchObject({
+      pending: null,
+      actionBuffer: null,
+      movement: { goal: null, path: null },
+      combat: { targetId: null },
+      player: { farm: { enabled: false }, trigger: { held: false, queued: false, burstLeft: 0 } },
+    });
+    expect(player.skills.get(shot.id)).toBe(80);
+  });
+  it('farm drops a selected target that has crossed behind a wall', () => {
+    const { world, player, mob } = setup();
+    if (!player.player) throw new Error('missing player');
+    player.player.farm.enabled = true;
+    player.combat.targetId = mob.id;
+    world.obstacles.push({ pos: { x: 0, z: 2 }, radius: 0.6 });
+    farmSystem(world);
+    expect(player.combat.targetId).toBeNull();
+    expect(player.cast).toBeNull();
+  });
+  it('stops once with a clear reason when its return path stays blocked', () => {
+    const { world, player, mob, id } = setup();
+    if (!player.player) throw new Error('missing player');
+    mob.faction = 'neutral';
+    player.pos = { x: 0, z: 3 };
+    player.player.farm = { enabled: true, anchor: { x: 0, z: 0 }, pausedUntil: 0 };
+    world.obstacles.push({ pos: { x: 0, z: 1.5 }, radius: 0.8 });
+    const events = Array.from({ length: 240 }, () => world.step()).flat();
+    expect(player.player.farm.enabled).toBe(false);
+    expect(events.filter((e) => e.type === 'NOTICE' && e.code === 'farm_stuck')).toHaveLength(1);
+    expect(player.movement.goal).toBeNull();
+    expect(player.movement.path).toBeNull();
+    expect(player.pos.z).toBeGreaterThan(2);
+    world.enqueueIntent(id, { type: 'SET_FARM', enabled: true });
+    world.step();
+    expect(player.player.farm.enabled).toBe(true);
+    expect(player.player.farm.progress).toBeFalsy();
+  });
+  it('keeps farming after a successful return to anchor instead of treating idle as stuck', () => {
+    const { world, player, mob } = setup();
+    if (!player.player) throw new Error('missing player');
+    mob.faction = 'neutral';
+    player.pos = { x: 0, z: 3 };
+    player.player.farm = { enabled: true, anchor: { x: 0, z: 0 }, pausedUntil: 0 };
+    const events = Array.from({ length: 240 }, () => world.step()).flat();
+    expect(player.player.farm.enabled).toBe(true);
+    expect(player.pos.z).toBeLessThanOrEqual(1);
+    expect(events.some((e) => e.type === 'NOTICE' && e.code === 'farm_stuck')).toBe(false);
   });
 });

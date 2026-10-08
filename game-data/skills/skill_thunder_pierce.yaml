@@ -11,7 +11,8 @@ effects:
   - { type: damage, multiplier: 2 }
 vfx: thunder_projectile
 # Clip trong model của người thi triển (presentation, D-032).
-anim: { cast: Melee_1H_Attack_Stab, castSpeed: 2.2 }
+# Forward thrust pose at ~0.42s (D-031), projectile release at 0.25s.
+anim: { cast: Melee_1H_Attack_Stab, castSpeed: 1.7 }
 sfx: { cast: [sfx_laser_large], impact: [sfx_hit_metal_02] }
 
 delivery: projectile

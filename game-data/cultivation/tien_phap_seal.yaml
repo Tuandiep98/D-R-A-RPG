@@ -1,0 +1,12 @@
+id: tien_phap_seal
+name: Pháp Thuật · Pháp Ấn
+description: Học đặt vùng Pháp Ấn. Pháp Tu có sẵn kỹ năng này từ đầu.
+icon: "✴"
+axis: dao
+path: tien
+realm: luyen_khi
+requires: [tien_phap_arrow]
+quests: [q_wolf_cull]
+cost: { gold: 100, materials: [{ itemId: item_wolf_fang, count: 4 }] }
+meridian: 5
+skillId: skill_phap_seal

@@ -82,6 +82,7 @@ export const characters = pgTable(
     /** Open cultivation nodes (string[]). */
     nodes: jsonb('nodes').notNull().default([]),
     cooldowns: jsonb('cooldowns').$type<Record<string, number>>().notNull().default({}),
+    companion: jsonb('companion').$type<{ hp: number; respawnSeconds: number } | null>(),
     hp: integer('hp').notNull().default(0),
     mp: integer('mp').notNull().default(0),
     mapId: text('map_id').notNull(),

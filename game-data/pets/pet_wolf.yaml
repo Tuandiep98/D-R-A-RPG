@@ -1,0 +1,10 @@
+id: pet_wolf
+name: Linh Lang
+monsterId: wolf_001
+hpMultiplier: 3
+attackMultiplier: 1.7
+movementMultiplier: 1.5
+followDistance: 1.5
+leash: 12
+respawnSeconds: 20
+skills: [skill_pet_lunge, skill_pet_cone, skill_pet_wave]

@@ -11,7 +11,9 @@ effects:
   - { type: damage, multiplier: 3.2 }
 vfx: thunder_strike
 # Clip trong model của người thi triển (presentation, D-032).
-anim: { cast: Melee_1H_Attack_Jump_Chop_InPlace, castSpeed: 2.4 }
+# Runtime GLB: downward strike at clip time 0.96s (frame 57.6 at 60fps).
+# 0.96 / 3.2 = the authoritative impact at 0.30s.
+anim: { cast: Melee_1H_Attack_Jump_Chop_InPlace, castSpeed: 3.2 }
 sfx: { cast: [sfx_draw_blade], impact: [sfx_explosion_low] }
 
 delivery: cone

@@ -1,0 +1,18 @@
+id: skill_phap_arrow
+name: Linh Tiễn
+description: Phóng linh tiễn theo hướng chọn. Mục tiêu có thể né, không đổi hướng sau khi phát.
+icon: "➶"
+iconImage: icon_skill_sword_qi
+targeting: point
+autoAim: { maxSeconds: 0.5, maxDistance: 1.5, weight: 0.65 }
+range: 10
+castTime: 0.25
+timeline: { windup: 0.25, active: 0, recovery: 0.2, cancelWindup: true }
+delivery: projectile
+projectileSpeed: 18
+projectileRadius: 0.25
+cooldown: 4
+mpCost: 12
+effects: [{ type: damage, multiplier: 1.8 }]
+vfx: projectile
+anim: { cast: Ranged_Magic_Spellcasting, castSpeed: 1.4 }

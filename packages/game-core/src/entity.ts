@@ -73,6 +73,7 @@ export interface DamageSource {
 }
 
 export interface Cast {
+  origin?: Vec2;
   yaw: number;
   travelLeft: number;
   source: DamageSource;
@@ -231,8 +232,16 @@ export interface PlayerData {
   learnedSkills: string[];
   elementRevision: number;
   characterId: string;
+  companion?: { entityId: EntityId | null; hp: number; readyAtTick: number };
   mobilityReady: Map<string, number>;
-  farm: { enabled: boolean; anchor: Vec2; pausedUntil: number };
+  farm: {
+    enabled: boolean;
+    anchor: Vec2;
+    pausedUntil: number;
+    progress?: { pos: Vec2; tick: number } | null;
+    approach?: { targetId: EntityId; moving: boolean } | null;
+    observedTarget?: { targetId: EntityId; pos: Vec2; tick: number } | null;
+  };
   name: string;
   partyId: number | null;
   gold: number;
@@ -271,6 +280,17 @@ export interface PortalData {
 }
 
 export interface Entity {
+  pet?: { ownerId: EntityId; profileId: string };
+  cloakEndTick?: number | null;
+  shield?: { amount: number; endTick: number } | null;
+  guardChain?: { comboId: string; stacks: number; defense: number; endTick: number } | null;
+  poise?: {
+    pressure: number;
+    threshold: number;
+    lastHitTick: number;
+    staggerUntilTick: number;
+    immuneUntilTick: number;
+  } | null;
   actionBuffer?: {
     expiresTick: number;
     intent: Extract<Intent, { type: 'BASIC_ATTACK' | 'CAST_SKILL' | 'MOBILITY' | 'TRIGGER' }>;
@@ -376,6 +396,7 @@ export interface CircleObstacle {
 
 /** Persisted character state (DB row in M4, carried across map transfers). */
 export interface PlayerSave {
+  companion?: { hp: number; respawnSeconds: number };
   saveVersion?: number;
   elementRevision?: number;
   learnedSkills?: string[];

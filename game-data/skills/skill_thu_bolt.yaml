@@ -1,0 +1,12 @@
+id: skill_thu_bolt
+name: Ngự Phù
+description: Ngự phù đánh thường bay thẳng, có thể né hoặc bị tường chặn.
+icon: "✦"
+targeting: point
+range: 8
+delivery: projectile
+projectileSpeed: 14
+projectileRadius: 0.2
+cooldown: 0.7
+effects: [{ type: damage, multiplier: 1 }]
+vfx: projectile

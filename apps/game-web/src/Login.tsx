@@ -34,6 +34,7 @@ export function Login({ onPlay }: { onPlay: (choice: OnlineChoice) => void }) {
     expressions.thunder === 'moc' ? 'thunder' : 'base',
   );
   const [newName, setNewName] = useState('');
+  const [starterKit, setStarterKit] = useState('player_default');
   const [characters, setCharacters] = useState<CharacterSummary[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -169,12 +170,28 @@ export function Login({ onPlay }: { onPlay: (choice: OnlineChoice) => void }) {
               onSubmit={(e) => {
                 e.preventDefault();
                 void run(async () => {
-                  await createCharacter(newName, element, expression);
+                  await createCharacter(newName, element, expression, starterKit);
                   setNewName('');
                   await loadCharacters();
                 });
               }}
             >
+              <label>
+                Bộ kỹ năng khởi đầu
+                <select
+                  aria-label="Bộ kỹ năng khởi đầu"
+                  value={starterKit}
+                  disabled={busy}
+                  onChange={(e) => setStarterKit(e.target.value)}
+                >
+                  <option value="player_default">Kiếm Tu · cận chiến</option>
+                  <option value="player_phap">Pháp Tu · tầm xa</option>
+                  <option value="player_the">Thể Tu · quyền và khiên</option>
+                  <option value="player_tran">Trận Tu · đặt vùng</option>
+                  <option value="player_anh">Ảnh Tu · cơ động và cloak</option>
+                  <option value="player_thu">Ngự Thú · linh thú đồng hành</option>
+                </select>
+              </label>
               <input
                 placeholder="Tên nhân vật mới"
                 value={newName}

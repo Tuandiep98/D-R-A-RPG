@@ -1,0 +1,12 @@
+id: tien_phap_storm
+name: Pháp Thuật · Thiên Tượng
+description: Phóng thiên tượng ba nhịp vào vùng đã chọn. Mỗi nhịp có báo trước, không tự đuổi theo mục tiêu.
+icon: "☄"
+axis: dao
+path: tien
+realm: truc_co
+requires: [tien_phap_guard]
+quests: [q_elite_stag]
+cost: { gold: 300, materials: [{ itemId: item_elite_antler, count: 1 }] }
+meridian: 20
+skillId: skill_phap_storm

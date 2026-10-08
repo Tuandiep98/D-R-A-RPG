@@ -10,6 +10,28 @@ export default defineConfig(({ mode }) => ({
   base: mode === 'pages' ? '/D-R-A-RPG/' : '/',
   plugins: [
     react(),
+    {
+      name: 'watch-game-content-files',
+      apply: 'serve',
+      configureServer(server) {
+        // The YAML directory is outside Vite's root. Watch additions/removals
+        // explicitly so new skills and nodes enter eager globs without a restart.
+        const contentRoot = fileURLToPath(new URL('../../game-data', import.meta.url));
+        const prefix = `${contentRoot.replace(/\\/g, '/').toLowerCase()}/`;
+        server.watcher.add(contentRoot);
+        const refresh = (file: string) => {
+          const normalized = file.replace(/\\/g, '/').toLowerCase();
+          if (!normalized.startsWith(prefix) || !/\.ya?ml$/.test(normalized)) return;
+          for (const environment of Object.values(server.environments))
+            environment.moduleGraph.invalidateAll();
+          server.ws.send({ type: 'full-reload' });
+        };
+        server.watcher.on('add', refresh).on('unlink', refresh);
+        server.httpServer?.once('close', () => {
+          server.watcher.off('add', refresh).off('unlink', refresh);
+        });
+      },
+    },
     // `pnpm dev:mobile` serves HTTPS on the LAN: Safari only exposes WebGPU in a
     // secure context, and plain http://<lan-ip> is not one.
     ...(mode === 'mobile' ? [basicSsl()] : []),

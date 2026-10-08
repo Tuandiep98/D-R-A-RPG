@@ -1,4 +1,4 @@
-import type { SimContext } from '../context';
+import { isStaggered, type SimContext } from '../context';
 import type { Entity } from '../entity';
 import { clampToBounds, distance, type Vec2, yawOf } from '../math';
 import { TICK_DT } from '../time';
@@ -21,7 +21,7 @@ export function movementSystem(ctx: SimContext): void {
     e.movement.moved = false;
     if (e.inert || !e.life.alive) continue;
     bodies.push(e);
-    if (e.mobility || e.monsterSwing || e.cast) continue;
+    if (e.mobility || e.monsterSwing || e.cast || isStaggered(ctx, e)) continue;
 
     if (e.movement.dir) {
       // Direct control wins over goals (chase, queued casts); casting roots.

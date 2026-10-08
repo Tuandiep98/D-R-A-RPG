@@ -1,0 +1,12 @@
+id: tien_anh_cloak
+name: Ảnh Pháp · Màn Ảnh
+description: Học cloak có hạn, vẫn có thể bị trúng đạn và vùng sát thương. Ảnh Tu có sẵn kỹ năng này từ đầu.
+icon: "◌"
+axis: dao
+path: tien
+realm: luyen_khi
+requires: [tien_khai_mach]
+quests: [q_meet_scout]
+cost: { gold: 100, materials: [{ itemId: item_wolf_fang, count: 4 }] }
+meridian: 5
+skillId: skill_anh_cloak

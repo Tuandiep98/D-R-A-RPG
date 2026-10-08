@@ -1,0 +1,12 @@
+id: tien_tran_place
+name: Trận Pháp · Đặt Trận
+description: Học cách đặt vùng trận cố định. Trận Tu có sẵn kỹ năng này từ đầu.
+icon: "◇"
+axis: dao
+path: tien
+realm: luyen_khi
+requires: [tien_khai_mach]
+quests: [q_meet_scout]
+cost: { gold: 80, materials: [{ itemId: item_wolf_fang, count: 3 }] }
+meridian: 5
+skillId: skill_tran_place

@@ -1,0 +1,13 @@
+id: tien_thu_strike
+name: Ngự Thú · Thú Kích
+description: Kết khế ước với một Linh Lang và học lệnh lao cắn. Ngự Thú có sẵn khế ước từ đầu.
+icon: "↠"
+axis: dao
+path: tien
+realm: luyen_khi
+requires: [tien_khai_mach]
+quests: [q_meet_scout]
+cost: { gold: 80, materials: [{ itemId: item_wolf_fang, count: 3 }] }
+meridian: 5
+petId: pet_wolf
+skillId: skill_thu_strike

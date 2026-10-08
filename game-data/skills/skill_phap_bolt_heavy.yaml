@@ -1,0 +1,12 @@
+id: skill_phap_bolt_heavy
+name: Pháp Cầu · Tam Nhịp
+description: Nhịp ba phóng pháp cầu rộng hơn; vẫn va chạm thân đầu tiên.
+icon: "✦"
+targeting: point
+range: 8
+delivery: projectile
+projectileSpeed: 12
+projectileRadius: 0.35
+cooldown: 0.9
+effects: [{ type: damage, multiplier: 1.5 }]
+vfx: projectile

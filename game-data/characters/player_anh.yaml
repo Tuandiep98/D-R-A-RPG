@@ -1,0 +1,13 @@
+id: player_anh
+name: Ảnh Tu · Thử Nghiệm
+appearanceId: char_player_default
+stats: { hp: 680, mp: 140, attack: 35, defense: 8, critChance: 0.15, critMultiplier: 1.7, hpRegen: 10, mpRegen: 4 }
+movement: { speed: 5.2, radius: 0.45 }
+combat: { range: 1.3, attackInterval: 0.8 }
+combos: { unarmed: combo_anh, armed: combo_anh }
+respawnSeconds: 5
+skills: [skill_anh_blade, skill_anh_cloak]
+prototypeSkills: [skill_anh_blade, skill_anh_cloak, skill_anh_pursuit, skill_anh_flurry]
+starterItems: [{ itemId: item_potion_hp_small, count: 5 }]
+element: kim
+expression: base

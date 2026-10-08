@@ -157,6 +157,34 @@ export class TelegraphPool {
     t.sector.setEnabled(true);
   }
 
+  showLine(
+    key: string,
+    origin: { x: number; z: number },
+    destination: { x: number; z: number },
+    radius: number,
+    seconds: number,
+  ): void {
+    this.show(key, origin.x, origin.z, radius, seconds);
+    const t = this.byKey.get(key);
+    if (!t) return;
+    t.ring.setEnabled(false);
+    t.fill.setEnabled(false);
+    const yaw = Math.atan2(destination.x - origin.x, destination.z - origin.z);
+    const points = [destination, origin].flatMap((centre, cap) =>
+      Array.from({ length: 13 }, (_, i) => {
+        const angle = yaw - Math.PI / 2 + cap * Math.PI + (i * Math.PI) / 12;
+        return new Vector3(
+          centre.x + Math.sin(angle) * radius,
+          0.07,
+          centre.z + Math.cos(angle) * radius,
+        );
+      }),
+    );
+    const lines = points.map((point, i) => [point, points[(i + 1) % points.length] ?? point]);
+    MeshBuilder.CreateLineSystem('tele_line', { lines, instance: t.sector });
+    t.sector.setEnabled(true);
+  }
+
   clear(key: string): void {
     const t = this.byKey.get(key);
     if (!t) return;
@@ -165,6 +193,9 @@ export class TelegraphPool {
     t.ring.setEnabled(false);
     t.fill.setEnabled(false);
     t.sector.setEnabled(false);
+  }
+  clearSource(id: number): void {
+    for (const key of this.byKey.keys()) if (key.startsWith(`${id}:`)) this.clear(key);
   }
 
   update(dt: number): void {
@@ -180,6 +211,7 @@ export class TelegraphPool {
 
 interface Impact {
   ring: Mesh;
+  line: ReturnType<typeof MeshBuilder.CreateLineSystem>;
   bolt: ReturnType<typeof MeshBuilder.CreateLineSystem>;
   mat: StandardMaterial;
   active: boolean;
@@ -222,7 +254,17 @@ export class ImpactPool {
       );
       bolt.isPickable = false;
       bolt.setEnabled(false);
-      return { ring, bolt, mat, active: false, age: 0, radius: 1 };
+      const line = MeshBuilder.CreateLineSystem(
+        `impact_line_${i}`,
+        {
+          lines: Array.from({ length: 26 }, () => [Vector3.Zero(), Vector3.Zero()]),
+          updatable: true,
+        },
+        scene,
+      );
+      line.isPickable = false;
+      line.setEnabled(false);
+      return { ring, line, bolt, mat, active: false, age: 0, radius: 1 };
     }, 16);
   }
 
@@ -235,6 +277,7 @@ export class ImpactPool {
     it.active = true;
     it.age = 0;
     it.radius = Math.max(0.8, radius);
+    it.line.setEnabled(false);
     it.mat.emissiveColor = color
       ? Color3.FromHexString(color)
       : (VFX_COLORS[vfx] ?? Color3.White());
@@ -248,6 +291,36 @@ export class ImpactPool {
     it.bolt.setEnabled(lightning);
   }
 
+  /** A bounded flash of the actual capsule, including its rounded end caps. */
+  spawnLine(
+    origin: { x: number; z: number },
+    destination: { x: number; z: number },
+    radius: number,
+    color: string,
+  ): void {
+    const it = this.pool.acquire();
+    it.active = true;
+    it.age = 0;
+    it.ring.setEnabled(false);
+    it.bolt.setEnabled(false);
+    const yaw = Math.atan2(destination.x - origin.x, destination.z - origin.z);
+    const points = [destination, origin].flatMap((centre, cap) =>
+      Array.from({ length: 13 }, (_, i) => {
+        const angle = yaw - Math.PI / 2 + cap * Math.PI + (i * Math.PI) / 12;
+        return new Vector3(
+          centre.x + Math.sin(angle) * radius,
+          0.08,
+          centre.z + Math.cos(angle) * radius,
+        );
+      }),
+    );
+    const lines = points.map((point, i) => [point, points[(i + 1) % points.length] ?? point]);
+    MeshBuilder.CreateLineSystem('impact_line', { lines, instance: it.line });
+    it.line.color = Color3.FromHexString(color);
+    it.line.visibility = 1;
+    it.line.setEnabled(true);
+  }
+
   update(dt: number): void {
     for (const it of this.pool.items) {
       if (!it.active) continue;
@@ -256,10 +329,12 @@ export class ImpactPool {
       it.ring.scaling.setAll(it.radius * (0.3 + f * 0.9));
       it.mat.alpha = Math.max(0, 1 - f);
       it.bolt.visibility = Math.max(0, 1 - f);
+      it.line.visibility = Math.max(0, 1 - f);
       if (f >= 1) {
         it.active = false;
         it.ring.setEnabled(false);
         it.bolt.setEnabled(false);
+        it.line.setEnabled(false);
       }
     }
   }

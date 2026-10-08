@@ -1,0 +1,12 @@
+id: tien_phap_guard
+name: Pháp Thuật · Hộ Pháp
+description: Dẫn Nguyên Khí thành khiên có hạn. Mở Hộ Pháp; khiên không cộng dồn.
+icon: "🛡"
+axis: dao
+path: tien
+realm: luyen_khi
+requires: [tien_khai_mach]
+quests: [q_meet_scout]
+cost: { gold: 100, materials: [{ itemId: item_wolf_fang, count: 4 }] }
+meridian: 10
+skillId: skill_phap_guard

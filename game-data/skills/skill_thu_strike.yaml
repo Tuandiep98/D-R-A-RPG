@@ -1,0 +1,14 @@
+id: skill_thu_strike
+name: Thú Kích
+description: Ra lệnh Linh Lang lao cắn theo hướng khóa lúc phát. Pet có windup và hitbox; mục tiêu có thể né.
+icon: "➶"
+iconImage: icon_skill_heavy_slash
+targeting: point
+range: 7
+delivery: support
+cooldown: 5
+mpCost: 10
+timeline: { windup: 0.15, active: 0, recovery: 0.2, cancelWindup: true }
+effects: [{ type: pet_attack, skillId: skill_pet_lunge }]
+vfx: slash
+anim: { cast: Ranged_Magic_Shoot, castSpeed: 1.5 }

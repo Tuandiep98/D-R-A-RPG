@@ -8,6 +8,7 @@ export function lifeSystem(ctx: SimContext): void {
   const regenTick = ctx.tick % TICK_RATE === 0;
   for (const e of ctx.entities.values()) {
     if (e.inert) continue;
+    if (e.pet && !e.life.alive) continue; // Owned respawn is handled by petSystem.
     if (!e.life.alive && e.life.respawnAtTick !== null && ctx.tick >= e.life.respawnAtTick) {
       e.life.alive = true;
       e.life.respawnAtTick = null;

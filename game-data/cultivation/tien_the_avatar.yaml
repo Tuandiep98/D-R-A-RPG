@@ -1,0 +1,12 @@
+id: tien_the_avatar
+name: Thể Pháp · Bá Thể
+description: Sau khi thắng tinh anh, khí huyết đủ vững để mở Bá Thể. Khiên có hạn, chấn động vẫn dùng hitbox.
+icon: "✹"
+axis: than
+path: tien
+realm: truc_co
+requires: [tien_the_quake]
+quests: [q_elite_stag]
+cost: { gold: 300, materials: [{ itemId: item_elite_antler, count: 1 }] }
+meridian: 20
+skillId: skill_the_avatar

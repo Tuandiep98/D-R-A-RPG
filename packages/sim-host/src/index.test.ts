@@ -44,7 +44,11 @@ describe('LocalSimHost', () => {
     expect(join.playerId).toBeGreaterThan(0);
     const snap = last as unknown as Snapshot;
     expect(snap.entities.find((e) => e.id === join.playerId)?.kind).toBe('player');
-    expect(snap.entities.filter((e) => e.kind === 'monster')).toHaveLength(5);
+    const map = content.maps.get(join.mapId);
+    if (!map) throw new Error('missing map');
+    expect(snap.entities.filter((e) => e.kind === 'monster')).toHaveLength(
+      map.spawns.reduce((count, spawn) => count + spawn.count, 0),
+    );
     expect(snap.entities.filter((e) => e.kind === 'portal')).toHaveLength(1);
     const ps = state as unknown as PlayerState;
     expect(ps.skills).toHaveLength(10); // seven prototype skills plus three universal movement actions
@@ -74,18 +78,37 @@ describe('LocalSimHost', () => {
   });
 
   it('moves the player to another map through a portal, keeping inventory', async () => {
-    const host = makeHost();
+    const map = content.maps.get('map_sandbox_01');
+    const portalDef = map?.portals[0];
+    if (!map || !portalDef) throw new Error('missing portal map');
+    // This test exercises host transfer/save, with a short unobstructed approach.
+    // Authored route geometry is tested by navigation and gameplay smoke separately.
+    const maps = new Map(content.maps);
+    maps.set(map.id, {
+      ...map,
+      playerSpawn: { x: portalDef.position.x, z: portalDef.position.z - 3 },
+    });
+    const host = new LocalSimHost({
+      content: { ...content, maps },
+      mapId: map.id,
+      characterId: 'player_default',
+      autoRun: false,
+    });
     const first = await host.connect();
     const joins: JoinInfo[] = [];
     host.onJoin((j) => joins.push(j));
     let snap: Snapshot | null = null;
+    const states: PlayerState[] = [];
+    host.onPlayerState((state) => states.push(state));
     host.onSnapshot((s) => {
       snap = s;
     });
     host.stepOnce();
+    host.stepOnce();
+    const before = states.at(-1);
     const portal = (snap as unknown as Snapshot).entities.find((e) => e.kind === 'portal');
     host.sendIntent({ type: 'INTERACT', entityId: portal?.id });
-    // The town gate is ~46 m from the plaza spawn (5 m/s): allow 15 s of sim.
+    // Allow a bounded approach plus asynchronous map setup.
     for (let i = 0; i < 20 * 15 && joins.length === 0; i++) {
       host.stepOnce();
       await Promise.resolve();
@@ -97,6 +120,10 @@ describe('LocalSimHost', () => {
       combatContent: first.combatContent,
       combatRuleset: first.combatRuleset,
     });
+    host.stepOnce();
+    host.stepOnce();
+    expect(states.at(-1)?.inventory).toEqual(before?.inventory);
+    expect(states.at(-1)?.element).toBe(before?.element);
     host.dispose();
   });
 });

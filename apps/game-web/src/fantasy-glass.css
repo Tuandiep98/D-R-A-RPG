@@ -712,6 +712,12 @@
 .hud .player-bars .bar-mp {
   height: 12px;
 }
+.hud .player-bars .companion-info {
+  width: 86%;
+}
+.hud .player-bars .companion-info .bar {
+  height: 16px;
+}
 .hud .player-bars .bar-text {
   text-shadow:
     0 1px 2px rgba(0, 0, 0, 0.9),
@@ -721,7 +727,23 @@
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
 }
 
+.hud .player-bars .shield-info {
+  color: #8fe3ff;
+  font-size: 11px;
+  line-height: 1.2;
+  padding-left: 8px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
 /* ---------- Touch cluster: attack in the corner, skill rows toward it ---------- */
+.hud .player-bars .poise-info {
+  color: var(--hud-text);
+  font-size: 12px;
+}
+.hud .player-bars .poise-info[data-phase="stagger"] {
+  font-weight: 700;
+}
+
 :root {
   --attack-size: 84px;
   --skill-size: 50px;

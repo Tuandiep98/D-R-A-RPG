@@ -1,0 +1,12 @@
+id: tien_tran_great
+name: Trận Pháp · Đại Trận
+description: Sau khi thắng tinh anh, mở trận lớn với vùng tác động và lịch hit cố định.
+icon: "☄"
+axis: dao
+path: tien
+realm: truc_co
+requires: [tien_tran_link]
+quests: [q_elite_stag]
+cost: { gold: 300, materials: [{ itemId: item_elite_antler, count: 1 }] }
+meridian: 20
+skillId: skill_tran_great

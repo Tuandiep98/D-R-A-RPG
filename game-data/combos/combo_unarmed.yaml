@@ -2,6 +2,7 @@
 # Đấm trái là Punch_A lật trái/phải lúc build (SOURCE.json derivedClips).
 id: combo_unarmed
 name: Quyền pháp cơ bản
+guardChain: { defensePerStack: 4, poisePerStack: 6, maxStacks: 3, duration: 3 }
 resetAfter: 1.0
 grazeFrom: 0.7
 grazeMultiplier: 0.5

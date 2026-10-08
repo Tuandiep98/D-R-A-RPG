@@ -1,0 +1,49 @@
+id: combo_anh
+name: Ảnh pháp cơ bản
+resetAfter: 1
+grazeFrom: 0.75
+grazeMultiplier: 0.5
+missMargin: 0.4
+weakPoint: { back: 1.4, flank: 1.15 }
+assistAngle: 55
+steps:
+  - variants:
+      - id: anh_stab
+        name: Đâm
+        clip: Melee_1H_Attack_Stab
+        animSpeed: 1.4
+        windup: 0.3
+        recovery: 0.15
+        damage: 0.9
+        reach: 1.2
+        arc: 55
+        maxTargets: 1
+        moveMultiplier: 0.6
+        trail: { shape: thrust, color: "#dff4ff", size: 0.6 }
+  - variants:
+      - id: anh_cut
+        name: Cắt
+        clip: Melee_1H_Attack_Slice_Horizontal
+        animSpeed: 1.3
+        windup: 0.25
+        recovery: 0.2
+        damage: 1.1
+        reach: 1.3
+        arc: 90
+        maxTargets: 2
+        moveMultiplier: 0.6
+        trail: { shape: slash, color: "#dff4ff", size: 0.7 }
+  - variants:
+      - id: anh_finish
+        name: Kết Liễu
+        clip: Melee_Dualwield_Attack_Stab
+        animSpeed: 1.2
+        windup: 0.35
+        recovery: 0.35
+        damage: 2.2
+        reach: 1.5
+        arc: 50
+        maxTargets: 1
+        moveMultiplier: 0.3
+        heavy: true
+        trail: { shape: thrust, color: "#ffffff", size: 1 }

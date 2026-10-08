@@ -10,7 +10,8 @@ effects:
   - { type: damage, multiplier: 1.5, radius: 3.2 }
 vfx: thunder_arc
 # Clip trong model của người thi triển (presentation, D-032).
-anim: { cast: Melee_2H_Attack_Spinning, castSpeed: 1.1 }
+# Spinning clip's strike pose at 0.35s matches the 0.20s windup.
+anim: { cast: Melee_2H_Attack_Spinning, castSpeed: 1.75 }
 sfx: { cast: [sfx_swing_01], impact: [sfx_force_field] }
 
 delivery: circle

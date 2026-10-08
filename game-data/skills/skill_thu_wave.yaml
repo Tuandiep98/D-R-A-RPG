@@ -1,0 +1,14 @@
+id: skill_thu_wave
+name: Bầy Thú
+description: Pet gồng rồi phóng một sóng thú theo đường thẳng. Tốc độ hữu hạn, có thể né hoặc chặn bởi địa hình. FX sóng dùng projectile tạm.
+icon: "≋"
+iconImage: icon_skill_boss_barrage
+targeting: point
+range: 9
+delivery: support
+cooldown: 28
+mpCost: 38
+timeline: { windup: 0.3, active: 0, recovery: 0.3, cancelWindup: true }
+effects: [{ type: pet_attack, skillId: skill_pet_wave }]
+vfx: projectile
+anim: { cast: Ranged_Magic_Shoot, castSpeed: 1.2 }

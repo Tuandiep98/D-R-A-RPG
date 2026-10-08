@@ -17,6 +17,7 @@ import type {
 import {
   CombatContentSchema,
   CombatRulesetSchema,
+  CompanionSaveSchema,
   LearnedSkillsSchema,
   SAVE_VERSION,
   SaveVersionSchema,
@@ -58,6 +59,14 @@ import { mobilityFinishSystem, mobilitySystem } from './systems/mobility';
 import { movementSystem } from './systems/movement';
 import { questProgress } from './systems/npc';
 import { Parties } from './systems/party';
+import {
+  companion,
+  dismissCompanion,
+  ensureCompanion,
+  exportCompanion,
+  petProfile,
+  petSystem,
+} from './systems/pets';
 import { cultivationLoad, realmRank, recomputePlayerStats } from './systems/progression';
 import { rangedPreparationSystem, rangedState, rangedSystem } from './systems/ranged';
 import { skillMovementSystem, skillPreparationSystem, skillSystem } from './systems/skills';
@@ -112,6 +121,7 @@ export class World implements SimContext {
   readonly projectiles: Projectile[] = [];
   readonly rangedShots: Extract<SimEvent, { type: 'SHOT' }>[] = [];
   readonly skillProjectiles: SkillProjectile[] = [];
+  readonly skillPulses: SimContext['skillPulses'] = [];
   private shotCounter = 0;
   private eventCounter = 0;
   private readonly entityMap = new Map<EntityId, Entity>();
@@ -210,9 +220,14 @@ export class World implements SimContext {
 
   /** Removes input/action state when a session is replaced; durable costs remain. */
   resetController(id: EntityId): void {
+    for (let i = this.skillPulses.length - 1; i >= 0; i--)
+      if (this.skillPulses[i]?.ownerId === id) this.skillPulses.splice(i, 1);
     this.intents = this.intents.filter((queued) => queued.entityId !== id);
     const e = this.entityMap.get(id);
-    if (e) resetTransientActions(e);
+    if (e) {
+      dismissCompanion(this, e);
+      resetTransientActions(e);
+    }
   }
 
   newItemInstanceId(): string {
@@ -312,6 +327,19 @@ export class World implements SimContext {
       swing: null,
       pending: null,
       player: {
+        ...(save?.companion
+          ? {
+              companion: {
+                entityId: null,
+                hp: CompanionSaveSchema.parse(save.companion).hp,
+                readyAtTick:
+                  this.tick +
+                  (save.companion.respawnSeconds > 0
+                    ? secondsToTicks(save.companion.respawnSeconds)
+                    : 0),
+              },
+            }
+          : {}),
         learnedSkills: learnedSkills.filter((s) => this.content.skills.has(s)),
         elementRevision: save?.elementRevision ?? 1,
         characterId: def.id,
@@ -375,6 +403,7 @@ export class World implements SimContext {
       e.stats.hp = e.stats.maxHp;
       e.stats.mp = e.stats.maxMp;
     }
+    ensureCompanion(this, e);
     return e.id;
   }
 
@@ -383,6 +412,7 @@ export class World implements SimContext {
     const e = this.entityMap.get(id);
     if (!e?.player) return null;
     return {
+      companion: exportCompanion(this, e),
       saveVersion: SAVE_VERSION,
       elementRevision: e.player.elementRevision,
       learnedSkills: [...e.skills.keys()],
@@ -423,8 +453,24 @@ export class World implements SimContext {
     const p = e?.player;
     if (!e || !p) return null;
     const load = cultivationLoad(this, p.nodes);
+    const profile = petProfile(this, e);
+    const pet = companion(this, e);
+    const petDef = profile ? this.content.monsters.get(profile.monsterId) : undefined;
     return {
       id: e.id,
+      companion:
+        profile && petDef
+          ? {
+              profileId: profile.id,
+              entityId: pet?.id ?? null,
+              hp: Math.max(0, Math.round(pet?.stats.hp ?? p.companion?.hp ?? 0)),
+              maxHp: Math.round(petDef.stats.hp * profile.hpMultiplier),
+              readyAtTick:
+                pet && !pet.life.alive
+                  ? (pet.life.respawnAtTick ?? this.tick)
+                  : (p.companion?.readyAtTick ?? this.tick),
+            }
+          : null,
       characterId: p.characterId,
       farmEnabled: p.farm.enabled,
       element: e.element ?? undefined,
@@ -513,6 +559,7 @@ export class World implements SimContext {
     this.rejected += applyIntents(this, queue);
     bufferedActionSystem(this);
     farmSystem(this);
+    petSystem(this);
     aiSystem(this);
     skillPreparationSystem(this);
     combatPreparationSystem(this);
@@ -624,10 +671,20 @@ export class World implements SimContext {
 }
 
 /** Snapshots carry centimetre precision; keeps payloads small and diffs stable. */
-const round = (v: number): number => Math.round(v * 100) / 100;
+const round = (v: number): number => Math.round(v * 100) / 100 || 0;
 
 function toSnapshot(e: Entity): EntitySnapshot {
   return {
+    cloakEndTick: e.cloakEndTick ?? null,
+    poise: e.poise ? { ...e.poise } : null,
+    shield: e.shield ? { ...e.shield } : null,
+    guardChain: e.guardChain
+      ? {
+          stacks: e.guardChain.stacks,
+          defense: e.guardChain.defense,
+          endTick: e.guardChain.endTick,
+        }
+      : null,
     actionState: e.actionState
       ? {
           id: e.actionState.id,
@@ -654,7 +711,7 @@ function toSnapshot(e: Entity): EntitySnapshot {
     realm: e.realm,
     action: e.action,
     targetId: e.combat.targetId,
-    ownerId: e.loot?.ownerId ?? null,
+    ownerId: e.pet?.ownerId ?? e.loot?.ownerId ?? null,
     phase: e.ai?.phase ?? 0,
     cast: e.cast
       ? {

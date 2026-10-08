@@ -1,0 +1,16 @@
+id: skill_thu_bond
+name: Đồng Tâm
+description: Hồi 30% HP tối đa và tạo khiên 20% HP cho pet trong 4 giây. Không hồi sinh pet đã chết.
+icon: "♡"
+iconImage: icon_item_crystal1
+targeting: self
+range: 8
+delivery: support
+autoPolicy: manual
+cooldown: 12
+mpCost: 18
+timeline: { windup: 0.15, active: 0, recovery: 0.2, cancelWindup: true }
+effects: [{ type: pet_support, heal: 0.3, shield: 0.2, duration: 4 }]
+vfx: heal
+anim: { cast: Ranged_Magic_Spellcasting, castSpeed: 2 }
+barRole: utility

@@ -98,7 +98,12 @@ export const createCharacter = (
   name: string,
   element: Element = 'moc',
   expression: 'base' | 'thunder' | 'ice' = 'base',
-) => request<{ id: string }>('/characters', { body: { name, element, expression }, auth: true });
+  characterDefId = 'player_default',
+) =>
+  request<{ id: string }>('/characters', {
+    body: { name, element, expression, characterDefId },
+    auth: true,
+  });
 export const chooseLegacyElement = (
   id: string,
   element: Element,

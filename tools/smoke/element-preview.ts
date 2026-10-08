@@ -27,16 +27,43 @@ try {
     });
     const page = await context.newPage();
     const errors: string[] = [];
+    const created: { characterDefId?: string; element?: string }[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
     await page.route('**/auth/login', (route) =>
       route.fulfill({ json: { accessToken: 'preview-fixture', refreshToken: 'preview-fixture' } }),
     );
-    await page.route('**/characters', (route) => route.fulfill({ json: { characters: [] } }));
+    await page.route('**/characters', (route) => {
+      if (route.request().method() === 'POST') {
+        created.push(route.request().postDataJSON());
+        return route.fulfill({ status: 201, json: { id: 'preview-fixture-character' } });
+      }
+      return route.fulfill({ json: { characters: [] } });
+    });
     await page.goto(`${base}/?online&quality=low`);
     await page.getByPlaceholder('Tên đăng nhập').fill('preview');
     await page.getByPlaceholder('Mật khẩu').fill('preview-password');
     await page.getByRole('button', { name: 'Đăng nhập', exact: true }).click();
     await page.getByLabel('Ngũ hành bản mệnh').waitFor();
+    await page.getByLabel('Ngũ hành bản mệnh').selectOption('kim');
+    for (const kit of [
+      'player_default',
+      'player_phap',
+      'player_the',
+      'player_tran',
+      'player_anh',
+      'player_thu',
+    ]) {
+      await page.getByLabel('Bộ kỹ năng khởi đầu').selectOption(kit);
+      await page.getByPlaceholder('Tên nhân vật mới').fill('Preview Kit');
+      await page.getByRole('button', { name: 'Tạo nhân vật', exact: true }).click();
+      await page.waitForFunction(
+        () =>
+          (document.querySelector('input[placeholder="Tên nhân vật mới"]') as HTMLInputElement)
+            ?.value === '',
+      );
+      if (created.at(-1)?.characterDefId !== kit || created.at(-1)?.element !== 'kim')
+        throw new Error('Creation form submitted the wrong kit or affinity');
+    }
     for (const element of elements) {
       await page.getByLabel('Ngũ hành bản mệnh').selectOption(element);
       await page.locator('.element-preview').scrollIntoViewIfNeeded();

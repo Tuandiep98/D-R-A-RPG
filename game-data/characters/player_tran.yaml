@@ -1,0 +1,13 @@
+id: player_tran
+name: Trận Tu · Thử Nghiệm
+appearanceId: char_kk_mage
+stats: { hp: 700, mp: 180, attack: 32, defense: 10, critChance: 0.1, critMultiplier: 1.6, hpRegen: 10, mpRegen: 5 }
+movement: { speed: 4.7, radius: 0.4 }
+combat: { range: 7, attackInterval: 0.75 }
+combos: { unarmed: combo_tran, armed: combo_tran }
+respawnSeconds: 5
+skills: [skill_tran_place, skill_tran_pulse]
+prototypeSkills: [skill_tran_place, skill_tran_pulse, skill_tran_link, skill_tran_great]
+starterItems: [{ itemId: item_potion_hp_small, count: 5 }]
+element: hoa
+expression: base

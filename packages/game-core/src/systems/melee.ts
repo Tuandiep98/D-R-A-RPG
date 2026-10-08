@@ -1,11 +1,22 @@
 import type { ComboDef, ComboVariant } from '@rpg/game-data';
-import { areHostile, inAttackRange, isAlive, type SimContext } from '../context';
+import {
+  areHostile,
+  basicReach,
+  comboOf,
+  edgeDistance,
+  isAlive,
+  isStaggered,
+  type SimContext,
+} from '../context';
 import type { DamageSource, Entity } from '../entity';
 import { clearLine } from '../geometry';
 import { clamp, clampToBounds, distance, sub, type Vec2, yawOf } from '../math';
 import { secondsToTicks, TICK_RATE } from '../time';
 import { beginAction, currentAction } from './action-timeline';
 import { applyDamage, captureDamageSource, rollHit } from './combat';
+import { avoidsDamage } from './mobility';
+import { MAX_SKILL_OBJECTS, skillObjectLoad } from './skill-capacity';
+import { ownedFields } from './skills';
 
 /**
  * Basic attacks (đánh thường, D-031): chained swings from game-data/combos.
@@ -28,21 +39,11 @@ const ASSIST_EXTRA = 1.5;
 const MAX_MISS_EVENTS = 3;
 
 /** The combo a player swings with: main-hand weapon's, character armed/unarmed default. */
-export function comboOf(ctx: SimContext, e: Entity): ComboDef | null {
-  const p = e.player;
-  if (!p) return null;
-  const def = ctx.content.characters.get(p.characterId);
-  if (!def) return null;
-  const mainId = p.equipment.main_hand;
-  const main = mainId ? p.inventory.find((i) => i.instanceId === mainId) : undefined;
-  const item = main ? ctx.content.items.get(main.itemId) : undefined;
-  const id = item ? (item.combo ?? def.combos.armed) : def.combos.unarmed;
-  return ctx.content.combos.get(id) ?? null;
-}
+export { comboOf } from '../context';
 
 /** BASIC_ATTACK intent: swing now, or buffer the next step if a swing is running. */
 export function requestBasicAttack(ctx: SimContext, e: Entity, aim: Vec2 | null): boolean {
-  if (!e.player || e.cast || e.mobility) return false;
+  if (!e.player || e.cast || e.mobility || isStaggered(ctx, e)) return false;
   if (!e.swing && currentAction(ctx, e)) return false;
   if (e.swing) {
     e.actionBuffer = {
@@ -66,8 +67,13 @@ export function startSwing(
   if (!combo || !state) return false;
   const chained = ctx.tick - state.lastEndTick <= secondsToTicks(combo.resetAfter);
   const step = chained ? state.nextStep % combo.steps.length : 0;
+  if (!chained || e.guardChain?.comboId !== combo.id) e.guardChain = null;
   const variant = pickVariant(ctx, combo.steps[step]?.variants ?? []);
   if (!variant) return false;
+  if (variant.projectileSkillId && skillObjectLoad(ctx, 'projectile') >= MAX_SKILL_OBJECTS) {
+    ctx.notice(e.id, 'combat_capacity_full');
+    return false;
+  }
 
   const faced = faceFor(ctx, e, combo, variant, aim, target);
   e.yaw = faced.yaw;
@@ -121,7 +127,7 @@ export function meleePreparationSystem(ctx: SimContext): void {
       e.combat.targetId !== null
     ) {
       const target = ctx.entities.get(e.combat.targetId);
-      if (isAlive(target) && areHostile(e, target) && inAttackRange(e, target))
+      if (isAlive(target) && areHostile(e, target) && edgeDistance(e, target) <= basicReach(ctx, e))
         startSwing(ctx, e, null, target);
     }
   }
@@ -236,6 +242,55 @@ function resolveImpact(
 ): void {
   const combo = ctx.content.combos.get(comboId);
   if (!combo) return;
+  if (v.reinforceFields) {
+    for (const field of ownedFields(ctx, e)) {
+      const skill = ctx.content.skills.get(field.cast.skillId);
+      if (
+        skill?.pulses &&
+        field.maxEndTick !== undefined &&
+        field.nextTick + field.remaining * secondsToTicks(skill.pulses.interval) < field.maxEndTick
+      )
+        field.remaining++;
+    }
+  }
+  if (v.projectileSkillId) {
+    const skill = ctx.content.skills.get(v.projectileSkillId);
+    if (!skill) return;
+    const id = ctx.nextShotId();
+    const dir = { x: Math.sin(yaw), z: Math.cos(yaw) };
+    ctx.skillProjectiles.push({
+      id,
+      ownerId: e.id,
+      skillId: skill.id,
+      pos: { ...e.pos },
+      origin: { ...e.pos },
+      dir,
+      left: v.reach,
+      source,
+      damages: [
+        {
+          multiplier: v.damage,
+          flat: 0,
+          critBonus: v.critBonus,
+          canCrit: true,
+          elementalShare: ctx.content.combat.get('combat_rules')?.basicShare ?? 0,
+        },
+      ],
+    });
+    ctx.emit({
+      type: 'SKILL_PROJECTILE',
+      actionId: source.actionId ?? null,
+      sourceId: e.id,
+      skillId: skill.id,
+      projectileId: id,
+      origin: { ...e.pos },
+      destination: { x: e.pos.x + dir.x * v.reach, z: e.pos.z + dir.z * v.reach },
+      speed: skill.projectileSpeed,
+      element: source.element,
+      expression: source.expression,
+    });
+    return;
+  }
   const half = (v.arc / 2) * DEG;
   const hits: { t: Entity; surface: number }[] = [];
   const near: Entity[] = [];
@@ -253,6 +308,7 @@ function resolveImpact(
     else hits.push({ t, surface });
   }
   hits.sort((a, b) => a.surface - b.surface);
+  let connected = false;
   for (const { t, surface } of hits.slice(0, v.maxTargets)) {
     let distanceFactor = 1;
     let positionFactor = 1;
@@ -280,8 +336,22 @@ function resolveImpact(
       { distanceFactor, positionFactor },
       source,
     );
+    if (!avoidsDamage(ctx, t)) connected = true;
     applyDamage(ctx, e, t, amount, crit, null, { hit, heavy: v.heavy, source });
   }
+  if (connected && combo.guardChain) {
+    const previous = e.guardChain;
+    const stacks = Math.min(
+      combo.guardChain.maxStacks,
+      (previous?.comboId === combo.id && previous.endTick > ctx.tick ? previous.stacks : 0) + 1,
+    );
+    e.guardChain = {
+      comboId: combo.id,
+      stacks,
+      defense: stacks * combo.guardChain.defensePerStack,
+      endTick: ctx.tick + secondsToTicks(combo.guardChain.duration),
+    };
+  } else if (!connected && combo.guardChain) e.guardChain = null;
   if (hits.length === 0)
     for (const t of near.slice(0, MAX_MISS_EVENTS))
       ctx.emit({ type: 'MISS', sourceId: e.id, targetId: t.id });

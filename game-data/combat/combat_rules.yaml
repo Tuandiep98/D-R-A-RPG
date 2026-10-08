@@ -7,4 +7,4 @@ basicShare: 0.3
 skillShare: 0.7
 bufferSeconds: 0.2
 lateRealm: hoa_than
-farm: { radius: 10, leash: 14, reaction: 0.3, thinkInterval: 0.2, hpStop: 0.25, mpReserve: 0.25 }
+farm: { radius: 10, leash: 14, reaction: 0.3, thinkInterval: 0.2, rangeHysteresis: 0.3, stuckSeconds: 8, stuckDistance: 0.2, hpStop: 0.25, mpReserve: 0.25 }

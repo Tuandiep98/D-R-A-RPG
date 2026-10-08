@@ -17,6 +17,8 @@ import {
 } from '../controls';
 import { elementName } from '../elements';
 import { game } from '../game';
+import { Minimap } from '../map/Minimap';
+import { WorldMap } from '../map/WorldMap';
 import {
   allowedInPosition,
   DESKTOP_POSITIONS,
@@ -25,8 +27,6 @@ import {
   TOUCH_POSITIONS,
   useSkillLoadout,
 } from '../skill-loadout';
-import { Minimap } from '../map/Minimap';
-import { WorldMap } from '../map/WorldMap';
 import { useUiStore } from '../store';
 import { CultivationPanel } from './CultivationPanel';
 import { GameIcon } from './GameIcon';
@@ -188,6 +188,63 @@ function PlayerPanel() {
       <div className="player-bars">
         <Bar value={p.hp} max={p.maxHp} tone="player" />
         <Bar value={p.mp} max={p.maxMp} tone="mp" />
+        {p.companion && (
+          <div className="companion-info" title={p.companion.name}>
+            <Bar
+              value={p.companion.hp}
+              max={p.companion.maxHp}
+              tone="player"
+              label={
+                p.companion.hp > 0
+                  ? `Pet ${p.companion.hp} / ${p.companion.maxHp}`
+                  : `Pet hồi sinh · ${Math.ceil(p.companion.recovery)}s`
+              }
+            />
+          </div>
+        )}
+        {p.shield && (
+          <div className="shield-info" role="status">
+            Khiên {p.shield.amount} · {p.shield.remaining.toFixed(1)}s
+          </div>
+        )}
+        {!!p.cloakRemaining && (
+          <div className="shield-info cloak-info" role="status">
+            Màn Ảnh · {p.cloakRemaining.toFixed(1)}s
+          </div>
+        )}
+        {p.guardChain && (
+          <div className="shield-info" role="status">
+            Kình Thể {p.guardChain.stacks} · +{p.guardChain.defense} thủ ·{' '}
+            {p.guardChain.remaining.toFixed(1)}s
+          </div>
+        )}
+        {p.poise && (p.poise.pressure > 0 || p.poise.immuneRemaining > 0) && (
+          <div
+            className="shield-info poise-info"
+            data-phase={
+              p.poise.staggerRemaining > 0
+                ? 'stagger'
+                : p.poise.immuneRemaining > 0
+                  ? 'immune'
+                  : 'pressure'
+            }
+            title="Áp lực đủ ngưỡng gây khựng. Kình Thể tăng ngưỡng chịu đòn; ổn thế ngăn khựng liên tiếp."
+          >
+            <span role="status" aria-atomic="true">
+              {p.poise.staggerRemaining > 0
+                ? 'Khựng'
+                : p.poise.immuneRemaining > 0
+                  ? 'Ổn thế'
+                  : 'Áp lực'}
+            </span>
+            {' · '}
+            {p.poise.staggerRemaining > 0
+              ? `${p.poise.staggerRemaining.toFixed(1)}s`
+              : p.poise.immuneRemaining > 0
+                ? `${p.poise.immuneRemaining.toFixed(1)}s`
+                : `${Math.round(p.poise.pressure)} / ${Math.round(p.poise.threshold)}`}
+          </div>
+        )}
         {p.cultivation.backlash > 0 && (
           <div className="backlash small">Phản phệ {Math.ceil(p.cultivation.backlash)}s</div>
         )}

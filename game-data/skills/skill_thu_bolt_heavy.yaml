@@ -1,0 +1,12 @@
+id: skill_thu_bolt_heavy
+name: Ngự Phù · Tam Nhịp
+description: Nhịp ba phóng ngự phù rộng hơn; vẫn va chạm thân đầu tiên.
+icon: "✦"
+targeting: point
+range: 8
+delivery: projectile
+projectileSpeed: 12
+projectileRadius: 0.35
+cooldown: 0.9
+effects: [{ type: damage, multiplier: 1.5 }]
+vfx: projectile

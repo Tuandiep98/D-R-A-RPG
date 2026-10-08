@@ -1,10 +1,5 @@
-import type { AssetLibrary } from "@rpg/asset-runtime";
-import type {
-  AnimationRole,
-  AppearanceDef,
-  EquipSlot,
-  Socket,
-} from "@rpg/game-data";
+import type { AssetLibrary } from '@rpg/asset-runtime';
+import type { AnimationRole, AppearanceDef, EquipSlot, Socket } from '@rpg/game-data';
 import {
   type AbstractMesh,
   type Animation,
@@ -22,23 +17,17 @@ import {
   StandardMaterial,
   TransformNode,
   Vector3,
-} from "./babylon";
-import { createPlaceholderMesh } from "./placeholder";
+} from './babylon';
+import { createPlaceholderMesh } from './placeholder';
 
-export type BaseRole = Extract<AnimationRole, "idle" | "run" | "death">;
-export type OneShotRole = Extract<AnimationRole, "attack" | "cast" | "hit">;
+export type BaseRole = Extract<AnimationRole, 'idle' | 'run' | 'death'>;
+export type OneShotRole = Extract<AnimationRole, 'attack' | 'cast' | 'hit'>;
 
 /** Equipment to show, by slot, resolved to appearances by the caller. */
 export type GearAppearances = Partial<Record<EquipSlot, AppearanceDef>>;
 
 /** Slots that have a visible attachment in M2 (others are stats-only for now). */
-const VISIBLE_SLOTS: EquipSlot[] = [
-  "main_hand",
-  "off_hand",
-  "artifact",
-  "head",
-  "back",
-];
+const VISIBLE_SLOTS: EquipSlot[] = ['main_hand', 'off_hand', 'artifact', 'head', 'back'];
 
 /** What an EntityView drives, whether it is a real model or a primitive. */
 export interface Visual {
@@ -48,6 +37,8 @@ export interface Visual {
   oneShot(role: OneShotRole): void;
   /** Plays a named clip once; `fallback` role when the model lacks it. */
   oneShotClip(clip: string, speed: number, fallback?: OneShotRole): void;
+  /** Stops an authoritative attack/cast that was canceled; keeps hit/death reactions. */
+  cancelAction(): void;
   /** Hit-stop: holds the current pose for `seconds` (cosmetic, client only). */
   freeze(seconds: number): void;
   /**
@@ -61,7 +52,7 @@ export interface Visual {
   /** Length of a clip in seconds (0 when the model lacks it). */
   clipSeconds(clip: string): number;
   /** Node to hang effects on: a socket, or `weapon_tip` (main-hand blade tip / muzzle, else right hand). */
-  anchor(name: Socket | "weapon_tip"): TransformNode | null;
+  anchor(name: Socket | 'weapon_tip'): TransformNode | null;
   setGear(gear: GearAppearances): void;
   update(dt: number): void;
   reset(): void;
@@ -97,11 +88,8 @@ class GearAttachments {
     private readonly scene: Scene,
     private readonly name: string,
     private readonly socketNode: (socket: Socket) => TransformNode | null,
-    private readonly builtIn: AppearanceDef["builtIn"],
-    private readonly setBuiltInVisible: (
-      slot: EquipSlot,
-      visible: boolean,
-    ) => void,
+    private readonly builtIn: AppearanceDef['builtIn'],
+    private readonly setBuiltInVisible: (slot: EquipSlot, visible: boolean) => void,
     private readonly assets: AssetLibrary | null = null,
   ) {}
 
@@ -109,8 +97,7 @@ class GearAttachments {
     for (const slot of VISIBLE_SLOTS) {
       const want = gear[slot];
       const builtIn = this.builtIn[slot];
-      const useBuiltIn =
-        !!builtIn && (!want || want.id === builtIn.appearanceId);
+      const useBuiltIn = !!builtIn && (!want || want.id === builtIn.appearanceId);
       if (builtIn) this.setBuiltInVisible(slot, useBuiltIn);
       const current = this.attached.get(slot);
       const target = useBuiltIn ? undefined : want;
@@ -122,11 +109,7 @@ class GearAttachments {
       if (!parent) continue;
       const mesh = new TransformNode(`${this.name}_${slot}`, this.scene);
       mesh.parent = parent;
-      const placeholder = createPlaceholderMesh(
-        this.scene,
-        target,
-        `${this.name}_${slot}_ph`,
-      );
+      const placeholder = createPlaceholderMesh(this.scene, target, `${this.name}_${slot}_ph`);
       placeholder.parent = mesh;
       this.loadModel(mesh, placeholder, target);
       // Sockets inside scaled rigs: keep equipment in world metres.
@@ -146,19 +129,12 @@ class GearAttachments {
     }
   }
 
-  private loadModel(
-    holder: TransformNode,
-    placeholder: Mesh,
-    target: AppearanceDef,
-  ): void {
+  private loadModel(holder: TransformNode, placeholder: Mesh, target: AppearanceDef): void {
     const assets = this.assets;
     if (!assets?.has(target.modelAssetId)) return;
     void assets.loadContainer(target.modelAssetId).then((container) => {
       if (!container || holder.isDisposed()) return;
-      const entries = container.instantiateModelsToScene(
-        (n) => `${holder.name}_${n}`,
-        false,
-      );
+      const entries = container.instantiateModelsToScene((n) => `${holder.name}_${n}`, false);
       const model = new TransformNode(`${holder.name}_model`, this.scene);
       for (const node of entries.rootNodes) node.parent = model;
       for (const m of model.getChildMeshes(false)) m.isPickable = false;
@@ -176,13 +152,12 @@ class GearAttachments {
    * world metres and blades run along +Y). Null when bare-handed.
    */
   weaponTip(): TransformNode | null {
-    const main = this.attached.get("main_hand");
+    const main = this.attached.get('main_hand');
     if (!main) return null;
     if (!main.tip) {
       main.tip = new TransformNode(`${main.mesh.name}_tip`, this.scene);
       main.tip.parent = main.mesh;
-      if (main.tipAt)
-        main.tip.position.set(main.tipAt[0], main.tipAt[1], main.tipAt[2]);
+      if (main.tipAt) main.tip.position.set(main.tipAt[0], main.tipAt[1], main.tipAt[2]);
       else main.tip.position.y = main.length * 0.85;
     }
     return main.tip;
@@ -191,7 +166,7 @@ class GearAttachments {
   /** Artifacts (flying swords) hover and bob next to the owner. */
   update(dt: number): void {
     this.floatTime += dt;
-    const artifact = this.attached.get("artifact");
+    const artifact = this.attached.get('artifact');
     if (artifact) artifact.mesh.rotation.y = this.floatTime * 2;
   }
 
@@ -210,7 +185,7 @@ export class PlaceholderVisual implements Visual {
   private readonly baseMat: Material;
   private readonly gear: GearAttachments;
   private readonly sockets = new Map<Socket, TransformNode>();
-  private base: BaseRole = "idle";
+  private base: BaseRole = 'idle';
   private time = 0;
   private attackT = 0;
   private castT = 0;
@@ -230,9 +205,9 @@ export class PlaceholderVisual implements Visual {
     if (appearance.tint) {
       const tinted = (this.baseMat as StandardMaterial).clone(`${name}_tint`);
       tinted.emissiveColor = Color3.FromHexString(appearance.tint).scale(
-        appearance.kind === "portal" ? 0.9 : 0.45,
+        appearance.kind === 'portal' ? 0.9 : 0.45,
       );
-      if (appearance.kind === "portal") {
+      if (appearance.kind === 'portal') {
         // A glowing, see-through gate rather than a solid pillar.
         tinted.alpha = 0.45;
         tinted.disableLighting = true;
@@ -247,16 +222,12 @@ export class PlaceholderVisual implements Visual {
 
     const { height, radius } = appearance.placeholder;
     if (
-      appearance.kind === "character" ||
-      appearance.kind === "monster" ||
-      appearance.kind === "npc"
+      appearance.kind === 'character' ||
+      appearance.kind === 'monster' ||
+      appearance.kind === 'npc'
     ) {
       // Small nose so facing is readable before real models exist.
-      const nose = MeshBuilder.CreateBox(
-        `${name}_nose`,
-        { size: radius * 0.45 },
-        scene,
-      );
+      const nose = MeshBuilder.CreateBox(`${name}_nose`, { size: radius * 0.45 }, scene);
       nose.position.set(0, height * 0.7, radius * 0.95);
       nose.material = this.baseMat;
       nose.isPickable = false;
@@ -268,11 +239,11 @@ export class PlaceholderVisual implements Visual {
       n.position.set(x, y, z);
       this.sockets.set(s, n);
     };
-    socket("hand_r", radius * 1.05, height * 0.5, radius * 0.3);
-    socket("hand_l", -radius * 1.05, height * 0.5, radius * 0.3);
-    socket("head", 0, height * 0.98, 0);
-    socket("back", 0, height * 0.6, -radius);
-    socket("artifact", radius * 1.4, height * 1.05, -radius * 0.4);
+    socket('hand_r', radius * 1.05, height * 0.5, radius * 0.3);
+    socket('hand_l', -radius * 1.05, height * 0.5, radius * 0.3);
+    socket('head', 0, height * 0.98, 0);
+    socket('back', 0, height * 0.6, -radius);
+    socket('artifact', radius * 1.4, height * 1.05, -radius * 0.4);
     this.gear = new GearAttachments(
       scene,
       name,
@@ -287,25 +258,26 @@ export class PlaceholderVisual implements Visual {
   setBase(role: BaseRole): void {
     if (role === this.base) return;
     this.base = role;
-    if (role === "death") this.deathT = 0;
+    if (role === 'death') this.deathT = 0;
   }
 
   oneShot(role: OneShotRole): void {
-    if (this.base === "death") return;
-    if (role === "attack") this.attackT = 0.35;
-    else if (role === "cast") this.castT = 0.5;
+    if (this.base === 'death') return;
+    if (role === 'attack') this.attackT = 0.35;
+    else if (role === 'cast') this.castT = 0.5;
     else this.hitT = 0.15;
   }
 
-  oneShotClip(
-    _clip: string,
-    _speed: number,
-    fallback: OneShotRole = "attack",
-  ): void {
+  oneShotClip(_clip: string, _speed: number, fallback: OneShotRole = 'attack'): void {
     this.oneShot(fallback);
   }
 
   freeze(_seconds: number): void {}
+
+  cancelAction(): void {
+    this.attackT = 0;
+    this.castT = 0;
+  }
 
   overlay(_clip: string, _speed: number, opts?: OverlayOptions): boolean {
     // Primitives have no arms: a tiny lunge reads as recoil.
@@ -319,9 +291,8 @@ export class PlaceholderVisual implements Visual {
     return 0;
   }
 
-  anchor(name: Socket | "weapon_tip"): TransformNode | null {
-    if (name === "weapon_tip")
-      return this.gear.weaponTip() ?? this.sockets.get("hand_r") ?? null;
+  anchor(name: Socket | 'weapon_tip'): TransformNode | null {
+    if (name === 'weapon_tip') return this.gear.weaponTip() ?? this.sockets.get('hand_r') ?? null;
     return this.sockets.get(name) ?? null;
   }
 
@@ -336,38 +307,29 @@ export class PlaceholderVisual implements Visual {
     this.hitT = Math.max(0, this.hitT - dt);
     const b = this.body;
 
-    if (this.base === "death") {
+    if (this.base === 'death') {
       this.deathT = Math.min(1, this.deathT + dt * 3);
       b.rotation.x = (-Math.PI / 2) * this.deathT;
       b.position.y = 0;
       b.position.z = 0;
     } else {
       b.rotation.x = 0;
-      const castLift =
-        this.castT > 0 ? Math.sin((1 - this.castT / 0.5) * Math.PI) * 0.25 : 0;
+      const castLift = this.castT > 0 ? Math.sin((1 - this.castT / 0.5) * Math.PI) * 0.25 : 0;
       b.position.y =
-        (this.base === "run" ? Math.abs(Math.sin(this.time * 14)) * 0.12 : 0) +
-        castLift;
+        (this.base === 'run' ? Math.abs(Math.sin(this.time * 14)) * 0.12 : 0) + castLift;
       // Lunge forward then back over the attack window.
-      b.position.z =
-        this.attackT > 0
-          ? Math.sin((1 - this.attackT / 0.35) * Math.PI) * 0.35
-          : 0;
+      b.position.z = this.attackT > 0 ? Math.sin((1 - this.attackT / 0.35) * Math.PI) * 0.35 : 0;
     }
-    if (this.appearance.kind === "loot" || this.appearance.kind === "portal") {
-      b.rotation.y =
-        this.time * (this.appearance.kind === "portal" ? 0.6 : 1.8);
-      b.position.y =
-        this.appearance.kind === "loot"
-          ? 0.15 + Math.sin(this.time * 3) * 0.08
-          : 0;
+    if (this.appearance.kind === 'loot' || this.appearance.kind === 'portal') {
+      b.rotation.y = this.time * (this.appearance.kind === 'portal' ? 0.6 : 1.8);
+      b.position.y = this.appearance.kind === 'loot' ? 0.15 + Math.sin(this.time * 3) * 0.08 : 0;
     }
     b.material = this.hitT > 0 ? this.flashMat : this.baseMat;
     this.gear.update(dt);
   }
 
   reset(): void {
-    this.base = "idle";
+    this.base = 'idle';
     this.attackT = this.castT = this.hitT = this.deathT = 0;
     this.update(0);
   }
@@ -394,6 +356,7 @@ export class ModelVisual implements Visual {
   private playToken = 0;
   private current: AnimationGroup | null = null;
   private currentSpeed = 1;
+  private firstFrameObserver: Observer<Scene> | null = null;
   private frozen = 0;
   /** Upper-body overlay (D-033) and the mask that keeps it off the legs. */
   private overlayGroup: AnimationGroup | null = null;
@@ -426,13 +389,9 @@ export class ModelVisual implements Visual {
   ) {
     this.scene = scene;
     this.root = new TransformNode(`${name}_visual`, scene);
-    const entries = container.instantiateModelsToScene(
-      (n) => `${name}_${n}`,
-      !!appearance.tint,
-      {
-        doNotInstantiate: true,
-      },
-    );
+    const entries = container.instantiateModelsToScene((n) => `${name}_${n}`, !!appearance.tint, {
+      doNotInstantiate: true,
+    });
     for (const node of entries.rootNodes) node.parent = this.root;
     this.root.scaling.setAll(appearance.scale);
     this.root.rotation.y = appearance.yawOffset;
@@ -445,11 +404,7 @@ export class ModelVisual implements Visual {
       // Recolour by multiplying the base colour, part-way toward the tint so
       // the texture's shading survives. (An emissive tint washed the models
       // out: it adds the same light everywhere, lit side or not.)
-      const tint = Color3.Lerp(
-        Color3.White(),
-        Color3.FromHexString(appearance.tint),
-        0.65,
-      );
+      const tint = Color3.Lerp(Color3.White(), Color3.FromHexString(appearance.tint), 0.65);
       for (const m of this.shadowCasters) {
         const mat = m.material as
           | (Material & { albedoColor?: Color3; diffuseColor?: Color3 })
@@ -460,18 +415,15 @@ export class ModelVisual implements Visual {
     }
 
     this.allGroups = entries.animationGroups;
-    const byName = new Map(
-      entries.animationGroups.map((g) => [stripPrefix(g.name, name), g]),
-    );
+    const byName = new Map(entries.animationGroups.map((g) => [stripPrefix(g.name, name), g]));
     for (const [clip, group] of byName) this.clips.set(clip, group);
     for (const [role, clip] of Object.entries(appearance.animations)) {
       const g = byName.get(clip);
       if (g) this.groups.set(role as AnimationRole, g);
       else
-        console.warn(
-          `[anim] ${appearance.id}: clip "${clip}" for ${role} not found`,
-          [...byName.keys()],
-        );
+        console.warn(`[anim] ${appearance.id}: clip "${clip}" for ${role} not found`, [
+          ...byName.keys(),
+        ]);
     }
     for (const g of this.allGroups) {
       g.stop();
@@ -479,12 +431,9 @@ export class ModelVisual implements Visual {
       g.blendingSpeed = 0.12;
     }
     // Upper body = the spine and everything under it (chest, head, arms, hand slots).
-    const spine = this.nodesByName.get("spine");
+    const spine = this.nodesByName.get('spine');
     this.upperMask = spine
-      ? new AnimationGroupMask([
-          spine.name,
-          ...spine.getDescendants(false).map((n) => n.name),
-        ])
+      ? new AnimationGroupMask([spine.name, ...spine.getDescendants(false).map((n) => n.name)])
       : null;
 
     this.gear = new GearAttachments(
@@ -503,45 +452,38 @@ export class ModelVisual implements Visual {
       },
       assets,
     );
-    this.setBase("idle");
+    this.setBase('idle');
   }
 
   setBase(role: BaseRole): void {
     if (role === this.base) return;
     this.base = role;
-    if (this.oneShotActive && role !== "death") return; // resumes when the one-shot ends
+    if (this.oneShotActive && role !== 'death') return; // resumes when the one-shot ends
     this.oneShotActive = null;
-    this.playOnly(role, role !== "death");
+    this.playOnly(role, role !== 'death');
   }
 
   oneShot(role: OneShotRole): void {
-    if (this.base === "death") return;
-    if (role === "hit" && this.oneShotActive && this.oneShotActive !== "hit")
-      return;
-    const g =
-      this.groups.get(role) ??
-      (role === "cast" ? this.groups.get("attack") : undefined);
+    if (this.base === 'death') return;
+    if (role === 'hit' && this.oneShotActive && this.oneShotActive !== 'hit') return;
+    const g = this.groups.get(role) ?? (role === 'cast' ? this.groups.get('attack') : undefined);
     if (!g) return;
     this.playOneShot(g, role, 1);
   }
 
-  oneShotClip(
-    clip: string,
-    speed: number,
-    fallback: OneShotRole = "attack",
-  ): void {
+  oneShotClip(clip: string, speed: number, fallback: OneShotRole = 'attack'): void {
     const g = this.clips.get(clip);
     if (!g) {
       this.oneShot(fallback);
       return;
     }
-    if (this.base === "death") return;
+    if (this.base === 'death') return;
     this.playOneShot(g, fallback, speed);
   }
 
   overlay(clip: string, speed: number, opts: OverlayOptions = {}): boolean {
     const g = this.clips.get(clip);
-    if (!g || !this.upperMask || this.base === "death") return false;
+    if (!g || !this.upperMask || this.base === 'death') return false;
     const prev = this.overlayGroup;
     if (prev && prev !== g) this.clearOverlayGroup(prev);
     if (g === this.current) return false; // already playing full-body
@@ -550,12 +492,8 @@ export class ModelVisual implements Visual {
     g.mask = this.upperMask;
     g.playOrder = 1;
     const fps = g.targetedAnimations[0]?.animation.framePerSecond ?? 60;
-    const from =
-      opts.from !== undefined
-        ? Math.min(g.to, g.from + opts.from * fps)
-        : g.from;
-    const to =
-      opts.to !== undefined ? Math.min(g.to, g.from + opts.to * fps) : g.to;
+    const from = opts.from !== undefined ? Math.min(g.to, g.from + opts.from * fps) : g.from;
+    const to = opts.to !== undefined ? Math.min(g.to, g.from + opts.to * fps) : g.to;
     this.overlayToken++;
     this.overlayGroup = g;
     g.start(opts.loop === true, speed, from, Math.max(from, to));
@@ -586,14 +524,15 @@ export class ModelVisual implements Visual {
   }
 
   freeze(seconds: number): void {
-    if (!this.current || this.base === "death") return;
+    if (!this.current || this.base === 'death') return;
+    // Incoming melee hit-stop must not delay an authoritative skill/mobility cue.
+    if (this.oneShotActive === 'cast') return;
     this.frozen = Math.max(this.frozen, seconds);
     this.current.speedRatio = this.currentSpeed * 0.04;
   }
 
-  anchor(name: Socket | "weapon_tip"): TransformNode | null {
-    if (name === "weapon_tip")
-      return this.gear.weaponTip() ?? this.anchor("hand_r");
+  anchor(name: Socket | 'weapon_tip'): TransformNode | null {
+    if (name === 'weapon_tip') return this.gear.weaponTip() ?? this.anchor('hand_r');
     const bone = this.appearance.sockets[name];
     const node = bone ? this.nodesByName.get(bone) : undefined;
     return node instanceof TransformNode ? node : null;
@@ -606,8 +545,7 @@ export class ModelVisual implements Visual {
   update(dt: number): void {
     if (this.frozen > 0) {
       this.frozen -= dt;
-      if (this.frozen <= 0 && this.current)
-        this.current.speedRatio = this.currentSpeed;
+      if (this.frozen <= 0 && this.current) this.current.speedRatio = this.currentSpeed;
     }
     const end = this.overlayEnd;
     if (end) {
@@ -628,10 +566,12 @@ export class ModelVisual implements Visual {
     this.oneShotActive = null;
     this.frozen = 0;
     if (this.overlayGroup) this.clearOverlayGroup(this.overlayGroup);
-    this.setBase("idle");
+    this.setBase('idle');
   }
 
   dispose(): void {
+    this.firstFrameObserver?.remove();
+    this.firstFrameObserver = null;
     this.upperYawObserver?.remove();
     this.upperYawObserver = null;
     this.gear.dispose();
@@ -643,18 +583,14 @@ export class ModelVisual implements Visual {
     const rotationOf = (bone: string) => {
       const node = this.nodesByName.get(bone);
       return g.targetedAnimations.find(
-        (t) =>
-          t.target === node &&
-          t.animation.targetProperty === "rotationQuaternion",
+        (t) => t.target === node && t.animation.targetProperty === 'rotationQuaternion',
       )?.animation;
     };
-    const root = rotationOf("root");
-    const hips = rotationOf("hips");
+    const root = rotationOf('root');
+    const hips = rotationOf('hips');
     this.upperYaw = root || hips ? { group: g, root, hips } : null;
     if (this.upperYaw && !this.upperYawObserver)
-      this.upperYawObserver = this.scene.onAfterAnimationsObservable.add(() =>
-        this.fixUpperYaw(),
-      );
+      this.upperYawObserver = this.scene.onAfterAnimationsObservable.add(() => this.fixUpperYaw());
   }
 
   /** Runs after the scene's animations: twist the spine by the clip's missing root+hips yaw. */
@@ -662,21 +598,17 @@ export class ModelVisual implements Visual {
     const fix = this.upperYaw;
     const g = this.overlayGroup;
     if (!fix || !g || fix.group !== g) return;
-    const spine = this.nodesByName.get("spine");
-    const hips = this.nodesByName.get("hips");
-    const root = this.nodesByName.get("root");
-    if (!(spine instanceof TransformNode) || !(hips instanceof TransformNode))
-      return;
+    const spine = this.nodesByName.get('spine');
+    const hips = this.nodesByName.get('hips');
+    const root = this.nodesByName.get('root');
+    if (!(spine instanceof TransformNode) || !(hips instanceof TransformNode)) return;
     const live = g.animatables.find((a) => !a.paused);
     if (!live || !spine.rotationQuaternion) return;
     const frame = live.masterFrame;
-    const rootNow =
-      root instanceof TransformNode ? root.rotationQuaternion : null;
+    const rootNow = root instanceof TransformNode ? root.rotationQuaternion : null;
     const clip = chainYaw(
       fix.root ? (fix.root.evaluate(frame) as Quaternion) : rootNow,
-      fix.hips
-        ? (fix.hips.evaluate(frame) as Quaternion)
-        : hips.rotationQuaternion,
+      fix.hips ? (fix.hips.evaluate(frame) as Quaternion) : hips.rotationQuaternion,
     );
     let delta = clip - chainYaw(rootNow, hips.rotationQuaternion);
     if (delta > Math.PI) delta -= Math.PI * 2;
@@ -691,8 +623,7 @@ export class ModelVisual implements Visual {
   }
 
   private playOnly(role: AnimationRole, loop: boolean): void {
-    if (role === "death" && this.overlayGroup)
-      this.clearOverlayGroup(this.overlayGroup);
+    if (role === 'death' && this.overlayGroup) this.clearOverlayGroup(this.overlayGroup);
     const g = this.groups.get(role);
     if (g) this.playGroup(g, loop);
     else
@@ -730,35 +661,54 @@ export class ModelVisual implements Visual {
    * the one-shot: AnimationGroup.stop() fires the end observable too, so a
    * chained swing stopping the previous clip used to cut itself to idle.
    */
-  private playOneShot(
-    g: AnimationGroup,
-    role: OneShotRole,
-    speed: number,
-  ): void {
+  private playOneShot(g: AnimationGroup, role: OneShotRole, speed: number): void {
     this.oneShotActive = role;
     this.playGroup(g, false, speed);
     const token = this.playToken;
     g.onAnimationGroupEndObservable.addOnce(() => {
       if (token !== this.playToken || this.oneShotActive !== role) return;
       this.oneShotActive = null;
-      const base = this.base ?? "idle";
-      this.playOnly(base, base !== "death");
+      const base = this.base ?? 'idle';
+      this.playOnly(base, base !== 'death');
     });
   }
 
+  cancelAction(): void {
+    if (this.oneShotActive !== 'attack' && this.oneShotActive !== 'cast') return;
+    this.oneShotActive = null;
+    this.frozen = 0;
+    const base = this.base ?? 'idle';
+    this.playOnly(base, base !== 'death');
+  }
+
   private playGroup(g: AnimationGroup, loop: boolean, speed = 1): void {
+    const startedAt = performance.now();
     this.playToken++;
+    this.firstFrameObserver?.remove();
+    this.firstFrameObserver = null;
     // A clip asked for full-body stops being an upper-body overlay.
     if (g === this.overlayGroup) this.clearOverlayGroup(g);
     // skipOnAnimationEnd: stopping for a new clip is not the old clip ending.
     for (const other of this.allGroups)
-      if (other !== g && other !== this.overlayGroup && other.isPlaying)
-        other.stop(true);
+      if (other !== g && other !== this.overlayGroup && other.isPlaying) other.stop(true);
     if (g.isPlaying) g.stop(true);
     this.frozen = 0;
     this.current = g;
     this.currentSpeed = speed;
     g.start(loop, speed, g.from, g.to);
+    if (!loop) {
+      const token = this.playToken;
+      const fps = g.targetedAnimations[0]?.animation.framePerSecond ?? 60;
+      // Babylon initializes an animatable's clock on its first render, which can
+      // lose the event-to-render interval (especially on the first attack).
+      // Align once before that render, then let normal playback/hit-stop advance it.
+      this.firstFrameObserver = this.scene.onBeforeAnimationsObservable.addOnce(() => {
+        this.firstFrameObserver = null;
+        if (token !== this.playToken || this.current !== g || !g.isPlaying) return;
+        const elapsed = (performance.now() - startedAt) / 1000;
+        g.goToFrame(Math.min(g.to, g.from + elapsed * speed * fps));
+      });
+    }
   }
 }
 
@@ -775,7 +725,5 @@ function chainYaw(root: Quaternion | null, hips: Quaternion | null): number {
 
 /** instantiateModelsToScene names clones through our name function; recover the original name. */
 function stripPrefix(nodeName: string, prefix: string): string {
-  return nodeName.startsWith(`${prefix}_`)
-    ? nodeName.slice(prefix.length + 1)
-    : nodeName;
+  return nodeName.startsWith(`${prefix}_`) ? nodeName.slice(prefix.length + 1) : nodeName;
 }

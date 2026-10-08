@@ -14,6 +14,37 @@ afterAll(async () => {
 });
 
 describe('GameRepository', () => {
+  it('persists companion health/recovery and rejects invalid companion state without overwriting the save', async () => {
+    const accountId = await repo.createAccount('companion-save', 'hash');
+    const id = await repo.createCharacter({
+      accountId,
+      name: 'Companion',
+      characterDefId: 'player_thu',
+      mapId: 'map_sandbox_01',
+    });
+    const loaded = await repo.loadCharacter(id);
+    if (!loaded) throw new Error('missing save');
+    const position = { mapId: loaded.mapId, x: 0, z: 0 };
+    for (const companion of [
+      { hp: 321, respawnSeconds: 0 },
+      { hp: 0, respawnSeconds: 17.35 },
+    ]) {
+      await repo.saveCharacter(id, { ...loaded.save, companion }, position, []);
+      expect((await repo.loadCharacter(id))?.save.companion).toEqual(companion);
+    }
+    for (const companion of [
+      { hp: -1, respawnSeconds: 0 },
+      { hp: 0, respawnSeconds: 121 },
+    ]) {
+      await expect(
+        repo.saveCharacter(id, { ...loaded.save, companion }, position, []),
+      ).rejects.toThrow();
+      expect((await repo.loadCharacter(id))?.save.companion).toEqual({
+        hp: 0,
+        respawnSeconds: 17.35,
+      });
+    }
+  });
   it('keeps affinity immutable across save and rejects an incompatible expression', async () => {
     const accountId = await repo.createAccount('affinity-lock', 'hash');
     const id = await repo.createCharacter({

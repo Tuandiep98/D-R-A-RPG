@@ -1,0 +1,12 @@
+id: tien_the_quake
+name: Thể Pháp · Chấn Địa
+description: Tụ sức từ xương cốt rồi chấn mặt đất. Sóng thấp có thể tránh bằng nhảy đúng nhịp.
+icon: "◉"
+axis: than
+path: tien
+realm: luyen_khi
+requires: [tien_cuong_cot]
+quests: [q_wolf_cull]
+cost: { gold: 100, materials: [{ itemId: item_fox_fur, count: 4 }] }
+meridian: 10
+skillId: skill_the_quake

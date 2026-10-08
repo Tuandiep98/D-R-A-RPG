@@ -1,0 +1,16 @@
+id: skill_anh_flurry
+name: Vô Ảnh
+description: Báo đường chém cố định dài 7 mét rồi đánh ba nhát cách nhau 0.25 giây. Rời đường hoặc núp sau tường tránh được các nhát sau.
+icon: "≋"
+iconImage: icon_skill_whirlwind
+targeting: point
+range: 7
+delivery: line
+telegraph: true
+pulses: { count: 3, interval: 0.25 }
+cooldown: 28
+mpCost: 38
+timeline: { windup: 0.65, active: 0, recovery: 0.3, cancelWindup: true }
+effects: [{ type: damage, multiplier: 1.5, radius: 0.45 }]
+vfx: slash
+anim: { cast: Melee_Dualwield_Attack_Slice, castSpeed: 0.923076923076923 }

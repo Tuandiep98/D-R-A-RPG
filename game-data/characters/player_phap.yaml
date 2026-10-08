@@ -1,0 +1,13 @@
+id: player_phap
+name: Pháp Tu · Thử Nghiệm
+appearanceId: char_kk_mage
+stats: { hp: 650, mp: 180, attack: 34, defense: 8, critChance: 0.12, critMultiplier: 1.6, hpRegen: 10, mpRegen: 5 }
+movement: { speed: 4.8, radius: 0.4 }
+combat: { range: 7, attackInterval: 0.75 }
+combos: { unarmed: combo_phap, armed: combo_phap }
+respawnSeconds: 5
+skills: [skill_phap_arrow, skill_phap_seal]
+prototypeSkills: [skill_phap_arrow, skill_phap_seal, skill_phap_guard, skill_phap_storm]
+starterItems: [{ itemId: item_potion_hp_small, count: 5 }]
+element: thuy
+expression: base

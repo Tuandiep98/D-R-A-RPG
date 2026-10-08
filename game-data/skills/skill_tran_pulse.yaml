@@ -1,0 +1,14 @@
+id: skill_tran_pulse
+name: Kích Trận
+description: Kích một nhịp từ mỗi trận còn tồn tại trong tầm và LOS. Chỉ gây sát thương cho mục tiêu thật sự đứng trong trận.
+icon: "✴"
+iconImage: icon_skill_whirlwind
+targeting: self
+range: 12
+castTime: 0.2
+delivery: support
+cooldown: 5
+mpCost: 14
+effects: [{ type: pulse_fields, multiplier: 1.8 }]
+vfx: burst
+anim: { cast: Ranged_Magic_Spellcasting, castSpeed: 1.5 }

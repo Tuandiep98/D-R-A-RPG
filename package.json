@@ -40,6 +40,9 @@
     "smoke:responsive": "tsx tools/smoke/responsive.ts",
     "smoke:maps": "tsx tools/smoke/map-tour.ts",
     "smoke:gun": "tsx tools/smoke/gun.ts",
+    "smoke:kit-clips": "tsx tools/smoke/kit-clips.ts",
+    "smoke:kit-basics": "tsx tools/smoke/kit-basics.ts",
+    "smoke:online-kits": "tsx tools/smoke/online-kits.ts",
     "assets:proportions": "tsx tools/asset-processor/proportions.ts",
     "assets:vendor": "tsx tools/asset-processor/vendor.ts"
   },

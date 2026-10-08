@@ -1,0 +1,12 @@
+id: tien_thu_combo
+name: Ngự Thú · Hợp Kích
+description: Người và pet đánh nón riêng; mỗi hit kiểm tra vị trí thật của mục tiêu.
+icon: "✦"
+axis: dao
+path: tien
+realm: luyen_khi
+requires: [tien_thu_bond]
+quests: [q_wolf_cull]
+cost: { gold: 120, materials: [{ itemId: item_wolf_fang, count: 4 }] }
+meridian: 10
+skillId: skill_thu_combo

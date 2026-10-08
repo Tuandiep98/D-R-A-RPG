@@ -191,6 +191,16 @@ export interface UiState {
     | (UnitFrame & {
         mp: number;
         maxMp: number;
+        shield?: { amount: number; remaining: number } | null;
+        cloakRemaining?: number;
+        guardChain?: { stacks: number; defense: number; remaining: number } | null;
+        poise?: {
+          pressure: number;
+          threshold: number;
+          staggerRemaining: number;
+          immuneRemaining: number;
+        } | null;
+        companion?: { name: string; hp: number; maxHp: number; recovery: number } | null;
         cultivation: CultivationView;
         gold: number;
         inSafeZone: boolean;
@@ -309,6 +319,9 @@ const NOTICE_TEXT: Record<NoticeCode, string> = {
   already_in_party: 'Người này đã có nhóm',
   no_invite: 'Lời mời đã hết hạn',
   capacity_full: 'Kinh mạch / Body Load không đủ chỗ',
+  combat_capacity_full: 'Đã đạt giới hạn đạn / trận đang hoạt động',
+  farm_stuck: 'Auto dừng: đường đi bị kẹt',
+  farm_low_hp: 'Auto dừng: máu thấp',
   requirements_unmet: 'Chưa đủ điều kiện',
   max_realm: 'Chưa thể đột phá cảnh giới tiếp theo',
   not_in_safe_zone: 'Chỉ đột phá được trong vùng an toàn',
@@ -363,6 +376,7 @@ export class GameView {
   };
   /** Presentation delayed to match animation events (hit frames). */
   private readonly delayed: { at: number; run: () => void }[] = [];
+  private readonly presentedActions = new Map<EntityId, number>();
   private readonly quality: QualityManager;
   private preset: QualityPreset;
   private readonly fx: CombatFx;
@@ -867,6 +881,8 @@ export class GameView {
         this.lootBeams.detach(id);
         this.pool.release(view);
         this.views.delete(id);
+        this.presentedActions.delete(id);
+        this.swings.delete(id);
         this.gearKeys.delete(id);
         if (this.selectedId === id) this.select(null);
       }
@@ -886,6 +902,9 @@ export class GameView {
         }
       }
       view.setTransform(e.x, e.z, e.yaw);
+      view.setCloaked(
+        !!e.state.cloakEndTick && e.state.cloakEndTick > (this.buffer.latest?.tick ?? 0),
+      );
       view.setAction(e.state.action);
       view.setHp(e.state.hp, e.state.maxHp);
       if (e.state.gear) {
@@ -1310,6 +1329,7 @@ export class GameView {
     for (const ev of events) {
       switch (ev.type) {
         case 'ATTACK': {
+          if (ev.actionId != null) this.presentedActions.set(ev.sourceId, ev.actionId);
           if (ev.windup) {
             const w = ev.windup;
             this.telegraphs.showCone(
@@ -1409,6 +1429,29 @@ export class GameView {
           );
           break;
         }
+        case 'ACTION_CANCEL': {
+          this.telegraphs.clear(`${ev.sourceId}:${ev.actionId}`);
+          if (this.presentedActions.get(ev.sourceId) === ev.actionId) {
+            this.presentedActions.delete(ev.sourceId);
+            this.swings.delete(ev.sourceId);
+            this.castFrom.delete(ev.sourceId);
+            this.telegraphs.clear(`melee:${ev.sourceId}`);
+            this.views.get(ev.sourceId)?.cancelActionPresentation();
+          }
+          break;
+        }
+        case 'SHIELD': {
+          const view = this.views.get(ev.targetId);
+          if (view && ev.phase !== 'expire')
+            this.floatText(
+              view,
+              ev.phase === 'gain' ? `Khiên +${ev.amount}` : `Chặn ${ev.amount}`,
+              '#8fe3ff',
+              1,
+              false,
+            );
+          break;
+        }
         case 'SHOT': {
           this.shots.set(ev.shotId, ev.rangedId);
           if (this.shots.size > 256) {
@@ -1467,7 +1510,29 @@ export class GameView {
           break;
         }
         case 'CAST_START': {
+          const warningKey = `${ev.sourceId}:${ev.actionId ?? ev.skillId}`;
+          if (ev.continuation) {
+            if (ev.line)
+              this.telegraphs.showLine(
+                warningKey,
+                ev.line.origin,
+                ev.line.destination,
+                ev.line.radius,
+                Math.max(0.1, (ev.endTick - tick) / TICK_RATE),
+              );
+            else if (ev.point && ev.radius > 0)
+              this.telegraphs.show(
+                warningKey,
+                ev.point.x,
+                ev.point.z,
+                ev.radius,
+                Math.max(0.1, (ev.endTick - tick) / TICK_RATE),
+              );
+            break;
+          }
           const source = this.views.get(ev.sourceId);
+          if (ev.actionId != null) this.presentedActions.set(ev.sourceId, ev.actionId);
+          this.swings.delete(ev.sourceId);
           const skill = this.opts.content.skills.get(ev.skillId);
           if (skill?.anim?.cast) source?.playClip(skill.anim.cast, skill.anim.castSpeed, 'cast');
           else source?.play('cast');
@@ -1494,14 +1559,32 @@ export class GameView {
               this.thunder.cast(skill.vfx, source, self ? null : ev.point, ev.radius, seconds),
             );
           }
-          if (ev.telegraph && ev.point && ev.radius > 0) {
+          if (ev.telegraph && ev.cone) {
+            this.telegraphs.showCone(
+              warningKey,
+              ev.cone.origin.x,
+              ev.cone.origin.z,
+              ev.cone.yaw,
+              ev.cone.radius,
+              ev.cone.arc,
+              Math.max(0.1, (ev.endTick - tick) / TICK_RATE),
+            );
+          } else if (ev.telegraph && ev.line) {
+            this.telegraphs.showLine(
+              warningKey,
+              ev.line.origin,
+              ev.line.destination,
+              ev.line.radius,
+              Math.max(0.1, (ev.endTick - tick) / TICK_RATE),
+            );
+          } else if (ev.telegraph && ev.point && ev.radius > 0) {
             const seconds = Math.max(0.1, (ev.endTick - tick) / TICK_RATE);
-            this.telegraphs.show(`${ev.sourceId}`, ev.point.x, ev.point.z, ev.radius, seconds);
+            this.telegraphs.show(warningKey, ev.point.x, ev.point.z, ev.radius, seconds);
           }
           break;
         }
         case 'SKILL_IMPACT': {
-          this.telegraphs.clear(`${ev.sourceId}`);
+          this.telegraphs.clear(`${ev.sourceId}:${ev.actionId ?? ev.skillId}`);
           const skill = this.opts.content.skills.get(ev.skillId);
           const vfx = skill?.vfx ?? 'slash';
           if (skill?.delivery === 'projectile') this.projectiles.stopAt(ev.projectileId, ev.point);
@@ -1538,7 +1621,14 @@ export class GameView {
               tgt.root.position.add(new Vector3(0, tgt.height * 0.5, 0)),
               vfx,
             );
-          } else if (ev.radius > 0)
+          } else if (ev.line)
+            this.impacts.spawnLine(
+              ev.line.origin,
+              ev.line.destination,
+              ev.line.radius,
+              elementColor(ev.element, ev.expression),
+            );
+          else if (ev.radius > 0)
             this.impacts.spawn(
               ev.point.x,
               ev.point.z,
@@ -1552,9 +1642,12 @@ export class GameView {
           break;
         }
         case 'DEATH':
+          this.presentedActions.delete(ev.id);
+          this.swings.delete(ev.id);
+          this.castFrom.delete(ev.id);
           this.sfxAt(this.views.get(ev.id)?.appearance.sfx.death, ev.id);
           if (ev.id === this.selectedId) this.select(null);
-          this.telegraphs.clear(`${ev.id}`);
+          this.telegraphs.clearSource(ev.id);
           this.telegraphs.clear(`melee:${ev.id}`);
           break;
         case 'BREAKTHROUGH': {
@@ -1729,8 +1822,9 @@ export class GameView {
     v = { ...v, trail: { ...v.trail, color: elementColor(state?.element, state?.expression) } };
     if (state?.expression === 'thunder') this.thunder.hit(view, 'thunder_strike');
     view.faceYaw(yaw, v.windup + v.recovery * 0.6);
-    this.swings.set(id, { variant: v, yaw, stopped: false });
-    const alive = () => view.entityId === id;
+    const swing = { variant: v, yaw, stopped: false };
+    this.swings.set(id, swing);
+    const alive = () => view.entityId === id && this.swings.get(id) === swing;
     const color = Color3.FromHexString(v.trail.color);
     const mine = id === this.join.playerId;
     const lead = Math.min(0.24, v.windup * 0.6);
@@ -1837,6 +1931,7 @@ export class GameView {
         const def = c.characters.get(e.defId);
         return def ? c.appearances.get(def.appearanceId) : undefined;
       }
+      case 'pet':
       case 'monster': {
         const def = c.monsters.get(e.defId);
         return def ? c.appearances.get(def.appearanceId) : undefined;
@@ -1879,9 +1974,10 @@ export class GameView {
     const e = this.buffer.latest?.entities.find((x) => x.id === id);
     if (!e) return null;
     const c = this.opts.content;
-    const monster = e.kind === 'monster' ? c.monsters.get(e.defId) : undefined;
+    const monster = e.kind === 'monster' || e.kind === 'pet' ? c.monsters.get(e.defId) : undefined;
     let name: string;
     if (e.kind === 'player') name = e.name ?? c.characters.get(e.defId)?.name ?? e.defId;
+    else if (e.kind === 'pet') name = `Linh thú · ${monster?.name ?? e.defId}`;
     else if (e.kind === 'loot') name = c.items.get(e.defId)?.name ?? e.defId;
     else if (e.kind === 'npc') name = c.npcs.get(e.defId)?.name ?? e.defId;
     else if (e.kind === 'portal')
@@ -2199,6 +2295,44 @@ export class GameView {
               ...meFrame,
               mp: ps.mp,
               maxMp: ps.maxMp,
+              cloakRemaining: Math.max(0, ((me?.state.cloakEndTick ?? 0) - tick) / TICK_RATE),
+              poise: me?.state.poise
+                ? {
+                    pressure: me.state.poise.pressure,
+                    threshold: me.state.poise.threshold,
+                    staggerRemaining: Math.max(
+                      0,
+                      (me.state.poise.staggerUntilTick - tick) / TICK_RATE,
+                    ),
+                    immuneRemaining: Math.max(
+                      0,
+                      (me.state.poise.immuneUntilTick - tick) / TICK_RATE,
+                    ),
+                  }
+                : null,
+              guardChain:
+                me?.state.guardChain && me.state.guardChain.endTick > tick
+                  ? {
+                      stacks: me.state.guardChain.stacks,
+                      defense: me.state.guardChain.defense,
+                      remaining: (me.state.guardChain.endTick - tick) / TICK_RATE,
+                    }
+                  : null,
+              companion: ps.companion
+                ? {
+                    name: c.pets.get(ps.companion.profileId)?.name ?? 'Linh thú',
+                    hp: ps.companion.hp,
+                    maxHp: ps.companion.maxHp,
+                    recovery: Math.max(0, (ps.companion.readyAtTick - tick) / TICK_RATE),
+                  }
+                : null,
+              shield:
+                me?.state.shield && me.state.shield.endTick > tick
+                  ? {
+                      amount: me.state.shield.amount,
+                      remaining: (me.state.shield.endTick - tick) / TICK_RATE,
+                    }
+                  : null,
               cultivation: this.cultivationView(ps, tick),
               gold: ps.gold,
               inSafeZone: ps.inSafeZone,

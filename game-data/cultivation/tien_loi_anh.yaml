@@ -1,0 +1,12 @@
+id: tien_loi_anh
+name: Kiếm Pháp · Lôi Ảnh
+description: Lục Viễn chỉ điểm bước kiếm. Mở Lôi Ảnh Trảm, lướt theo hướng đã chọn rồi chém tại điểm dừng.
+icon: "⚡"
+axis: dao
+path: tien
+realm: luyen_khi
+requires: [tien_khai_mach]
+quests: [q_meet_scout]
+cost: { gold: 70, materials: [{ itemId: item_wolf_fang, count: 3 }] }
+meridian: 5
+skillId: skill_thunder_leap

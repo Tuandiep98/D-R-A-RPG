@@ -1,6 +1,13 @@
-import type { ContentBundle, MapDef, RealmDef } from '@rpg/game-data';
+import type { ComboDef, ContentBundle, MapDef, RealmDef } from '@rpg/game-data';
 import type { EntityId, NoticeCode, SimEvent } from '@rpg/game-protocol';
-import type { CircleObstacle, Entity, LedgerEntry, Projectile, SkillProjectile } from './entity';
+import type {
+  Cast,
+  CircleObstacle,
+  Entity,
+  LedgerEntry,
+  Projectile,
+  SkillProjectile,
+} from './entity';
 import type { Bounds, Vec2 } from './math';
 import type { Rng } from './rng';
 
@@ -52,11 +59,20 @@ export interface SimContext {
   /** Committed shots awaiting presentation lengths from the collision phase. */
   readonly rangedShots: Extract<SimEvent, { type: 'SHOT' }>[];
   readonly skillProjectiles: SkillProjectile[];
+  readonly skillPulses: {
+    ownerId: EntityId;
+    cast: Cast;
+    nextTick: number;
+    remaining: number;
+    maxEndTick?: number;
+  }[];
   /** Unique per world: ties SHOT events to the DAMAGE of their bullets. */
   nextShotId(): number;
 }
 
 export const isAlive = (e: Entity | undefined): e is Entity => !!e && e.life.alive && !e.inert;
+export const isStaggered = (ctx: SimContext, e: Entity): boolean =>
+  (e.poise?.staggerUntilTick ?? 0) > ctx.tick;
 
 export const areHostile = (a: Entity, b: Entity): boolean =>
   a.faction !== b.faction && a.faction !== 'neutral' && b.faction !== 'neutral';
@@ -68,6 +84,30 @@ export const edgeDistance = (a: Entity, b: Entity): number =>
 /** True if `a` can hit `b` from where it stands. */
 export const inAttackRange = (a: Entity, b: Entity): boolean =>
   edgeDistance(a, b) <= a.combat.range;
+
+/** Weapon override, then the character's armed/unarmed combo. */
+export function comboOf(ctx: SimContext, e: Entity): ComboDef | null {
+  const p = e.player;
+  if (!p) return null;
+  const def = ctx.content.characters.get(p.characterId);
+  if (!def) return null;
+  const main = p.inventory.find((item) => item.instanceId === p.equipment.main_hand);
+  const item = main ? ctx.content.items.get(main.itemId) : undefined;
+  return (
+    ctx.content.combos.get(item ? (item.combo ?? def.combos.armed) : def.combos.unarmed) ?? null
+  );
+}
+
+/** Approach the next strike's real reach, rather than stopping at a longer character range. */
+export function basicReach(ctx: SimContext, e: Entity): number {
+  if (!e.player || e.player.ranged) return e.combat.range;
+  const combo = comboOf(ctx, e);
+  if (!combo) return e.combat.range;
+  const chained =
+    ctx.tick - e.player.combo.lastEndTick <= Math.max(1, Math.round(combo.resetAfter * 20));
+  const step = chained ? e.player.combo.nextStep % combo.steps.length : 0;
+  return Math.min(e.combat.range, combo.steps[step]?.variants[0]?.reach ?? e.combat.range);
+}
 
 /** Interaction reach for loot and portals, centre to centre. */
 export const INTERACT_RANGE = 2.5;

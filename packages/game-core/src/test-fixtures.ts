@@ -326,6 +326,7 @@ export function makeContent(o: FixtureOverrides = {}): ContentBundle {
     ],
   });
   return {
+    pets: new Map(),
     appearances: new Map([[appearance.id, appearance]]),
     characters: new Map([[character.id, character]]),
     monsters: new Map(monsters.map((m) => [m.id, m])),
@@ -344,5 +345,6 @@ export function makeContent(o: FixtureOverrides = {}): ContentBundle {
     recipes: new Map([[recipe.id, recipe]]),
     combat: new Map(),
     upgrades: new Map([[upgrades.id, upgrades]]),
+    world: new Map(),
   };
 }

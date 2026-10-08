@@ -1,0 +1,18 @@
+id: skill_the_avatar
+name: Bá Thể
+description: Tụ lực thành khiên bằng 35% HP tối đa trong 5 giây và chấn động mặt đất. Không gây choáng vĩnh viễn.
+icon: "✹"
+iconImage: icon_skill_whirlwind
+targeting: self
+castTime: 0.75
+timeline: { windup: 0.75, active: 0, recovery: 0.3, cancelWindup: true }
+delivery: circle
+groundLow: true
+telegraph: true
+cooldown: 28
+mpCost: 35
+effects:
+  - { type: shield, fraction: 0.35, duration: 5 }
+  - { type: damage, multiplier: 3.8, radius: 3.2 }
+vfx: burst
+anim: { cast: Melee_1H_Attack_Jump_Chop_InPlace, castSpeed: 1.28 }

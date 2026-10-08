@@ -1,0 +1,12 @@
+id: tien_thu_wave
+name: Ngự Thú · Bầy Thú
+description: Pet phát sóng thú theo đường đã ngắm, bị chặn bởi địa hình và có thể né.
+icon: "≋"
+axis: dao
+path: tien
+realm: truc_co
+requires: [tien_thu_combo]
+quests: [q_elite_stag]
+cost: { gold: 300, materials: [{ itemId: item_elite_antler, count: 1 }] }
+meridian: 20
+skillId: skill_thu_wave

@@ -1,0 +1,20 @@
+id: skill_anh_pursuit
+name: Truy Ảnh
+description: Khóa hướng tới mục tiêu trong 5 mét, lướt tới trước thân rồi chém nón ngắn. Không xuyên tường và mục tiêu có thể rời nón chém.
+icon: "↠"
+iconImage: icon_skill_heavy_slash
+targeting: target
+range: 5
+impactRange: 1.5
+delivery: cone
+arc: 70
+autoPolicy: manual
+cooldown: 10
+mpCost: 18
+timeline: { windup: 0.15, active: 0.25, recovery: 0.3, cancelWindup: true, cancelRecoveryAfter: 0.15 }
+effects:
+  - { type: dash, distance: 5, stopAtAim: true }
+  - { type: damage, multiplier: 2.2, radius: 1.5 }
+vfx: slash
+anim: { cast: Melee_1H_Attack_Stab, castSpeed: 1.05 }
+barRole: utility

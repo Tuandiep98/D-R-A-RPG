@@ -1,0 +1,16 @@
+id: skill_the_quake
+name: Chấn Địa
+description: Chấn động mặt đất quanh người sau khi tụ lực. Nhảy đúng lúc tránh được sóng thấp.
+icon: "◉"
+iconImage: icon_skill_ground_slam
+targeting: self
+castTime: 0.55
+timeline: { windup: 0.55, active: 0, recovery: 0.25, cancelWindup: true }
+delivery: circle
+groundLow: true
+telegraph: true
+cooldown: 9
+mpCost: 20
+effects: [{ type: damage, multiplier: 2.1, radius: 2.6 }]
+vfx: burst
+anim: { cast: Melee_1H_Attack_Jump_Chop_InPlace, castSpeed: 1.7454545454545454 }

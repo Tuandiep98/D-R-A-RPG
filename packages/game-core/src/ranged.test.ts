@@ -113,6 +113,29 @@ const of = <T extends SimEvent['type']>(events: SimEvent[], type: T) =>
   events.filter((e): e is Extract<SimEvent, { type: T }> => e.type === type);
 
 describe('ranged weapons', () => {
+  it('manual trigger release stops farm followups while the committed shot finishes once, then accepts a new aim', () => {
+    const { world, id, hero } = setup('pistol', [{ x: 0, z: 4 }]);
+    const target = [...world.entities.values()].find((e) => e.kind === 'monster');
+    if (!hero.player?.ranged || !target) throw new Error('missing fixture');
+    target.ai = null;
+    target.combat.targetId = null;
+    hero.player.ranged.def = { ...hero.player.ranged.def, windup: 0.3 };
+    hero.player.trigger.raisedUntil = 0;
+    hero.player.farm.enabled = true;
+    hero.combat.targetId = target.id;
+    expect(of(run(world, 1), 'SHOT')).toHaveLength(0);
+    expect(hero.player.trigger.windup).toBeTruthy();
+    world.enqueueIntent(id, { type: 'TRIGGER', held: false });
+    const committed = of(run(world, 12), 'SHOT');
+    expect(hero.player.farm.enabled).toBe(false);
+    expect(committed).toHaveLength(1);
+    expect(committed[0]?.yaws[0]).toBeCloseTo(0);
+    expect(hero.player.trigger.windup).toBeNull();
+    world.enqueueIntent(id, { type: 'BASIC_ATTACK', aim: { x: 10, z: 0 } });
+    const manual = of(run(world, 10), 'SHOT');
+    expect(manual).toHaveLength(1);
+    expect(manual[0]?.yaws[0]).toBeCloseTo(Math.PI / 2);
+  });
   it('hits a moving body that crosses a bullet between ticks, exactly once', () => {
     const { world, id, hero } = setup('pistol', [{ x: -1, z: 1.75 }]);
     const mob = [...world.entities.values()].find((e) => e.kind === 'monster');

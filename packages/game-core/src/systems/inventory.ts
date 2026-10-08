@@ -1,8 +1,8 @@
-import type { ItemInstanceId } from "@rpg/game-protocol";
-import type { SimContext } from "../context";
-import type { Entity, EquipSlot, LedgerEntry } from "../entity";
-import { secondsToTicks } from "../time";
-import { realmRank, recomputePlayerStats } from "./progression";
+import type { ItemInstanceId } from '@rpg/game-protocol';
+import type { SimContext } from '../context';
+import type { Entity, EquipSlot, LedgerEntry } from '../entity';
+import { secondsToTicks } from '../time';
+import { realmRank, recomputePlayerStats } from './progression';
 
 export const INVENTORY_CAPACITY = 40;
 
@@ -10,12 +10,7 @@ export const INVENTORY_CAPACITY = 40;
  * Adds items, stacking where possible. Returns how many did NOT fit.
  * Server authoritative: this is the only way items enter an inventory.
  */
-export function addItem(
-  ctx: SimContext,
-  e: Entity,
-  itemId: string,
-  count: number,
-): number {
+export function addItem(ctx: SimContext, e: Entity, itemId: string, count: number): number {
   const p = e.player;
   const def = ctx.content.items.get(itemId);
   if (!p || !def || count <= 0) return count;
@@ -37,9 +32,8 @@ export function addItem(
     left -= add;
   }
   const gained = count - left;
-  if (gained > 0)
-    ctx.emit({ type: "ITEM_GAINED", ownerId: e.id, itemId, count: gained });
-  if (left > 0) ctx.notice(e.id, "inventory_full");
+  if (gained > 0) ctx.emit({ type: 'ITEM_GAINED', ownerId: e.id, itemId, count: gained });
+  if (left > 0) ctx.notice(e.id, 'inventory_full');
   return left;
 }
 
@@ -47,7 +41,7 @@ export function grantGold(
   ctx: SimContext,
   e: Entity,
   amount: number,
-  reason: LedgerEntry["reason"],
+  reason: LedgerEntry['reason'],
   key: string,
 ): boolean {
   const p = e.player;
@@ -63,27 +57,24 @@ export function grantGold(
   });
   if (!ok) return false;
   p.gold += amount;
-  ctx.emit({ type: "GOLD", ownerId: e.id, amount, reason });
+  ctx.emit({ type: 'GOLD', ownerId: e.id, amount, reason });
   return true;
 }
 
-export function equip(
-  ctx: SimContext,
-  e: Entity,
-  instanceId: ItemInstanceId,
-): boolean {
+export function equip(ctx: SimContext, e: Entity, instanceId: ItemInstanceId): boolean {
   const p = e.player;
   const inv = p?.inventory.find((i) => i.instanceId === instanceId);
   const def = inv && ctx.content.items.get(inv.itemId);
-  if (!p || !def || def.kind !== "equipment" || !def.slot) {
-    ctx.notice(e.id, "invalid");
+  if (!p || !def || def.kind !== 'equipment' || !def.slot) {
+    ctx.notice(e.id, 'invalid');
     return false;
   }
   if (def.realm && realmRank(ctx, def.realm) > e.realm) {
-    ctx.notice(e.id, "realm_too_low");
+    ctx.notice(e.id, 'realm_too_low');
     return false;
   }
   p.equipment[def.slot as EquipSlot] = instanceId;
+  if (def.slot === 'main_hand') e.guardChain = null;
   recomputePlayerStats(ctx, e);
   return true;
 }
@@ -92,39 +83,30 @@ export function unequip(ctx: SimContext, e: Entity, slot: EquipSlot): boolean {
   const p = e.player;
   if (!p?.equipment[slot]) return false;
   delete p.equipment[slot];
+  if (slot === 'main_hand') e.guardChain = null;
   recomputePlayerStats(ctx, e);
   return true;
 }
 
-export function useItem(
-  ctx: SimContext,
-  e: Entity,
-  instanceId: ItemInstanceId,
-): boolean {
+export function useItem(ctx: SimContext, e: Entity, instanceId: ItemInstanceId): boolean {
   const p = e.player;
-  const idx = p
-    ? p.inventory.findIndex((i) => i.instanceId === instanceId)
-    : -1;
+  const idx = p ? p.inventory.findIndex((i) => i.instanceId === instanceId) : -1;
   const inv = p?.inventory[idx];
   const def = inv && ctx.content.items.get(inv.itemId);
-  if (!p || !inv || !def || def.kind !== "consumable") {
-    if (p) ctx.notice(e.id, "invalid");
+  if (!p || !inv || !def || def.kind !== 'consumable') {
+    if (p) ctx.notice(e.id, 'invalid');
     return false;
   }
   if (ctx.tick < p.itemReadyAtTick) {
-    ctx.notice(e.id, "cooldown");
+    ctx.notice(e.id, 'cooldown');
     return false;
   }
   if (def.heal) {
-    const amount = Math.min(
-      e.stats.maxHp - e.stats.hp,
-      Math.round(e.stats.maxHp * def.heal),
-    );
+    const amount = Math.min(e.stats.maxHp - e.stats.hp, Math.round(e.stats.maxHp * def.heal));
     e.stats.hp += amount;
-    ctx.emit({ type: "HEAL", targetId: e.id, amount });
+    ctx.emit({ type: 'HEAL', targetId: e.id, amount });
   }
-  p.itemReadyAtTick =
-    ctx.tick + (def.cooldown > 0 ? secondsToTicks(def.cooldown) : 0);
+  p.itemReadyAtTick = ctx.tick + (def.cooldown > 0 ? secondsToTicks(def.cooldown) : 0);
   inv.count--;
   if (inv.count <= 0) {
     p.inventory.splice(idx, 1);
@@ -136,29 +118,18 @@ export function useItem(
 }
 
 export function countItem(e: Entity, itemId: string): number {
-  return (e.player?.inventory ?? []).reduce(
-    (n, i) => (i.itemId === itemId ? n + i.count : n),
-    0,
-  );
+  return (e.player?.inventory ?? []).reduce((n, i) => (i.itemId === itemId ? n + i.count : n), 0);
 }
 
 /** Removes `count` items, unequipped stacks first. Caller checks countItem beforehand. */
-export function removeItems(
-  ctx: SimContext,
-  e: Entity,
-  itemId: string,
-  count: number,
-): void {
+export function removeItems(ctx: SimContext, e: Entity, itemId: string, count: number): void {
   const p = e.player;
   if (!p) return;
   const equipped = new Set(Object.values(p.equipment));
   let left = count;
   const stacks = p.inventory
     .filter((i) => i.itemId === itemId)
-    .sort(
-      (a, b) =>
-        Number(equipped.has(a.instanceId)) - Number(equipped.has(b.instanceId)),
-    );
+    .sort((a, b) => Number(equipped.has(a.instanceId)) - Number(equipped.has(b.instanceId)));
   for (const slot of stacks) {
     if (left === 0) break;
     const take = Math.min(left, slot.count);
@@ -167,11 +138,9 @@ export function removeItems(
   }
   p.inventory = p.inventory.filter((i) => i.count > 0);
   for (const [slot, id] of Object.entries(p.equipment)) {
-    if (!p.inventory.some((i) => i.instanceId === id))
-      delete p.equipment[slot as EquipSlot];
+    if (!p.inventory.some((i) => i.instanceId === id)) delete p.equipment[slot as EquipSlot];
   }
-  if (equipped.size !== Object.keys(p.equipment).length)
-    recomputePlayerStats(ctx, e);
+  if (equipped.size !== Object.keys(p.equipment).length) recomputePlayerStats(ctx, e);
 }
 
 /** True if every item would fit (stacking into existing stacks first). */
@@ -188,8 +157,7 @@ export function canAdd(
     if (!def) return false;
     let left = count;
     for (const slot of p.inventory) {
-      if (slot.itemId === itemId)
-        left -= Math.max(0, def.maxStack - slot.count);
+      if (slot.itemId === itemId) left -= Math.max(0, def.maxStack - slot.count);
     }
     while (left > 0) {
       if (freeSlots <= 0) return false;

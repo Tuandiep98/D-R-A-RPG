@@ -9,4 +9,5 @@ duration: 0.3
 dodgeWindow: [0.1, 0.2]
 effects: [{ type: dash, distance: 3 }]
 vfx: mobility
-anim: { cast: Dodge_Forward_InPlace }
+# The runtime in-place roll lasts 0.40s; fit it to six authoritative ticks.
+anim: { cast: Dodge_Forward_InPlace, castSpeed: 1.3333333333333333 }

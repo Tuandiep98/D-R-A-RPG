@@ -1,4 +1,4 @@
-import type { SimContext } from '../context';
+import { isStaggered, type SimContext } from '../context';
 import type { Entity } from '../entity';
 import { travel } from '../geometry';
 import type { Vec2 } from '../math';
@@ -13,7 +13,7 @@ export function requestMobility(
 ): boolean {
   const skill = [...ctx.content.skills.values()].find((s) => s.mobility === action);
   const p = e.player;
-  if (!p || !e.life.alive || !skill || e.mobility) return false;
+  if (!p || !e.life.alive || !skill || e.mobility || isStaggered(ctx, e)) return false;
   if (ctx.tick < (p.mobilityReady.get(action) ?? 0)) {
     ctx.notice(e.id, 'cooldown');
     return false;

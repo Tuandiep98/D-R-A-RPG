@@ -1,16 +1,35 @@
 import type { DamageSpec, SkillDef } from '@rpg/game-data';
 import type { EntityId } from '@rpg/game-protocol';
-import { areHostile, edgeDistance, isAlive, type SimContext } from '../context';
-import type { Entity } from '../entity';
-import { clearLine, coneTouches, segmentEntry, travel } from '../geometry';
+import { areHostile, edgeDistance, isAlive, isStaggered, type SimContext } from '../context';
+import type { Cast, Entity } from '../entity';
+import { clearLine, coneTouches, segmentDistance, segmentEntry, travel } from '../geometry';
 import { distance, sub, type Vec2, yawOf } from '../math';
 import { secondsToTicks, TICK_RATE } from '../time';
-import { beginAction, cancelAction, currentAction } from './action-timeline';
+import { beginAction, canCancelAction, cancelAction, currentAction } from './action-timeline';
 import { applyDamage, captureDamageSource, rollHit } from './combat';
 import { requestMobility } from './mobility';
+import { companion } from './pets';
+import { MAX_SKILL_OBJECTS, skillObjectLoad } from './skill-capacity';
 
 export const effectRadius = (skill: SkillDef): number =>
   Math.max(0, ...skill.effects.map((e) => (e.type === 'damage' ? e.radius : 0)));
+
+export const ownedFields = (ctx: SimContext, e: Entity) =>
+  ctx.skillPulses.filter(
+    (pulse) =>
+      pulse.ownerId === e.id &&
+      !!ctx.content.skills.get(pulse.cast.skillId)?.field &&
+      (pulse.maxEndTick ?? Infinity) > ctx.tick,
+  );
+
+function reachableFields(ctx: SimContext, e: Entity, skill: SkillDef) {
+  return ownedFields(ctx, e).filter(
+    (field) =>
+      field.cast.point &&
+      distance(e.pos, field.cast.point) <= skill.range &&
+      clearLine(ctx, e.pos, field.cast.point),
+  );
+}
 
 function damageSpecs(ctx: SimContext, skill: SkillDef): DamageSpec[] {
   return skill.effects.flatMap((effect) =>
@@ -51,8 +70,57 @@ export function requestCast(
   }
   if (skill.id === 'skill_thunder_step') return requestMobility(ctx, e, 'roll', point);
   if (skill.mobility) return requestMobility(ctx, e, skill.mobility, point);
-  if (e.cast || e.mobility) return false;
-  if (skill.delivery === 'projectile' && ctx.skillProjectiles.length >= 128) return false;
+  if (e.cast || e.mobility || isStaggered(ctx, e)) return false;
+  const petEffects = skill.effects.filter(
+    (effect) => effect.type === 'pet_attack' || effect.type === 'pet_support',
+  );
+  if (petEffects.length) {
+    const pet = companion(ctx, e);
+    if (
+      !isAlive(pet) ||
+      distance(e.pos, pet.pos) > skill.range ||
+      !clearLine(ctx, e.pos, pet.pos)
+    ) {
+      ctx.notice(e.id, 'no_target');
+      return false;
+    }
+    if (
+      petEffects.some((effect) => effect.type === 'pet_attack') &&
+      (ctx.inSafeZone(e.pos) || ctx.inSafeZone(pet.pos))
+    ) {
+      ctx.notice(e.id, 'no_target');
+      return false;
+    }
+    if (
+      petEffects.some((effect) => effect.type === 'pet_attack') &&
+      (pet.cast || pet.monsterSwing || (currentAction(ctx, pet) && !canCancelAction(ctx, pet)))
+    ) {
+      ctx.notice(e.id, 'invalid');
+      return false;
+    }
+  }
+  const command = skill.effects.find((effect) => effect.type === 'pet_attack');
+  const commandSkill =
+    command?.type === 'pet_attack' ? ctx.content.skills.get(command.skillId) : undefined;
+  if (
+    (skill.requiresField || skill.effects.some((effect) => effect.type === 'pulse_fields')) &&
+    reachableFields(ctx, e, skill).length === 0
+  ) {
+    ctx.notice(e.id, 'no_target');
+    return false;
+  }
+  if (skill.field && ownedFields(ctx, e).length >= skill.field.maxOwned) {
+    ctx.notice(e.id, 'combat_capacity_full');
+    return false;
+  }
+  if (
+    ((skill.delivery === 'projectile' || commandSkill?.delivery === 'projectile') &&
+      skillObjectLoad(ctx, 'projectile') >= MAX_SKILL_OBJECTS) ||
+    (skill.pulses && skillObjectLoad(ctx, 'pulses') >= MAX_SKILL_OBJECTS)
+  ) {
+    ctx.notice(e.id, 'combat_capacity_full');
+    return false;
+  }
   if (ctx.tick < readyAt) {
     ctx.notice(e.id, 'cooldown');
     return false;
@@ -73,10 +141,28 @@ export function requestCast(
       }
     } else target = t;
   }
-  const aim = skill.targeting === 'self' ? null : (point ?? (target ? { ...target.pos } : null));
+  const aim =
+    skill.targeting === 'self'
+      ? null
+      : skill.targeting === 'target'
+        ? target
+          ? { ...target.pos }
+          : null
+        : (point ?? (target ? { ...target.pos } : null));
   if (skill.targeting === 'point' && !aim) {
     ctx.notice(e.id, 'no_target');
     return false;
+  }
+  if (commandSkill && commandSkill.delivery !== 'projectile') {
+    const pet = companion(ctx, e);
+    const commandedPoint = aim ?? {
+      x: e.pos.x + Math.sin(e.yaw) * skill.range,
+      z: e.pos.z + Math.cos(e.yaw) * skill.range,
+    };
+    if (!pet || distance(pet.pos, commandedPoint) > commandSkill.range + pet.movement.radius) {
+      ctx.notice(e.id, 'no_target');
+      return false;
+    }
   }
   if (currentAction(ctx, e) && !cancelAction(ctx, e)) return false;
 
@@ -110,6 +196,13 @@ function startCast(
   target: Entity | null,
   aim: Vec2 | null,
 ): void {
+  if (
+    skill.effects.some(
+      (effect) =>
+        effect.type === 'damage' || effect.type === 'pulse_fields' || effect.type === 'pet_attack',
+    )
+  )
+    e.cloakEndTick = null;
   e.pending = null;
   e.actionBuffer = null;
   e.swing = null;
@@ -130,9 +223,25 @@ function startCast(
     cancelWindup: true,
   };
   const action = beginAction(ctx, e, 'skill', timing);
-  const travelLeft = Math.max(0, ...skill.effects.map((f) => (f.type === 'dash' ? f.distance : 0)));
+  const travelLeft = Math.max(
+    0,
+    ...skill.effects.map((f) =>
+      f.type === 'dash'
+        ? f.stopAtAim && aim
+          ? Math.min(
+              f.distance,
+              Math.max(
+                0,
+                distance(e.pos, aim) - e.movement.radius - (target?.movement.radius ?? 0) - 0.1,
+              ),
+            )
+          : f.distance
+        : 0,
+    ),
+  );
   const point = skill.targeting === 'self' ? { ...e.pos } : aim;
   e.cast = {
+    origin: { ...e.pos },
     yaw: action.yaw,
     travelLeft,
     source: captureDamageSource(ctx, e),
@@ -140,9 +249,14 @@ function startCast(
     targetId: target?.id ?? null,
     point,
     startTick: ctx.tick,
-    endTick: travelLeft > 0 ? action.activeEndTick : action.activeStartTick,
+    endTick: skill.effects.some((effect) => effect.type === 'dash')
+      ? action.activeEndTick
+      : action.activeStartTick,
   };
   e.combat.lastCombatTick = ctx.tick;
+  const landing = { ...e, pos: { ...e.pos }, movement: { ...e.movement } };
+  if (e.pet && skill.telegraph && skill.delivery === 'cone' && travelLeft > 0)
+    travel(ctx, landing, { x: Math.sin(action.yaw), z: Math.cos(action.yaw) }, travelLeft);
   ctx.emit({
     type: 'CAST_START',
     actionId: action.id,
@@ -155,6 +269,29 @@ function startCast(
     radius: effectRadius(skill),
     telegraph: skill.telegraph,
     endTick: e.cast.endTick,
+    ...(skill.delivery === 'line' ? { line: castLine(skill, e.cast) } : {}),
+    ...(e.pet && skill.telegraph && skill.delivery === 'cone'
+      ? {
+          cone: {
+            origin: { ...landing.pos },
+            yaw: action.yaw,
+            radius: (skill.impactRange ?? skill.range) + e.movement.radius,
+            arc: skill.arc,
+          },
+        }
+      : {}),
+    ...(e.pet && skill.telegraph && skill.delivery === 'projectile'
+      ? {
+          line: {
+            origin: { ...e.pos },
+            destination: {
+              x: e.pos.x + Math.sin(action.yaw) * skill.range,
+              z: e.pos.z + Math.cos(action.yaw) * skill.range,
+            },
+            radius: skill.projectileRadius,
+          },
+        }
+      : {}),
   });
 }
 
@@ -216,6 +353,28 @@ export function skillPreparationSystem(ctx: SimContext): void {
 /** Resolves damage only after all movement for this tick. */
 export function skillSystem(ctx: SimContext): void {
   advanceSkillProjectiles(ctx);
+  for (let i = ctx.skillPulses.length - 1; i >= 0; i--) {
+    const pulse = ctx.skillPulses[i];
+    if (!pulse) continue;
+    const owner = ctx.entities.get(pulse.ownerId);
+    const skill = ctx.content.skills.get(pulse.cast.skillId);
+    if (
+      !isAlive(owner) ||
+      !skill?.pulses ||
+      (pulse.maxEndTick !== undefined && ctx.tick >= pulse.maxEndTick)
+    ) {
+      ctx.skillPulses.splice(i, 1);
+      continue;
+    }
+    if (ctx.tick < pulse.nextTick) continue;
+    resolveSkill(ctx, owner, pulse.cast);
+    pulse.remaining--;
+    if (pulse.remaining === 0) ctx.skillPulses.splice(i, 1);
+    else {
+      pulse.nextTick += secondsToTicks(skill.pulses.interval);
+      announcePulse(ctx, owner, skill, pulse.cast, pulse.nextTick);
+    }
+  }
   for (const e of ctx.entities.values()) {
     if (!e.inert && e.life.alive && e.cast && ctx.tick >= e.cast.endTick) resolveCast(ctx, e);
   }
@@ -225,12 +384,69 @@ function resolveCast(ctx: SimContext, e: Entity): void {
   const cast = e.cast;
   e.cast = null;
   if (!cast) return;
+  resolveSkill(ctx, e, cast);
+  const skill = ctx.content.skills.get(cast.skillId);
+  if (skill?.pulses && isAlive(e)) {
+    const nextTick = ctx.tick + secondsToTicks(skill.pulses.interval);
+    ctx.skillPulses.push({
+      ownerId: e.id,
+      cast,
+      nextTick,
+      remaining: skill.pulses.count - 1,
+      ...(skill.field ? { maxEndTick: ctx.tick + secondsToTicks(skill.field.maxDuration) } : {}),
+    });
+    announcePulse(ctx, e, skill, cast, nextTick);
+  }
+}
+
+function announcePulse(
+  ctx: SimContext,
+  e: Entity,
+  skill: SkillDef,
+  cast: Cast,
+  endTick: number,
+): void {
+  ctx.emit({
+    type: 'CAST_START',
+    continuation: true,
+    actionId: cast.source.actionId ?? null,
+    sourceId: e.id,
+    skillId: skill.id,
+    targetId: null,
+    point: cast.point,
+    radius: effectRadius(skill),
+    telegraph: true,
+    endTick,
+    element: cast.source.element,
+    expression: cast.source.expression,
+    ...(skill.delivery === 'line' ? { line: castLine(skill, cast) } : {}),
+  });
+}
+
+function castLine(skill: SkillDef, cast: Cast) {
+  const origin = cast.origin ?? cast.point ?? { x: 0, z: 0 };
+  return {
+    origin,
+    destination: {
+      x: origin.x + Math.sin(cast.yaw) * skill.range,
+      z: origin.z + Math.cos(cast.yaw) * skill.range,
+    },
+    radius: effectRadius(skill),
+  };
+}
+
+function resolveSkill(ctx: SimContext, e: Entity, cast: Cast, damageMultiplier = 1): void {
   const skill = ctx.content.skills.get(cast.skillId);
   if (!skill) return;
   const point = cast.point ?? { ...e.pos };
   const target = cast.targetId !== null ? ctx.entities.get(cast.targetId) : undefined;
 
-  const impactPoint = skill.targeting === 'self' ? { ...e.pos } : point;
+  const impactPoint =
+    skill.delivery === 'line'
+      ? castLine(skill, cast).origin
+      : skill.targeting === 'self'
+        ? { ...e.pos }
+        : point;
   if (skill.delivery !== 'projectile')
     ctx.emit({
       type: 'SKILL_IMPACT',
@@ -242,9 +458,14 @@ function resolveCast(ctx: SimContext, e: Entity): void {
       point: impactPoint,
       radius: effectRadius(skill),
       targetId: target?.id ?? null,
+      ...(skill.delivery === 'line' ? { line: castLine(skill, cast) } : {}),
     });
 
-  const damages = damageSpecs(ctx, skill);
+  const damages = damageSpecs(ctx, skill).map((spec) => ({
+    ...spec,
+    multiplier: spec.multiplier * damageMultiplier,
+    flat: spec.flat * damageMultiplier,
+  }));
   if (skill.delivery === 'projectile' && damages.length > 0) {
     const dx = point.x - e.pos.x,
       dz = point.z - e.pos.z;
@@ -280,6 +501,86 @@ function resolveCast(ctx: SimContext, e: Entity): void {
   let damageIndex = 0;
   for (const effect of skill.effects) {
     if (effect.type === 'dash') continue;
+    if (effect.type === 'pet_attack') {
+      const pet = companion(ctx, e);
+      if (
+        isAlive(pet) &&
+        distance(e.pos, pet.pos) <= skill.range &&
+        clearLine(ctx, e.pos, pet.pos) &&
+        !ctx.inSafeZone(e.pos) &&
+        !ctx.inSafeZone(pet.pos)
+      ) {
+        const commanded = ctx.content.skills.get(effect.skillId);
+        let aim =
+          skill.targeting === 'self'
+            ? {
+                x: e.pos.x + Math.sin(cast.yaw) * skill.range,
+                z: e.pos.z + Math.cos(cast.yaw) * skill.range,
+              }
+            : point;
+        // A projectile command specifies a direction; its finite range starts at the pet.
+        if (commanded?.delivery === 'projectile' && aim) {
+          const yaw = yawOf(sub(aim, pet.pos));
+          aim = {
+            x: pet.pos.x + Math.sin(yaw) * commanded.range,
+            z: pet.pos.z + Math.cos(yaw) * commanded.range,
+          };
+        }
+        requestCast(ctx, pet, effect.skillId, null, aim);
+      }
+      continue;
+    }
+    if (effect.type === 'pet_support') {
+      const pet = companion(ctx, e);
+      if (
+        !isAlive(pet) ||
+        distance(e.pos, pet.pos) > skill.range ||
+        !clearLine(ctx, e.pos, pet.pos)
+      )
+        continue;
+      const amount = Math.min(
+        pet.stats.maxHp - pet.stats.hp,
+        Math.round(pet.stats.maxHp * effect.heal),
+      );
+      pet.stats.hp += amount;
+      ctx.emit({ type: 'HEAL', targetId: pet.id, amount });
+      const shield = Math.round(pet.stats.maxHp * effect.shield);
+      pet.shield = { amount: shield, endTick: ctx.tick + secondsToTicks(effect.duration) };
+      ctx.emit({
+        type: 'SHIELD',
+        targetId: pet.id,
+        amount: shield,
+        remaining: shield,
+        endTick: pet.shield.endTick,
+        phase: 'gain',
+      });
+      continue;
+    }
+    if (effect.type === 'cloak') {
+      e.cloakEndTick = ctx.tick + secondsToTicks(effect.duration);
+      continue;
+    }
+    if (effect.type === 'pulse_fields') {
+      for (const field of reachableFields(ctx, e, skill)) {
+        resolveSkill(ctx, e, { ...field.cast, source: cast.source }, effect.multiplier);
+        const fieldSkill = ctx.content.skills.get(field.cast.skillId);
+        if (fieldSkill) announcePulse(ctx, e, fieldSkill, field.cast, field.nextTick);
+      }
+      continue;
+    }
+    if (effect.type === 'shield') {
+      const amount = Math.round(e.stats.maxHp * effect.fraction);
+      e.shield = { amount, endTick: ctx.tick + secondsToTicks(effect.duration) };
+      ctx.emit({
+        type: 'SHIELD',
+        targetId: e.id,
+        amount,
+        remaining: amount,
+        endTick: e.shield.endTick,
+        phase: 'gain',
+      });
+      continue;
+    }
     if (effect.type === 'heal') {
       const amount = Math.min(
         e.stats.maxHp - e.stats.hp,
@@ -292,12 +593,31 @@ function resolveCast(ctx: SimContext, e: Entity): void {
     const spec = damages[damageIndex++];
     if (skill.delivery === 'projectile') continue;
     const victims: Entity[] = [];
-    if (skill.delivery === 'cone') {
+    if (skill.delivery === 'line') {
+      const line = castLine(skill, cast);
       for (const other of ctx.entities.values()) {
         if (
           isAlive(other) &&
           areHostile(e, other) &&
-          coneTouches(e.pos, cast.yaw, skill.range, skill.arc, other, e.movement.radius)
+          segmentDistance(other.pos, line.origin, line.destination) <=
+            effect.radius + other.movement.radius &&
+          (!skill.blockedByWalls || clearLine(ctx, line.origin, other.pos))
+        )
+          victims.push(other);
+      }
+    } else if (skill.delivery === 'cone') {
+      for (const other of ctx.entities.values()) {
+        if (
+          isAlive(other) &&
+          areHostile(e, other) &&
+          coneTouches(
+            e.pos,
+            cast.yaw,
+            skill.impactRange ?? skill.range,
+            skill.arc,
+            other,
+            e.movement.radius,
+          )
         )
           victims.push(other);
       }
@@ -311,11 +631,13 @@ function resolveCast(ctx: SimContext, e: Entity): void {
       victims.push(target);
     }
     for (const v of victims) {
-      if (skill.blockedByWalls) {
+      if (skill.blockedByWalls && skill.delivery !== 'line') {
         const centre = skill.delivery === 'cone' || effect.radius === 0 ? e.pos : impactPoint;
         if (
           !clearLine(ctx, centre, v.pos) ||
-          (skill.delivery !== 'cone' && effect.radius > 0 && !clearLine(ctx, e.pos, impactPoint))
+          (skill.delivery !== 'cone' &&
+            effect.radius > 0 &&
+            !clearLine(ctx, cast.origin ?? e.pos, impactPoint))
         )
           continue;
       }

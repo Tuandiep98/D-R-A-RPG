@@ -1,6 +1,6 @@
 import type { RangedDef } from '@rpg/game-data';
 import type { EntityId, PlayerState } from '@rpg/game-protocol';
-import { areHostile, edgeDistance, isAlive, type SimContext } from '../context';
+import { areHostile, edgeDistance, isAlive, isStaggered, type SimContext } from '../context';
 import type { DamageSource, Entity, PlayerData, TriggerState, WeaponState } from '../entity';
 import { segmentEntry } from '../geometry';
 import { clamp, sub, type Vec2, yawOf } from '../math';
@@ -145,7 +145,7 @@ export function rangedPreparationSystem(ctx: SimContext): void {
     const p = e.player;
     if (!p) continue;
     const t = p.trigger;
-    if (e.mobility) continue;
+    if (e.mobility || isStaggered(ctx, e)) continue;
     const w = p.ranged;
     if (t.instanceId !== (w?.instanceId ?? null)) swapped(ctx, e, t, w);
     if (!w) {
@@ -170,7 +170,8 @@ export function rangedPreparationSystem(ctx: SimContext): void {
       const auto = target !== null && !t.held && !t.queued && t.burstLeft === 0;
       const point = auto ? target.pos : t.aim;
       if (auto) t.assistId = target.id;
-      const wants = t.queued || t.burstLeft > 0 || (t.held && def.fireMode === 'auto') || auto;
+      const wants =
+        !!t.windup || t.queued || t.burstLeft > 0 || (t.held && def.fireMode === 'auto') || auto;
       if (wants) tryFire(ctx, e, w, ws, t, point);
       if (t.windup) e.yaw = t.windup.yaw;
       else if (ctx.tick < t.raisedUntil) e.yaw = aimYaw(ctx, e, def, t, point, false);

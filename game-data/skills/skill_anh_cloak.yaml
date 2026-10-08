@@ -1,0 +1,15 @@
+id: skill_anh_cloak
+name: Màn Ảnh
+description: Ẩn khỏi truy đuổi của quái trong 3 giây. Tấn công hoặc nhận đòn phá cloak; đạn và vùng sát thương vẫn có thể trúng.
+icon: "◌"
+iconImage: icon_item_crystal1
+targeting: self
+delivery: support
+autoPolicy: manual
+cooldown: 12
+mpCost: 16
+timeline: { windup: 0.1, active: 0, recovery: 0.15, cancelWindup: true }
+effects: [{ type: cloak, duration: 3 }]
+vfx: heal
+anim: { cast: Ranged_Magic_Shoot, castSpeed: 1.4 }
+barRole: utility

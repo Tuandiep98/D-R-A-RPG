@@ -1,0 +1,14 @@
+id: player_thu
+name: Ngự Thú · Thử Nghiệm
+appearanceId: char_kk_ranger
+petId: pet_wolf
+stats: { hp: 720, mp: 160, attack: 30, defense: 10, critChance: 0.1, critMultiplier: 1.6, hpRegen: 12, mpRegen: 4 }
+movement: { speed: 4.8, radius: 0.45 }
+combat: { range: 7, attackInterval: 0.8 }
+combos: { unarmed: combo_thu, armed: combo_thu }
+respawnSeconds: 5
+skills: [skill_thu_strike, skill_thu_bond]
+prototypeSkills: [skill_thu_strike, skill_thu_bond, skill_thu_combo, skill_thu_wave]
+starterItems: [{ itemId: item_potion_hp_small, count: 5 }]
+element: moc
+expression: base

@@ -30,6 +30,7 @@ export function beginAction(
   kind: ActionState['kind'],
   timing: ActionTiming,
 ): ActionState {
+  if (kind === 'melee' || kind === 'ranged') e.cloakEndTick = null;
   const ticks = (seconds: number) => Math.round(seconds * TICK_RATE);
   const activeStartTick = ctx.tick + ticks(timing.windup);
   const activeEndTick = activeStartTick + ticks(timing.active);
@@ -65,8 +66,12 @@ export function canCancelAction(ctx: SimContext, e: Entity): boolean {
   return true;
 }
 
-export function cancelAction(ctx: SimContext, e: Entity): boolean {
-  if (!canCancelAction(ctx, e)) return false;
+export function cancelAction(ctx: SimContext, e: Entity, interruptWindup = false): boolean {
+  const forcedWindup =
+    interruptWindup && !!e.actionState && actionPhase(e.actionState, ctx.tick) === 'windup';
+  if (!forcedWindup && !canCancelAction(ctx, e)) return false;
+  if (e.actionState)
+    ctx.emit({ type: 'ACTION_CANCEL', sourceId: e.id, actionId: e.actionState.id });
   e.actionState = null;
   e.cast = null;
   e.swing = null;
@@ -84,6 +89,29 @@ export function cancelAction(ctx: SimContext, e: Entity): boolean {
 
 export function timelineSystem(ctx: SimContext): void {
   for (const e of ctx.entities.values()) {
+    const poise = e.poise;
+    const def = e.player
+      ? ctx.content.characters.get(e.player.characterId)
+      : ctx.content.monsters.get(e.defId);
+    if (
+      poise &&
+      def?.combat.poise &&
+      ctx.tick >= poise.lastHitTick + Math.round(def.combat.poise.decaySeconds * TICK_RATE)
+    )
+      poise.pressure = 0;
+    if (e.guardChain && ctx.tick >= e.guardChain.endTick) e.guardChain = null;
+    if (e.cloakEndTick && ctx.tick >= e.cloakEndTick) e.cloakEndTick = null;
+    if (e.shield && ctx.tick >= e.shield.endTick) {
+      e.shield = null;
+      ctx.emit({
+        type: 'SHIELD',
+        targetId: e.id,
+        amount: 0,
+        remaining: 0,
+        endTick: ctx.tick,
+        phase: 'expire',
+      });
+    }
     currentAction(ctx, e);
     if (!e.life.alive || (e.actionBuffer && ctx.tick > e.actionBuffer.expiresTick))
       e.actionBuffer = null;
@@ -92,6 +120,10 @@ export function timelineSystem(ctx: SimContext): void {
 
 /** Forced lifecycle reset: never refunds committed resources or cooldowns. */
 export function resetTransientActions(e: Entity): void {
+  e.poise = null;
+  e.guardChain = null;
+  e.cloakEndTick = null;
+  e.shield = null;
   e.actionState = null;
   e.actionBuffer = null;
   e.cast = null;
@@ -105,6 +137,7 @@ export function resetTransientActions(e: Entity): void {
   e.movement.path = null;
   if (e.player) {
     e.player.farm.enabled = false;
+    e.player.farm.observedTarget = null;
     e.player.combo.buffered = false;
     e.player.combo.aim = null;
     e.player.trigger = newTriggerState();

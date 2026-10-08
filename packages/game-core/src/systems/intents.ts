@@ -18,6 +18,39 @@ export interface QueuedIntent {
   intent: Intent;
 }
 
+const MANUAL_CONTROL = new Set<Intent['type']>([
+  'MOVE_TO',
+  'MOVE_DIR',
+  'STOP',
+  'CAST_SKILL',
+  'MOBILITY',
+  'BASIC_ATTACK',
+  'TRIGGER',
+  'ATTACK_TARGET',
+  'RELOAD',
+  'PICKUP',
+  'INTERACT',
+  'EQUIP',
+  'UNEQUIP',
+]);
+
+/** Manual commands take ownership before busy-action buffering or semantic validation. */
+function takeOverFarm(actor: Entity, intent: Intent): void {
+  const player = actor.player;
+  if (!player?.farm.enabled || !MANUAL_CONTROL.has(intent.type)) return;
+  player.farm.enabled = false;
+  player.farm.approach = null;
+  player.farm.progress = null;
+  player.farm.observedTarget = null;
+  dropAutoAttack(actor);
+  actor.actionBuffer = null;
+  player.combo.buffered = false;
+  player.trigger.held = false;
+  player.trigger.queued = false;
+  player.trigger.burstLeft = 0;
+  // Already committed cast/swing/shot windup retains its normal cancellation policy.
+}
+
 /**
  * Applies already schema-validated intents. Semantic checks happen here:
  * the actor must exist and be alive, targets must be alive and hostile, items
@@ -36,6 +69,7 @@ export function applyIntents(ctx: SimContext, queue: readonly QueuedIntent[]): n
       rejected++;
       continue;
     }
+    takeOverFarm(actor, intent);
     if (!bufferIfBusy(ctx, actor, intent) && !apply(ctx, actor, intent)) rejected++;
   }
   return rejected;
@@ -109,21 +143,7 @@ function clearActions(ctx: SimContext, e: Entity, stop = false): void {
 }
 
 function apply(ctx: SimContext, actor: Entity, intent: Intent): boolean {
-  if (
-    actor.player?.farm.enabled &&
-    [
-      'MOVE_TO',
-      'MOVE_DIR',
-      'STOP',
-      'CAST_SKILL',
-      'MOBILITY',
-      'BASIC_ATTACK',
-      'TRIGGER',
-      'ATTACK_TARGET',
-    ].includes(intent.type)
-  ) {
-    actor.player.farm.enabled = false;
-  }
+  takeOverFarm(actor, intent);
   switch (intent.type) {
     case 'SET_FARM':
       if (!actor.player) return false;

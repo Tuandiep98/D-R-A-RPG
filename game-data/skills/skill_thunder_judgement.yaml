@@ -11,13 +11,9 @@ effects:
   - { type: damage, multiplier: 5.5, radius: 3.6 }
 vfx: thunder_ultimate
 # Clip trong model của người thi triển (presentation, D-032).
-anim:
-  {
-    cast: Ranged_Magic_Spellcasting_Long,
-    castSpeed: 1.6,
-    impact: Melee_1H_Attack_Chop,
-    impactSpeed: 1.5,
-  }
+# Charge the sword itself: Chop's ~0.60s strike pose lands at the 1.10s impact.
+# No second clip restart on each AoE hit.
+anim: { cast: Melee_1H_Attack_Chop, castSpeed: 0.5454545454545454 }
 sfx: { cast: [sfx_force_field], impact: [sfx_explosion] }
 
 delivery: circle

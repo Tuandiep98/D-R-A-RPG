@@ -1,0 +1,12 @@
+id: skill_phap_bolt
+name: Pháp Cầu
+description: Pháp cầu đánh thường bay thẳng, có thể né hoặc bị tường chặn.
+icon: "✦"
+targeting: point
+range: 8
+delivery: projectile
+projectileSpeed: 14
+projectileRadius: 0.2
+cooldown: 0.7
+effects: [{ type: damage, multiplier: 1 }]
+vfx: projectile

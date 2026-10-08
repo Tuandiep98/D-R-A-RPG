@@ -1,6 +1,7 @@
 import type { LedgerEntry, PlayerSave } from '@rpg/game-core';
 import type { Element } from '@rpg/game-protocol';
 import {
+  CompanionSaveSchema,
   SkillCooldownsSchema as CooldownsSchema,
   ElementSchema,
   ExpressionSchema,
@@ -272,6 +273,7 @@ export class GameRepository {
         saveVersion: SaveVersionSchema.parse(c.saveVersion),
         elementRevision: c.elementRevision,
         learnedSkills: LearnedSkillsSchema.parse(c.learnedSkills),
+        ...(c.companion ? { companion: CompanionSaveSchema.parse(c.companion) } : {}),
         ...(Object.keys(c.cooldowns).length
           ? { cooldowns: CooldownsSchema.parse(c.cooldowns) }
           : {}),
@@ -354,6 +356,7 @@ export class GameRepository {
           realmRank: save.realmRank ?? 0,
           nodes: save.nodes,
           cooldowns: CooldownsSchema.parse(save.cooldowns ?? {}),
+          companion: save.companion ? CompanionSaveSchema.parse(save.companion) : null,
           hp: save.hp,
           mp: save.mp,
           mapId: place.mapId,

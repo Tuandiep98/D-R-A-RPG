@@ -42,6 +42,9 @@ export const CombatRulesSchema = z
       leash: positive,
       reaction: seconds,
       thinkInterval: seconds,
+      rangeHysteresis: z.number().min(0).max(2).default(0.3),
+      stuckSeconds: positive.min(2).max(30).default(8),
+      stuckDistance: positive.max(1).default(0.2),
       hpStop: chance,
       mpReserve: chance,
     }),
@@ -98,6 +101,15 @@ export const MovementDefSchema = z.strictObject({
 });
 
 export const CombatDefSchema = z.strictObject({
+  poiseDamage: nonNegative.max(100).default(0),
+  poise: z
+    .strictObject({
+      threshold: positive.max(200),
+      breakSeconds: positive.max(1),
+      immunitySeconds: positive.min(1).max(10),
+      decaySeconds: positive.max(10),
+    })
+    .optional(),
   /** Edge-to-edge reach in metres. */
   range: positive,
   attackInterval: seconds,
@@ -151,10 +163,26 @@ export const ActionTimingSchema = z
 export type ActionTiming = z.infer<typeof ActionTimingSchema>;
 
 export const SkillEffectSchema = z.discriminatedUnion('type', [
+  z.strictObject({ type: z.literal('pet_attack'), skillId: IdSchema }),
+  z.strictObject({
+    type: z.literal('pet_support'),
+    heal: chance,
+    shield: chance,
+    duration: positive.max(10),
+  }),
+  z.strictObject({ type: z.literal('cloak'), duration: positive.max(6) }),
+  z.strictObject({ type: z.literal('pulse_fields'), multiplier: positive.max(3) }),
+  z.strictObject({
+    type: z.literal('shield'),
+    /** Replaces the current shield, never stacks; derived from max HP on impact. */
+    fraction: chance,
+    duration: positive.max(30),
+  }),
   z.strictObject({
     type: z.literal('dash'),
     /** Travel along the held direction, or facing when standing still. */
     distance: z.number().positive().max(12),
+    stopAtAim: z.boolean().default(false),
   }),
   DamageSpecSchema.extend({
     type: z.literal('damage'),
@@ -171,59 +199,115 @@ export const SkillEffectSchema = z.discriminatedUnion('type', [
   }),
 ]);
 
-export const SkillDefSchema = z.strictObject({
-  id: IdSchema,
-  name: z.string().min(1),
-  description: z.string().default(''),
-  icon: z.string().default('⚔'),
-  /** Runtime media id (`pnpm media:build`); the emoji `icon` stays as fallback. */
-  iconImage: MediaIconIdSchema.optional(),
-  targeting: SkillTargetingSchema,
-  /** Max distance to target/point, metres (ignored for `self`). */
-  range: nonNegative.default(0),
-  castTime: nonNegative.default(0),
-  timeline: ActionTimingSchema.optional(),
-  cooldown: seconds,
-  mpCost: z.number().int().nonnegative().default(0),
-  /** Which mobile action slot may show this skill. Desktop slots accept either. */
-  barRole: z.enum(['primary', 'utility']).default('primary'),
-  /**
-   * Show the impact area to everyone while casting (boss telegraphs, assets plan §7).
-   * The impact point is locked when the cast starts, so it can be dodged.
-   */
-  telegraph: z.boolean().default(false),
-  effects: z.array(SkillEffectSchema).min(1),
-  delivery: z.enum(['legacy', 'cone', 'projectile', 'circle', 'support']).default('legacy'),
-  arc: z.number().min(1).max(360).default(90),
-  projectileSpeed: positive.default(16),
-  projectileRadius: nonNegative.max(1).default(0.25),
-  blockedByWalls: z.boolean().default(true),
-  groundLow: z.boolean().default(false),
-  elementalShare: chance.optional(),
-  mobility: z.enum(['roll', 'blink', 'jump']).optional(),
-  duration: seconds.default(0.3),
-  dodgeWindow: z.tuple([nonNegative, nonNegative]).default([0.1, 0.2]),
-  vfx: z.string().default('slash'),
-  /**
-   * Presentation only: clips (names inside the caster's model) played when the
-   * cast starts and when it lands. Missing → the appearance's `cast` role.
-   */
-  anim: z
-    .strictObject({
-      cast: z.string().min(1).optional(),
-      castSpeed: positive.default(1),
-      impact: z.string().min(1).optional(),
-      impactSpeed: positive.default(1),
-    })
-    .optional(),
-  /** Presentation only: sounds when the cast starts and when it lands. */
-  sfx: z
-    .strictObject({
-      cast: SfxListSchema.optional(),
-      impact: SfxListSchema.optional(),
-    })
-    .default({}),
-});
+export const SkillDefSchema = z
+  .strictObject({
+    id: IdSchema,
+    name: z.string().min(1),
+    description: z.string().default(''),
+    icon: z.string().default('⚔'),
+    /** Runtime media id (`pnpm media:build`); the emoji `icon` stays as fallback. */
+    iconImage: MediaIconIdSchema.optional(),
+    targeting: SkillTargetingSchema,
+    autoPolicy: z.enum(['offense', 'defense', 'manual']).default('offense'),
+    /** Persistent circle scheduled with pulses; all owned fields share this bounded limit. */
+    field: z
+      .strictObject({ maxOwned: z.number().int().min(1).max(3), maxDuration: positive.max(30) })
+      .optional(),
+    requiresField: z.boolean().default(false),
+    /** Auto field centres stay within this distance of the farm anchor; manual casts are unchanged. */
+    autoAnchorRadius: positive.max(10).optional(),
+    /** Bounded observed-motion assist for auto point projectiles, never homing. */
+    autoAim: z
+      .strictObject({ maxSeconds: positive.max(1), maxDistance: positive.max(3), weight: chance })
+      .optional(),
+    /** Max distance to target/point, metres (ignored for `self`). */
+    range: nonNegative.default(0),
+    impactRange: nonNegative.max(12).optional(),
+    castTime: nonNegative.default(0),
+    timeline: ActionTimingSchema.optional(),
+    cooldown: seconds,
+    mpCost: z.number().int().nonnegative().default(0),
+    /** Which mobile action slot may show this skill. Desktop slots accept either. */
+    barRole: z.enum(['primary', 'utility']).default('primary'),
+    /**
+     * Show the impact area to everyone while casting (boss telegraphs, assets plan §7).
+     * The impact point is locked when the cast starts, so it can be dodged.
+     */
+    telegraph: z.boolean().default(false),
+    /** Scheduled circle impacts; each uses its own authored damage (not an extra full ultimate). */
+    pulses: z
+      .strictObject({
+        count: z.number().int().min(2).max(12),
+        interval: z.number().min(0.15).max(10),
+      })
+      .optional(),
+    effects: z.array(SkillEffectSchema).min(1),
+    delivery: z
+      .enum(['legacy', 'cone', 'projectile', 'circle', 'line', 'support'])
+      .default('legacy'),
+    arc: z.number().min(1).max(360).default(90),
+    projectileSpeed: positive.default(16),
+    projectileRadius: nonNegative.max(1).default(0.25),
+    blockedByWalls: z.boolean().default(true),
+    groundLow: z.boolean().default(false),
+    elementalShare: chance.optional(),
+    mobility: z.enum(['roll', 'blink', 'jump']).optional(),
+    duration: seconds.default(0.3),
+    dodgeWindow: z.tuple([nonNegative, nonNegative]).default([0.1, 0.2]),
+    vfx: z.string().default('slash'),
+    /**
+     * Presentation only: clips (names inside the caster's model) played when the
+     * cast starts and when it lands. Missing → the appearance's `cast` role.
+     */
+    anim: z
+      .strictObject({
+        cast: z.string().min(1).optional(),
+        castSpeed: positive.default(1),
+        impact: z.string().min(1).optional(),
+        impactSpeed: positive.default(1),
+      })
+      .optional(),
+    /** Presentation only: sounds when the cast starts and when it lands. */
+    sfx: z
+      .strictObject({
+        cast: SfxListSchema.optional(),
+        impact: SfxListSchema.optional(),
+      })
+      .default({}),
+  })
+  .refine(
+    (s) =>
+      !s.pulses ||
+      (s.targeting === 'point' &&
+        (s.delivery === 'circle' || s.delivery === 'line') &&
+        s.telegraph &&
+        s.effects.every((e) => e.type === 'damage')),
+    {
+      message: 'Scheduled pulses require telegraphed point-circle or point-line damage only',
+    },
+  )
+  .refine(
+    (s) =>
+      !s.field ||
+      (s.delivery === 'circle' &&
+        !!s.pulses &&
+        (s.pulses.count - 1) * s.pulses.interval < s.field.maxDuration),
+    {
+      message: 'Fields require a scheduled damage lifetime inside maxDuration',
+    },
+  )
+  .refine((s) => s.autoAnchorRadius === undefined || (!!s.field && s.targeting === 'point'), {
+    message: 'Auto anchor placement requires a point field',
+  })
+  .refine((s) => !s.autoAim || (s.targeting === 'point' && s.delivery === 'projectile'), {
+    message: 'Observed auto aim requires a point projectile',
+  })
+  .refine(
+    (s) =>
+      s.delivery !== 'line' ||
+      s.effects.every((effect) => effect.type === 'damage' && effect.radius <= 5),
+    { message: 'Line delivery requires damage only and a bounded half-width of at most 5 metres' },
+  );
 export type SkillDef = z.infer<typeof SkillDefSchema>;
 
 // ---------------------------------------------------------------------------
@@ -250,6 +334,9 @@ export const SwingTrailSchema = z.strictObject({
 });
 
 export const ComboVariantSchema = z.strictObject({
+  reinforceFields: z.boolean().default(false),
+  /** A basic spell releases a skill projectile instead of an instant melee cone. */
+  projectileSkillId: IdSchema.optional(),
   id: IdSchema,
   name: z.string().min(1),
   /** Clip name in the character model (KayKit Rig_Medium; derived clips allowed). */
@@ -294,6 +381,15 @@ export type ComboVariant = z.infer<typeof ComboVariantSchema>;
 export const ComboDefSchema = z.strictObject({
   id: IdSchema,
   name: z.string().min(1),
+  /** Guard earned once per connected swing, bounded and lost on a broken chain. */
+  guardChain: z
+    .strictObject({
+      defensePerStack: z.number().int().min(1).max(20),
+      poisePerStack: nonNegative.max(20).default(0),
+      maxStacks: z.number().int().min(1).max(5),
+      duration: z.number().min(0.1).max(10),
+    })
+    .optional(),
   /** Idle seconds after a swing before the chain restarts at step 1. */
   resetAfter: seconds,
   /** Surface distance past `grazeFrom × reach` is a glancing blow ("sượt"). */
@@ -674,6 +770,7 @@ export const CultivationNodeDefSchema = z.strictObject({
   bonus: StatBonusSchema.optional(),
   /** Skill unlocked by this node (appended to the skill bar). */
   skillId: IdSchema.optional(),
+  petId: IdSchema.optional(),
 });
 export type CultivationNodeDef = z.infer<typeof CultivationNodeDefSchema>;
 
@@ -682,6 +779,7 @@ export type CultivationNodeDef = z.infer<typeof CultivationNodeDefSchema>;
 // ---------------------------------------------------------------------------
 
 export const CharacterDefSchema = z.strictObject({
+  petId: IdSchema.optional(),
   id: IdSchema,
   name: z.string().min(1),
   appearanceId: IdSchema,
@@ -709,6 +807,22 @@ export const CharacterDefSchema = z.strictObject({
     .default([]),
 });
 export type CharacterDef = z.infer<typeof CharacterDefSchema>;
+
+export const PetDefSchema = z
+  .strictObject({
+    id: IdSchema,
+    name: z.string().min(1),
+    monsterId: IdSchema,
+    hpMultiplier: positive.max(5),
+    attackMultiplier: positive.max(3),
+    movementMultiplier: positive.max(2),
+    followDistance: positive.max(5),
+    leash: positive.max(20),
+    respawnSeconds: positive.min(5).max(120),
+    skills: z.array(IdSchema).max(4),
+  })
+  .refine((p) => p.leash > p.followDistance, { message: 'Pet leash must exceed follow distance' });
+export type PetDef = z.infer<typeof PetDefSchema>;
 
 export const MonsterTierSchema = z.enum(['normal', 'elite', 'mini_boss', 'boss', 'world_boss']);
 export type MonsterTier = z.infer<typeof MonsterTierSchema>;

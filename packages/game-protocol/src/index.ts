@@ -4,7 +4,7 @@ import { z } from 'zod';
  * Wire contract between client and simulation host (local or server).
  * Bump PROTOCOL_VERSION on any breaking change to these schemas.
  */
-export const PROTOCOL_VERSION = 10;
+export const PROTOCOL_VERSION = 12;
 export const SAVE_VERSION = 2;
 export const SaveVersionSchema = z.number().int().min(1).max(SAVE_VERSION);
 export const LearnedSkillsSchema = z.array(z.string().regex(/^[a-z][a-z0-9_]*$/)).max(256);
@@ -168,7 +168,7 @@ export type IntentType = Intent['type'];
 // Host → client: public world state (everyone in the AOI sees it)
 // ---------------------------------------------------------------------------
 
-export const EntityKindSchema = z.enum(['player', 'monster', 'loot', 'portal', 'npc']);
+export const EntityKindSchema = z.enum(['player', 'monster', 'pet', 'loot', 'portal', 'npc']);
 export type EntityKind = z.infer<typeof EntityKindSchema>;
 
 /** Coarse action used by the client to pick a looping animation. */
@@ -176,6 +176,29 @@ export const EntityActionSchema = z.enum(['idle', 'move', 'combat', 'cast', 'dea
 export type EntityAction = z.infer<typeof EntityActionSchema>;
 
 export const EntitySnapshotSchema = z.object({
+  poise: z
+    .object({
+      pressure: z.number().nonnegative(),
+      threshold: z.number().positive(),
+      lastHitTick: z.number().int().nonnegative(),
+      staggerUntilTick: z.number().int().nonnegative(),
+      immuneUntilTick: z.number().int().nonnegative(),
+    })
+    .nullable()
+    .optional(),
+  cloakEndTick: z.number().int().nonnegative().nullable().optional(),
+  guardChain: z
+    .object({
+      stacks: z.number().int().min(1).max(5),
+      defense: z.number().int().min(1).max(100),
+      endTick: z.number().int().nonnegative(),
+    })
+    .nullable()
+    .optional(),
+  shield: z
+    .object({ amount: z.number().int().nonnegative(), endTick: z.number().int() })
+    .nullable()
+    .optional(),
   actionState: z
     .object({
       id: z.number().int().positive(),
@@ -211,7 +234,7 @@ export const EntitySnapshotSchema = z.object({
   realm: z.number().int().nonnegative(),
   action: EntityActionSchema,
   targetId: EntityIdSchema.nullable(),
-  /** Loot: who may pick it up (null = anyone). Players: unused. */
+  /** Loot: pickup owner; pet: controller owner; other entities: null. */
   ownerId: EntityIdSchema.nullable(),
   /** Monster phase index (0 = base). */
   phase: z.number().int().nonnegative(),
@@ -257,6 +280,9 @@ export const NoticeCodeSchema = z.enum([
   'already_in_party',
   'no_invite',
   'capacity_full',
+  'combat_capacity_full',
+  'farm_stuck',
+  'farm_low_hp',
   'requirements_unmet',
   'max_realm',
   'not_in_safe_zone',
@@ -268,6 +294,19 @@ export type NoticeCode = z.infer<typeof NoticeCodeSchema>;
 
 export const SimEventSchema = z
   .discriminatedUnion('type', [
+    z.object({
+      type: z.literal('ACTION_CANCEL'),
+      sourceId: EntityIdSchema,
+      actionId: z.number().int().positive(),
+    }),
+    z.object({
+      type: z.literal('SHIELD'),
+      targetId: EntityIdSchema,
+      amount: z.number().int().nonnegative(),
+      remaining: z.number().int().nonnegative(),
+      endTick: z.number().int(),
+      phase: z.enum(['gain', 'absorb', 'expire']),
+    }),
     z.object({ type: z.literal('SPAWN'), id: EntityIdSchema }),
     z.object({ type: z.literal('DESPAWN'), id: EntityIdSchema }),
     z.object({
@@ -374,6 +413,23 @@ export const SimEventSchema = z
     z.object({ type: z.literal('RESPAWN'), id: EntityIdSchema }),
     z.object({
       type: z.literal('CAST_START'),
+      /** A later scheduled impact warning, without restarting the caster's animation. */
+      continuation: z.boolean().optional(),
+      cone: z
+        .object({
+          origin: Vec2Schema,
+          yaw: z.number().finite(),
+          radius: z.number().positive().max(20),
+          arc: z.number().positive().max(360),
+        })
+        .optional(),
+      line: z
+        .object({
+          origin: Vec2Schema,
+          destination: Vec2Schema,
+          radius: z.number().nonnegative().max(5),
+        })
+        .optional(),
       actionId: z.number().int().positive().nullable().optional(),
       element: ElementSchema.nullable().optional(),
       expression: ExpressionSchema.optional(),
@@ -388,6 +444,13 @@ export const SimEventSchema = z
     }),
     z.object({
       type: z.literal('SKILL_IMPACT'),
+      line: z
+        .object({
+          origin: Vec2Schema,
+          destination: Vec2Schema,
+          radius: z.number().nonnegative().max(5),
+        })
+        .optional(),
       actionId: z.number().int().positive().nullable().optional(),
       projectileId: z.number().int().optional(),
       element: ElementSchema.nullable().optional(),
@@ -488,6 +551,16 @@ export const PlayerStateSchema = z.object({
   element: ElementSchema.optional(),
   expression: ExpressionSchema.optional(),
   farmEnabled: z.boolean().optional(),
+  companion: z
+    .object({
+      profileId: z.string(),
+      entityId: EntityIdSchema.nullable(),
+      hp: z.number().int().nonnegative(),
+      maxHp: z.number().int().positive(),
+      readyAtTick: z.number().int().nonnegative(),
+    })
+    .nullable()
+    .optional(),
   /** Realm id (game-data/realms). */
   realm: z.string(),
   /** Open cultivation nodes. */
@@ -585,3 +658,8 @@ export type ChatMessage = z.infer<typeof ChatMessageSchema>;
 
 /** Saved cooldown seconds, frozen offline; never absolute ticks. */
 export const SkillCooldownsSchema = z.record(z.string(), z.number().finite().min(0).max(86400));
+
+export const CompanionSaveSchema = z.strictObject({
+  hp: z.number().int().min(0).max(1000000),
+  respawnSeconds: z.number().finite().min(0).max(120),
+});
