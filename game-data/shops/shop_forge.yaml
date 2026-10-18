@@ -9,3 +9,4 @@ items:
   - { itemId: item_chip_kim_cuong, price: 180 }
   - { itemId: item_module_anh_bo, price: 160 }
   - { itemId: item_ammo_ung_nhan, price: 170 }
+  - { itemId: item_thanh_quang_kiem, price: 480 }

@@ -1459,6 +1459,25 @@ export const AppearanceDefSchema = z.strictObject({
   hitDelay: nonNegative.default(0),
   /** Emissive tint used by elite/boss variants and rarity glows. */
   tint: z.string().optional(),
+  /**
+   * Equipment: glowing part of the model (linh quang). Triangles whose model-local
+   * Y is at least `from` get an additive shell in `color`; `intensity` is the
+   * authored strength (the player's brightness setting scales it); `sparkle` is
+   * twinkles per second along that part (0 = none, off on Low).
+   */
+  glow: z
+    .strictObject({
+      color: HexColorSchema,
+      intensity: nonNegative.max(4).default(1),
+      from: z.number().finite().default(0),
+      sparkle: nonNegative.max(30).default(0),
+    })
+    .optional(),
+  /**
+   * Equipment: bag / equipment-slot icon rendered from the model (the same
+   * capture as the attack button's weapon, glow included) instead of `iconImage`.
+   */
+  icon3d: z.boolean().default(false),
   /** Sounds by moment (presentation only); missing → renderer defaults. */
   sfx: z.partialRecord(z.enum(['attack', 'hit', 'death']), SfxListSchema).default({}),
   placeholder: z.strictObject({

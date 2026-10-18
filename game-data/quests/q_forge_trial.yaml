@@ -36,3 +36,4 @@ rewards:
     - { itemId: item_xianxia_robe, count: 1 }
     - { itemId: item_flying_sword, count: 1 }
     - { itemId: item_thien_co_blade, count: 1 }
+    - { itemId: item_thanh_quang_kiem, count: 1 }

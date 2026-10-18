@@ -43,11 +43,13 @@ pnpm smoke:controls [url] # WASD desktop + joystick điện thoại dọc/ngang 
 pnpm smoke:maps [url]    # mỗi map: scene, minimap, bản đồ thế giới + khu vực → reports/maps/
 pnpm smoke:responsive [url] # 9 kích thước desktop/tablet/phone: tràn màn, đè nhau, vùng chạm <44px, chữ <11px
 pnpm smoke:forge [url]  # Lão Mộc → bộ thử → cường hoá/khảm/luyện khí/hợp thành (--mobile)
+pnpm smoke:glow [url]   # kiếm linh quang: icon 3D ô đồ / nút đánh / trên tay, độ sáng 0–200%, Low → reports/glow/
+pnpm smoke:aura [url]   # hiệu ứng ngũ hành quanh vũ khí, mỗi ?element= + tay không → reports/aura/
 pnpm smoke:login [url]   # đăng ký → tạo nhân vật → vào game → bang hội → chat (cần dev:stack)
 pnpm db:generate         # drizzle-kit migration sau khi sửa packages/persistence/src/schema.ts
 ```
 
-URL flags của web client: `?webgl`, `?noworker`, `?map=<id>`, `?quality=low|medium|high`, `?element=kim|moc|thuy|hoa|tho` (chọn bản mệnh offline), `?debug` (bật `window.__rpg` ở bản build), `?player=<appearanceId>` (vẽ player bằng appearance khác, chỉ phía client — vd `char_kk_knight`), `?mannequin` (hình nộm KayKit Mannequin_Medium), `?online` (đăng nhập qua API), `?online&dev=<tên>` (đăng nhập dev thẳng vào game server, cần `ALLOW_DEV_LOGIN=true`).
+URL flags của web client: `?webgl`, `?noworker`, `?map=<id>`, `?quality=low|medium|high`, `?element=kim|moc|loi|thuy|bang|hoa|tho` (chọn bản mệnh offline; `loi` = Mộc·Lôi, `bang` = Thủy·Băng), `?debug` (bật `window.__rpg` ở bản build), `?player=<appearanceId>` (vẽ player bằng appearance khác, chỉ phía client — vd `char_kk_knight`), `?mannequin` (hình nộm KayKit Mannequin_Medium), `?online` (đăng nhập qua API), `?online&dev=<tên>` (đăng nhập dev thẳng vào game server, cần `ALLOW_DEV_LOGIN=true`).
 
 Điều khiển (D-030): setting "Điều khiển" Tự động/Phím + chuột/Cảm ứng → `<html data-controls data-hand>` (CSS bố trí HUD theo đó, không khoá hướng màn hình). Di chuyển trực tiếp qua intent `MOVE_DIR` (WASD/mũi tên, joystick ảo, cần trái gamepad); click-to-move vẫn dùng được. Phím: Esc dừng, Space đánh, F tương tác; Shift lộn, E tốc biến, V nhảy. Auto quái bật/tắt ở HUD, thao tác tay ngắt auto.
 

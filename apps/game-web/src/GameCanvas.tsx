@@ -4,6 +4,8 @@ import { LocalSimHost, type MessageEndpoint, type SimHost, WorkerSimHost } from 
 import { useEffect, useRef } from 'react';
 import { playSfx } from './audio';
 import { loadContent, sharedContent } from './content';
+import { DEBUG_ELEMENTS } from './elements';
+import { getElementAura, getWeaponGlow } from './fx-settings';
 import { setGame } from './game';
 import type { OnlineChoice } from './Login';
 import { loadMedia, mediaUrl } from './media';
@@ -27,18 +29,10 @@ function createHost(
   // Offline only: `?char=player_gunner` starts as another character (test kits, D-033).
   const wanted = params.get('char');
   const character = wanted && sharedContent().characters.has(wanted) ? wanted : DEFAULT_CHARACTER;
-  const picked = params.get('element');
-  const element = ['kim', 'moc', 'thuy', 'hoa', 'tho'].includes(picked ?? '')
-    ? (picked as import('@rpg/game-protocol').Element)
-    : undefined;
-  const expression =
-    element === undefined
-      ? undefined
-      : element === 'moc'
-        ? ('thunder' as const)
-        : element === 'thuy'
-          ? ('ice' as const)
-          : ('base' as const);
+  // `?element=`: one of the 5 elements (base) or an expression (loi = Mộc·Lôi, bang = Thủy·Băng).
+  const picked = DEBUG_ELEMENTS[params.get('element') ?? ''];
+  const element = picked?.element;
+  const expression = picked?.expression;
   const onDisconnect = (code: number) =>
     useUiStore
       .getState()
@@ -154,6 +148,8 @@ export function GameCanvas({ online = null }: { online?: OnlineChoice | null }) 
           manifestUrl: `${import.meta.env.BASE_URL}assets/assets.manifest.json`,
           forceWebGL: params.has('webgl'),
           quality,
+          weaponGlow: getWeaponGlow(),
+          elementAura: getElementAura(),
           onUi: store.setUi,
           onDebug: store.setDebug,
           onNotice: store.pushNotice,

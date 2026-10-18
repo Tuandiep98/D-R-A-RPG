@@ -1,0 +1,15 @@
+id: item_thanh_quang_kiem
+name: Thanh Quang Linh Kiếm
+kind: equipment
+slot: main_hand
+rarity: epic
+icon: "🗡"
+iconImage: icon_item_sword
+description: Linh kiếm Tu Tiên, lưỡi kiếm ngưng tụ linh lực thành ánh thanh quang lấp lánh.
+bonus: { attack: 18, mp: 20, critChance: 0.02 }
+sellPrice: 160
+appearanceId: equip_thanh_quang_kiem_01
+line: tien
+tier: Linh khí
+evolution:
+  - { name: Thanh Quang Kiếm Thai, tier: Pháp bảo, baseMultiplier: 1.5, minEnhance: 6, minQuality: rare, gold: 650, materials: [{ itemId: item_linh_thach, count: 4 }, { itemId: item_yeu_dan, count: 2 }] }

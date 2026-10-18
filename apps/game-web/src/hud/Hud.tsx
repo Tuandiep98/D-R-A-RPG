@@ -15,7 +15,8 @@ import {
   toggleFullscreen,
   useControls,
 } from '../controls';
-import { elementName } from '../elements';
+import { DEBUG_ELEMENTS, debugElementKey, elementName } from '../elements';
+import { getElementAura, getWeaponGlow, saveElementAura, saveWeaponGlow } from '../fx-settings';
 import { game } from '../game';
 import { Minimap } from '../map/Minimap';
 import { WorldMap } from '../map/WorldMap';
@@ -749,7 +750,7 @@ function ItemTile({
       aria-pressed={selected}
       title={`${item.name}\n${item.bonus}${item.realmName ? `\nYêu cầu ${item.realmName}` : ''}${item.description ? `\n${item.description}` : ''}`}
     >
-      <GameIcon icon={item.icon} image={item.iconImage} />
+      <GameIcon icon={item.icon} image={item.iconImage} model={item.iconModel} />
       {item.count > 1 && <span className="item-count">{item.count}</span>}
       {item.enhance > 0 && <span className="item-enhance">+{item.enhance}</span>}
     </button>
@@ -948,6 +949,8 @@ function SettingsPanel() {
   const setQuality = useUiStore((s) => s.setQuality);
   const toggleDebug = useUiStore((s) => s.toggleDebug);
   const [sfxVolume, setSfxVolumeState] = useState(getSfxVolume);
+  const [weaponGlow, setWeaponGlowState] = useState(getWeaponGlow);
+  const [elementAura, setElementAuraState] = useState(getElementAura);
   const options: { id: QualityMode; label: string }[] = [
     { id: 'auto', label: 'Tự động' },
     { id: 'low', label: 'Thấp' },
@@ -981,6 +984,40 @@ function SettingsPanel() {
               </button>
             ))}
           </div>
+        </div>
+        <div className="setting">
+          <span>Linh quang vũ khí · {Math.round(weaponGlow * 100)}%</span>
+          <input
+            type="range"
+            min={0}
+            max={2}
+            step={0.1}
+            value={weaponGlow}
+            aria-label="Độ sáng linh quang vũ khí"
+            onChange={(e) => {
+              const v = Number(e.target.value);
+              setWeaponGlowState(v);
+              saveWeaponGlow(v);
+              game()?.setWeaponGlow(v);
+            }}
+          />
+        </div>
+        <div className="setting">
+          <span>Hiệu ứng ngũ hành · {Math.round(elementAura * 100)}%</span>
+          <input
+            type="range"
+            min={0}
+            max={2}
+            step={0.1}
+            value={elementAura}
+            aria-label="Cường độ hiệu ứng ngũ hành quanh vũ khí"
+            onChange={(e) => {
+              const v = Number(e.target.value);
+              setElementAuraState(v);
+              saveElementAura(v);
+              game()?.setElementAura(v);
+            }}
+          />
         </div>
       </section>
       <section className="settings-group">
@@ -1031,18 +1068,18 @@ function TestCharacters() {
       <label className="element-debug-choice">
         Ngũ hành debug
         <select
-          value={params.get('element') ?? 'moc'}
+          value={params.get('element') ?? debugDefault(current)}
           onChange={(e) => {
             const next = new URLSearchParams(window.location.search);
             next.set('element', e.target.value);
             window.location.search = next.toString();
           }}
         >
-          <option value="kim">Kim</option>
-          <option value="moc">Mộc / Lôi</option>
-          <option value="thuy">Thủy / Băng</option>
-          <option value="hoa">Hỏa</option>
-          <option value="tho">Thổ</option>
+          {Object.entries(DEBUG_ELEMENTS).map(([key, v]) => (
+            <option key={key} value={key}>
+              {v.label}
+            </option>
+          ))}
         </select>
       </label>
       <div className="segmented">
@@ -1064,6 +1101,12 @@ function TestCharacters() {
       </div>
     </div>
   );
+}
+
+/** The character's own bản mệnh as a debug key (shown when no `?element=` is set). */
+function debugDefault(characterId: string): string {
+  const def = sharedContent().characters.get(characterId);
+  return def?.element ? debugElementKey(def.element, def.expression ?? 'base') : 'kim';
 }
 
 function Segmented<T extends string>({

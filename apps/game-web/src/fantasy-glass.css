@@ -1246,3 +1246,13 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+
+/* Item icons rendered from the model (appearance `icon3d`): same capture as the
+   attack button's weapon, so the slot matches what the character holds. */
+.hud .game-icon-model {
+  object-fit: contain;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.55));
+}
+.hud[data-quality="low"] .game-icon-model {
+  filter: none;
+}

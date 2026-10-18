@@ -56,6 +56,7 @@ import {
 import { CameraRig } from './camera-rig';
 import { CombatFx } from './combat-fx';
 import { DamageTextPool, MoveMarker, SelectionRing } from './effects';
+import { ElementAura } from './element-aura';
 import { ElementalFx } from './elemental-fx';
 import { elementColor } from './elements';
 import { createEngine, type EngineKind } from './engine';
@@ -69,6 +70,7 @@ import { type InterpolatedEntity, SnapshotBuffer } from './snapshot-buffer';
 import { type Feedback, isThunderStyle, ThunderFx } from './thunder-fx';
 import { ImpactPool, LootBeams, ProjectilePool, RARITY_COLORS, TelegraphPool } from './vfx';
 import type { GearAppearances } from './visuals';
+import { WeaponGlow } from './weapon-glow';
 
 const TICK_RATE = 20;
 const UI_INTERVAL_MS = 100;
@@ -141,6 +143,8 @@ export interface ItemView {
   name: string;
   icon: string;
   iconImage: string | null;
+  /** Model render (appearance `icon3d`, glow included); null → `iconImage` / emoji. */
+  iconModel: string | null;
   rarity: string;
   rarityColor: string;
   kind: 'equipment' | 'consumable' | 'material' | 'socket';
@@ -340,6 +344,10 @@ export interface GameViewOptions {
   onToggleDebug?: (scene: Scene) => void;
   /** URL of a built media id (Kenney VFX sprites); null → procedural stand-ins. */
   mediaUrl?: (id: string) => string | null;
+  /** Weapon linh quang brightness, 0…2 (player setting; 1 = as authored). */
+  weaponGlow?: number;
+  /** Ngũ hành aura strength on characters, 0…2 (player setting; 1 = as authored). */
+  elementAura?: number;
 }
 
 const NOTICE_TEXT: Record<NoticeCode, string> = {
@@ -449,8 +457,12 @@ export class GameView {
   private readonly quality: QualityManager;
   private preset: QualityPreset;
   private readonly fx: CombatFx;
+  private readonly weaponGlow: WeaponGlow;
+  /** Bag icons rendered from models (`icon3d`), by appearance id and glow level. */
+  private readonly itemIcons = new Map<string, string | null>();
   private readonly elemental: ElementalFx;
   private readonly bolts: LightningBatch;
+  private readonly elementAura: ElementAura;
   private readonly thunder: ThunderFx;
   /** Where each caster stood when its current cast began (dash skills travel from there). */
   private readonly castFrom = new Map<EntityId, { x: number; z: number }>();
@@ -501,8 +513,12 @@ export class GameView {
     this.fx = new CombatFx(scene, rig.camera, opts.mediaUrl ?? (() => null));
     this.elemental = new ElementalFx(this.fx);
     this.bolts = new LightningBatch(scene, rig.camera);
+    this.elementAura = new ElementAura(this.bolts, this.fx);
+    this.elementAura.setLevel(opts.elementAura ?? 1);
     this.thunder = new ThunderFx(this.fx, this.bolts);
     this.gun = new GunFx(this.fx);
+    this.weaponGlow = WeaponGlow.install(scene, this.fx);
+    this.weaponGlow.setLevel(opts.weaponGlow ?? 1);
     this.preset = { level: 'high' } as QualityPreset;
     this.quality = new QualityManager(opts.quality ?? 'auto', (p) => this.applyQuality(p), 'high');
   }
@@ -767,6 +783,36 @@ export class GameView {
     if (next) this.select(next.e.state.id);
   }
 
+  /** Weapon linh quang brightness (0 = off, 1 = as authored, 2 = max); icons re-render to match. */
+  setWeaponGlow(level: number): void {
+    this.weaponGlow.setLevel(level);
+    const stale = [...this.itemIcons.values()];
+    this.itemIcons.clear();
+    this.hudShots.weapon.key = '';
+    // Tiles keep showing the old render until the 10 Hz UI picks up the new one.
+    setTimeout(() => {
+      for (const url of stale) if (url) URL.revokeObjectURL(url);
+    }, 2000);
+  }
+
+  /** Ngũ hành aura strength on characters (0 = off, 1 = as authored, 2 = max). */
+  setElementAura(level: number): void {
+    this.elementAura.setLevel(level);
+  }
+
+  /** Living player characters, for the ngũ hành aura. */
+  private *auraUnits() {
+    for (const [id, view] of this.views) {
+      const e = this.sampled.get(id)?.state;
+      if (!e || e.kind !== 'player' || e.action === 'dead') continue;
+      yield { id, view, element: e.element, expression: e.expression };
+    }
+  }
+
+  get weaponGlowLevel(): number {
+    return this.weaponGlow.level;
+  }
+
   setQuality(mode: QualityMode): void {
     this.quality.setMode(mode);
   }
@@ -861,6 +907,8 @@ export class GameView {
     this.lootBeams.dispose();
     for (const shot of Object.values(this.hudShots)) if (shot.url) URL.revokeObjectURL(shot.url);
     for (const url of this.unitPortraits.values()) if (url) URL.revokeObjectURL(url);
+    for (const url of this.itemIcons.values()) if (url) URL.revokeObjectURL(url);
+    this.weaponGlow.dispose();
     void this.assets.dispose();
     this.scene.dispose();
     this.engine.dispose();
@@ -1020,8 +1068,10 @@ export class GameView {
     this.impacts.update(dt);
     this.projectiles.update(dt);
     this.gun.update(dt, this.fx.density);
+    this.weaponGlow.update(dt);
     this.fx.update(dt);
     this.thunder.update(dt);
+    this.elementAura.update(dt, this.auraUnits());
     this.bolts.update(dt);
     this.scene.render();
     this.placeOverhead();
@@ -1037,6 +1087,8 @@ export class GameView {
     this.impacts.capacity = p.vfxCap;
     this.projectiles.capacity = p.vfxCap;
     this.fx?.setQuality(p.level);
+    this.weaponGlow?.setQuality(p.level);
+    this.elementAura?.setQuality(p.level);
     if (this.bolts) this.bolts.capacity = p.level === 'low' ? 12 : p.level === 'medium' ? 24 : 40;
     for (const [id, view] of this.views) {
       const e = this.sampled.get(id);
@@ -2178,6 +2230,7 @@ export class GameView {
       name: def && gear ? forgedName(def, instance) : (def?.name ?? itemId),
       icon: def?.icon ?? '◆',
       iconImage: def?.iconImage ?? null,
+      iconModel: this.itemIcon(def?.appearanceId),
       rarity,
       rarityColor: qualityRule?.color ?? RARITY_COLORS[rarity] ?? '#fff',
       kind: def?.kind ?? 'material',
@@ -2234,7 +2287,7 @@ export class GameView {
       `${appearance.id}|${gear.head?.id ?? ''}|${gear.back?.id ?? ''}`,
       (s) => s.portrait(appearance, gear),
     );
-    this.updateShot('weapon', weapon?.id ?? '', (s) =>
+    this.updateShot('weapon', weapon ? `${weapon.id}@${this.weaponGlow.level}` : '', (s) =>
       weapon ? s.item(weapon) : Promise.resolve(null),
     );
   }
@@ -2287,6 +2340,24 @@ export class GameView {
       el.style.visibility = inFront && onScreen ? '' : 'hidden';
       el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
     }
+  }
+
+  /** Cached model render of an `icon3d` item appearance, started on first request. */
+  private itemIcon(appearanceId: string | undefined): string | null {
+    const appearance = appearanceId ? this.opts.content.appearances.get(appearanceId) : undefined;
+    if (!appearance?.icon3d || !this.assets.has(appearance.modelAssetId)) return null;
+    const key = `${appearance.id}@${this.weaponGlow.level}`;
+    if (this.itemIcons.has(key)) return this.itemIcons.get(key) ?? null;
+    this.snapshots ??= new Snapshots(this.scene, this.assets);
+    this.itemIcons.set(key, null);
+    void this.snapshots.item(appearance).then((url) => {
+      if (this.scene.isDisposed || !this.itemIcons.has(key)) {
+        if (url) URL.revokeObjectURL(url);
+        return;
+      }
+      this.itemIcons.set(key, url);
+    });
+    return null;
   }
 
   /** Cached head render of another unit, started on first request. */

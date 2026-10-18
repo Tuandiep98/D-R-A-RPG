@@ -137,7 +137,7 @@ export function Forge({
             title={g.name}
             onClick={() => setSelected(g.instanceId)}
           >
-            <GameIcon icon={g.icon} image={g.iconImage} />
+            <GameIcon icon={g.icon} image={g.iconImage} model={g.iconModel} />
             {g.enhance > 0 && <span className="forge-plus">+{g.enhance}</span>}
             {g.equipped && <span className="forge-worn">E</span>}
           </button>

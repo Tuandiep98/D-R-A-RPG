@@ -19,6 +19,7 @@ import {
   Vector3,
 } from './babylon';
 import { createPlaceholderMesh } from './placeholder';
+import { WeaponGlow } from './weapon-glow';
 
 export type BaseRole = Extract<AnimationRole, 'idle' | 'run' | 'death'>;
 export type OneShotRole = Extract<AnimationRole, 'attack' | 'cast' | 'hit'>;
@@ -142,6 +143,7 @@ class GearAttachments {
       model.scaling.setAll(target.scale);
       model.rotation.y = target.yawOffset;
       model.parent = holder;
+      if (target.glow) WeaponGlow.of(this.scene)?.attach(model, target.glow);
       placeholder.dispose();
     });
   }

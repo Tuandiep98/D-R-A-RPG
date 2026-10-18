@@ -1,0 +1,13 @@
+# Thanh Quang Linh Kiếm: KayKit Fantasy Weapons "sword_C" (thin straight jian) on
+# handslot.r with the native identity transform at the character scale (D-027).
+# Linh quang: the blade (model Y ≥ 0.37, above the cross guard) glows in the
+# Linh lực colour (art bible) and twinkles; the bag icon is the model render.
+id: equip_thanh_quang_kiem_01
+kind: equipment
+modelAssetId: weapon_kf_sword_c
+scale: 0.62
+attach: { socket: hand_r, position: [0, 0, 0], rotation: [0, 0, 0] }
+tip: [0, 1.05, 0]
+glow: { color: "#7EF0FF", intensity: 1, from: 0.37, sparkle: 6 }
+icon3d: true
+placeholder: { shape: box, color: "#bfefff", height: 1.05, radius: 0.05 }

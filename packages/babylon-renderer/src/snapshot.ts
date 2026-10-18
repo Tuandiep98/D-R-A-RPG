@@ -11,6 +11,7 @@ import {
   Vector3,
 } from './babylon';
 import { type GearAppearances, ModelVisual } from './visuals';
+import { WeaponGlow } from './weapon-glow';
 
 /** Layer the main camera does not draw (its mask is 0x0FFFFFFF). */
 const SNAPSHOT_LAYER = 0x10000000;
@@ -131,6 +132,12 @@ export class Snapshots {
         for (const g of entries.animationGroups) g.dispose();
         model.scaling.setAll(appearance.scale);
         model.rotation.y = appearance.yawOffset;
+        // Same linh quang shell as in hand (no breathing, no sparkles).
+        if (appearance.glow)
+          WeaponGlow.of(this.scene)?.attach(model, appearance.glow, {
+            still: true,
+            layerMask: SNAPSHOT_LAYER,
+          });
         const meshes = prepare(holder);
         const { min, max } = visibleBounds(meshes);
         const centre = min.add(max).scale(0.5);
@@ -215,7 +222,9 @@ export class Snapshots {
       rtt.activeCamera = camera;
       rtt.clearColor = new Color4(0, 0, 0, 0);
       rtt.samples = 4;
-      for (let i = 0; i < 60 && !rtt.isReadyForRendering(); i++) await nextFrames(this.scene, 1);
+      // Every mesh's shader too: a glow shell's material is new and compiles late.
+      const ready = () => rtt.isReadyForRendering() && meshes.every((m) => m.isReady(true));
+      for (let i = 0; i < 60 && !ready(); i++) await nextFrames(this.scene, 1);
       for (const m of meshes) m.skeleton?.prepare(true);
       rtt.render();
       const pixels = await rtt.readPixels();

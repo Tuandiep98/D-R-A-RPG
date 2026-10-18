@@ -44,6 +44,17 @@ placeholder: { shape: box, color: "#9aa3ad", height: 1.4, radius: 0.09 }
 
 Hình ảnh hiện tại: vũ khí và pháp khí là placeholder gắn socket. Áo, mũ dạng skinned mesh cần base character modular (xem `rig_contract.md`) — **việc của artist**.
 
+### Linh quang và icon từ model
+
+```yaml
+glow: { color: "#7EF0FF", intensity: 1, from: 0.37, sparkle: 6 }
+icon3d: true
+```
+
+- `glow`: tam giác có Y (toạ độ model, trước `scale`) ≥ `from` được phủ một lớp vỏ phát sáng màu `color`; `intensity` là độ sáng gốc, `sparkle` là số sao lấp lánh mỗi giây. Medium/High có thêm GlowLayer (chỉ trên lớp vỏ) và sao lấp lánh; Low chỉ giữ lớp vỏ. Người chơi chỉnh độ sáng 0–200% ở Cài đặt → "Linh quang vũ khí".
+- `icon3d`: ô túi đồ/trang bị/Tiệm Rèn dùng ảnh chụp từ chính model (cùng ảnh với nút đánh, cùng lớp vỏ sáng) thay cho `iconImage`; `iconImage` vẫn là fallback khi model chưa tải.
+- Kiểm tra bằng `pnpm smoke:glow` (ảnh → `reports/glow/`).
+
 ## Quy tắc theo độ hiếm (assets plan §6)
 
 | Rarity             | Hình ảnh                            |
