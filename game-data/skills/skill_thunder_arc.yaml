@@ -1,6 +1,6 @@
 id: skill_thunder_arc
 name: Lôi Hoàn Kiếm
-description: Xoáy kiếm điện, đánh kẻ địch quanh thân.
+description: Gọi mưa kiếm linh quang rơi quanh thân, đánh kẻ địch trong vùng.
 icon: "◎"
 targeting: self
 castTime: 0.2
@@ -8,7 +8,7 @@ cooldown: 8
 mpCost: 20
 effects:
   - { type: damage, multiplier: 1.5, radius: 3.2 }
-vfx: thunder_arc
+vfx: sword_rain
 # Clip trong model của người thi triển (presentation, D-032).
 # Spinning clip's strike pose at 0.35s matches the 0.20s windup.
 anim: { cast: Melee_2H_Attack_Spinning, castSpeed: 1.75 }

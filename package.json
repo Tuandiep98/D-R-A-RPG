@@ -47,7 +47,9 @@
     "assets:vendor": "tsx tools/asset-processor/vendor.ts",
     "smoke:forge": "tsx tools/smoke/forge.ts",
     "smoke:glow": "tsx tools/smoke/weapon-glow.ts",
-    "smoke:aura": "tsx tools/smoke/element-aura.ts"
+    "smoke:aura": "tsx tools/smoke/element-aura.ts",
+    "smoke:rain": "tsx tools/smoke/sword-rain.ts",
+    "smoke:qi": "tsx tools/smoke/sword-qi.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

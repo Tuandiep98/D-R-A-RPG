@@ -45,6 +45,8 @@ pnpm smoke:responsive [url] # 9 kích thước desktop/tablet/phone: tràn màn,
 pnpm smoke:forge [url]  # Lão Mộc → bộ thử → cường hoá/khảm/luyện khí/hợp thành (--mobile)
 pnpm smoke:glow [url]   # kiếm linh quang: icon 3D ô đồ / nút đánh / trên tay, độ sáng 0–200%, Low → reports/glow/
 pnpm smoke:aura [url]   # hiệu ứng ngũ hành quanh vũ khí, mỗi ?element= + tay không → reports/aura/
+pnpm smoke:rain [url]   # Lôi Hoàn Kiếm: mưa kiếm linh quang theo ngũ hành, 0/100/200%, Low → reports/rain/
+pnpm smoke:qi [url]     # Lôi Kiếm Xuyên Tâm: kiếm khí xuyên mục tiêu + vệt ngũ hành theo đường thẳng → reports/qi/
 pnpm smoke:login [url]   # đăng ký → tạo nhân vật → vào game → bang hội → chat (cần dev:stack)
 pnpm db:generate         # drizzle-kit migration sau khi sửa packages/persistence/src/schema.ts
 ```

@@ -270,6 +270,7 @@ function resolveImpact(
       origin: { ...e.pos },
       dir,
       left: v.reach,
+      hit: [],
       source,
       damages: [
         {

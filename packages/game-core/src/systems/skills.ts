@@ -495,6 +495,7 @@ function resolveSkill(ctx: SimContext, e: Entity, cast: Cast, damageMultiplier =
       origin: { ...e.pos },
       dir,
       left: skill.range,
+      hit: [],
     });
     ctx.emit({
       type: 'SKILL_PROJECTILE',
@@ -697,7 +698,7 @@ function advanceSkillProjectiles(ctx: SimContext): void {
         }
       const hits = [...ctx.entities.values()]
         .flatMap((t) => {
-          if (!isAlive(t) || !areHostile(owner, t)) return [];
+          if (!isAlive(t) || !areHostile(owner, t) || b.hit.includes(t.id)) return [];
           const prev = t.previousPos ?? t.pos;
           const k = segmentEntry(
             { x: 0, z: 0 },
@@ -708,12 +709,14 @@ function advanceSkillProjectiles(ctx: SimContext): void {
           return k !== null && k < wall ? [{ target: t, k }] : [];
         })
         .sort((a, c) => a.k - c.k);
-      const first = hits[0];
-      if (first) {
-        const target = first.target;
+      // Piercing projectiles hit every body on this step, in order, until spent.
+      const struck = hits.slice(0, skill.projectilePierce + 1 - b.hit.length);
+      for (const hit of struck) {
+        const target = hit.target;
+        b.hit.push(target.id);
         const contact = {
-          x: b.pos.x + (next.x - b.pos.x) * first.k,
-          z: b.pos.z + (next.z - b.pos.z) * first.k,
+          x: b.pos.x + (next.x - b.pos.x) * hit.k,
+          z: b.pos.z + (next.z - b.pos.z) * hit.k,
         };
         for (const spec of b.damages) {
           const roll = rollHit(ctx, owner, target, spec, {}, b.source);
@@ -736,8 +739,9 @@ function advanceSkillProjectiles(ctx: SimContext): void {
           element: b.source.element,
           expression: b.source.expression,
         });
-        done = true;
-      } else if (wall < 1) {
+      }
+      if (b.hit.length > skill.projectilePierce) done = true;
+      else if (wall < 1) {
         const contact = {
           x: b.pos.x + (next.x - b.pos.x) * wall,
           z: b.pos.z + (next.z - b.pos.z) * wall,

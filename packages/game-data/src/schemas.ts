@@ -259,6 +259,8 @@ export const SkillDefSchema = z
     arc: z.number().min(1).max(360).default(90),
     projectileSpeed: positive.default(16),
     projectileRadius: nonNegative.max(1).default(0.25),
+    /** Extra bodies a skill projectile passes through after the first (0 = stops there). */
+    projectilePierce: z.number().int().min(0).max(8).default(0),
     blockedByWalls: z.boolean().default(true),
     groundLow: z.boolean().default(false),
     elementalShare: chance.optional(),

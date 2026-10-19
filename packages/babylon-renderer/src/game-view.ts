@@ -57,6 +57,7 @@ import { CameraRig } from './camera-rig';
 import { CombatFx } from './combat-fx';
 import { DamageTextPool, MoveMarker, SelectionRing } from './effects';
 import { ElementAura } from './element-aura';
+import { ElementBurst } from './element-burst';
 import { ElementalFx } from './elemental-fx';
 import { elementColor } from './elements';
 import { createEngine, type EngineKind } from './engine';
@@ -67,6 +68,8 @@ import { QualityManager, type QualityMode, type QualityPreset } from './quality'
 import { GunFx } from './ranged-fx';
 import { Snapshots } from './snapshot';
 import { type InterpolatedEntity, SnapshotBuffer } from './snapshot-buffer';
+import { SwordQiFx } from './sword-qi-fx';
+import { SwordRainFx } from './sword-rain-fx';
 import { type Feedback, isThunderStyle, ThunderFx } from './thunder-fx';
 import { ImpactPool, LootBeams, ProjectilePool, RARITY_COLORS, TelegraphPool } from './vfx';
 import type { GearAppearances } from './visuals';
@@ -464,6 +467,8 @@ export class GameView {
   private readonly bolts: LightningBatch;
   private readonly elementAura: ElementAura;
   private readonly thunder: ThunderFx;
+  private readonly swordRain: SwordRainFx;
+  private readonly swordQi: SwordQiFx;
   /** Where each caster stood when its current cast began (dash skills travel from there). */
   private readonly castFrom = new Map<EntityId, { x: number; z: number }>();
   /** Latest combo swing per attacker: impact style and one hit-stop per swing. */
@@ -516,6 +521,10 @@ export class GameView {
     this.elementAura = new ElementAura(this.bolts, this.fx);
     this.elementAura.setLevel(opts.elementAura ?? 1);
     this.thunder = new ThunderFx(this.fx, this.bolts);
+    const burst = new ElementBurst(this.fx, this.bolts);
+    const elementLevel = () => this.elementAura.level;
+    this.swordRain = new SwordRainFx(scene, this.fx, burst, elementLevel);
+    this.swordQi = new SwordQiFx(scene, this.fx, this.bolts, burst, elementLevel);
     this.gun = new GunFx(this.fx);
     this.weaponGlow = WeaponGlow.install(scene, this.fx);
     this.weaponGlow.setLevel(opts.weaponGlow ?? 1);
@@ -1071,6 +1080,8 @@ export class GameView {
     this.weaponGlow.update(dt);
     this.fx.update(dt);
     this.thunder.update(dt);
+    this.swordRain.update(dt);
+    this.swordQi.update(dt);
     this.elementAura.update(dt, this.auraUnits());
     this.bolts.update(dt);
     this.scene.render();
@@ -1521,6 +1532,10 @@ export class GameView {
           else if (ev.skillId && !delayedReplay) {
             const style = this.opts.content.skills.get(ev.skillId)?.vfx;
             if (isThunderStyle(style) && ev.expression === 'thunder') this.thunder.hit(view, style);
+            else if (style === 'sword_rain' && ev.expression === 'thunder')
+              this.thunder.hit(view, 'thunder_arc');
+            else if (style === 'sword_qi' && ev.expression === 'thunder')
+              this.thunder.hit(view, 'thunder_projectile');
           }
           this.sfxAt(
             ev.crit
@@ -1625,6 +1640,22 @@ export class GameView {
           break;
         }
         case 'SKILL_PROJECTILE': {
+          const skill = this.opts.content.skills.get(ev.skillId);
+          if (skill?.vfx === 'sword_qi') {
+            this.feedback(
+              ev.sourceId,
+              this.swordQi.launch(
+                ev.projectileId,
+                ev.origin,
+                ev.destination,
+                ev.speed,
+                skill.projectilePierce,
+                ev.element,
+                ev.expression,
+              ),
+            );
+            break;
+          }
           this.projectiles.fire(
             new Vector3(ev.origin.x, 0.8, ev.origin.z),
             new Vector3(ev.destination.x, 0.8, ev.destination.z),
@@ -1672,6 +1703,21 @@ export class GameView {
               source,
               skill,
               ev.element,
+              Math.max(0, (ev.endTick - tick) / TICK_RATE),
+            );
+          if (source && skill?.vfx === 'sword_qi') {
+            const seconds = Math.max(0, (ev.endTick - tick) / TICK_RATE);
+            const p = source.root.position;
+            if (ev.point)
+              source.faceYaw(Math.atan2(ev.point.x - p.x, ev.point.z - p.z), seconds + 0.2);
+            this.swordQi.cast(source, ev.element, ev.expression, seconds);
+          }
+          if (source && skill?.vfx === 'sword_rain')
+            this.swordRain.cast(
+              source,
+              ev.element,
+              ev.expression,
+              ev.radius,
               Math.max(0, (ev.endTick - tick) / TICK_RATE),
             );
           if (source && skill?.mobility) {
@@ -1731,7 +1777,19 @@ export class GameView {
           if (skill?.mobility && ev.expression === 'thunder') {
             this.thunder.impact('thunder_dash', src, tgt, from, ev.point, 0);
           }
-          if (
+          if (vfx === 'sword_qi')
+            this.feedback(
+              ev.sourceId,
+              this.swordQi.impact(ev.projectileId, ev.point, ev.targetId !== null, tgt),
+              ev.point,
+            );
+          else if (vfx === 'sword_rain')
+            this.feedback(
+              ev.sourceId,
+              this.swordRain.impact(ev.point, ev.radius, ev.element, ev.expression),
+              ev.point,
+            );
+          else if (
             ev.expression === 'thunder' &&
             isThunderStyle(vfx) &&
             skill?.delivery !== 'projectile'

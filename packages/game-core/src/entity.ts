@@ -208,6 +208,8 @@ export interface SkillProjectile {
   origin: Vec2;
   dir: Vec2;
   left: number;
+  /** Bodies already hit (piercing projectiles hit each once). */
+  hit: EntityId[];
 }
 
 /** Something the entity walks to and then does (pickup, portal, queued skill). */

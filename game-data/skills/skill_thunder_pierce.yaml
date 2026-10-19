@@ -1,6 +1,6 @@
 id: skill_thunder_pierce
 name: Lôi Kiếm Xuyên Tâm
-description: Phóng kiếm khí điện vào một mục tiêu từ xa.
+description: Phóng một lượt kiếm khí bay thẳng, xuyên qua tối đa 4 kẻ địch trên đường.
 icon: "✦"
 targeting: point
 range: 11
@@ -9,7 +9,7 @@ cooldown: 5
 mpCost: 12
 effects:
   - { type: damage, multiplier: 2 }
-vfx: thunder_projectile
+vfx: sword_qi
 # Clip trong model của người thi triển (presentation, D-032).
 # Forward thrust pose at ~0.42s (D-031), projectile release at 0.25s.
 anim: { cast: Melee_1H_Attack_Stab, castSpeed: 1.7 }
@@ -18,3 +18,4 @@ sfx: { cast: [sfx_laser_large], impact: [sfx_hit_metal_02] }
 delivery: projectile
 projectileSpeed: 16
 projectileRadius: 0.25
+projectilePierce: 3
