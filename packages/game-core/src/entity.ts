@@ -328,6 +328,20 @@ export interface Entity {
     dir: Vec2;
     dodgeFrom: number;
     dodgeTo: number;
+    /** Skill shown for this movement when it is not the action's own (Lôi Bộ rolls). */
+    skillId?: string;
+  } | null;
+  /** Toggle aura on (skill `sustain`): next drain/damage tick. */
+  sustain?: { skillId: string; nextTick: number; source: DamageSource } | null;
+  /** Sky strikes still to fall (skill `strikes`) and hits per body so far. */
+  strikes?: {
+    skillId: string;
+    source: DamageSource;
+    left: number;
+    index: number;
+    nextTick: number;
+    preferredId: EntityId | null;
+    hits: Map<EntityId, number>;
   } | null;
   monsterSwing?: {
     source: DamageSource;

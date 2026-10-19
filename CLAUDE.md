@@ -47,6 +47,7 @@ pnpm smoke:glow [url]   # kiếm linh quang: icon 3D ô đồ / nút đánh / tr
 pnpm smoke:aura [url]   # hiệu ứng ngũ hành quanh vũ khí, mỗi ?element= + tay không → reports/aura/
 pnpm smoke:rain [url]   # Lôi Hoàn Kiếm: mưa kiếm linh quang theo ngũ hành, 0/100/200%, Low → reports/rain/
 pnpm smoke:qi [url]     # Lôi Kiếm Xuyên Tâm: kiếm khí xuyên mục tiêu + vệt ngũ hành theo đường thẳng → reports/qi/
+pnpm smoke:kit [url]    # bộ Lôi Kiếm Tu (Lôi Bộ / Ảnh Trảm / Lôi Vực / Tử Điện / Cửu Thiên) mỗi hệ, --skill= --element= --levels → reports/kit/
 pnpm smoke:login [url]   # đăng ký → tạo nhân vật → vào game → bang hội → chat (cần dev:stack)
 pnpm db:generate         # drizzle-kit migration sau khi sửa packages/persistence/src/schema.ts
 ```

@@ -2,6 +2,7 @@ import type { AssetLibrary } from '@rpg/asset-runtime';
 import type { AppearanceDef } from '@rpg/game-data';
 import type { EntityAction, EntityId } from '@rpg/game-protocol';
 import {
+  type AbstractMesh,
   Color3,
   type Mesh,
   MeshBuilder,
@@ -207,6 +208,13 @@ export class EntityView {
 
   freeze(seconds: number): void {
     this.visual.freeze(seconds);
+  }
+
+  /** Visible meshes of the body and held gear, as drawn now (afterimages copy them). */
+  bodyMeshes(): AbstractMesh[] {
+    return this.visual.root
+      .getChildMeshes(false)
+      .filter((m) => m.isEnabled() && m.isVisible && m.visibility > 0 && !m.name.endsWith('_glow'));
   }
 
   anchor(name: Parameters<Visual['anchor']>[0]): TransformNode | null {

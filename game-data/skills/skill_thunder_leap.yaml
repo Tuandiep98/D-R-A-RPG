@@ -1,6 +1,6 @@
 id: skill_thunder_leap
 name: Lôi Ảnh Trảm
-description: Lướt 5 mét, chém kẻ địch quanh điểm dừng.
+description: Lướt 5 mét; một thanh cự kiếm giáng xuống điểm dừng, chém vùng rộng 3 mét và làm choáng kẻ trúng đòn 1 giây.
 icon: "🌩"
 targeting: self
 cooldown: 9
@@ -9,13 +9,11 @@ timeline: { windup: 0.1, active: 0.3, recovery: 0.2, cancelWindup: true, cancelR
 barRole: utility
 effects:
   - { type: dash, distance: 5 }
-  - { type: damage, multiplier: 1.3, radius: 1.8 }
-vfx: thunder_leap
+  - { type: damage, multiplier: 1.6, radius: 3, stun: 1 }
+vfx: giant_sword
 # Clip trong model của người thi triển (presentation, D-032).
 # Reverse slice contact at clip time 0.85s (D-031); land and cut at 0.40s.
 anim: { cast: Melee_1H_Attack_Slice_Horizontal_Rev, castSpeed: 2.125 }
 sfx: { cast: [sfx_laser_small], impact: [sfx_force_field] }
 
-delivery: cone
-range: 1.8
-arc: 110
+delivery: circle

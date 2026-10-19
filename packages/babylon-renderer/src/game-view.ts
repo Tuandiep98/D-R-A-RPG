@@ -63,14 +63,21 @@ import { elementColor } from './elements';
 import { createEngine, type EngineKind } from './engine';
 import { EntityView, EntityViewPool, type PickMetadata } from './entity-view';
 import { EnvironmentView } from './environment';
+import { GiantSwordFx } from './giant-sword-fx';
+import { GroundDecals } from './ground-decals';
 import { LightningBatch } from './lightning';
+import { LongCutFx } from './long-cut-fx';
+import { PhantomStepFx } from './phantom-step-fx';
 import { QualityManager, type QualityMode, type QualityPreset } from './quality';
 import { GunFx } from './ranged-fx';
 import { Snapshots } from './snapshot';
 import { type InterpolatedEntity, SnapshotBuffer } from './snapshot-buffer';
+import { StunFx } from './stun-fx';
 import { SwordQiFx } from './sword-qi-fx';
 import { SwordRainFx } from './sword-rain-fx';
+import { ThunderDomainFx } from './thunder-domain-fx';
 import { type Feedback, isThunderStyle, ThunderFx } from './thunder-fx';
+import { TribulationFx } from './tribulation-fx';
 import { ImpactPool, LootBeams, ProjectilePool, RARITY_COLORS, TelegraphPool } from './vfx';
 import type { GearAppearances } from './visuals';
 import { WeaponGlow } from './weapon-glow';
@@ -469,6 +476,13 @@ export class GameView {
   private readonly thunder: ThunderFx;
   private readonly swordRain: SwordRainFx;
   private readonly swordQi: SwordQiFx;
+  private readonly decals: GroundDecals;
+  private readonly phantom: PhantomStepFx;
+  private readonly giantSword: GiantSwordFx;
+  private readonly domain: ThunderDomainFx;
+  private readonly longCut: LongCutFx;
+  private readonly tribulation: TribulationFx;
+  private readonly stun: StunFx;
   /** Where each caster stood when its current cast began (dash skills travel from there). */
   private readonly castFrom = new Map<EntityId, { x: number; z: number }>();
   /** Latest combo swing per attacker: impact style and one hit-stop per swing. */
@@ -525,6 +539,20 @@ export class GameView {
     const elementLevel = () => this.elementAura.level;
     this.swordRain = new SwordRainFx(scene, this.fx, burst, elementLevel);
     this.swordQi = new SwordQiFx(scene, this.fx, this.bolts, burst, elementLevel);
+    this.decals = new GroundDecals(scene, opts.mediaUrl?.('vfx_scorch_01') ?? null);
+    this.phantom = new PhantomStepFx(scene, this.fx, this.bolts, burst, elementLevel);
+    this.giantSword = new GiantSwordFx(
+      scene,
+      this.fx,
+      burst,
+      this.decals,
+      this.phantom,
+      elementLevel,
+    );
+    this.domain = new ThunderDomainFx(this.fx, this.bolts, burst, elementLevel);
+    this.longCut = new LongCutFx(this.fx, this.bolts, burst, this.decals, elementLevel);
+    this.tribulation = new TribulationFx(this.fx, this.bolts, burst, this.decals, elementLevel);
+    this.stun = new StunFx(this.fx);
     this.gun = new GunFx(this.fx);
     this.weaponGlow = WeaponGlow.install(scene, this.fx);
     this.weaponGlow.setLevel(opts.weaponGlow ?? 1);
@@ -809,6 +837,15 @@ export class GameView {
     this.elementAura.setLevel(level);
   }
 
+  /** Bodies stunned right now (snapshot poise), for the stars over their heads. */
+  private *stunnedViews() {
+    const tick = this.buffer.latest?.tick ?? 0;
+    for (const [id, view] of this.views) {
+      const e = this.sampled.get(id)?.state;
+      if (e && e.action !== 'dead' && (e.poise?.staggerUntilTick ?? 0) > tick) yield view;
+    }
+  }
+
   /** Living player characters, for the ngũ hành aura. */
   private *auraUnits() {
     for (const [id, view] of this.views) {
@@ -1082,6 +1119,13 @@ export class GameView {
     this.thunder.update(dt);
     this.swordRain.update(dt);
     this.swordQi.update(dt);
+    this.phantom.update(dt);
+    this.giantSword.update(dt);
+    this.domain.update(dt);
+    this.longCut.update(dt);
+    this.tribulation.update(dt);
+    this.decals.update(dt);
+    this.stun.update(dt, this.stunnedViews());
     this.elementAura.update(dt, this.auraUnits());
     this.bolts.update(dt);
     this.scene.render();
@@ -1100,6 +1144,7 @@ export class GameView {
     this.fx?.setQuality(p.level);
     this.weaponGlow?.setQuality(p.level);
     this.elementAura?.setQuality(p.level);
+    this.decals?.setQuality(p.level);
     if (this.bolts) this.bolts.capacity = p.level === 'low' ? 12 : p.level === 'medium' ? 24 : 40;
     for (const [id, view] of this.views) {
       const e = this.sampled.get(id);
@@ -1536,6 +1581,12 @@ export class GameView {
               this.thunder.hit(view, 'thunder_arc');
             else if (style === 'sword_qi' && ev.expression === 'thunder')
               this.thunder.hit(view, 'thunder_projectile');
+            else if (style === 'thunder_domain') this.domain.lash(ev.sourceId, view);
+            else if (
+              (style === 'giant_sword' || style === 'long_cut') &&
+              ev.expression === 'thunder'
+            )
+              this.thunder.hit(view, 'thunder_strike');
           }
           this.sfxAt(
             ev.crit
@@ -1705,6 +1756,26 @@ export class GameView {
               ev.element,
               Math.max(0, (ev.endTick - tick) / TICK_RATE),
             );
+          const castSeconds = Math.max(0, (ev.endTick - tick) / TICK_RATE);
+          if (source && skill?.vfx === 'phantom_step')
+            this.phantom.start(source, ev.element, ev.expression, castSeconds, 14);
+          if (source && skill?.vfx === 'giant_sword')
+            this.giantSword.cast(
+              source,
+              ev.element,
+              ev.expression,
+              ev.dashTo ?? null,
+              ev.radius,
+              castSeconds,
+            );
+          if (source && skill?.vfx === 'long_cut') {
+            const p = source.root.position;
+            if (ev.point)
+              source.faceYaw(Math.atan2(ev.point.x - p.x, ev.point.z - p.z), castSeconds + 0.2);
+            this.longCut.cast(source, ev.element, ev.expression, castSeconds);
+          }
+          if (source && skill?.vfx === 'heaven_tribulation')
+            this.tribulation.cast(source, ev.element, ev.expression, castSeconds);
           if (source && skill?.vfx === 'sword_qi') {
             const seconds = Math.max(0, (ev.endTick - tick) / TICK_RATE);
             const p = source.root.position;
@@ -1777,7 +1848,51 @@ export class GameView {
           if (skill?.mobility && ev.expression === 'thunder') {
             this.thunder.impact('thunder_dash', src, tgt, from, ev.point, 0);
           }
-          if (vfx === 'sword_qi')
+          if (vfx === 'phantom_step')
+            this.feedback(
+              ev.sourceId,
+              this.phantom.arrive(src, from, ev.point, ev.element, ev.expression),
+              ev.point,
+            );
+          else if (vfx === 'giant_sword')
+            this.feedback(
+              ev.sourceId,
+              this.giantSword.impact(ev.sourceId, ev.point, ev.radius, ev.element, ev.expression),
+              ev.point,
+            );
+          else if (vfx === 'thunder_domain') {
+            if (ev.sustain)
+              this.domain.event(ev.sustain, ev.sourceId, src, ev.radius, ev.element, ev.expression);
+          } else if (vfx === 'long_cut') {
+            if (ev.line)
+              this.feedback(
+                ev.sourceId,
+                this.longCut.impact(ev.line, ev.element, ev.expression),
+                ev.point,
+              );
+          } else if (vfx === 'heaven_tribulation') {
+            const storm = skill?.strikes;
+            this.feedback(
+              ev.sourceId,
+              ev.strike === undefined
+                ? this.tribulation.launch(
+                    src,
+                    ev.point,
+                    ev.element,
+                    ev.expression,
+                    storm ? storm.delay + storm.count * storm.interval + 0.4 : 2,
+                  )
+                : this.tribulation.strike(
+                    ev.sourceId,
+                    ev.point,
+                    ev.radius,
+                    tgt,
+                    ev.element,
+                    ev.expression,
+                  ),
+              ev.point,
+            );
+          } else if (vfx === 'sword_qi')
             this.feedback(
               ev.sourceId,
               this.swordQi.impact(ev.projectileId, ev.point, ev.targetId !== null, tgt),

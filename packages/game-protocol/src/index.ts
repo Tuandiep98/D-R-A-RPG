@@ -485,6 +485,8 @@ export const SimEventSchema = z
       radius: z.number().nonnegative(),
       telegraph: z.boolean(),
       endTick: z.number().int(),
+      /** Dash skills: where the dash ends if nothing blocks it (presentation). */
+      dashTo: Vec2Schema.optional(),
     }),
     z.object({
       type: z.literal('SKILL_IMPACT'),
@@ -504,6 +506,10 @@ export const SimEventSchema = z
       point: Vec2Schema,
       radius: z.number().nonnegative(),
       targetId: EntityIdSchema.nullable(),
+      /** Sky strike number (skill `strikes`), from 0. */
+      strike: z.number().int().nonnegative().optional(),
+      /** Toggle aura (skill `sustain`): turned on, damage tick, turned off. */
+      sustain: z.enum(['on', 'tick', 'off']).optional(),
     }),
     z.object({
       type: z.literal('PHASE'),

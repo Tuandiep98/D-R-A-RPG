@@ -34,6 +34,7 @@ export { GlowLayer } from '@babylonjs/core/Layers/glowLayer';
 export { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 export { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 export { ShadowGenerator } from '@babylonjs/core/Lights/Shadows/shadowGenerator';
+export { FresnelParameters } from '@babylonjs/core/Materials/fresnelParameters';
 export { Material } from '@babylonjs/core/Materials/material';
 export { MultiMaterial } from '@babylonjs/core/Materials/multiMaterial';
 export { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';

@@ -195,6 +195,8 @@ export const SkillEffectSchema = z.discriminatedUnion('type', [
     flat: nonNegative.default(0),
     /** 0 → single target; > 0 → everything hostile within radius of the impact point. */
     radius: nonNegative.default(0),
+    /** Stuns (staggers) each body hit for this many seconds; bosses are immune. */
+    stun: positive.max(3).optional(),
   }),
   z.strictObject({
     type: z.literal('heal'),
@@ -261,6 +263,33 @@ export const SkillDefSchema = z
     projectileRadius: nonNegative.max(1).default(0.25),
     /** Extra bodies a skill projectile passes through after the first (0 = stops there). */
     projectilePierce: z.number().int().min(0).max(8).default(0),
+    /**
+     * Toggle aura: casting turns it on, casting again turns it off. While on it
+     * drains MP every `interval` and hits everything within the damage radius
+     * around the caster; it ends when MP runs short or the caster dies.
+     */
+    sustain: z
+      .strictObject({
+        mpPerSecond: positive.max(100),
+        interval: z.number().min(0.25).max(5),
+      })
+      .optional(),
+    /**
+     * Strikes from the sky after the cast: one every `interval`, each on a body
+     * near the caster (closer and the caster's target are favoured), hitting
+     * the damage radius around it. `stunAfter` hits on the same body stun it;
+     * a stunned body is stunned again and always critically hit.
+     */
+    strikes: z
+      .strictObject({
+        count: z.number().int().min(1).max(16),
+        interval: z.number().min(0.1).max(2),
+        delay: z.number().min(0).max(3).default(0),
+        searchRadius: positive.max(20),
+        stunAfter: z.number().int().min(1).max(10).default(2),
+        stunSeconds: positive.max(3).default(1),
+      })
+      .optional(),
     blockedByWalls: z.boolean().default(true),
     groundLow: z.boolean().default(false),
     elementalShare: chance.optional(),
@@ -315,6 +344,14 @@ export const SkillDefSchema = z
   .refine((s) => !s.autoAim || (s.targeting === 'point' && s.delivery === 'projectile'), {
     message: 'Observed auto aim requires a point projectile',
   })
+  .refine(
+    (s) =>
+      (!s.sustain && !s.strikes) ||
+      (s.targeting === 'self' &&
+        !s.pulses &&
+        s.effects.every((effect) => effect.type === 'damage' && effect.radius > 0)),
+    { message: 'Sustained auras and sky strikes are self-cast area damage only' },
+  )
   .refine(
     (s) =>
       s.delivery !== 'line' ||

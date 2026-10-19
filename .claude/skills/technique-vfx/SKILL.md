@@ -5,8 +5,21 @@ description: Tạo mới hoặc làm lại / tối ưu hiệu ứng của một 
 
 # Technique VFX: hiệu ứng skill + lớp ngũ hành
 
-Mẫu đã làm: Lôi Hoàn Kiếm (`sword-rain-fx.ts`, `vfx: sword_rain`) và Lôi Kiếm Xuyên Tâm
-(`sword-qi-fx.ts`, `vfx: sword_qi`). Đọc một trong hai trước khi viết skill mới.
+Mẫu đã làm (bộ Lôi Kiếm Tu, D-037), đọc cái gần nhất trước khi viết skill mới:
+
+| Skill | vfx | File | Kiểu |
+|---|---|---|---|
+| Lôi Hoàn Kiếm | `sword_rain` | `sword-rain-fx.ts` | nhiều mảnh rơi trong vùng |
+| Lôi Kiếm Xuyên Tâm | `sword_qi` | `sword-qi-fx.ts` | đạn bay xuyên, vệt theo đường |
+| Lôi Bộ | `phantom_step` | `phantom-step-fx.ts` | lướt + tàn ảnh (chụp pose skinned) |
+| Lôi Ảnh Trảm | `giant_sword` | `giant-sword-fx.ts` | lướt + vật thể lớn rơi xuống điểm dừng |
+| Lôi Vực | `thunder_domain` | `thunder-domain-fx.ts` | aura bật/tắt bám người (`sustain`) |
+| Tử Điện Trảm | `long_cut` | `long-cut-fx.ts` | đường thẳng dài, sóng chạy + khe nứt |
+| Cửu Thiên Lôi Kiếp | `heaven_tribulation` | `tribulation-fx.ts` | nhiều tia đánh xuống (`strikes`) |
+
+Khối dùng chung thêm: `GroundDecals` (`ground-decals.ts`, vết cháy **đen** — sprite CombatFx là
+additive nên không vẽ được màu tối), `StunFx` (sao choáng, đọc `poise` từ snapshot),
+`PhantomStepFx.start()` (tàn ảnh cho mọi skill lướt).
 
 Làm theo **đúng thứ tự** dưới đây. Lớp ngũ hành (bước 6) chỉ thêm **sau khi** hiệu ứng
 kỹ thuật trung tính đã chạy và đã xem ảnh — đừng trộn màu ngũ hành vào từ đầu.
@@ -20,6 +33,9 @@ kỹ thuật trung tính đã chạy và đã xem ảnh — đừng trộn màu 
   - `SKILL_PROJECTILE`: đạn bay (`origin`, `destination` = cuối tầm, `speed`, `projectileId`).
   - `SKILL_IMPACT`: đòn trúng (`point`, `radius`, `targetId`; projectile có `projectileId`, `targetId: null` = trúng tường / hết tầm).
   - `HIT` có `skillId`: sát thương lên một thân (`thunder.hit` / `technique.hit` đặt ở đây).
+- Cơ chế có sẵn trong `SkillDefSchema`: `projectilePierce`, `stun` (trên damage), `sustain` (bật/tắt,
+  MP/s), `strikes` (tia đánh xuống có ưu tiên mục tiêu), `pulses`, `field`, `delivery: line|cone|circle`.
+  Test mẫu: `packages/game-core/src/thunder-kit.test.ts`, `projectile-pierce.test.ts`.
 - Nếu yêu cầu đổi **cơ chế** (xuyên mục tiêu, nhiều nhịp, vùng…) → sửa server trước: field mới trong
   `SkillDefSchema` (`packages/game-data/src/schemas.ts`, có default để YAML cũ hợp lệ), logic trong
   `packages/game-core/src/systems/skills.ts`, test trong `packages/game-core/src/*.test.ts`. Client
@@ -48,6 +64,9 @@ Rung camera: trả `Feedback {shake, kick, seconds}` và gọi `this.feedback(ev
 
 ## 4. Smoke + xem ảnh
 
+- Cần quái thật (choáng, trúng đích): theo mẫu `tools/smoke/thunder-kit.ts` — `?noworker` để
+  `window.__rpg.host.world` là World thật: học skill (`me.skills.set(id, 0)`), dựng quái bất động
+  trước mặt, đặt `combat.targetId`.
 - Viết `tools/smoke/<ten>.ts` theo mẫu `tools/smoke/sword-rain.ts` (offline `?debug&map=map_sandbox_01&element=…`,
   `view.send({type:'CAST_SKILL', skillId, point})`, chụp 2 thời điểm), đăng ký `smoke:<ten>` trong
   `package.json` và một dòng trong CLAUDE.md. Ảnh vào `reports/<ten>/` (không commit).

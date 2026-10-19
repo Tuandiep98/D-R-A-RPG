@@ -68,8 +68,13 @@ export function requestCast(
     ctx.notice(e.id, 'invalid');
     return false;
   }
-  if (skill.id === 'skill_thunder_step') return requestMobility(ctx, e, 'roll', point);
+  if (skill.id === 'skill_thunder_step') return requestMobility(ctx, e, 'roll', point, skill.id);
   if (skill.mobility) return requestMobility(ctx, e, skill.mobility, point);
+  // A running aura toggles off at once: no cooldown, MP or target checks.
+  if (skill.sustain && e.sustain?.skillId === skill.id) {
+    stopSustain(ctx, e);
+    return true;
+  }
   if (e.cast || e.mobility || isStaggered(ctx, e)) return false;
   const summon = skill.effects.some((effect) => effect.type === 'summon_toggle');
   if (summon) {
@@ -281,6 +286,14 @@ function startCast(
     radius: effectRadius(skill),
     telegraph: skill.telegraph,
     endTick: e.cast.endTick,
+    ...(travelLeft > 0
+      ? {
+          dashTo: {
+            x: e.pos.x + Math.sin(action.yaw) * travelLeft,
+            z: e.pos.z + Math.cos(action.yaw) * travelLeft,
+          },
+        }
+      : {}),
     ...(skill.delivery === 'line' ? { line: castLine(skill, e.cast) } : {}),
     ...(e.pet && skill.telegraph && skill.delivery === 'cone'
       ? {
@@ -390,6 +403,213 @@ export function skillSystem(ctx: SimContext): void {
   for (const e of ctx.entities.values()) {
     if (!e.inert && e.life.alive && e.cast && ctx.tick >= e.cast.endTick) resolveCast(ctx, e);
   }
+  for (const e of ctx.entities.values()) {
+    if (e.sustain) advanceSustain(ctx, e);
+    if (e.strikes) advanceStrikes(ctx, e);
+  }
+}
+
+const STURDY_TIERS = new Set(['boss', 'world_boss', 'mini_boss']);
+
+/** Stuns (staggers) `t` for `seconds`: interrupts what it prepares. Bosses shrug it off. */
+export function stunEntity(ctx: SimContext, t: Entity, seconds: number): boolean {
+  if (!isAlive(t)) return false;
+  const tier = t.kind === 'monster' ? ctx.content.monsters.get(t.defId)?.tier : undefined;
+  if (tier && STURDY_TIERS.has(tier)) return false;
+  t.poise = {
+    pressure: t.poise?.pressure ?? 0,
+    threshold: t.poise?.threshold || 1,
+    lastHitTick: ctx.tick,
+    immuneUntilTick: t.poise?.immuneUntilTick ?? 0,
+    staggerUntilTick: Math.max(t.poise?.staggerUntilTick ?? 0, ctx.tick + secondsToTicks(seconds)),
+  };
+  cancelAction(ctx, t, true);
+  t.cast = null;
+  t.pending = null;
+  t.actionBuffer = null;
+  t.monsterSwing = null;
+  t.movement.goal = null;
+  t.movement.path = null;
+  return true;
+}
+
+/** Every hostile body within the skill's damage radius of `centre`, hit once per effect. */
+function hitArea(
+  ctx: SimContext,
+  e: Entity,
+  skill: SkillDef,
+  centre: Vec2,
+  source: Cast['source'],
+  each?: (v: Entity, spec: DamageSpec) => DamageSpec | null,
+  after?: (v: Entity) => void,
+): void {
+  const specs = damageSpecs(ctx, skill);
+  let i = 0;
+  for (const effect of skill.effects) {
+    if (effect.type !== 'damage') continue;
+    const base = specs[i++];
+    if (!base) continue;
+    for (const v of [...ctx.entities.values()]) {
+      if (!isAlive(v) || !areHostile(e, v)) continue;
+      if (distance(v.pos, centre) > effect.radius + v.movement.radius) continue;
+      if (skill.blockedByWalls && !clearLine(ctx, centre, v.pos)) continue;
+      const spec = each ? each(v, base) : base;
+      if (!spec) continue;
+      const roll = rollHit(ctx, e, v, spec, {}, source);
+      applyDamage(ctx, e, v, roll.amount, roll.crit, skill.id, {
+        hit: 'solid',
+        heavy: false,
+        groundLow: skill.groundLow,
+        source,
+      });
+      if (effect.stun) stunEntity(ctx, v, effect.stun);
+      after?.(v);
+    }
+  }
+}
+
+function sustainEvent(
+  ctx: SimContext,
+  e: Entity,
+  skillId: string,
+  source: Cast['source'],
+  phase: 'on' | 'tick' | 'off',
+  radius: number,
+): void {
+  ctx.emit({
+    type: 'SKILL_IMPACT',
+    actionId: source.actionId ?? null,
+    sourceId: e.id,
+    skillId,
+    point: { ...e.pos },
+    radius,
+    targetId: null,
+    element: source.element,
+    expression: source.expression,
+    sustain: phase,
+  });
+}
+
+function startSustain(ctx: SimContext, e: Entity, skill: SkillDef, cast: Cast): void {
+  if (!skill.sustain) return;
+  if (e.sustain) stopSustain(ctx, e);
+  e.sustain = {
+    skillId: skill.id,
+    nextTick: ctx.tick + secondsToTicks(skill.sustain.interval),
+    source: cast.source,
+  };
+  sustainEvent(ctx, e, skill.id, cast.source, 'on', effectRadius(skill));
+  if (!ctx.inSafeZone(e.pos)) hitArea(ctx, e, skill, e.pos, cast.source);
+}
+
+export function stopSustain(ctx: SimContext, e: Entity): void {
+  const s = e.sustain;
+  if (!s) return;
+  e.sustain = null;
+  sustainEvent(ctx, e, s.skillId, s.source, 'off', 0);
+}
+
+/** Toggle aura upkeep: drain MP, then hit everything around the caster. */
+function advanceSustain(ctx: SimContext, e: Entity): void {
+  const s = e.sustain;
+  const skill = s ? ctx.content.skills.get(s.skillId) : undefined;
+  if (!s || !skill?.sustain || !isAlive(e)) {
+    stopSustain(ctx, e);
+    return;
+  }
+  if (ctx.tick < s.nextTick) return;
+  const cost = Math.ceil(skill.sustain.mpPerSecond * skill.sustain.interval);
+  if (e.stats.mp < cost) {
+    ctx.notice(e.id, 'no_mp');
+    stopSustain(ctx, e);
+    return;
+  }
+  e.stats.mp -= cost;
+  s.nextTick += secondsToTicks(skill.sustain.interval);
+  e.combat.lastCombatTick = ctx.tick;
+  sustainEvent(ctx, e, skill.id, s.source, 'tick', effectRadius(skill));
+  if (!ctx.inSafeZone(e.pos)) hitArea(ctx, e, skill, e.pos, s.source);
+}
+
+/**
+ * One sky strike: a body near the caster, closer ones and the caster's target
+ * favoured (seeded RNG), or open ground when nobody is near.
+ */
+function advanceStrikes(ctx: SimContext, e: Entity): void {
+  const s = e.strikes;
+  const skill = s ? ctx.content.skills.get(s.skillId) : undefined;
+  if (!s || !skill?.strikes || !isAlive(e)) {
+    e.strikes = null;
+    return;
+  }
+  if (ctx.tick < s.nextTick) return;
+  const cfg = skill.strikes;
+  const near = [...ctx.entities.values()].filter(
+    (o) =>
+      isAlive(o) &&
+      areHostile(e, o) &&
+      distance(e.pos, o.pos) <= cfg.searchRadius + o.movement.radius &&
+      (!skill.blockedByWalls || clearLine(ctx, e.pos, o.pos)),
+  );
+  let point: Vec2;
+  let targetId: EntityId | null = null;
+  if (near.length > 0) {
+    const weights = near.map(
+      (o) => (o.id === s.preferredId ? 4 : 1) / (1 + distance(e.pos, o.pos)) ** 1.5,
+    );
+    let roll = ctx.rng.next() * weights.reduce((a, b) => a + b, 0);
+    let pick = near[near.length - 1] as Entity;
+    for (let i = 0; i < near.length; i++) {
+      roll -= weights[i] as number;
+      if (roll < 0) {
+        pick = near[i] as Entity;
+        break;
+      }
+    }
+    point = { ...pick.pos };
+    targetId = pick.id;
+  } else {
+    const a = ctx.rng.range(0, Math.PI * 2);
+    const r = ctx.rng.range(1.5, Math.min(4, cfg.searchRadius));
+    point = { x: e.pos.x + Math.sin(a) * r, z: e.pos.z + Math.cos(a) * r };
+  }
+  ctx.emit({
+    type: 'SKILL_IMPACT',
+    actionId: s.source.actionId ?? null,
+    sourceId: e.id,
+    skillId: skill.id,
+    point,
+    radius: effectRadius(skill),
+    targetId,
+    element: s.source.element,
+    expression: s.source.expression,
+    strike: s.index,
+  });
+  if (!ctx.inSafeZone(point)) {
+    const stunned = new Set<EntityId>();
+    hitArea(
+      ctx,
+      e,
+      skill,
+      point,
+      s.source,
+      (v, spec) => {
+        s.hits.set(v.id, (s.hits.get(v.id) ?? 0) + 1);
+        // A stunned body is always critically hit, and stunned again.
+        if (!isStaggered(ctx, v)) return spec;
+        stunned.add(v.id);
+        return { ...spec, critBonus: 1, canCrit: true };
+      },
+      (v) => {
+        if (stunned.has(v.id) || (s.hits.get(v.id) ?? 0) >= cfg.stunAfter)
+          stunEntity(ctx, v, cfg.stunSeconds);
+      },
+    );
+  }
+  s.index++;
+  s.left--;
+  s.nextTick += secondsToTicks(cfg.interval);
+  if (s.left <= 0) e.strikes = null;
 }
 
 function resolveCast(ctx: SimContext, e: Entity): void {
@@ -450,6 +670,10 @@ function castLine(skill: SkillDef, cast: Cast) {
 function resolveSkill(ctx: SimContext, e: Entity, cast: Cast, damageMultiplier = 1): void {
   const skill = ctx.content.skills.get(cast.skillId);
   if (!skill) return;
+  if (skill.sustain) {
+    startSustain(ctx, e, skill, cast);
+    return;
+  }
   const point = cast.point ?? { ...e.pos };
   const target = cast.targetId !== null ? ctx.entities.get(cast.targetId) : undefined;
 
@@ -472,6 +696,19 @@ function resolveSkill(ctx: SimContext, e: Entity, cast: Cast, damageMultiplier =
       targetId: target?.id ?? null,
       ...(skill.delivery === 'line' ? { line: castLine(skill, cast) } : {}),
     });
+  if (skill.strikes) {
+    // The cast only calls the storm; strikeSystem lands it over the next ticks.
+    e.strikes = {
+      skillId: skill.id,
+      source: cast.source,
+      left: skill.strikes.count,
+      index: 0,
+      nextTick: ctx.tick + secondsToTicks(skill.strikes.delay),
+      preferredId: cast.targetId ?? e.combat.targetId,
+      hits: new Map(),
+    };
+    return;
+  }
 
   const damages = damageSpecs(ctx, skill).map((spec) => ({
     ...spec,
@@ -674,6 +911,7 @@ function resolveSkill(ctx: SimContext, e: Entity, cast: Cast, damageMultiplier =
         groundLow: skill.groundLow,
         source: cast.source,
       });
+      if (effect.stun) stunEntity(ctx, v, effect.stun);
     }
   }
   // Keep fighting what we just hit.

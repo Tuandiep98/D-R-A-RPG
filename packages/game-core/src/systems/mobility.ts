@@ -10,6 +10,8 @@ export function requestMobility(
   e: Entity,
   action: 'roll' | 'blink' | 'jump',
   point: Vec2 | null = null,
+  /** Skill the movement is presented as (Lôi Bộ rolls with its own look). */
+  presentAs?: string,
 ): boolean {
   const skill = [...ctx.content.skills.values()].find((s) => s.mobility === action);
   const p = e.player;
@@ -55,12 +57,13 @@ export function requestMobility(
     dir,
     dodgeFrom: ctx.tick + Math.round(skill.dodgeWindow[0] * TICK_RATE),
     dodgeTo: ctx.tick + Math.round(skill.dodgeWindow[1] * TICK_RATE),
+    ...(presentAs ? { skillId: presentAs } : {}),
   };
   ctx.emit({
     type: 'CAST_START',
     actionId: timeline.id,
     sourceId: e.id,
-    skillId: skill.id,
+    skillId: presentAs ?? skill.id,
     targetId: null,
     point: { ...e.pos },
     radius: 0,
@@ -100,7 +103,7 @@ export function mobilityFinishSystem(ctx: SimContext): void {
           type: 'SKILL_IMPACT',
           actionId: m.actionId,
           sourceId: e.id,
-          skillId: skill.id,
+          skillId: m.skillId ?? skill.id,
           point: { ...e.pos },
           radius: 0,
           targetId: null,

@@ -296,3 +296,19 @@ Mỗi quyết định: ngày, bối cảnh, quyết định, hệ quả. Khi mâ
   - Hàm tính chỉ số rèn ở `game-data/src/forge.ts` (thuần) để sim và UI hiển thị dùng chung; sim vẫn authoritative.
   - Bộ thử nghiệm tạm thời: quest `q_forge_trial` của Lão Mộc (vàng qua ledger + vật liệu + chip + trang bị nhiều phẩm).
 - **Hệ quả:** plan `docs/plan/06_forge_equipment_plan.md`; `pnpm smoke:forge` chạy luồng UI. Bản Mệnh mới chỉ là chỉ số theo cảnh giới (personality/memory/bond §69–70 là bước sau); số liệu cân bằng là đề xuất chờ playtest.
+
+## D-037 — Bộ Lôi Kiếm Tu làm lại: hiệu ứng theo ngũ hành và cơ chế mới
+
+- **Ngày:** 2026-10-20
+- **Bối cảnh:** chủ dự án yêu cầu làm lại hiệu ứng và một phần cơ chế 7 skill của Lôi Kiếm Tu. Mỗi skill có hiệu ứng riêng, đậm nhạt và nhiều ít theo bản mệnh cùng setting "Hiệu ứng ngũ hành" (0–200%).
+- **Quyết định:**
+  - Lớp ngũ hành dùng chung `element-burst.ts` (màu, mật độ, độ sáng theo hệ; nổ / đốm / vệt). Quy trình làm skill ghi ở `.claude/skills/technique-vfx`.
+  - Cơ chế mới (server authoritative, field tùy chọn trong `SkillDefSchema`):
+    - `projectilePierce`: Lôi Kiếm Xuyên Tâm xuyên tối đa 4 kẻ địch.
+    - `stun` trên hiệu ứng damage: Lôi Ảnh Trảm chém vùng 3 m ở điểm dừng, choáng 1 giây.
+    - `sustain`: Lôi Vực thành skill bật/tắt; mỗi giây trừ 6 MP và đánh vùng 3,5 m quanh thân; hết MP thì tự tắt. Auto farm không dùng skill này (`autoPolicy: manual`).
+    - `delivery: line` cho Tử Điện Trảm: chém dọc dài 8 m, trúng mọi kẻ địch trên đường.
+    - `strikes`: Cửu Thiên Lôi Kiếp (đổi tên từ Lôi Kiếm) gồm 7 tia sét, mỗi tia ×2,4. Tia chọn mục tiêu bằng RNG của World, ưu tiên mục tiêu gần và mục tiêu đang chọn. Trúng từ 2 tia thì bị choáng. Mục tiêu đang choáng thì luôn bị chí mạng và bị choáng tiếp.
+  - Choáng dùng `poise.staggerUntilTick` sẵn có; boss, mini boss và world boss miễn nhiễm. Client vẽ sao choáng từ snapshot.
+  - Lôi Bộ vẫn là cú lộn của hệ mobility, nhưng event mang `skillId` của Lôi Bộ để vẽ tàn ảnh riêng. `CAST_START` thêm `dashTo`; `SKILL_IMPACT` thêm `strike` và `sustain` (đều là trường tùy chọn).
+- **Hệ quả:** số liệu là đề xuất chờ playtest. Nút skill trên HUD chưa có trạng thái "đang bật" cho skill bật/tắt; hiện chỉ có hiệu ứng lôi vực quanh người cho biết đang bật.

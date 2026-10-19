@@ -1,20 +1,19 @@
 id: skill_thunder_execution
 name: Tử Điện Trảm
-description: Một nhát kiếm sét mạnh vào mục tiêu ở gần.
+description: Một nhát chém dọc cực mạnh về phía trước, xé một vết chém dài 8 mét qua mọi kẻ địch trên đường.
 icon: "⚔"
 targeting: point
-range: 2
+range: 8
 castTime: 0.3
 cooldown: 10
 mpCost: 22
 effects:
-  - { type: damage, multiplier: 3.2 }
-vfx: thunder_strike
+  - { type: damage, multiplier: 3.2, radius: 1.1 }
+vfx: long_cut
 # Clip trong model của người thi triển (presentation, D-032).
 # Runtime GLB: downward strike at clip time 0.96s (frame 57.6 at 60fps).
 # 0.96 / 3.2 = the authoritative impact at 0.30s.
 anim: { cast: Melee_1H_Attack_Jump_Chop_InPlace, castSpeed: 3.2 }
 sfx: { cast: [sfx_draw_blade], impact: [sfx_explosion_low] }
 
-delivery: cone
-arc: 70
+delivery: line

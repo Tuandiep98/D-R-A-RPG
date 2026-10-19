@@ -1,20 +1,17 @@
 id: skill_thunder_judgement
-name: Cửu Thiên Lôi Kiếm
-description: Tụ lôi lực rồi giáng một đòn kiếm sét cực mạnh vào vùng mục tiêu.
+name: Cửu Thiên Lôi Kiếp
+description: Giơ kiếm phóng một tia sét lên trời, rồi 7 tia thiên lôi lần lượt giáng xuống kẻ địch quanh mình (càng gần, càng là mục tiêu đang chọn thì càng dễ bị đánh). Trúng từ 2 tia thì choáng; kẻ đang choáng luôn bị chí mạng và choáng tiếp.
 icon: "☄"
-targeting: point
-range: 10
-castTime: 1.1
-cooldown: 32
-mpCost: 55
+targeting: self
+castTime: 0.9
+cooldown: 36
+mpCost: 60
+strikes: { count: 7, interval: 0.24, delay: 0.45, searchRadius: 9, stunAfter: 2, stunSeconds: 1.2 }
 effects:
-  - { type: damage, multiplier: 5.5, radius: 3.6 }
-vfx: thunder_ultimate
-# Clip trong model của người thi triển (presentation, D-032).
-# Charge the sword itself: Chop's ~0.60s strike pose lands at the 1.10s impact.
-# No second clip restart on each AoE hit.
-anim: { cast: Melee_1H_Attack_Chop, castSpeed: 0.5454545454545454 }
+  - { type: damage, multiplier: 2.4, radius: 1.4 }
+vfx: heaven_tribulation
+# Clip trong model của người thi triển (presentation, D-032): the sword raised to the sky.
+anim: { cast: Ranged_Magic_Raise, castSpeed: 1.2 }
 sfx: { cast: [sfx_force_field], impact: [sfx_explosion] }
 
 delivery: circle
-telegraph: true

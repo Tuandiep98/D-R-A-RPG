@@ -1,6 +1,6 @@
 id: skill_thunder_step
 name: Lôi Bộ
-description: Lộn 3 mét theo hướng đang di chuyển; đứng yên thì lướt theo hướng nhìn.
+description: Lướt 3 mét theo hướng đang di chuyển (đứng yên thì theo hướng nhìn), để lại chuỗi tàn ảnh.
 icon: "⚡"
 targeting: self
 cooldown: 5
@@ -8,7 +8,8 @@ mpCost: 0
 barRole: utility
 effects:
   - { type: dash, distance: 3 }
-vfx: thunder_dash
+vfx: phantom_step
 # Clip trong model của người thi triển (presentation, D-032).
-anim: { cast: Dodge_Forward_InPlace }
+# The runtime in-place roll lasts 0.40s; fit it to the 0.30s roll (as skill_roll).
+anim: { cast: Dodge_Forward_InPlace, castSpeed: 1.3333333333333333 }
 sfx: { cast: [sfx_laser_small] }

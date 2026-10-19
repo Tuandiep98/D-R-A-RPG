@@ -49,7 +49,8 @@
     "smoke:glow": "tsx tools/smoke/weapon-glow.ts",
     "smoke:aura": "tsx tools/smoke/element-aura.ts",
     "smoke:rain": "tsx tools/smoke/sword-rain.ts",
-    "smoke:qi": "tsx tools/smoke/sword-qi.ts"
+    "smoke:qi": "tsx tools/smoke/sword-qi.ts",
+    "smoke:kit": "tsx tools/smoke/thunder-kit.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

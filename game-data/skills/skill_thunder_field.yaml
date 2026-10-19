@@ -1,18 +1,19 @@
 id: skill_thunder_field
 name: Lôi Vực
-description: Gọi sét xuống một vùng quanh mục tiêu.
+description: Bật/tắt. Lôi vực bao quanh thân, mỗi giây tốn 6 MP và đánh sét mọi kẻ địch trong 3,5 mét. Hết MP thì tự tắt.
 icon: "✺"
-targeting: point
-range: 9
-castTime: 0.6
-cooldown: 13
-mpCost: 28
+targeting: self
+castTime: 0.3
+cooldown: 1
+mpCost: 10
+# Toggle: never cast by auto farm (it would switch the aura off again).
+autoPolicy: manual
+sustain: { mpPerSecond: 6, interval: 1 }
 effects:
-  - { type: damage, multiplier: 2.1, radius: 3 }
-vfx: thunder_field
+  - { type: damage, multiplier: 0.7, radius: 3.5 }
+vfx: thunder_domain
 # Clip trong model của người thi triển (presentation, D-032).
 anim: { cast: Ranged_Magic_Raise, castSpeed: 2.4 }
-sfx: { cast: [sfx_force_field], impact: [sfx_explosion_low] }
+sfx: { cast: [sfx_force_field], impact: [sfx_laser_small_2] }
 
 delivery: circle
-telegraph: true
