@@ -10,5 +10,5 @@ cooldown: 5
 mpCost: 10
 timeline: { windup: 0.15, active: 0, recovery: 0.2, cancelWindup: true }
 effects: [{ type: pet_attack, skillId: skill_pet_lunge }]
-vfx: slash
+vfx: beast_command
 anim: { cast: Ranged_Magic_Shoot, castSpeed: 1.5 }

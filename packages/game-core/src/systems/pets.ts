@@ -47,6 +47,7 @@ export function dismissCompanion(ctx: SimContext, owner: Entity, dead = false): 
   const state = owner.player?.companion;
   if (!state) return;
   if (!pet) return;
+  const activeProfileId = pet.pet?.profileId;
   state.hp = dead ? 0 : pet.stats.hp;
   state.readyAtTick = dead
     ? ctx.tick + pet.life.respawnTicks
@@ -55,7 +56,7 @@ export function dismissCompanion(ctx: SimContext, owner: Entity, dead = false): 
       : state.readyAtTick;
   state.entityId = null;
   ctx.removeEntity(pet.id);
-  const profile = petProfile(ctx, owner);
+  const profile = activeProfileId ? ctx.content.pets.get(activeProfileId) : petProfile(ctx, owner);
   if (profile)
     ctx.emit({
       type: 'SUMMON',

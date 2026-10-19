@@ -326,6 +326,12 @@ export class ZoneRoom extends Room {
   }
 
   private eventVisible(ev: SimEvent, playerId: EntityId, visible: ReadonlySet<EntityId>): boolean {
+    if (ev.type === 'SUMMON')
+      return (
+        ev.ownerId === playerId ||
+        visible.has(ev.ownerId) ||
+        (ev.entityId !== null && visible.has(ev.entityId))
+      );
     if ('ownerId' in ev) return ev.ownerId === playerId;
     if (PRIVATE_EVENTS.has(ev.type)) return 'id' in ev && ev.id === playerId;
     const ids = [

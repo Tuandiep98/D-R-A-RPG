@@ -10,4 +10,4 @@ autoPolicy: manual
 cooldown: 1
 timeline: { windup: 0, active: 0, recovery: 0, cancelWindup: true }
 effects: [{ type: damage, multiplier: 1, radius: 2 }]
-vfx: thunder_field
+vfx: forge_gale

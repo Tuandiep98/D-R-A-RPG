@@ -9,4 +9,5 @@ requires: [tien_thu_combo]
 quests: [q_elite_stag]
 cost: { gold: 300, materials: [{ itemId: item_elite_antler, count: 1 }] }
 meridian: 20
+petId: pet_stag
 skillId: skill_thu_wave

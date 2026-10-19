@@ -12,5 +12,5 @@ cooldown: 4
 mpCost: 10
 timeline: { windup: 0.2, active: 0, recovery: 0.2, cancelWindup: true }
 effects: [{ type: damage, multiplier: 1.7 }]
-vfx: projectile
+vfx: shadow_blade
 anim: { cast: Melee_1H_Attack_Stab, castSpeed: 1.5 }

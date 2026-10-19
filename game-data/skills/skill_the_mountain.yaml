@@ -12,5 +12,5 @@ telegraph: true
 cooldown: 5
 mpCost: 10
 effects: [{ type: damage, multiplier: 2.3, radius: 0.35 }]
-vfx: burst
+vfx: body_mountain
 anim: { cast: Melee_Unarmed_Attack_Punch_A, castSpeed: 1.6666666666666667 }

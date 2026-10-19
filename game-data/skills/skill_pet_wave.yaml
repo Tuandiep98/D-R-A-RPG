@@ -10,4 +10,4 @@ telegraph: true
 cooldown: 1
 timeline: { windup: 0.5, active: 0, recovery: 0.2, cancelWindup: false }
 effects: [{ type: damage, multiplier: 4 }]
-vfx: projectile
+vfx: beast_wave

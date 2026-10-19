@@ -374,6 +374,13 @@
   color: #10181d;
 }
 
+.hud .skill.skill-active {
+  border-image-source: var(--fui-slot-active);
+  background: rgba(88, 112, 86, 0.42);
+  background-clip: padding-box;
+  color: var(--hud-brass);
+}
+
 .hud :is(.skill, .item, .loadout-slot, .menu button, .attack-button):focus-visible {
   outline: 2px solid var(--hud-brass);
   outline-offset: 2px;

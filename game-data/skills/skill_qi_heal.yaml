@@ -9,5 +9,5 @@ cooldown: 20
 mpCost: 30
 effects:
   - { type: heal, fraction: 0.3 }
-vfx: heal
+vfx: base_heal
 sfx: { cast: [sfx_force_field] }

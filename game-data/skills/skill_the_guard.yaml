@@ -10,6 +10,6 @@ castTime: 0.1
 cooldown: 10
 mpCost: 12
 effects: [{ type: shield, fraction: 0.25, duration: 3 }]
-vfx: heal
+vfx: body_guard
 anim: { cast: Melee_Block, castSpeed: 3 }
 barRole: utility

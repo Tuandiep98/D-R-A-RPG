@@ -13,5 +13,5 @@ timeline: { windup: 0.3, active: 0, recovery: 0.25, cancelWindup: true }
 effects:
   - { type: damage, multiplier: 1.5, radius: 3 }
   - { type: pet_attack, skillId: skill_pet_cone }
-vfx: slash
+vfx: beast_combo
 anim: { cast: Melee_1H_Attack_Slice_Horizontal, castSpeed: 1.1666666666666667 }

@@ -9,5 +9,5 @@ cooldown: 9
 telegraph: true
 effects:
   - { type: damage, multiplier: 2.4, radius: 5.5 }
-vfx: slam
+vfx: boss_stomp
 sfx: { impact: [sfx_explosion_low] }

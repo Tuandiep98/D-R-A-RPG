@@ -12,5 +12,5 @@ telegraph: true
 cooldown: 8
 mpCost: 20
 effects: [{ type: damage, multiplier: 2.2, radius: 2.2 }]
-vfx: burst
+vfx: arcane_seal
 anim: { cast: Ranged_Magic_Raise, castSpeed: 2.2153846153846155 }

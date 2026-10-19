@@ -11,10 +11,17 @@ arc: 70
 autoPolicy: manual
 cooldown: 10
 mpCost: 18
-timeline: { windup: 0.15, active: 0.25, recovery: 0.3, cancelWindup: true, cancelRecoveryAfter: 0.15 }
+timeline:
+  {
+    windup: 0.15,
+    active: 0.25,
+    recovery: 0.3,
+    cancelWindup: true,
+    cancelRecoveryAfter: 0.15,
+  }
 effects:
   - { type: dash, distance: 5, stopAtAim: true }
   - { type: damage, multiplier: 2.2, radius: 1.5 }
-vfx: slash
+vfx: shadow_pursuit
 anim: { cast: Melee_1H_Attack_Stab, castSpeed: 1.05 }
 barRole: utility

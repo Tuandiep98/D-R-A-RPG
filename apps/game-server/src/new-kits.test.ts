@@ -78,6 +78,27 @@ describe('authored combat kits', () => {
     expect(companion(world, actor)).toBeUndefined();
     expect(actor.player?.companion?.active).toBe(false);
   });
+  it('Ngự Thú keeps the active profile stable and applies a later pet upgrade on resummon', () => {
+    const { world, actor } = setup('player_thu', false);
+    expect(requestCast(world, actor, 'skill_thu_summon', null, null)).toBe(true);
+    run(world, 10);
+    expect(world.playerState(actor.id)?.companion?.profileId).toBe('pet_wolf');
+
+    actor.player?.nodes.push('tien_thu_wave');
+    expect(world.playerState(actor.id)?.companion?.profileId).toBe('pet_wolf');
+    expect(requestCast(world, actor, 'skill_thu_summon', null, null)).toBe(true);
+    const dismissed = run(world, 10).find(
+      (event) => event.type === 'SUMMON' && event.phase === 'dismiss',
+    );
+    expect(dismissed).toMatchObject({ profileId: 'pet_wolf' });
+
+    expect(requestCast(world, actor, 'skill_thu_summon', null, null)).toBe(true);
+    const upgraded = run(world, 10).find(
+      (event) => event.type === 'SUMMON' && event.phase === 'materialize',
+    );
+    expect(upgraded).toMatchObject({ profileId: 'pet_stag' });
+    expect(companion(world, actor)?.defId).toBe('stag_elite_001');
+  });
   it.each(['plain', 'guard', 'decay', 'shield', 'unconfigured'])(
     'Thể poise uses explicit pressure, guard-chain resistance and bounded break: %s',
     (mode) => {

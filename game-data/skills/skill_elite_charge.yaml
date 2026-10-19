@@ -8,5 +8,5 @@ castTime: 0.5
 cooldown: 8
 effects:
   - { type: damage, multiplier: 2.2 }
-vfx: slash
+vfx: beast_elite_charge
 sfx: { impact: [sfx_hit_heavy] }

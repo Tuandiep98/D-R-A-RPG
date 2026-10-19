@@ -454,8 +454,8 @@ export class World implements SimContext {
     const p = e?.player;
     if (!e || !p) return null;
     const load = cultivationLoad(this, p.nodes);
-    const profile = petProfile(this, e);
     const pet = companion(this, e);
+    const profile = pet?.pet ? this.content.pets.get(pet.pet.profileId) : petProfile(this, e);
     const petDef = profile ? this.content.monsters.get(profile.monsterId) : undefined;
     return {
       id: e.id,

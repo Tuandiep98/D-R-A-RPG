@@ -14,5 +14,5 @@ mpCost: 35
 effects:
   - { type: shield, fraction: 0.35, duration: 5 }
   - { type: damage, multiplier: 3.8, radius: 3.2 }
-vfx: burst
+vfx: body_avatar
 anim: { cast: Melee_1H_Attack_Jump_Chop_InPlace, castSpeed: 1.28 }

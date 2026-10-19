@@ -10,5 +10,5 @@ delivery: support
 cooldown: 5
 mpCost: 14
 effects: [{ type: pulse_fields, multiplier: 1.8 }]
-vfx: burst
+vfx: formation_pulse
 anim: { cast: Ranged_Magic_Spellcasting, castSpeed: 1.5 }

@@ -12,6 +12,6 @@ delivery: support
 cooldown: 14
 mpCost: 18
 effects: [{ type: shield, fraction: 0.2, duration: 4 }]
-vfx: heal
+vfx: formation_link
 anim: { cast: Ranged_Magic_Spellcasting, castSpeed: 2 }
 barRole: utility

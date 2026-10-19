@@ -12,5 +12,5 @@ cooldown: 28
 mpCost: 38
 timeline: { windup: 0.65, active: 0, recovery: 0.3, cancelWindup: true }
 effects: [{ type: damage, multiplier: 1.5, radius: 0.45 }]
-vfx: slash
+vfx: shadow_flurry
 anim: { cast: Melee_Dualwield_Attack_Slice, castSpeed: 0.923076923076923 }

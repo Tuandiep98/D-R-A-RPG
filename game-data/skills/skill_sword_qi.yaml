@@ -11,7 +11,7 @@ cooldown: 4
 mpCost: 12
 effects:
   - { type: damage, multiplier: 1.8 }
-vfx: projectile
+vfx: sword_qi
 sfx: { cast: [sfx_swing_02], impact: [sfx_hit_metal_02] }
 
 delivery: projectile

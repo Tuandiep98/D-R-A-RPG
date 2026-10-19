@@ -10,5 +10,5 @@ cooldown: 28
 mpCost: 38
 timeline: { windup: 0.3, active: 0, recovery: 0.3, cancelWindup: true }
 effects: [{ type: pet_attack, skillId: skill_pet_wave }]
-vfx: projectile
+vfx: beast_pack_wave
 anim: { cast: Ranged_Magic_Shoot, castSpeed: 1.2 }

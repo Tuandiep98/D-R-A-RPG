@@ -267,7 +267,8 @@ function SkillButton({
   return (
     <button
       type="button"
-      className={`skill ${className} ${elementClass(slot.skillId)} ${slot.skillId === 'skill_thunder_judgement' ? 'skill-ultimate' : ''} ${slot.usable ? '' : 'skill-disabled'}`}
+      aria-pressed={slot.active ?? false}
+      className={`skill ${className} ${elementClass(slot.skillId)} ${slot.skillId === 'skill_thunder_judgement' ? 'skill-ultimate' : ''} ${slot.active ? 'skill-active' : ''} ${slot.usable ? '' : 'skill-disabled'}`}
       title={`${slot.name}${slot.mpCost ? ` · ${slot.mpCost} MP` : ''}\n${slot.description}`}
       onPointerDown={(e) => {
         e.stopPropagation();

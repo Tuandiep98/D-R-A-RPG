@@ -10,5 +10,5 @@ cooldown: 7
 telegraph: true
 effects:
   - { type: damage, multiplier: 3, radius: 3.5 }
-vfx: slam
+vfx: boss_slam
 sfx: { impact: [sfx_slam] }

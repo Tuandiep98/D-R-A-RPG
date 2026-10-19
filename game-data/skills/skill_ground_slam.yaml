@@ -11,5 +11,5 @@ cooldown: 12
 mpCost: 30
 effects:
   - { type: damage, multiplier: 2.2, radius: 3 }
-vfx: slam
+vfx: body_ground_slam
 sfx: { impact: [sfx_slam] }

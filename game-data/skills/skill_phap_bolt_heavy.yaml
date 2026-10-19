@@ -9,4 +9,4 @@ projectileSpeed: 12
 projectileRadius: 0.35
 cooldown: 0.9
 effects: [{ type: damage, multiplier: 1.5 }]
-vfx: projectile
+vfx: arcane_bolt_heavy

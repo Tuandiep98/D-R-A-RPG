@@ -11,7 +11,11 @@ interface DebugGame {
     playerState: { skills: { skillId: string }[] } | null;
     sampled: Map<
       number,
-      { x: number; z: number; state: { kind: string; hp: number; cloakEndTick?: number | null } }
+      {
+        x: number;
+        z: number;
+        state: { kind: string; hp: number; cloakEndTick?: number | null };
+      }
     >;
     join: { playerId: number };
     send(intent: unknown): void;
@@ -93,6 +97,23 @@ try {
       for (const skill of kit.skills)
         if (!learned.includes(skill)) throw new Error(`${kit.id}: missing ${skill}`);
       if (kit.id === 'player_thu') {
+        if (!learned.includes('skill_thu_summon'))
+          throw new Error(`${kit.id}: missing skill_thu_summon`);
+        await page.evaluate(() => {
+          const view = (window as unknown as { __rpg: DebugGame }).__rpg.view;
+          const p = view.sampled.get(view.join.playerId);
+          if (!p) throw new Error('missing player position');
+          view.send({
+            type: 'CAST_SKILL',
+            skillId: 'skill_thu_summon',
+            point: { x: p.x, z: p.z },
+          });
+        });
+        await page.waitForFunction(
+          () => window.__kitSmoke.some((e) => e.type === 'SUMMON' && e.phase === 'materialize'),
+          undefined,
+          { timeout: 15000 },
+        );
         await page.evaluate(() =>
           (window as unknown as { __rpg: DebugGame }).__rpg.view.send({
             type: 'MOVE_TO',
@@ -108,11 +129,15 @@ try {
           { timeout: 30000 },
         );
         await page.evaluate(() =>
-          (window as unknown as { __rpg: DebugGame }).__rpg.view.send({ type: 'STOP' }),
+          (window as unknown as { __rpg: DebugGame }).__rpg.view.send({
+            type: 'STOP',
+          }),
         );
         await page.waitForTimeout(1000);
         await page.locator('.companion-info').waitFor({ state: 'visible' });
-        await page.screenshot({ path: resolve(out, `${kit.id}-${viewport.width}-pet.png`) });
+        await page.screenshot({
+          path: resolve(out, `${kit.id}-${viewport.width}-pet.png`),
+        });
       }
       await page.evaluate(() => {
         const view = (window as unknown as { __rpg: DebugGame }).__rpg.view;
@@ -138,7 +163,10 @@ try {
                 (a, b) => Math.hypot(a.x - p.x, a.z - p.z) - Math.hypot(b.x - p.x, b.z - p.z),
               )[0];
             if (!target) throw new Error('missing combat target');
-            view.send({ type: 'MOVE_TO', target: { x: target.x, z: target.z } });
+            view.send({
+              type: 'MOVE_TO',
+              target: { x: target.x, z: target.z },
+            });
           });
           await page.waitForFunction(
             () => {
@@ -158,7 +186,9 @@ try {
             { timeout: 30000 },
           );
           await page.evaluate(() =>
-            (window as unknown as { __rpg: DebugGame }).__rpg.view.send({ type: 'STOP' }),
+            (window as unknown as { __rpg: DebugGame }).__rpg.view.send({
+              type: 'STOP',
+            }),
           );
           await page.waitForTimeout(400);
         }
@@ -215,11 +245,15 @@ try {
             const view = (window as unknown as { __rpg: DebugGame }).__rpg.view;
             return !!view.sampled.get(view.join.playerId)?.state.cloakEndTick;
           });
-          await page.screenshot({ path: resolve(out, `${kit.id}-${viewport.width}-cloak.png`) });
+          await page.screenshot({
+            path: resolve(out, `${kit.id}-${viewport.width}-cloak.png`),
+          });
         }
         if (skillId.endsWith('_guard') || skillId === 'skill_tran_link') {
           await page.locator('.shield-info').waitFor({ state: 'visible' });
-          await page.screenshot({ path: resolve(out, `${kit.id}-${viewport.width}-shield.png`) });
+          await page.screenshot({
+            path: resolve(out, `${kit.id}-${viewport.width}-shield.png`),
+          });
         }
         await page.waitForTimeout(700);
       }
@@ -256,6 +290,22 @@ try {
           undefined,
           { timeout: 15000 },
         );
+        await page.evaluate(() => {
+          const view = (window as unknown as { __rpg: DebugGame }).__rpg.view;
+          const p = view.sampled.get(view.join.playerId);
+          if (!p) throw new Error('missing player position');
+          view.send({
+            type: 'CAST_SKILL',
+            skillId: 'skill_thu_summon',
+            point: { x: p.x, z: p.z },
+          });
+        });
+        await page.waitForFunction(
+          () => window.__kitSmoke.some((e) => e.type === 'SUMMON' && e.phase === 'dismiss'),
+          undefined,
+          { timeout: 15000 },
+        );
+        await page.locator('.companion-info').waitFor({ state: 'hidden' });
       }
       const touch = viewport.width < 500;
       if (await page.locator('.menu-trigger').isVisible()) {
@@ -264,7 +314,9 @@ try {
       }
       if (touch) await page.getByRole('button', { name: 'Kỹ năng', exact: true }).tap();
       else await page.getByRole('button', { name: 'Kỹ năng', exact: true }).click();
-      await page.screenshot({ path: resolve(out, `${kit.id}-${viewport.width}.png`) });
+      await page.screenshot({
+        path: resolve(out, `${kit.id}-${viewport.width}.png`),
+      });
       if (errors.length) throw new Error(errors.join('\n'));
       console.log(
         `PASS ${kit.id} ${viewport.width}: basic, four skills, ${kit.id === 'player_anh' ? 'cloak' : 'shield'}, Worker events, no page errors`,

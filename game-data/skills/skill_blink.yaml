@@ -8,5 +8,5 @@ mobility: blink
 duration: 0.15
 dodgeWindow: [0, 0]
 effects: [{ type: dash, distance: 4 }]
-vfx: mobility
+vfx: base_blink
 anim: { cast: Dodge_Forward_InPlace }

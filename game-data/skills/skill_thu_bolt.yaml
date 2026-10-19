@@ -9,4 +9,4 @@ projectileSpeed: 14
 projectileRadius: 0.2
 cooldown: 0.7
 effects: [{ type: damage, multiplier: 1 }]
-vfx: projectile
+vfx: beast_talisman

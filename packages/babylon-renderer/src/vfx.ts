@@ -108,7 +108,15 @@ export class TelegraphPool {
       sector.color = new Color3(1, 0.2, 0.15);
       sector.isPickable = false;
       sector.setEnabled(false);
-      return { ring, sector, fill, fillMat, active: false, age: 0, duration: 1 };
+      return {
+        ring,
+        sector,
+        fill,
+        fillMat,
+        active: false,
+        age: 0,
+        duration: 1,
+      };
     }, 12);
   }
 
@@ -350,6 +358,7 @@ interface Projectile {
   duration: number;
   tag?: number;
   flat?: boolean;
+  style: string;
 }
 
 /** Cosmetic projectile; damage is already decided by the host. */
@@ -370,6 +379,7 @@ export class ProjectilePool {
         from: new Vector3(),
         to: new Vector3(),
         duration: 0.25,
+        style: 'projectile',
       };
     }, 16);
   }
@@ -393,10 +403,14 @@ export class ProjectilePool {
     p.to.copyFrom(to);
     p.tag = tag;
     p.flat = !!speed;
+    p.style = vfx;
     p.duration = speed
       ? Vector3.Distance(from, to) / speed
       : Math.min(0.5, Math.max(0.12, Vector3.Distance(from, to) / 30));
     p.mat.emissiveColor = color ? Color3.FromHexString(color) : (VFX_COLORS[vfx] ?? Color3.White());
+    const scale = projectileScale(vfx);
+    p.orb.scaling.set(scale.x, scale.y, scale.z);
+    p.orb.rotation.y = Math.atan2(to.x - from.x, to.z - from.z);
     p.orb.position.copyFrom(from);
     p.orb.setEnabled(true);
   }
@@ -425,6 +439,16 @@ export class ProjectilePool {
       }
     }
   }
+}
+
+function projectileScale(style: string): { x: number; y: number; z: number } {
+  if (style.startsWith('shadow_')) return { x: 0.28, y: 0.12, z: 1.35 };
+  if (style.startsWith('arcane_arrow')) return { x: 0.32, y: 0.32, z: 1.25 };
+  if (style.startsWith('arcane_')) return { x: 0.72, y: 0.72, z: 0.72 };
+  if (style.startsWith('beast_')) return { x: 0.8, y: 0.3, z: 1.15 };
+  if (style.startsWith('sword_')) return { x: 0.16, y: 0.85, z: 1.35 };
+  if (style.startsWith('robot_')) return { x: 0.16, y: 0.16, z: 1.8 };
+  return { x: 1, y: 1, z: 1 };
 }
 
 /** Vertical light beam above loot, coloured by rarity. */

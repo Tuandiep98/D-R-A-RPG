@@ -15,5 +15,5 @@ field: { maxOwned: 2, maxDuration: 6 }
 cooldown: 28
 mpCost: 42
 effects: [{ type: damage, multiplier: 1.2, radius: 3.2 }]
-vfx: burst
+vfx: formation_great
 anim: { cast: Ranged_Magic_Raise, castSpeed: 1.6 }

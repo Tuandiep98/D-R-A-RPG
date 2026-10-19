@@ -12,4 +12,4 @@ timeline: { windup: 0.3, active: 0.25, recovery: 0.2, cancelWindup: false }
 effects:
   - { type: dash, distance: 6, stopAtAim: true }
   - { type: damage, multiplier: 2, radius: 1.5 }
-vfx: slash
+vfx: beast_lunge

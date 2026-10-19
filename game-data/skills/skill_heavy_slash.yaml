@@ -10,7 +10,7 @@ cooldown: 6
 mpCost: 15
 effects:
   - { type: damage, multiplier: 2.6 }
-vfx: slash
+vfx: sword_heavy
 sfx: { cast: [sfx_draw_blade], impact: [sfx_hit_heavy] }
 
 delivery: cone

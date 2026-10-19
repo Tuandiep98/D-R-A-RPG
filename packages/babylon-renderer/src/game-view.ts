@@ -73,8 +73,10 @@ import { GunFx } from './ranged-fx';
 import { Snapshots } from './snapshot';
 import { type InterpolatedEntity, SnapshotBuffer } from './snapshot-buffer';
 import { StunFx } from './stun-fx';
+import { SummonFx } from './summon-fx';
 import { SwordQiFx } from './sword-qi-fx';
 import { SwordRainFx } from './sword-rain-fx';
+import { isTechniqueStyle, TechniqueFx } from './technique-fx';
 import { ThunderDomainFx } from './thunder-domain-fx';
 import { type Feedback, isThunderStyle, ThunderFx } from './thunder-fx';
 import { TribulationFx } from './tribulation-fx';
@@ -483,6 +485,8 @@ export class GameView {
   private readonly longCut: LongCutFx;
   private readonly tribulation: TribulationFx;
   private readonly stun: StunFx;
+  private readonly summon: SummonFx;
+  private readonly technique: TechniqueFx;
   /** Where each caster stood when its current cast began (dash skills travel from there). */
   private readonly castFrom = new Map<EntityId, { x: number; z: number }>();
   /** Latest combo swing per attacker: impact style and one hit-stop per swing. */
@@ -553,6 +557,8 @@ export class GameView {
     this.longCut = new LongCutFx(this.fx, this.bolts, burst, this.decals, elementLevel);
     this.tribulation = new TribulationFx(this.fx, this.bolts, burst, this.decals, elementLevel);
     this.stun = new StunFx(this.fx);
+    this.summon = new SummonFx(this.fx);
+    this.technique = new TechniqueFx(this.fx);
     this.gun = new GunFx(this.fx);
     this.weaponGlow = WeaponGlow.install(scene, this.fx);
     this.weaponGlow.setLevel(opts.weaponGlow ?? 1);
@@ -992,6 +998,7 @@ export class GameView {
       this.pool.release(view);
     }
     this.views.clear();
+    this.summon.reset();
     this.gearKeys.clear();
     this.select(null);
     this.buffer = new SnapshotBuffer(100);
@@ -1114,6 +1121,24 @@ export class GameView {
     this.impacts.update(dt);
     this.projectiles.update(dt);
     this.gun.update(dt, this.fx.density);
+    const companion = this.playerState?.companion;
+    this.summon.sync(
+      this.join.playerId,
+      companion?.active
+        ? {
+            profileId: companion.profileId,
+            entityId: companion.entityId,
+            readyAtTick: companion.readyAtTick,
+          }
+        : null,
+      this.buffer.latest?.tick ?? 0,
+    );
+    this.summon.update(
+      dt,
+      this.buffer.latest?.tick ?? 0,
+      (id) => this.views.get(id),
+      (id) => this.sampled.get(id)?.state.element,
+    );
     this.weaponGlow.update(dt);
     this.fx.update(dt);
     this.thunder.update(dt);
@@ -1575,7 +1600,8 @@ export class GameView {
           } else if (ev.hit && !ev.skillId)
             this.presentMeleeHit(ev.sourceId, view, ev.heavy === true, ev.crit, ev.hit);
           else if (ev.skillId && !delayedReplay) {
-            const style = this.opts.content.skills.get(ev.skillId)?.vfx;
+            const skill = this.opts.content.skills.get(ev.skillId);
+            const style = skill?.vfx;
             if (isThunderStyle(style) && ev.expression === 'thunder') this.thunder.hit(view, style);
             else if (style === 'sword_rain' && ev.expression === 'thunder')
               this.thunder.hit(view, 'thunder_arc');
@@ -1587,6 +1613,7 @@ export class GameView {
               ev.expression === 'thunder'
             )
               this.thunder.hit(view, 'thunder_strike');
+            else if (skill && isTechniqueStyle(style)) this.technique.hit(view, skill);
           }
           this.sfxAt(
             ev.crit
@@ -1692,7 +1719,8 @@ export class GameView {
         }
         case 'SKILL_PROJECTILE': {
           const skill = this.opts.content.skills.get(ev.skillId);
-          if (skill?.vfx === 'sword_qi') {
+          const style = skill?.vfx ?? 'projectile';
+          if (skill && style === 'sword_qi') {
             this.feedback(
               ev.sourceId,
               this.swordQi.launch(
@@ -1710,11 +1738,13 @@ export class GameView {
           this.projectiles.fire(
             new Vector3(ev.origin.x, 0.8, ev.origin.z),
             new Vector3(ev.destination.x, 0.8, ev.destination.z),
-            'projectile',
+            style,
             ev.speed,
             elementColor(ev.element, ev.expression),
             ev.projectileId,
           );
+          if (skill && isTechniqueStyle(style))
+            this.technique.projectile(skill, ev.origin, ev.destination);
           break;
         }
         case 'CAST_START': {
@@ -1754,6 +1784,13 @@ export class GameView {
               source,
               skill,
               ev.element,
+              Math.max(0, (ev.endTick - tick) / TICK_RATE),
+            );
+          if (source && skill && isTechniqueStyle(skill.vfx))
+            this.technique.cast(
+              skill,
+              source,
+              ev.point,
               Math.max(0, (ev.endTick - tick) / TICK_RATE),
             );
           const castSeconds = Math.max(0, (ev.endTick - tick) / TICK_RATE);
@@ -1845,6 +1882,8 @@ export class GameView {
           const from = this.castFrom.get(ev.sourceId) ?? null;
           this.castFrom.delete(ev.sourceId);
           if (skill) this.elemental.impact(skill, ev.element, ev.point, ev.radius, from);
+          if (skill && isTechniqueStyle(vfx))
+            this.technique.impact(skill, src, tgt, from, ev.point, ev.radius);
           if (skill?.mobility && ev.expression === 'thunder') {
             this.thunder.impact('thunder_dash', src, tgt, from, ev.point, 0);
           }
@@ -1946,6 +1985,15 @@ export class GameView {
           else if (tgt) this.impacts.spawn(tgt.root.position.x, tgt.root.position.z, 0.8, vfx);
           else if (src && vfx === 'heal')
             this.impacts.spawn(src.root.position.x, src.root.position.z, 1.2, vfx);
+          break;
+        }
+        case 'SUMMON': {
+          this.summon.present(
+            ev,
+            this.views.get(ev.ownerId),
+            ev.entityId !== null ? this.views.get(ev.entityId) : undefined,
+            this.sampled.get(ev.ownerId)?.state.element,
+          );
           break;
         }
         case 'DEATH':
@@ -2062,7 +2110,11 @@ export class GameView {
                   : '';
             this.opts.onNotice?.(
               ev.success
-                ? { text: `${what} thành công${extra}`, tone: 'good', color: '#ffd23f' }
+                ? {
+                    text: `${what} thành công${extra}`,
+                    tone: 'good',
+                    color: '#ffd23f',
+                  }
                 : { text: `${what} thất bại${extra}`, tone: 'warn' },
             );
           }
@@ -2339,7 +2391,10 @@ export class GameView {
     equipped: boolean,
     enhance = 0,
     forge?: ItemForgeState,
-    wearer: { element: import('@rpg/game-protocol').Element | null; realm: number } = {
+    wearer: {
+      element: import('@rpg/game-protocol').Element | null;
+      realm: number;
+    } = {
       element: null,
       realm: 0,
     },
@@ -2715,7 +2770,7 @@ export class GameView {
                       remaining: (me.state.guardChain.endTick - tick) / TICK_RATE,
                     }
                   : null,
-              companion: ps.companion
+              companion: ps.companion?.active
                 ? {
                     name: c.pets.get(ps.companion.profileId)?.name ?? 'Linh thú',
                     hp: ps.companion.hp,

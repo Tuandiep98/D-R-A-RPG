@@ -9,7 +9,7 @@ castTime: 0.8
 cooldown: 7
 effects:
   - { type: damage, multiplier: 1.6 }
-vfx: projectile
+vfx: robot_laser
 sfx: { cast: [sfx_laser_small] }
 
 delivery: projectile

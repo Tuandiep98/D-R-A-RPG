@@ -14,5 +14,5 @@ projectileRadius: 0.25
 cooldown: 4
 mpCost: 12
 effects: [{ type: damage, multiplier: 1.8 }]
-vfx: projectile
+vfx: arcane_arrow
 anim: { cast: Ranged_Magic_Spellcasting, castSpeed: 1.4 }
